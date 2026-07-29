@@ -1,6 +1,6 @@
 # Interview Study Guide
 
-A self-contained, single-page study guide for Technical Lead & AI Engineer interviews. No build step, no dependencies — just open `index.html` in a browser.
+A static study guide for Technical Lead & AI Engineer interviews, covering 219 topics. No build step, no dependencies — just open `index.html` in a browser.
 
 Each topic is broken down into:
 - 🧠 Technical answer
@@ -9,6 +9,21 @@ Each topic is broken down into:
 - 🎯 Follow-up interview checks
 - ⚠ Red flags
 - 📌 One-line memory aid
+
+## Files
+
+```
+index.html        Page shell — markup only, no inline data or logic
+assets/styles.css Styling (light/dark theme, layout, print styles)
+assets/app.js     Rendering, search/filter, quiz mode, progress tracking
+data/topics.js    The 219 topics as data (sets the `topics` global)
+```
+
+Data, styling, and behavior are split into separate files so each can be edited
+and diffed independently — e.g. adding a topic only touches `data/topics.js`.
+`topics.js` (not `.json`) so the page still works when opened straight from
+disk with no server: a `<script src>` loads fine over `file://`, but
+`fetch()`-ing a local JSON file is blocked by the browser's CORS policy.
 
 ## View locally
 
