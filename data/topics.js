@@ -3165,7 +3165,7 @@ const topics = [
   },
   {
     "id": "ai-kit-001",
-    "title": "AI 001 · Bias–Variance Trade-off",
+    "title": "Bias–Variance Trade-off",
     "category": "Math, Probability & Statistics",
     "question": "Explain the bias-variance tradeoff. How does it show up as underfitting vs. overfitting, and how do you manage it in practice?",
     "technical": [
@@ -3192,7 +3192,7 @@ const topics = [
   },
   {
     "id": "ai-kit-002",
-    "title": "AI 002 · Bayes' Theorem",
+    "title": "Bayes' Theorem",
     "category": "Math, Probability & Statistics",
     "question": "State Bayes' theorem and walk through a practical example (e.g., spam filtering or medical test false positives).",
     "technical": [
@@ -3219,7 +3219,7 @@ const topics = [
   },
   {
     "id": "ai-kit-003",
-    "title": "AI 003 · Probability vs. Likelihood",
+    "title": "Probability vs. Likelihood",
     "category": "Math, Probability & Statistics",
     "question": "What is the difference between probability and likelihood?",
     "technical": [
@@ -3245,7 +3245,7 @@ const topics = [
   },
   {
     "id": "ai-kit-004",
-    "title": "AI 004 · P-values and Statistical Significance",
+    "title": "P-values and Statistical Significance",
     "category": "Math, Probability & Statistics",
     "question": "What is a p-value? What does p < 0.05 actually mean - and what does it NOT mean?",
     "technical": [
@@ -3271,7 +3271,7 @@ const topics = [
   },
   {
     "id": "ai-kit-005",
-    "title": "AI 005 · Central Limit Theorem",
+    "title": "Central Limit Theorem",
     "category": "Math, Probability & Statistics",
     "question": "Explain the Central Limit Theorem and why it is so important in statistics and ML.",
     "technical": [
@@ -3297,7 +3297,7 @@ const topics = [
   },
   {
     "id": "ai-kit-006",
-    "title": "AI 006 · Type I and Type II Errors",
+    "title": "Type I and Type II Errors",
     "category": "Math, Probability & Statistics",
     "question": "What are Type I and Type II errors? Give a real-world example where each one is more costly.",
     "technical": [
@@ -3324,7 +3324,7 @@ const topics = [
   },
   {
     "id": "ai-kit-007",
-    "title": "AI 007 · Correlation, Covariance and Causation",
+    "title": "Correlation, Covariance and Causation",
     "category": "Math, Probability & Statistics",
     "question": "Differentiate correlation, covariance, and causation. Why doesn't correlation imply causation?",
     "technical": [
@@ -3352,7 +3352,7 @@ const topics = [
   },
   {
     "id": "ai-kit-008",
-    "title": "AI 008 · Supervised, Unsupervised and Reinforcement Learning",
+    "title": "Supervised, Unsupervised and Reinforcement Learning",
     "category": "Classical Machine Learning",
     "question": "Explain supervised, unsupervised, and reinforcement learning with one real example of each.",
     "technical": [
@@ -3379,7 +3379,7 @@ const topics = [
   },
   {
     "id": "ai-kit-009",
-    "title": "AI 009 · Logistic vs. Linear Regression",
+    "title": "Logistic vs. Linear Regression",
     "category": "Classical Machine Learning",
     "question": "How does logistic regression differ from linear regression? Why can't we use plain linear regression for classification?",
     "technical": [
@@ -3405,7 +3405,7 @@ const topics = [
   },
   {
     "id": "ai-kit-010",
-    "title": "AI 010 · Detect and Prevent Overfitting",
+    "title": "Detect and Prevent Overfitting",
     "category": "Classical Machine Learning",
     "question": "How do you detect overfitting, and what techniques do you use to prevent it (regularization, cross-validation, early stopping)?",
     "technical": [
@@ -3431,7 +3431,7 @@ const topics = [
   },
   {
     "id": "ai-kit-011",
-    "title": "AI 011 · Random Forest vs. Gradient Boosting",
+    "title": "Random Forest vs. Gradient Boosting",
     "category": "Classical Machine Learning",
     "question": "Compare Random Forest and Gradient Boosting (e.g., XGBoost). How does bagging differ from boosting?",
     "technical": [
@@ -3457,7 +3457,7 @@ const topics = [
   },
   {
     "id": "ai-kit-012",
-    "title": "AI 012 · K-means Clustering",
+    "title": "K-means Clustering",
     "category": "Classical Machine Learning",
     "question": "How does k-means clustering work? How do you choose the right value of k?",
     "technical": [
@@ -3484,7 +3484,7 @@ const topics = [
   },
   {
     "id": "ai-kit-013",
-    "title": "AI 013 · Learning with Imbalanced Data",
+    "title": "Learning with Imbalanced Data",
     "category": "Classical Machine Learning",
     "question": "Your dataset is highly imbalanced (e.g., 1% fraud). How do you handle it - resampling, class weights, and which metrics do you use?",
     "technical": [
@@ -3510,7 +3510,7 @@ const topics = [
   },
   {
     "id": "ai-kit-014",
-    "title": "AI 014 · L1 vs. L2 Regularisation",
+    "title": "L1 vs. L2 Regularisation",
     "category": "Classical Machine Learning",
     "question": "What is the difference between L1 (Lasso) and L2 (Ridge) regularization? Why does L1 produce sparse models?",
     "technical": [
@@ -3537,7 +3537,7 @@ const topics = [
   },
   {
     "id": "ai-kit-015",
-    "title": "AI 015 · Backpropagation",
+    "title": "Backpropagation",
     "category": "Deep Learning & Neural Networks",
     "question": "Explain backpropagation intuitively. What is actually being computed and updated?",
     "technical": [
@@ -3563,7 +3563,7 @@ const topics = [
   },
   {
     "id": "ai-kit-016",
-    "title": "AI 016 · Vanishing and Exploding Gradients",
+    "title": "Vanishing and Exploding Gradients",
     "category": "Deep Learning & Neural Networks",
     "question": "What are vanishing and exploding gradients? What causes them and how do we fix them (ReLU, residual connections, normalization, clipping)?",
     "technical": [
@@ -3589,7 +3589,7 @@ const topics = [
   },
   {
     "id": "ai-kit-017",
-    "title": "AI 017 · Activation Functions",
+    "title": "Activation Functions",
     "category": "Deep Learning & Neural Networks",
     "question": "Compare activation functions: sigmoid, tanh, ReLU, GELU. Why is ReLU the common default?",
     "technical": [
@@ -3617,7 +3617,7 @@ const topics = [
   },
   {
     "id": "ai-kit-018",
-    "title": "AI 018 · Batch Normalisation vs. Layer Normalisation",
+    "title": "Batch Normalisation vs. Layer Normalisation",
     "category": "Deep Learning & Neural Networks",
     "question": "What is the difference between Batch Normalization and Layer Normalization? Why do Transformers use LayerNorm?",
     "technical": [
@@ -3643,7 +3643,7 @@ const topics = [
   },
   {
     "id": "ai-kit-019",
-    "title": "AI 019 · Dropout",
+    "title": "Dropout",
     "category": "Deep Learning & Neural Networks",
     "question": "How does dropout work? Why does it behave differently at training time vs. inference time?",
     "technical": [
@@ -3669,7 +3669,7 @@ const topics = [
   },
   {
     "id": "ai-kit-020",
-    "title": "AI 020 · CNN vs. RNN vs. Transformer",
+    "title": "CNN vs. RNN vs. Transformer",
     "category": "Deep Learning & Neural Networks",
     "question": "When would you use a CNN vs. an RNN vs. a Transformer? What limitations of RNNs did Transformers solve?",
     "technical": [
@@ -3697,7 +3697,7 @@ const topics = [
   },
   {
     "id": "ai-kit-021",
-    "title": "AI 021 · Transformer Architecture",
+    "title": "Transformer Architecture",
     "category": "Large Language Models",
     "question": "Explain the Transformer architecture at a high level. What made 'Attention Is All You Need' such a breakthrough?",
     "technical": [
@@ -3725,7 +3725,7 @@ const topics = [
   },
   {
     "id": "ai-kit-022",
-    "title": "AI 022 · Self-Attention: Query, Key and Value",
+    "title": "Self-Attention: Query, Key and Value",
     "category": "Large Language Models",
     "question": "Explain self-attention. What are Query, Key, and Value, and how is the attention score computed (scaled dot-product)?",
     "technical": [
@@ -3751,7 +3751,7 @@ const topics = [
   },
   {
     "id": "ai-kit-023",
-    "title": "AI 023 · Multi-Head Attention",
+    "title": "Multi-Head Attention",
     "category": "Large Language Models",
     "question": "Why do Transformers use multi-head attention instead of a single attention head?",
     "technical": [
@@ -3778,7 +3778,7 @@ const topics = [
   },
   {
     "id": "ai-kit-024",
-    "title": "AI 024 · Positional Encoding and RoPE",
+    "title": "Positional Encoding and RoPE",
     "category": "Large Language Models",
     "question": "Why do Transformers need positional encodings? What is RoPE (rotary positional embedding)?",
     "technical": [
@@ -3805,7 +3805,7 @@ const topics = [
   },
   {
     "id": "ai-kit-025",
-    "title": "AI 025 · Encoder-only, Decoder-only and Encoder–Decoder Models",
+    "title": "Encoder-only, Decoder-only and Encoder–Decoder Models",
     "category": "Large Language Models",
     "question": "Compare encoder-only (BERT), decoder-only (GPT), and encoder-decoder (T5) architectures. When is each used?",
     "technical": [
@@ -3833,7 +3833,7 @@ const topics = [
   },
   {
     "id": "ai-kit-026",
-    "title": "AI 026 · Tokenisation and BPE",
+    "title": "Tokenisation and BPE",
     "category": "Large Language Models",
     "question": "What is tokenization? Explain Byte-Pair Encoding (BPE) and how token count affects cost and context limits.",
     "technical": [
@@ -3861,7 +3861,7 @@ const topics = [
   },
   {
     "id": "ai-kit-027",
-    "title": "AI 027 · Temperature, Top-p and Top-k Sampling",
+    "title": "Temperature, Top-p and Top-k Sampling",
     "category": "Large Language Models",
     "question": "Explain temperature, top-p (nucleus), and top-k sampling. When would you set temperature to 0?",
     "technical": [
@@ -3887,7 +3887,7 @@ const topics = [
   },
   {
     "id": "ai-kit-028",
-    "title": "AI 028 · Context Windows and “Lost in the Middle”",
+    "title": "Context Windows and “Lost in the Middle”",
     "category": "Large Language Models",
     "question": "What is a context window? What happens when it is exceeded, and what is the 'lost in the middle' problem?",
     "technical": [
@@ -3914,7 +3914,7 @@ const topics = [
   },
   {
     "id": "ai-kit-029",
-    "title": "AI 029 · Pre-training, SFT and Instruction Tuning",
+    "title": "Pre-training, SFT and Instruction Tuning",
     "category": "Large Language Models",
     "question": "Differentiate pre-training, supervised fine-tuning (SFT), and instruction tuning.",
     "technical": [
@@ -3941,7 +3941,7 @@ const topics = [
   },
   {
     "id": "ai-kit-030",
-    "title": "AI 030 · RLHF and DPO",
+    "title": "RLHF and DPO",
     "category": "Large Language Models",
     "question": "Explain RLHF (Reinforcement Learning from Human Feedback) end-to-end: the role of the reward model and policy optimization. How is DPO (Direct Preference Optimization) a simpler alternative?",
     "technical": [
@@ -3967,7 +3967,7 @@ const topics = [
   },
   {
     "id": "ai-kit-031",
-    "title": "AI 031 · LoRA and QLoRA",
+    "title": "LoRA and QLoRA",
     "category": "Large Language Models",
     "question": "What is parameter-efficient fine-tuning? Explain LoRA and QLoRA and why they are so widely used.",
     "technical": [
@@ -3994,7 +3994,7 @@ const topics = [
   },
   {
     "id": "ai-kit-032",
-    "title": "AI 032 · Model Quantisation",
+    "title": "Model Quantisation",
     "category": "Large Language Models",
     "question": "What is model quantization (8-bit, 4-bit)? What tradeoffs does it introduce?",
     "technical": [
@@ -4021,7 +4021,7 @@ const topics = [
   },
   {
     "id": "ai-kit-033",
-    "title": "AI 033 · Why LLMs Hallucinate",
+    "title": "Why LLMs Hallucinate",
     "category": "Large Language Models",
     "question": "Why do LLMs hallucinate? List practical mitigation strategies you would use in production.",
     "technical": [
@@ -4049,7 +4049,7 @@ const topics = [
   },
   {
     "id": "ai-kit-034",
-    "title": "AI 034 · Zero-shot, Few-shot and Chain-of-Thought Prompting",
+    "title": "Zero-shot, Few-shot and Chain-of-Thought Prompting",
     "category": "Large Language Models",
     "question": "Compare zero-shot, few-shot, and chain-of-thought prompting. When does CoT actually help?",
     "technical": [
@@ -4077,7 +4077,7 @@ const topics = [
   },
   {
     "id": "ai-kit-035",
-    "title": "AI 035 · KV Cache",
+    "title": "KV Cache",
     "category": "Large Language Models",
     "question": "What is the KV cache and why is it critical for fast autoregressive inference?",
     "technical": [
@@ -4104,7 +4104,7 @@ const topics = [
   },
   {
     "id": "ai-kit-036",
-    "title": "AI 036 · Inference Parameters",
+    "title": "Inference Parameters",
     "category": "Large Language Models",
     "question": "Explain common inference parameters: max tokens, stop sequences, frequency penalty, and presence penalty.",
     "technical": [
@@ -4132,7 +4132,7 @@ const topics = [
   },
   {
     "id": "ai-kit-037",
-    "title": "AI 037 · Prompt Engineering vs. RAG vs. Fine-tuning",
+    "title": "Prompt Engineering vs. RAG vs. Fine-tuning",
     "category": "Large Language Models",
     "question": "Prompt engineering vs. RAG vs. fine-tuning: how do you decide which approach a use case needs?",
     "technical": [
@@ -4158,7 +4158,7 @@ const topics = [
   },
   {
     "id": "ai-kit-038",
-    "title": "AI 038 · Mixture of Experts",
+    "title": "Mixture of Experts",
     "category": "Large Language Models",
     "question": "What is Mixture of Experts (MoE)? How does it let models scale parameters without scaling inference cost proportionally?",
     "technical": [
@@ -4184,7 +4184,7 @@ const topics = [
   },
   {
     "id": "ai-kit-039",
-    "title": "AI 039 · Prompt Injection and Jailbreaking",
+    "title": "Prompt Injection and Jailbreaking",
     "category": "Large Language Models",
     "question": "What are prompt injection and jailbreaking? How would you defend an LLM application against them?",
     "technical": [
@@ -4211,7 +4211,7 @@ const topics = [
   },
   {
     "id": "ai-kit-040",
-    "title": "AI 040 · System Prompts, User Prompts and Structured Output",
+    "title": "System Prompts, User Prompts and Structured Output",
     "category": "Large Language Models",
     "question": "What is the difference between a system prompt and a user prompt? How do structured outputs / JSON mode work?",
     "technical": [
@@ -4238,7 +4238,7 @@ const topics = [
   },
   {
     "id": "ai-kit-041",
-    "title": "AI 041 · What RAG Solves",
+    "title": "What RAG Solves",
     "category": "Retrieval-Augmented Generation",
     "question": "What is Retrieval-Augmented Generation? What problems does it solve compared to fine-tuning or relying on model memory?",
     "technical": [
@@ -4266,7 +4266,7 @@ const topics = [
   },
   {
     "id": "ai-kit-042",
-    "title": "AI 042 · End-to-End RAG Pipeline",
+    "title": "End-to-End RAG Pipeline",
     "category": "Retrieval-Augmented Generation",
     "question": "Walk through a complete RAG pipeline end-to-end: ingestion, chunking, embedding, indexing, retrieval, and generation.",
     "technical": [
@@ -4295,7 +4295,7 @@ const topics = [
   },
   {
     "id": "ai-kit-043",
-    "title": "AI 043 · Embeddings and Similarity",
+    "title": "Embeddings and Similarity",
     "category": "Retrieval-Augmented Generation",
     "question": "What are embeddings? How is similarity between two embeddings measured, and why is cosine similarity common?",
     "technical": [
@@ -4323,7 +4323,7 @@ const topics = [
   },
   {
     "id": "ai-kit-044",
-    "title": "AI 044 · Chunking Strategies",
+    "title": "Chunking Strategies",
     "category": "Retrieval-Augmented Generation",
     "question": "Explain chunking strategies (fixed-size, recursive, semantic). How do chunk size and overlap affect retrieval quality?",
     "technical": [
@@ -4349,7 +4349,7 @@ const topics = [
   },
   {
     "id": "ai-kit-045",
-    "title": "AI 045 · Vector Databases and HNSW",
+    "title": "Vector Databases and HNSW",
     "category": "Retrieval-Augmented Generation",
     "question": "What is a vector database? Name a few (FAISS, Pinecone, Chroma, pgvector) and explain how ANN indexes like HNSW enable fast search.",
     "technical": [
@@ -4376,7 +4376,7 @@ const topics = [
   },
   {
     "id": "ai-kit-046",
-    "title": "AI 046 · Dense, Sparse and Hybrid Retrieval",
+    "title": "Dense, Sparse and Hybrid Retrieval",
     "category": "Retrieval-Augmented Generation",
     "question": "Compare dense retrieval and sparse/keyword retrieval (BM25). What is hybrid search and when is it worth it?",
     "technical": [
@@ -4402,7 +4402,7 @@ const topics = [
   },
   {
     "id": "ai-kit-047",
-    "title": "AI 047 · Reranking: Bi-encoder vs. Cross-encoder",
+    "title": "Reranking: Bi-encoder vs. Cross-encoder",
     "category": "Retrieval-Augmented Generation",
     "question": "What is reranking and why add it after retrieval? Explain bi-encoder vs. cross-encoder.",
     "technical": [
@@ -4428,7 +4428,7 @@ const topics = [
   },
   {
     "id": "ai-kit-048",
-    "title": "AI 048 · RAG Abstention When Retrieval Fails",
+    "title": "RAG Abstention When Retrieval Fails",
     "category": "Retrieval-Augmented Generation",
     "question": "How should a RAG system behave when retrieval returns nothing relevant? How do you prevent it from answering anyway?",
     "technical": [
@@ -4454,7 +4454,7 @@ const topics = [
   },
   {
     "id": "ai-kit-049",
-    "title": "AI 049 · Query Rewriting, Multi-query and HyDE",
+    "title": "Query Rewriting, Multi-query and HyDE",
     "category": "Retrieval-Augmented Generation",
     "question": "Explain query transformation techniques: query rewriting, multi-query, and HyDE.",
     "technical": [
@@ -4481,7 +4481,7 @@ const topics = [
   },
   {
     "id": "ai-kit-050",
-    "title": "AI 050 · Advanced RAG Patterns",
+    "title": "Advanced RAG Patterns",
     "category": "Retrieval-Augmented Generation",
     "question": "Describe advanced RAG patterns you know: parent-document retrieval, sentence-window retrieval, and GraphRAG.",
     "technical": [
@@ -4509,7 +4509,7 @@ const topics = [
   },
   {
     "id": "ai-kit-051",
-    "title": "AI 051 · Keeping the Vector Index in Sync",
+    "title": "Keeping the Vector Index in Sync",
     "category": "Retrieval-Augmented Generation",
     "question": "How do you keep the vector index in sync when source documents are added, updated, or deleted?",
     "technical": [
@@ -4536,7 +4536,7 @@ const topics = [
   },
   {
     "id": "ai-kit-052",
-    "title": "AI 052 · RAG Evaluation Metrics",
+    "title": "RAG Evaluation Metrics",
     "category": "Retrieval-Augmented Generation",
     "question": "How do you evaluate a RAG system? Explain faithfulness, answer relevance, and context precision/recall (e.g., RAGAS).",
     "technical": [
@@ -4562,7 +4562,7 @@ const topics = [
   },
   {
     "id": "ai-kit-053",
-    "title": "AI 053 · Common RAG Failure Modes",
+    "title": "Common RAG Failure Modes",
     "category": "Retrieval-Augmented Generation",
     "question": "What are the most common RAG failure modes, and how do you debug whether the problem is retrieval or generation?",
     "technical": [
@@ -4588,7 +4588,7 @@ const topics = [
   },
   {
     "id": "ai-kit-054",
-    "title": "AI 054 · Metadata Filtering and User-level ACLs in RAG",
+    "title": "Metadata Filtering and User-level ACLs in RAG",
     "category": "Retrieval-Augmented Generation",
     "question": "How do you implement metadata filtering and user-level access control in a RAG system?",
     "technical": [
@@ -4614,7 +4614,7 @@ const topics = [
   },
   {
     "id": "ai-kit-055",
-    "title": "AI 055 · Do Million-token Context Windows Replace RAG?",
+    "title": "Do Million-token Context Windows Replace RAG?",
     "category": "Retrieval-Augmented Generation",
     "question": "With million-token context windows, do we still need RAG? Argue both sides.",
     "technical": [
@@ -4640,7 +4640,7 @@ const topics = [
   },
   {
     "id": "ai-kit-056",
-    "title": "AI 056 · Precision, Recall and F1",
+    "title": "Precision, Recall and F1",
     "category": "Evaluation & Metrics",
     "question": "Define precision, recall, and F1 score. Give a scenario where you'd optimize for precision and one for recall.",
     "technical": [
@@ -4667,7 +4667,7 @@ const topics = [
   },
   {
     "id": "ai-kit-057",
-    "title": "AI 057 · Accuracy, ROC-AUC and PR-AUC",
+    "title": "Accuracy, ROC-AUC and PR-AUC",
     "category": "Evaluation & Metrics",
     "question": "When is accuracy a misleading metric? Explain ROC-AUC vs. PR-AUC and when to prefer each.",
     "technical": [
@@ -4693,7 +4693,7 @@ const topics = [
   },
   {
     "id": "ai-kit-058",
-    "title": "AI 058 · MSE, RMSE, MAE and R²",
+    "title": "MSE, RMSE, MAE and R²",
     "category": "Evaluation & Metrics",
     "question": "Compare regression metrics: MSE, RMSE, MAE, and R². When would you prefer MAE over RMSE?",
     "technical": [
@@ -4721,7 +4721,7 @@ const topics = [
   },
   {
     "id": "ai-kit-059",
-    "title": "AI 059 · Perplexity",
+    "title": "Perplexity",
     "category": "Evaluation & Metrics",
     "question": "What is perplexity and what does it measure for a language model? What are its limitations?",
     "technical": [
@@ -4748,7 +4748,7 @@ const topics = [
   },
   {
     "id": "ai-kit-060",
-    "title": "AI 060 · BLEU and ROUGE",
+    "title": "BLEU and ROUGE",
     "category": "Evaluation & Metrics",
     "question": "Explain BLEU and ROUGE. What do they measure and why are they poor fits for open-ended LLM outputs?",
     "technical": [
@@ -4775,7 +4775,7 @@ const topics = [
   },
   {
     "id": "ai-kit-061",
-    "title": "AI 061 · BERTScore and Semantic Similarity",
+    "title": "BERTScore and Semantic Similarity",
     "category": "Evaluation & Metrics",
     "question": "What is BERTScore / semantic-similarity-based evaluation, and how does it improve on n-gram metrics?",
     "technical": [
@@ -4801,7 +4801,7 @@ const topics = [
   },
   {
     "id": "ai-kit-062",
-    "title": "AI 062 · LLM-as-a-Judge",
+    "title": "LLM-as-a-Judge",
     "category": "Evaluation & Metrics",
     "question": "Explain LLM-as-a-judge. What biases (position bias, verbosity bias, self-preference) must you control for?",
     "technical": [
@@ -4828,7 +4828,7 @@ const topics = [
   },
   {
     "id": "ai-kit-063",
-    "title": "AI 063 · Popular AI Benchmarks",
+    "title": "Popular AI Benchmarks",
     "category": "Evaluation & Metrics",
     "question": "What do popular benchmarks measure - MMLU, HumanEval, GSM8K, MT-Bench? Why can benchmark scores be misleading?",
     "technical": [
@@ -4853,7 +4853,7 @@ const topics = [
   },
   {
     "id": "ai-kit-064",
-    "title": "AI 064 · Human Evaluation at Scale",
+    "title": "Human Evaluation at Scale",
     "category": "Evaluation & Metrics",
     "question": "How is human evaluation done at scale? Explain pairwise comparisons and Elo-style leaderboards like Chatbot Arena.",
     "technical": [
@@ -4881,7 +4881,7 @@ const topics = [
   },
   {
     "id": "ai-kit-065",
-    "title": "AI 065 · End-to-End RAG Evaluation",
+    "title": "End-to-End RAG Evaluation",
     "category": "Evaluation & Metrics",
     "question": "How would you evaluate a RAG system end-to-end, separating retrieval quality from generation quality?",
     "technical": [
@@ -4907,7 +4907,7 @@ const topics = [
   },
   {
     "id": "ai-kit-066",
-    "title": "AI 066 · Evaluating an AI Agent",
+    "title": "Evaluating an AI Agent",
     "category": "Evaluation & Metrics",
     "question": "How do you evaluate an AI agent - task success rate, tool-call accuracy, and trajectory/step-level evaluation?",
     "technical": [
@@ -4935,7 +4935,7 @@ const topics = [
   },
   {
     "id": "ai-kit-067",
-    "title": "AI 067 · Production LLM Evaluation Programme",
+    "title": "Production LLM Evaluation Programme",
     "category": "Evaluation & Metrics",
     "question": "How do you set up evaluation for an LLM product in production: golden datasets, regression tests, A/B testing, and drift monitoring?",
     "technical": [
@@ -4962,7 +4962,7 @@ const topics = [
   },
   {
     "id": "ai-kit-068",
-    "title": "AI 068 · Model Context Protocol and the M×N Problem",
+    "title": "Model Context Protocol and the M×N Problem",
     "category": "Model Context Protocol",
     "question": "What is the Model Context Protocol (MCP), and what 'M×N integration problem' does it solve?",
     "technical": [
@@ -4988,7 +4988,7 @@ const topics = [
   },
   {
     "id": "ai-kit-069",
-    "title": "AI 069 · MCP Host, Client and Server",
+    "title": "MCP Host, Client and Server",
     "category": "Model Context Protocol",
     "question": "Explain the MCP architecture: host, client, and server. What role does each play?",
     "technical": [
@@ -5014,7 +5014,7 @@ const topics = [
   },
   {
     "id": "ai-kit-070",
-    "title": "AI 070 · MCP Tools, Resources and Prompts",
+    "title": "MCP Tools, Resources and Prompts",
     "category": "Model Context Protocol",
     "question": "What are MCP's core primitives - tools, resources, and prompts? How does each get used by the model or the user?",
     "technical": [
@@ -5042,7 +5042,7 @@ const topics = [
   },
   {
     "id": "ai-kit-071",
-    "title": "AI 071 · MCP Transports",
+    "title": "MCP Transports",
     "category": "Model Context Protocol",
     "question": "What transports does MCP support (stdio, streamable HTTP/SSE)? When would you use local stdio vs. a remote server?",
     "technical": [
@@ -5069,7 +5069,7 @@ const topics = [
   },
   {
     "id": "ai-kit-072",
-    "title": "AI 072 · MCP vs. Function Calling or Custom Integrations",
+    "title": "MCP vs. Function Calling or Custom Integrations",
     "category": "Model Context Protocol",
     "question": "How is MCP different from plain function calling or a custom plugin/API integration?",
     "technical": [
@@ -5095,7 +5095,7 @@ const topics = [
   },
   {
     "id": "ai-kit-073",
-    "title": "AI 073 · End-to-End MCP Tool Call",
+    "title": "End-to-End MCP Tool Call",
     "category": "Model Context Protocol",
     "question": "Walk through an end-to-end MCP tool call: discovery, invocation, and how the result gets back into the model's context.",
     "technical": [
@@ -5122,7 +5122,7 @@ const topics = [
   },
   {
     "id": "ai-kit-074",
-    "title": "AI 074 · MCP Security Risks",
+    "title": "MCP Security Risks",
     "category": "Model Context Protocol",
     "question": "What are the security risks with MCP - tool poisoning, prompt injection through tool results, credential exposure - and how do you mitigate them?",
     "technical": [
@@ -5148,7 +5148,7 @@ const topics = [
   },
   {
     "id": "ai-kit-075",
-    "title": "AI 075 · When to Build an MCP Server",
+    "title": "When to Build an MCP Server",
     "category": "Model Context Protocol",
     "question": "When would you build an MCP server for your product vs. just exposing a REST API? What do you gain?",
     "technical": [
@@ -5174,7 +5174,7 @@ const topics = [
   },
   {
     "id": "ai-kit-076",
-    "title": "AI 076 · AI Agent vs. Chatbot or Fixed Workflow",
+    "title": "AI Agent vs. Chatbot or Fixed Workflow",
     "category": "AI Agents",
     "question": "What is an AI agent? How is it different from a plain LLM chatbot or a fixed workflow?",
     "technical": [
@@ -5202,7 +5202,7 @@ const topics = [
   },
   {
     "id": "ai-kit-077",
-    "title": "AI 077 · Core Agent Components",
+    "title": "Core Agent Components",
     "category": "AI Agents",
     "question": "What are the core components of an agent - the LLM 'brain', tools, memory, and the reasoning/acting loop?",
     "technical": [
@@ -5229,7 +5229,7 @@ const topics = [
   },
   {
     "id": "ai-kit-078",
-    "title": "AI 078 · ReAct Pattern",
+    "title": "ReAct Pattern",
     "category": "AI Agents",
     "question": "Explain the ReAct pattern. Why does interleaving reasoning and action beat one-shot generation for complex tasks?",
     "technical": [
@@ -5256,7 +5256,7 @@ const topics = [
   },
   {
     "id": "ai-kit-079",
-    "title": "AI 079 · How Tool Calling Works",
+    "title": "How Tool Calling Works",
     "category": "AI Agents",
     "question": "How does function/tool calling work under the hood? How does the model decide which tool to call and who executes it?",
     "technical": [
@@ -5283,7 +5283,7 @@ const topics = [
   },
   {
     "id": "ai-kit-080",
-    "title": "AI 080 · Short-term and Long-term Agent Memory",
+    "title": "Short-term and Long-term Agent Memory",
     "category": "AI Agents",
     "question": "Explain short-term vs. long-term memory for agents. How would you implement persistent memory (e.g., with a vector store)?",
     "technical": [
@@ -5310,7 +5310,7 @@ const topics = [
   },
   {
     "id": "ai-kit-081",
-    "title": "AI 081 · Agent Planning Approaches",
+    "title": "Agent Planning Approaches",
     "category": "AI Agents",
     "question": "How do agents plan? Compare plan-and-execute with iterative ReAct-style task decomposition.",
     "technical": [
@@ -5337,7 +5337,7 @@ const topics = [
   },
   {
     "id": "ai-kit-082",
-    "title": "AI 082 · Agent Failure Modes and Cost Controls",
+    "title": "Agent Failure Modes and Cost Controls",
     "category": "AI Agents",
     "question": "How do you handle agent failure modes: infinite loops, repeated tool errors, and runaway costs (max iterations, timeouts, retries)?",
     "technical": [
@@ -5363,7 +5363,7 @@ const topics = [
   },
   {
     "id": "ai-kit-083",
-    "title": "AI 083 · Agent Frameworks vs. Direct Model APIs",
+    "title": "Agent Frameworks vs. Direct Model APIs",
     "category": "AI Agents",
     "question": "Compare agent frameworks - LangGraph, CrewAI, AutoGen. When would you skip frameworks and build directly on the model API?",
     "technical": [
@@ -5389,7 +5389,7 @@ const topics = [
   },
   {
     "id": "ai-kit-084",
-    "title": "AI 084 · Human-in-the-Loop Approval",
+    "title": "Human-in-the-Loop Approval",
     "category": "AI Agents",
     "question": "Where would you insert human-in-the-loop approval in an agent, and why is it essential for high-stakes actions?",
     "technical": [
@@ -5418,7 +5418,7 @@ const topics = [
   },
   {
     "id": "ai-kit-085",
-    "title": "AI 085 · Agent Guardrails",
+    "title": "Agent Guardrails",
     "category": "AI Agents",
     "question": "What guardrails would you put around an agent - input/output validation, sandboxed execution, and scoped permissions?",
     "technical": [
@@ -5445,7 +5445,7 @@ const topics = [
   },
   {
     "id": "ai-kit-086",
-    "title": "AI 086 · Private and Sensitive Data for Agents",
+    "title": "Private and Sensitive Data for Agents",
     "category": "AI Agents",
     "question": "How do you safely give an agent access to private or sensitive data?",
     "technical": [
@@ -5472,7 +5472,7 @@ const topics = [
   },
   {
     "id": "ai-kit-087",
-    "title": "AI 087 · Agent Observability and Replay",
+    "title": "Agent Observability and Replay",
     "category": "AI Agents",
     "question": "How do you make agents observable in production - tracing, logging every tool call, and replaying trajectories?",
     "technical": [
@@ -5498,7 +5498,7 @@ const topics = [
   },
   {
     "id": "ai-kit-088",
-    "title": "AI 088 · Agentic AI Spectrum",
+    "title": "Agentic AI Spectrum",
     "category": "Agentic AI",
     "question": "What does 'agentic AI' mean? Describe the spectrum from a single LLM call to a fully autonomous system.",
     "technical": [
@@ -5526,7 +5526,7 @@ const topics = [
   },
   {
     "id": "ai-kit-089",
-    "title": "AI 089 · Workflows vs. Agents and Common Patterns",
+    "title": "Workflows vs. Agents and Common Patterns",
     "category": "Agentic AI",
     "question": "Workflows vs. agents: explain patterns like prompt chaining, routing, parallelization, orchestrator-workers, and evaluator-optimizer. When is a workflow enough?",
     "technical": [
@@ -5553,7 +5553,7 @@ const topics = [
   },
   {
     "id": "ai-kit-090",
-    "title": "AI 090 · Multi-Agent Architectures",
+    "title": "Multi-Agent Architectures",
     "category": "Agentic AI",
     "question": "Describe multi-agent architectures: supervisor, hierarchical, and peer-to-peer/swarm. Give a use case for each.",
     "technical": [
@@ -5581,7 +5581,7 @@ const topics = [
   },
   {
     "id": "ai-kit-091",
-    "title": "AI 091 · Agent Communication, Shared State and A2A",
+    "title": "Agent Communication, Shared State and A2A",
     "category": "Agentic AI",
     "question": "How do agents in a multi-agent system communicate and coordinate - shared state vs. message passing? What is the A2A idea?",
     "technical": [
@@ -5608,7 +5608,7 @@ const topics = [
   },
   {
     "id": "ai-kit-092",
-    "title": "AI 092 · Single Agent vs. Multiple Specialists",
+    "title": "Single Agent vs. Multiple Specialists",
     "category": "Agentic AI",
     "question": "Single powerful agent vs. multiple specialized agents: what are the cost, latency, and complexity tradeoffs?",
     "technical": [
@@ -5634,7 +5634,7 @@ const topics = [
   },
   {
     "id": "ai-kit-093",
-    "title": "AI 093 · Durable Long-running Agent Workflows",
+    "title": "Durable Long-running Agent Workflows",
     "category": "Agentic AI",
     "question": "How do you manage state and orchestration in a long-running agentic workflow (checkpointing, resumability, durable execution)?",
     "technical": [
@@ -5660,7 +5660,7 @@ const topics = [
   },
   {
     "id": "ai-kit-094",
-    "title": "AI 094 · Context Engineering for Agents",
+    "title": "Context Engineering for Agents",
     "category": "Agentic AI",
     "question": "What is context engineering for agents? How do you handle context-window limits over long tasks (summarization, compaction, scratchpads)?",
     "technical": [
@@ -5686,7 +5686,7 @@ const topics = [
   },
   {
     "id": "ai-kit-095",
-    "title": "AI 095 · Optimising Agent Cost and Latency",
+    "title": "Optimising Agent Cost and Latency",
     "category": "Agentic AI",
     "question": "How do you optimize cost and latency of an agentic system - model routing (small vs. large models), prompt caching, and parallel tool calls?",
     "technical": [
@@ -5713,7 +5713,7 @@ const topics = [
   },
   {
     "id": "ai-kit-096",
-    "title": "AI 096 · Reliability Across Multi-step Trajectories",
+    "title": "Reliability Across Multi-step Trajectories",
     "category": "Agentic AI",
     "question": "Errors compound across multi-step trajectories: if each step is 95% reliable, a 20-step task mostly fails. How do you engineer reliability into agentic pipelines?",
     "technical": [
@@ -5739,7 +5739,7 @@ const topics = [
   },
   {
     "id": "ai-kit-097",
-    "title": "AI 097 · Safety Risks Unique to Agentic AI",
+    "title": "Safety Risks Unique to Agentic AI",
     "category": "Agentic AI",
     "question": "What safety concerns are unique to agentic AI - irreversible actions, permission scoping, sandboxing - and how do you address them?",
     "technical": [
@@ -5765,7 +5765,7 @@ const topics = [
   },
   {
     "id": "ai-kit-098",
-    "title": "AI 098 · Evaluating Agentic Systems",
+    "title": "Evaluating Agentic Systems",
     "category": "Agentic AI",
     "question": "How do you evaluate agentic systems - task completion rate, trajectory analysis, and benchmarks like SWE-bench or GAIA?",
     "technical": [
@@ -5792,7 +5792,7 @@ const topics = [
   },
   {
     "id": "ai-kit-099",
-    "title": "AI 099 · Why Real Agentic Use Cases Are Hard",
+    "title": "Why Real Agentic Use Cases Are Hard",
     "category": "Agentic AI",
     "question": "Pick a real agentic use case (coding agent, deep research, customer support automation). What makes it hard in practice?",
     "technical": [
@@ -5820,7 +5820,7 @@ const topics = [
   },
   {
     "id": "ai-kit-100",
-    "title": "AI 100 · Current Limits and Near-term Direction of Agentic AI",
+    "title": "Current Limits and Near-term Direction of Agentic AI",
     "category": "Agentic AI",
     "question": "What are the current limitations of agentic AI (long-horizon planning, reliability, cost), and where do you see it going in the next 2 years?",
     "technical": [
