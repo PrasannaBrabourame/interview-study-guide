@@ -2484,7 +2484,7 @@ const topics = [
     "category": "Security",
     "question": "What are common web application security risks and controls?",
     "technical": [
-      "Broken access control and IDOR, injection, XSS, CSRF, authentication failure, SSRF, insecure configuration, vulnerable dependencies and data exposure.",
+      "Broken access control and IDOR (guessing or editing an ID in a request to reach another user's data), injection, XSS (a malicious script that runs inside another user's browser), CSRF (tricking a logged-in user's browser into submitting a request they never intended), authentication failure, SSRF (tricking the server itself into calling internal systems on the attacker's behalf), insecure configuration, vulnerable dependencies and data exposure.",
       "Use server-side authorisation, parameterised queries, output encoding, CSP, secure sessions, egress control, scanning and logging.",
       "Threat-model the actual system instead of only reciting names."
     ],
@@ -3870,7 +3870,7 @@ const topics = [
       "Top-p selects the smallest token set whose cumulative probability reaches p.",
       "For extraction or deterministic structured work, use low temperature and constrained output; temperature zero may still not guarantee bit-for-bit determinism across infrastructure."
     ],
-    "layman": "Temperature changes adventurousness, top-k limits the shortlist size, and top-p keeps only enough likely options to cover a chosen probability mass.",
+    "layman": "Temperature changes adventurousness, top-k always keeps the same fixed number of options, and top-p keeps adding the next most likely option until the shortlist covers most of the realistic answers, so its size can change from one answer to the next.",
     "usecases": [
       "Creative writing versus JSON extraction"
     ],
@@ -3943,7 +3943,7 @@ const topics = [
     "id": "ai-kit-030",
     "title": "AI 030 · RLHF and DPO",
     "category": "AI Interview Kit · Large Language Models",
-    "question": "Explain RLHF end-to-end: the role of the reward model and policy optimization. How is DPO a simpler alternative?",
+    "question": "Explain RLHF (Reinforcement Learning from Human Feedback) end-to-end: the role of the reward model and policy optimization. How is DPO (Direct Preference Optimization) a simpler alternative?",
     "technical": [
       "RLHF commonly collects preference comparisons, trains a reward model and optimises the policy against that reward while constraining drift from a reference model.",
       "Policy optimisation introduces complexity, instability and reward-hacking risk.",
@@ -4540,7 +4540,7 @@ const topics = [
     "category": "AI Interview Kit · Retrieval-Augmented Generation",
     "question": "How do you evaluate a RAG system? Explain faithfulness, answer relevance, and context precision/recall (e.g., RAGAS).",
     "technical": [
-      "Evaluate retrieval independently using recall@k, precision@k, MRR or NDCG against known relevant evidence.",
+      "Evaluate retrieval independently using recall@k, precision@k, MRR (how near the top the first relevant result lands) or NDCG (a ranking score that rewards relevant results appearing higher in the list) against known relevant evidence.",
       "Evaluate generation for correctness, groundedness/faithfulness, relevance, citation accuracy, completeness and abstention.",
       "Frameworks such as RAGAS can assist, but calibrate automated judges with human labels.",
       "Include latency, cost, security and slices by source type, language, tenant and question type."
