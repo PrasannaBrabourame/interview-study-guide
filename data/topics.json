@@ -1,5 +1,4 @@
-// Interview topic data: 207 entries, one object per topic.
-const topics = [
+[
   {
     "id": "headless",
     "title": "Kubernetes Headless Service",
@@ -5592,4 +5591,4 @@ const topics = [
     ],
     "memory": "Parse layout, preserve relationships, index summaries, retrieve originals, and evaluate table/figure questions explicitly."
   }
-];
+]

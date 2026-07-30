@@ -13,28 +13,28 @@ Each topic is broken down into:
 ## Files
 
 ```
-index.html        Page shell — markup only, no inline data or logic
-assets/styles.css Styling (light/dark theme, layout, print styles)
-assets/app.js     Rendering, search/filter, quiz mode, flashcard drills,
-                  command palette (Cmd/Ctrl+K), progress + streak tracking
-data/topics.js    The 207 topics as data (sets the `topics` global)
+index.html        Page shell — topbar, dashboard, and browse-view markup
+assets/styles.css Styling (light/dark theme, aurora backdrop, tiles, print)
+assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
+                  mode, flashcard drills, command palette (Cmd/Ctrl+K),
+                  progress rings + streak tracking
+data/topics.json  The 207 topics as plain JSON
 ```
 
-Data, styling, and behavior are split into separate files so each can be edited
-and diffed independently — e.g. adding a topic only touches `data/topics.js`.
-`topics.js` (not `.json`) so the page still works when opened straight from
-disk with no server: a `<script src>` loads fine over `file://`, but
-`fetch()`-ing a local JSON file is blocked by the browser's CORS policy.
+Data, styling, and behavior are split into separate files so each can be
+edited and diffed independently — e.g. adding a topic only touches
+`data/topics.json`.
 
 ## View locally
 
-Open `index.html` directly in a browser, or serve it:
+The page fetches `data/topics.json`, which browsers block over `file://`,
+so serve the folder over HTTP:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then visit `http://localhost:8000`.
+Then visit `http://localhost:8000`. (On GitHub Pages it just works.)
 
 ## Deploy to GitHub Pages
 
