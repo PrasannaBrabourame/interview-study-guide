@@ -7,29 +7,33 @@
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+<div id="readbar"></div>
 <div class="app">
 <aside class="side" id="side">
 <div class="brand"><div class="logo">TL</div><div><b>Technical Lead & AI Engineer</b><small>Interview study guide</small></div></div>
-<div class="progress"><b id="ptext">0 of 16 studied</b><div class="bar"><div class="fill" id="fill"></div></div><small style="color:var(--muted)">Saved in this browser.</small></div>
+<div class="progress"><b id="ptext">0 of 207 studied</b><div class="bar"><div class="fill" id="fill"></div></div><small style="color:var(--muted)">Saved in this browser.</small></div>
+<div class="streak"><b>Study activity</b><div class="heatmap" id="heatmap"></div><small id="streaktext"></small></div>
 <input id="ssearch" class="search" type="search" placeholder="Search topics…">
 <nav class="toc" id="toc"></nav>
 </aside>
 <main>
-<section class="hero"><span class="badge">Interactive study artefact</span><h1>Complete Technical Lead & AI Engineer Interview Study Guide</h1><p>All questions developed in this chat plus the uploaded 100-question AI interview kit and the full multimodal RAG pipeline deep dive. Covers software, multi-tenancy, production engineering, GCP, Kubernetes, ML, LLMs, RAG, MCP, agents, evaluation, leadership and scenarios.</p><div class="stats"><span class="stat">207 comprehensive topics</span><span class="stat">Quiz mode</span><span class="stat">Progress tracking</span><span class="stat">Dark mode</span><span class="stat">Printable</span></div></section>
+<section class="hero"><span class="badge">Interactive study artefact</span><h1>Complete Technical Lead & AI Engineer Interview Study Guide</h1><p>All questions developed in this chat plus the uploaded 100-question AI interview kit and the full multimodal RAG pipeline deep dive. Covers software, multi-tenancy, production engineering, GCP, Kubernetes, ML, LLMs, RAG, MCP, agents, evaluation, leadership and scenarios.</p><div class="stats"><span class="stat">207 comprehensive topics</span><span class="stat">⚡ Flashcard drills</span><span class="stat">Quiz mode</span><span class="stat">⌘K quick jump</span><span class="stat">Study streaks</span><span class="stat">Progress tracking</span><span class="stat">Dark mode</span><span class="stat">Printable</span></div></section>
 <div class="source-note" style="max-width:1180px;margin:0 auto 16px;padding:12px 14px;border:1px solid var(--border);border-radius:13px;background:var(--panel);color:var(--muted);font-size:13px"><strong style="color:var(--text)">Added sources:</strong> The 100 question titles and nine-section organisation come from the uploaded <em>100 AI Interview Questions</em> PDF. The multimodal RAG deep-dive preserves the uploaded five-stage structure and follow-up guidance. Technical answers, layman explanations, examples, use cases, probes and red flags are expanded study guidance.</div>
 <div class="tools">
 <button class="btn mobile" id="menu">☰ Topics</button>
 <input id="msearch" class="search" type="search" placeholder="Search concepts, questions or answers…">
 <select id="cat" class="select"><option value="all">All categories</option></select>
+<select id="state" class="select"><option value="all">All topics</option><option value="unstudied">Not studied</option><option value="studied">Studied</option><option value="starred">★ Starred</option></select>
 <button class="btn" id="expand">Expand all</button>
 <button class="btn" id="collapse">Collapse all</button>
 <button class="btn" id="quiz">Quiz mode</button>
+<button class="btn" id="flash">⚡ Flashcards</button>
 <button class="btn" id="theme">Dark mode</button>
 <button class="btn primary" id="print">Print / PDF</button>
 </div>
 <section class="cards" id="cards"></section>
 <div class="empty" id="empty">No topics match your search.</div>
-<div class="foot">Self-contained HTML — no internet connection or external library required.</div>
+<div class="foot">Self-contained HTML — no internet connection or external library required.<br>Keyboard: <b>/</b> search · <b>j/k</b> next/prev · <b>f</b> flashcards · <b>q</b> quiz · <b>d</b> dark mode · <b>⌘K</b> jump to topic</div>
 </main>
 </div>
 <script src="data/topics.js" defer></script>

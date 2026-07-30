@@ -15,7 +15,8 @@ Each topic is broken down into:
 ```
 index.html        Page shell — markup only, no inline data or logic
 assets/styles.css Styling (light/dark theme, layout, print styles)
-assets/app.js     Rendering, search/filter, quiz mode, progress tracking
+assets/app.js     Rendering, search/filter, quiz mode, flashcard drills,
+                  command palette (Cmd/Ctrl+K), progress + streak tracking
 data/topics.js    The 207 topics as data (sets the `topics` global)
 ```
 
