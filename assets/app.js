@@ -27,10 +27,34 @@ function init(topics) {
   const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` };
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ============ categories: hues + groupings ============ */
+  /* ============ categories: semantic colour families ============
+     One hue per domain family rather than a unique hue per category —
+     41 hues are not distinguishable, 9 families are, and the colour
+     then carries meaning. Tiles stay alphabetical; only colour groups. */
+  const FAMILIES = [
+    ["Cloud & Infrastructure", 212, ["Kubernetes", "GCP", "Cloud Architecture", "DevOps", "Deployment", "Infrastructure as Code"]],
+    ["Architecture & Platform", 250, ["Software Architecture", "Software Development", "API & Backend", "Event-Driven Architecture", "Full-Stack Engineering", "Multi-Tenancy"]],
+    ["AI & LLM", 280, ["Large Language Models", "AI & GenAI", "Deep Learning & Neural Networks", "Classical Machine Learning", "Math, Probability & Statistics"]],
+    ["Agents & MCP", 320, ["AI Agents", "Agentic AI", "Agentic AI Scenarios", "Model Context Protocol"]],
+    ["Security & Governance", 352, ["Security", "AI Security", "AI Governance"]],
+    ["Leadership & Business", 20, ["Leadership", "Candidate Validation", "Scenario Exercise", "FinOps"]],
+    ["Reliability & Ops", 48, ["Observability", "Production Readiness", "Production Operations", "LLMOps", "Performance", "Testing & Quality", "Evaluation & Metrics"]],
+    ["Data", 150, ["Data", "Data & Databases", "Data Engineering", "Data & Integration", "File & Media Processing"]],
+    ["RAG & Retrieval", 180, ["Retrieval-Augmented Generation", "Multimodal RAG Deep Dive"]]
+  ];
+  const catHue = new Map();
+  const catFamily = new Map();
+  FAMILIES.forEach(([fam, hue, cats]) => cats.forEach(c => { catHue.set(c, hue); catFamily.set(c, fam) }));
   const categories = [...new Set(topics.map(t => t.category))].sort((a, b) => a.localeCompare(b));
-  const catHue = new Map(categories.map((c, i) => [c, Math.round(i * 137.508) % 360]));
+  // any category not yet mapped falls back to a spaced hue so nothing renders colourless
+  categories.forEach((c, i) => { if (!catHue.has(c)) { catHue.set(c, Math.round(i * 137.508) % 360); catFamily.set(c, "Other") } });
   const byCat = new Map(categories.map(c => [c, topics.filter(t => t.category === c)]));
+
+  /* ============ difficulty ============ */
+  const DIFFS = ["Low", "Medium", "High", "Complex"];
+  const DSLUG = { Low: "low", Medium: "med", High: "high", Complex: "cx" };
+  const diffOf = t => DIFFS.includes(t.difficulty) ? t.difficulty : "Medium";
+  const diffBadge = t => { const d = diffOf(t); return `<span class="dbadge d-${DSLUG[d]}">${d}</span>` };
 
   /* ============ search index ============ */
   const norm = s => s.toLowerCase().replace(/[–—·]/g, " ");
@@ -49,8 +73,8 @@ function init(topics) {
   /* ============ render cards ============ */
   const cards = $("#cards");
   const num = new Map(topics.map((t, i) => [t.id, String(i + 1).padStart(2, "0")]));
-  cards.innerHTML = topics.map((t, i) => `<article class="card" id="${t.id}" data-cat="${esc(t.category)}" style="--hue:${catHue.get(t.category)}">
-<header class="head" tabindex="0" aria-expanded="false"><div class="num">${String(i + 1).padStart(2, "0")}</div><div><h2>${esc(t.title)}</h2><p>${esc(t.category)}</p></div><div class="actions"><button class="star${starred.has(t.id) ? " on" : ""}" data-id="${t.id}" title="Star for review" aria-pressed="${starred.has(t.id)}">★</button><input class="check" type="checkbox" data-id="${t.id}" ${studied.has(t.id) ? "checked" : ""} title="Mark studied"><button class="chev" aria-label="Expand">⌄</button></div></header>
+  cards.innerHTML = topics.map((t, i) => `<article class="card" id="${t.id}" data-cat="${esc(t.category)}" data-diff="${diffOf(t)}" style="--hue:${catHue.get(t.category)}">
+<header class="head" tabindex="0" aria-expanded="false"><div class="num">${String(i + 1).padStart(2, "0")}</div><div><h2>${esc(t.title)}</h2><p>${esc(t.category)}${diffBadge(t)}</p></div><div class="actions"><button class="star${starred.has(t.id) ? " on" : ""}" data-id="${t.id}" title="Star for review" aria-pressed="${starred.has(t.id)}">★</button><input class="check" type="checkbox" data-id="${t.id}" ${studied.has(t.id) ? "checked" : ""} title="Mark studied"><button class="chev" aria-label="Expand">⌄</button></div></header>
 <div class="body"><div class="bwrap"><div class="question">${t.question}</div><button class="btn reveal">Reveal answer</button><div class="grid">
 <section class="box full"><h3>🧠 Technical answer</h3>${list(t.technical)}</section>
 <section class="box layman"><h3>💡 In layman terms</h3><p>${t.layman}</p></section>
@@ -66,7 +90,8 @@ function init(topics) {
   let currentCat = null;
   function showDash() {
     browse.hidden = true; dash.hidden = false;
-    renderTiles(); updateCounters(true);
+    diffSel.value = "all"; stateSel.value = "all"; ms.value = "";
+    renderTiles(); renderLegends(); updateCounters(true);
     scrollTo(0, 0);
   }
   function showBrowse(cat) {
@@ -88,12 +113,31 @@ function init(topics) {
   function renderTiles() {
     tiles.innerHTML = categories.map(c => {
       const items = byCat.get(c), done = items.filter(t => studied.has(t.id)).length, pct = done / items.length;
+      // difficulty mix bar: proportional segments so a tile shows how hard the category is
+      const mix = DIFFS.map(d => items.filter(t => diffOf(t) === d).length)
+        .map((n, i) => n ? `<i class="d-${DSLUG[DIFFS[i]]}" style="flex:${n}" title="${n} ${DIFFS[i]}"></i>` : "").join("");
       return `<button class="tile${done === items.length ? " done" : ""}" data-cat="${esc(c)}" style="--hue:${catHue.get(c)}">
 <span class="tring">${ring(pct, true)}<b>${Math.round(pct * 100)}%</b></span>
-<span class="tinfo"><b>${esc(c)}</b><small>${done}/${items.length} studied${done === items.length ? " ✓" : ""}</small></span></button>`;
+<span class="tinfo"><b>${esc(c)}</b><small>${done}/${items.length} studied${done === items.length ? " ✓" : ""}</small><span class="tmix">${mix}</span></span></button>`;
     }).join("");
   }
   tiles.onclick = e => { const t = e.target.closest(".tile"); if (t) showBrowse(t.dataset.cat) };
+
+  /* ============ dashboard legends: difficulty (clickable) + colour families ============ */
+  function renderLegends() {
+    const dl = $("#dlegend");
+    dl.innerHTML = DIFFS.map(d => {
+      const items = topics.filter(t => diffOf(t) === d);
+      const done = items.filter(t => studied.has(t.id)).length;
+      return `<button class="dchip d-${DSLUG[d]}" data-diff="${d}"><b>${d}</b><span>${done}/${items.length}</span></button>`;
+    }).join("");
+    $("#flegend").innerHTML = FAMILIES.filter(([, , cats]) => cats.some(c => byCat.has(c)))
+      .map(([fam, hue]) => `<span class="fchip" style="--hue:${hue}"><i></i>${esc(fam)}</span>`).join("");
+  }
+  $("#dlegend").onclick = e => {
+    const b = e.target.closest(".dchip"); if (!b) return;
+    diffSel.value = b.dataset.diff; showBrowse(null);   // drill straight into that level
+  };
 
   /* ============ counters + topbar ============ */
   function animateCount(el, to) {
@@ -122,7 +166,7 @@ function init(topics) {
     $("#c-streak").textContent = streak;
     $("#tstreak").textContent = `🔥 ${streak}`;
     $("#oring").innerHTML = ring(studied.size / topics.length) + `<b>${Math.round(studied.size / topics.length * 100)}%</b>`;
-    if (!dash.hidden) renderTiles();
+    if (!dash.hidden) { renderTiles(); renderLegends() }
   }
 
   /* ============ milestones + studied ============ */
@@ -203,7 +247,7 @@ function init(topics) {
   document.querySelectorAll(".reveal").forEach(b => b.onclick = () => { const c = b.closest(".card"); c.classList.toggle("revealed"); b.textContent = c.classList.contains("revealed") ? "Hide answer" : "Reveal answer" });
 
   /* ============ filter ============ */
-  const stateSel = $("#state"), ms = $("#msearch");
+  const stateSel = $("#state"), diffSel = $("#diff"), ms = $("#msearch");
   function highlightTitle(card, qWords) {
     const t = byId.get(card.id).title, h2 = card.querySelector("h2");
     const w = qWords.find(w => norm(t).includes(w));
@@ -212,13 +256,14 @@ function init(topics) {
     h2.innerHTML = `${esc(t.slice(0, i))}<mark>${esc(t.slice(i, i + w.length))}</mark>${esc(t.slice(i + w.length))}`;
   }
   function filter() {
-    const qWords = norm(ms.value).trim().split(/\s+/).filter(Boolean), sv = stateSel.value;
+    const qWords = norm(ms.value).trim().split(/\s+/).filter(Boolean), sv = stateSel.value, dv = diffSel.value;
     let n = 0;
     document.querySelectorAll(".card").forEach(c => {
       const okQ = !qWords.length || qWords.every(w => searchIndex.get(c.id).includes(w));
       const okCat = !currentCat || c.dataset.cat === currentCat;
       const okState = sv === "all" || (sv === "studied" ? studied.has(c.id) : sv === "unstudied" ? !studied.has(c.id) : starred.has(c.id));
-      const show = okQ && okCat && okState;
+      const okDiff = dv === "all" || c.dataset.diff === dv;
+      const show = okQ && okCat && okState && okDiff;
       c.hidden = !show;
       if (show) { n++; highlightTitle(c, qWords); }
     });
@@ -226,7 +271,7 @@ function init(topics) {
     $("#bcount").textContent = `${n} topic${n === 1 ? "" : "s"}`;
   }
   ms.oninput = () => { if (browse.hidden) showBrowse(null); else filter() };
-  stateSel.onchange = filter;
+  stateSel.onchange = filter; diffSel.onchange = filter;
 
   /* ============ toolbar ============ */
   $("#expand").onclick = () => document.querySelectorAll(".card:not([hidden])").forEach(c => { c.classList.add("open"); c.querySelector(".head").setAttribute("aria-expanded", "true") });
@@ -306,7 +351,7 @@ function init(topics) {
   /* ============ flashcard mode ============ */
   const fc = document.createElement("div"); fc.id = "flashcards"; fc.hidden = true;
   fc.innerHTML = `<div class="fctop"><span class="fccount"></span><span class="fcspacer"></span><button class="btn fcshuffle">🔀 Shuffle</button><button class="btn fcexit">✕ Exit (esc)</button></div>
-<div class="fccard" role="dialog" aria-modal="true"><div class="fccat"></div><h2 class="fctitle"></h2><p class="fcq"></p>
+<div class="fccard" role="dialog" aria-modal="true"><div class="fcmeta"><span class="fccat"></span><span class="fcdiff"></span></div><h2 class="fctitle"></h2><p class="fcq"></p>
 <div class="fcanswer" hidden><div class="box layman"><h3>💡 In layman terms</h3><p class="fclay"></p></div><div class="box"><h3>🧠 Technical answer</h3><div class="fctech"></div></div><div class="box memo"><h3>📌 Memory aid</h3><p class="fcmem"></p></div></div></div>
 <div class="fcctl"><button class="btn primary fcreveal">Reveal (space)</button><span class="fcjudge" hidden><button class="btn fcagain">↻ Again (a)</button><button class="btn fcgot">✓ Got it (g)</button><button class="btn fcskip">Skip →</button></span></div>`;
   document.body.appendChild(fc);
@@ -315,7 +360,7 @@ function init(topics) {
   function fcRender() {
     const t = deck[0];
     if (!t) {
-      $fc(".fccat").textContent = ""; $fc(".fctitle").textContent = "Deck complete 🎉";
+      $fc(".fccat").textContent = ""; $fc(".fcdiff").innerHTML = ""; $fc(".fctitle").textContent = "Deck complete 🎉";
       $fc(".fcq").textContent = `${fcGot} got it · ${fcMissed.length} to revisit`;
       $fc(".fcanswer").hidden = true; $fc(".fcreveal").hidden = true;
       $fc(".fcjudge").hidden = false;
@@ -326,6 +371,7 @@ function init(topics) {
     }
     $fc(".fcgot").hidden = false; $fc(".fcskip").hidden = false; $fc(".fcreveal").hidden = false;
     $fc(".fccat").textContent = t.category; $fc(".fccat").style.setProperty("--hue", catHue.get(t.category));
+    $fc(".fcdiff").innerHTML = diffBadge(t);
     $fc(".fctitle").textContent = t.title; $fc(".fcq").textContent = t.question;
     $fc(".fclay").textContent = t.layman; $fc(".fcmem").textContent = t.memory;
     $fc(".fctech").innerHTML = list(t.technical);
