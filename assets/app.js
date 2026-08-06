@@ -28,7 +28,7 @@ function init(topics) {
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ============ categories: hues + groupings ============ */
-  const categories = [...new Set(topics.map(t => t.category))];
+  const categories = [...new Set(topics.map(t => t.category))].sort((a, b) => a.localeCompare(b));
   const catHue = new Map(categories.map((c, i) => [c, Math.round(i * 137.508) % 360]));
   const byCat = new Map(categories.map(c => [c, topics.filter(t => t.category === c)]));
 
@@ -204,22 +204,23 @@ function init(topics) {
 
   /* ============ filter ============ */
   const stateSel = $("#state"), ms = $("#msearch");
-  function highlightTitle(card, q) {
+  function highlightTitle(card, qWords) {
     const t = byId.get(card.id).title, h2 = card.querySelector("h2");
-    if (!q) { h2.innerHTML = esc(t); return; }
-    const i = norm(t).indexOf(q);
-    h2.innerHTML = i < 0 ? esc(t) : `${esc(t.slice(0, i))}<mark>${esc(t.slice(i, i + q.length))}</mark>${esc(t.slice(i + q.length))}`;
+    const w = qWords.find(w => norm(t).includes(w));
+    if (!w) { h2.innerHTML = esc(t); return; }
+    const i = norm(t).indexOf(w);
+    h2.innerHTML = `${esc(t.slice(0, i))}<mark>${esc(t.slice(i, i + w.length))}</mark>${esc(t.slice(i + w.length))}`;
   }
   function filter() {
-    const q = norm(ms.value).trim(), sv = stateSel.value;
+    const qWords = norm(ms.value).trim().split(/\s+/).filter(Boolean), sv = stateSel.value;
     let n = 0;
     document.querySelectorAll(".card").forEach(c => {
-      const okQ = !q || searchIndex.get(c.id).includes(q);
+      const okQ = !qWords.length || qWords.every(w => searchIndex.get(c.id).includes(w));
       const okCat = !currentCat || c.dataset.cat === currentCat;
       const okState = sv === "all" || (sv === "studied" ? studied.has(c.id) : sv === "unstudied" ? !studied.has(c.id) : starred.has(c.id));
       const show = okQ && okCat && okState;
       c.hidden = !show;
-      if (show) { n++; highlightTitle(c, q); }
+      if (show) { n++; highlightTitle(c, qWords); }
     });
     $("#empty").style.display = n ? "none" : "block";
     $("#bcount").textContent = `${n} topic${n === 1 ? "" : "s"}`;
