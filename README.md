@@ -1,6 +1,6 @@
 # Interview Study Guide
 
-A static study guide for Technical Lead & AI Engineer interviews, covering 221 topics. No build step, no dependencies — just open `index.html` in a browser.
+A static study guide for Technical Lead & AI Engineer interviews, covering 228 topics. No build step, no dependencies — just open `index.html` in a browser.
 
 Each topic is broken down into:
 - 🧠 Technical answer
@@ -18,7 +18,7 @@ assets/styles.css Styling (light/dark theme, aurora backdrop, tiles, print)
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
-data/topics.json  The 221 topics as plain JSON
+data/topics.json  The 228 topics as plain JSON
 ```
 
 Data, styling, and behavior are split into separate files so each can be

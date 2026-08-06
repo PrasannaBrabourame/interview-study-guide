@@ -4217,6 +4217,142 @@
     "memory": "Prompt hierarchy guides behaviour; schemas constrain shape; application code validates meaning."
   },
   {
+    "id": "llm-inference-serving",
+    "title": "LLM Inference: Prefill, Decode and Serving Optimisations",
+    "category": "Large Language Models",
+    "question": "Walk through what actually happens when an LLM serves a request. What are prefill and decode, which metrics matter, and what optimisations make serving economical?",
+    "technical": [
+      "Inference has two phases: prefill processes the whole prompt in parallel (compute-bound, sets time-to-first-token), then decode generates one token at a time (memory-bandwidth-bound, sets tokens-per-second).",
+      "Measure the two separately: TTFT (time to first token) is dominated by prompt length and queueing; TPOT (time per output token) is dominated by model size and batch pressure — a single 'latency' number hides which one regressed.",
+      "Continuous batching keeps the GPU full by admitting new requests as others finish instead of waiting for a fixed batch; paged attention allocates KV-cache memory in blocks so long and short requests share a GPU without fragmentation.",
+      "Speculative decoding drafts several tokens with a small model and verifies them with the large one — big speedups when the draft model agrees often, none when it doesn't.",
+      "Serving cost levers: quantised weights, KV-cache size (context length is a memory bill), batch size versus latency SLO, and streaming so users perceive progress during long decodes."
+    ],
+    "layman": "Reading the question is fast because you read the whole page at once; writing the answer is slow because it comes out one word at a time. Speeding up the reading does nothing for a slow writer — measure and fix each separately.",
+    "usecases": [
+      "Latency SLOs for chat products",
+      "GPU capacity planning",
+      "Self-hosted model serving (vLLM-style stacks)",
+      "Cost-per-request modelling"
+    ],
+    "code": "metrics:\n  ttft_p95:  1.2s   # prefill + queueing — prompt length problem\n  tpot_p95:  45ms   # decode — model/batch problem\n  tokens_out_p95: 400\nserving:\n  batching: continuous\n  kv_cache: paged      # no fragmentation across request sizes\n  draft_model: enabled # speculative decoding",
+    "followups": [
+      "Why is decode memory-bandwidth-bound rather than compute-bound?",
+      "What happens to TTFT when someone sends a 100k-token prompt?",
+      "When does speculative decoding not help?",
+      "How does context length translate into GPU memory cost?"
+    ],
+    "redflags": [
+      "One latency number with no prefill/decode split",
+      "Thinks a bigger batch always means better latency",
+      "Cannot explain why long prompts are expensive",
+      "No streaming for long outputs"
+    ],
+    "memory": "Prefill is parallel and sets TTFT; decode is one-at-a-time and sets tokens/sec — measure, batch and optimise them separately."
+  },
+  {
+    "id": "token-economics",
+    "title": "Token Economics: Cost, Latency and Budgets",
+    "category": "Large Language Models",
+    "question": "Tokens are the billing and latency unit of every LLM system. How do you model, control and reduce token spend without degrading quality?",
+    "technical": [
+      "Input and output tokens are priced differently — output typically costs several times more and also dominates latency, so verbose responses are the usual cost and speed killer.",
+      "Model cost per feature, not per request: tokens-in × rate + tokens-out × rate × calls per user action — a single agent action fanning out to five tool-augmented calls multiplies everything.",
+      "Prompt caching discounts repeated stable prefixes (system prompt, tool definitions, few-shot examples) — structure prompts so the stable part comes first and the variable part last to maximise cache hits.",
+      "Token counts vary by language and content type: non-English text and code can tokenise 2-4x heavier, so per-market cost projections need the real tokenizer, not character counts.",
+      "Control loop: log tokens per request with feature and tenant labels, alert on cost-per-action drift, cap max output tokens per use case, and route simple tasks to cheaper models."
+    ],
+    "layman": "An international call billed per second, with outgoing minutes costing five times incoming: you learn to send documents in advance (caching), keep answers short, and not conference in five extra people for a yes/no question.",
+    "usecases": [
+      "Unit-economics for AI features",
+      "Per-tenant cost attribution",
+      "Model routing decisions",
+      "Pricing AI products"
+    ],
+    "code": "cost(feature) = Σ calls × (tok_in × r_in × (1 - cache_hit × 0.9)\n                          + tok_out × r_out)\n\nbudget_guard:\n  max_output_tokens: {summary: 300, chat: 800, report: 2000}\n  alert: cost_per_action > baseline × 1.3\n  attribution: [feature, tenant, model]",
+    "followups": [
+      "Why do output tokens cost more than input tokens?",
+      "How does prompt caching change how you structure a prompt?",
+      "What made cost per action drift last time — traffic or verbosity?",
+      "How would you attribute LLM spend to tenants?"
+    ],
+    "redflags": [
+      "Estimates cost from characters or words",
+      "No separation of input and output spend",
+      "No per-feature or per-tenant attribution",
+      "Never capped output length"
+    ],
+    "memory": "Output tokens dominate cost and latency: cache the stable prefix, cap outputs, attribute spend per feature and tenant."
+  },
+  {
+    "id": "context-budgeting",
+    "title": "Token Maxing: Context-Window Budgeting",
+    "category": "Large Language Models",
+    "question": "Your prompt must fit instructions, examples, retrieved documents, conversation history and the answer inside one context window. How do you budget tokens deliberately — 'token maxing' without breaking quality?",
+    "technical": [
+      "Treat the window as a fixed budget with explicit allocations: system instructions, few-shot examples, retrieved context, conversation history, and a reserved slice for the output (max_tokens must be reserved up front or long inputs silently strangle the answer).",
+      "Order for cache and attention: stable content first (system, tools, examples — cacheable), volatile content last; keep the most decision-critical material near the start or end because mid-context content gets the weakest attention.",
+      "Shrink history, don't drop it blindly: rolling summarisation of old turns, keep the last N turns verbatim, and pin durable facts (user preferences, task state) in a structured scratchpad instead of raw transcript.",
+      "Shrink retrieval by re-ranking then pruning: fewer, better chunks beat more chunks — irrelevant context doesn't just waste tokens, it actively degrades answers.",
+      "Define the over-budget policy explicitly: what gets evicted first, when the system summarises versus refuses, and log context composition per request so you can see what actually fills the window in production."
+    ],
+    "layman": "Packing one suitcase for every trip: guaranteed space for the essentials (passport = output reservation), compress old clothes into packing cubes (summarised history), and a strict rule for what stays behind when it doesn't close — instead of sitting on the lid and hoping.",
+    "usecases": [
+      "Long-running chat assistants",
+      "Agents with large tool outputs",
+      "RAG with many candidate documents",
+      "Cost tuning under prompt caching"
+    ],
+    "code": "budget(128k):\n  system+tools:  2k    # stable, cache-friendly, first\n  examples:      3k    # stable\n  retrieval:    12k    # reranked top-k, pruned\n  history:       8k    # last 6 turns verbatim + summary of the rest\n  output:        4k    # RESERVED before anything else\n  headroom:      1k\neviction_order: [oldest_history, weakest_chunks, examples]",
+    "followups": [
+      "What do you evict first when over budget, and why?",
+      "How do you keep the cacheable prefix stable across requests?",
+      "Why does irrelevant retrieved context hurt more than it costs?",
+      "How do you detect that history summarisation is losing critical facts?"
+    ],
+    "redflags": [
+      "No output-token reservation",
+      "Fills the window because it is there",
+      "Truncates silently mid-document",
+      "No logging of what occupies the context"
+    ],
+    "memory": "The window is a budget: reserve the output, cache the stable prefix, summarise history, prune retrieval, define eviction."
+  },
+  {
+    "id": "lora-production",
+    "title": "LoRA in Production: Adapters, Merging and Multi-Tenant Serving",
+    "category": "Large Language Models",
+    "question": "You have moved past training a single LoRA: how do you run LoRA at production scale — choosing ranks, managing adapter versions, and serving many adapters efficiently? When is LoRA the wrong tool?",
+    "technical": [
+      "Key hyperparameters: rank r (capacity of the update), alpha (scaling), and target modules (commonly attention projections; adding MLP layers increases capacity and cost) — tune against an eval set, not folklore.",
+      "Two deployment modes: merge the adapter into base weights (zero serving overhead, but one full model copy per variant) or serve adapters dynamically — multi-LoRA serving keeps one base model in GPU memory and hot-swaps small adapters per request, enabling per-tenant or per-task customisation at a fraction of the cost.",
+      "Treat adapters as versioned artifacts: registry with base-model version pinned, training data hash, eval scores and rollback path — an adapter trained on base v1 is not guaranteed to behave on base v2.",
+      "Evaluate per adapter and against the base: task lift, regression on general capabilities (catastrophic forgetting shows up as degraded refusals, formatting or safety), and cross-adapter interference if composing multiple.",
+      "LoRA is the wrong tool for injecting fresh knowledge (that is retrieval's job) or for very large behavioural shifts — it shines for style, format, domain vocabulary and consistent task behaviour."
+    ],
+    "layman": "One shared office printer with swappable cartridges: every team gets its own colour profile (adapter) without buying its own printer (full fine-tune), the cartridges are labelled and versioned — but no cartridge can print pages the printer never had.",
+    "usecases": [
+      "Per-tenant model customisation",
+      "Task-specialised assistants on one base",
+      "Style and format enforcement",
+      "Domain vocabulary adaptation"
+    ],
+    "code": "adapter_registry:\n  name: support-tone-v3\n  base_model: llama-3.1-8b @ rev 4f2a   # pinned\n  rank: 16, alpha: 32\n  targets: [q_proj, v_proj]\n  evals: {task_lift: +11%, base_regression: -0.4%, safety: pass}\nserving:\n  mode: multi_lora        # one base, N hot-swapped adapters\n  route_by: tenant_id",
+    "followups": [
+      "Merge into base or serve dynamically — what decides it?",
+      "What happens to your adapters when the base model upgrades?",
+      "How do you detect catastrophic forgetting?",
+      "Why not use LoRA to teach the model this week's product catalogue?"
+    ],
+    "redflags": [
+      "No eval comparing adapter to base model",
+      "Adapters not pinned to a base model version",
+      "Uses LoRA to inject frequently changing knowledge",
+      "One merged model copy per customer at scale"
+    ],
+    "memory": "Adapters are versioned artifacts pinned to a base: multi-LoRA serves many from one model — style and format yes, fresh knowledge no."
+  },
+  {
     "id": "ai-kit-041",
     "title": "What RAG Solves",
     "category": "Retrieval-Augmented Generation",
@@ -4594,6 +4730,40 @@
       "Ignores context cost and permissions"
     ],
     "memory": "Long context expands working memory; RAG still supplies selection, freshness, security and traceability."
+  },
+  {
+    "id": "production-chunking",
+    "title": "Chunking in Production: Tables, Code and Contextual Enrichment",
+    "category": "Retrieval-Augmented Generation",
+    "question": "Basic chunking strategies break down on real corpora — tables, code, contracts, slide decks. How do you chunk heterogeneous content in production, and how do you change strategy later without breaking the system?",
+    "technical": [
+      "Chunk by content type, not one rule: tables stay whole with a generated natural-language summary indexed alongside; code splits on function/class boundaries with imports and signatures preserved; contracts split on clauses; slides keep title plus body as one unit.",
+      "Contextual enrichment fixes the orphan-chunk problem: prepend each chunk with where it lives ('Doc: 2024 MSA — Section 7.2 Termination') or a model-written situating sentence, because retrieval sees the chunk, not the document.",
+      "Small-to-big retrieval: index small precise chunks for matching but return the parent section to the model — precision in search, context in generation.",
+      "Store rich metadata per chunk (source, section path, page, content type, ACL, ingestion version) — filters and citations depend on it.",
+      "Re-chunking is a migration: strategy changes require re-embedding the corpus, so version the chunking pipeline, run old and new indexes side by side, and compare retrieval evals before cutover — never mutate a live index in place."
+    ],
+    "layman": "Filing a mixed archive: photos get albums, contracts get clause tabs, and every folder is labelled with which cabinet and drawer it came from — because the person who finds one page must know where it belongs without seeing the cabinet.",
+    "usecases": [
+      "Enterprise document RAG",
+      "Codebase assistants",
+      "Contract analysis",
+      "Slide and report search"
+    ],
+    "code": "chunkers:\n  table:    keep_whole + llm_summary(index_both=True)\n  code:     by_symbol(include=[imports, signature])\n  contract: by_clause\n  default:  structure_aware(max=512, overlap=64)\nenrich: prefix(\"Doc: {title} — {section_path}\")\nindex_version: v7   # re-chunk = re-embed = versioned migration",
+    "followups": [
+      "Why index a table twice — original and summary?",
+      "What breaks if you re-chunk a live index in place?",
+      "How does small-to-big retrieval work?",
+      "How do you evaluate whether the new chunking beats the old?"
+    ],
+    "redflags": [
+      "One fixed chunk size for every content type",
+      "Chunks with no idea which document they came from",
+      "Tables split across chunks",
+      "Re-chunks the corpus with no eval comparison"
+    ],
+    "memory": "Chunk by content type, tell each chunk where it lives, search small but hand the model big, and treat re-chunking as a versioned migration."
   },
   {
     "id": "ai-kit-056",
@@ -6066,5 +6236,73 @@
       "Cannot explain a recommendation"
     ],
     "memory": "Regulated, adversarial and biased by default: evidence extraction yes, autonomous rejection no, audit continuously."
+  },
+  {
+    "id": "llmops-lifecycle",
+    "title": "LLMOps: Shipping and Operating LLM Systems",
+    "category": "LLMOps",
+    "question": "What does LLMOps cover that classic DevOps and MLOps do not, and how do you ship a prompt or model change to production safely?",
+    "technical": [
+      "The deployable unit is a bundle: model version + prompt version + tool definitions + retrieval index version + parameters — any one changing changes behaviour, so version and release them together.",
+      "Prompts are code: reviewed, versioned, tested in CI against an eval suite with gates (task quality, safety, cost, latency) before any deploy — never edited live in a dashboard.",
+      "Release like any risky change: offline evals, then shadow or canary traffic scored against the incumbent, then progressive rollout with automatic rollback triggers on quality, refusal-rate or cost regressions.",
+      "Providers are dependencies you don't control: pin model versions, test provider updates like upgrades, and keep a tested fallback (secondary provider or self-hosted) with capacity and quota alarms.",
+      "Close the loop: production traces feed the eval set (hard cases become regression tests), incidents get playbooks (quality regression is an incident class, not a vibe), and cost budgets are enforced per feature."
+    ],
+    "layman": "A restaurant chain changing a recipe: the new sauce is written down and versioned, taste-tested against the old one, tried in three restaurants first, and rolled back by the book if complaints rise — nobody re-seasons the pot live in one kitchen.",
+    "usecases": [
+      "Prompt release management",
+      "Provider/model migrations",
+      "AI feature launch gates",
+      "Quality-regression incident response"
+    ],
+    "code": "release_bundle:\n  model: gemini-2.5-pro @ pinned\n  prompt: support-agent v41\n  tools: v12         # schemas versioned with prompt\n  index: v7\npipeline: evals(gate) -> shadow(24h) -> canary(5%) -> rollout(25/50/100)\nrollback_on: [quality < baseline-2%, refusals > 2x, cost > 1.3x]",
+    "followups": [
+      "What exactly is in your deployable unit?",
+      "How do you catch a silent provider model update?",
+      "What triggers automatic rollback?",
+      "How do production failures become regression tests?"
+    ],
+    "redflags": [
+      "Prompts edited directly in production",
+      "Model version unpinned",
+      "No canary or rollback for prompt changes",
+      "Cost discovered on the invoice"
+    ],
+    "memory": "Version the bundle — model, prompt, tools, index — gate with evals, roll out progressively, and feed failures back into the eval set."
+  },
+  {
+    "id": "llm-observability",
+    "title": "LLM Observability: Tracing, Drift and Quality Monitoring",
+    "category": "LLMOps",
+    "question": "Classic APM tells you a request was fast and returned 200 — and the answer can still be wrong. What does observability look like for an LLM system in production?",
+    "technical": [
+      "Trace the full generation path per request: prompt version, model, parameters, token counts, latency split (TTFT/decode), tool calls with inputs and outputs, retrieval chunks used, and final response — a bad answer must be reconstructable.",
+      "Quality is a sampled, scored signal: run LLM-judge scoring on a sample of live traffic against rubrics (groundedness, task success, tone), calibrated periodically with human labels — 200 OK says nothing about correctness.",
+      "Watch drift on both sides: input drift (topic mix, language, prompt-injection attempts) and output drift (length, refusal rate, format breakage, citation rate) — provider-side model updates often show up here first.",
+      "Wire user signals into the timeline: thumbs, edits, retries, abandonment and escalation-to-human are the cheapest ground truth you have; segment all metrics by feature, tenant and model version.",
+      "Logs contain user content: apply PII redaction, retention limits and access control to traces — observability must not become the leak."
+    ],
+    "layman": "A call centre where every call connects fine: dashboards show connection time, but you still need supervisors listening to a sample of calls, complaint rates per team, and recordings handled under strict privacy rules — connected is not the same as helped.",
+    "usecases": [
+      "Production chat and agent systems",
+      "Provider-update regression detection",
+      "Per-tenant quality dashboards",
+      "Safety and refusal monitoring"
+    ],
+    "code": "trace:\n  ids: [request, session, tenant, feature]\n  bundle: {model, prompt_v, params, index_v}\n  tokens: {in, out, cached}\n  latency: {ttft, decode}\n  tools: [{name, args_hash, result_status}]\nmonitors:\n  judge_sample: 2% of traffic, rubric=groundedness+success\n  drift: [refusal_rate, output_len, lang_mix, injection_score]\n  privacy: redact_pii(traces), ttl=30d",
+    "followups": [
+      "How would you debug one wrong answer from last Tuesday?",
+      "How is the LLM judge itself kept honest?",
+      "Which metric catches a silent provider model change first?",
+      "Who can read traces, and what was redacted?"
+    ],
+    "redflags": [
+      "Only infrastructure metrics, no quality signal",
+      "No trace linking answer to prompt/model/chunks",
+      "Raw user content in logs forever",
+      "Judge scores never calibrated with humans"
+    ],
+    "memory": "Trace every generation end-to-end, score sampled quality, watch input and output drift, and treat traces as sensitive data."
   }
 ]
