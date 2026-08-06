@@ -3,6 +3,7 @@
     "id": "headless",
     "title": "Kubernetes Headless Service",
     "category": "Kubernetes",
+    "difficulty": "Low",
     "question": "What is a Kubernetes Headless Service? How is it different from a normal ClusterIP Service, and when would you use it?",
     "technical": [
       "A normal Service has a stable virtual IP and load-balances traffic across ready Pods.",
@@ -33,6 +34,7 @@
     "id": "services",
     "title": "Kubernetes Service Definitions",
     "category": "Kubernetes",
+    "difficulty": "Low",
     "question": "What is a Kubernetes Service, and what Service types are available?",
     "technical": [
       "Pods are replaceable and their IP addresses change. A Service gives a stable network identity to Pods selected by labels.",
@@ -63,6 +65,7 @@
     "id": "pipeline",
     "title": "Production Delivery Pipeline",
     "category": "DevOps",
+    "difficulty": "High",
     "question": "Design a production-grade delivery pipeline from source-code commit to production deployment.",
     "technical": [
       "Validate code through pull-request review, linting, unit, integration and contract tests.",
@@ -98,6 +101,7 @@
     "id": "routing",
     "title": "Kubernetes Routing",
     "category": "Kubernetes",
+    "difficulty": "Medium",
     "question": "Explain how traffic is routed from an external user to a Pod in Kubernetes.",
     "technical": [
       "A common route is user → DNS → cloud load balancer → Ingress or Gateway → Service → ready Pod → container.",
@@ -128,6 +132,7 @@
     "id": "nodes",
     "title": "Kubernetes Nodes",
     "category": "Kubernetes",
+    "difficulty": "Low",
     "question": "What is a Kubernetes node, and what responsibilities does it have?",
     "technical": [
       "A node is a worker machine, usually a VM in GKE, that runs Pods.",
@@ -159,6 +164,7 @@
     "id": "pods",
     "title": "Kubernetes Pods",
     "category": "Kubernetes",
+    "difficulty": "Low",
     "question": "What is a Pod, and why does Kubernetes deploy Pods rather than individual containers?",
     "technical": [
       "A Pod is Kubernetes’ smallest deployable unit and contains one or more tightly coupled containers.",
@@ -189,6 +195,7 @@
     "id": "deployment",
     "title": "Deployment YAML Configuration",
     "category": "Kubernetes",
+    "difficulty": "Medium",
     "question": "Explain the important fields in a Kubernetes Deployment YAML. What production-grade settings should be present?",
     "technical": [
       "<code>replicas</code> defines Pod count. <code>selector</code> must match Pod-template labels. <code>strategy</code> controls rollout.",
@@ -222,6 +229,7 @@
     "id": "daemonset",
     "title": "DaemonSets",
     "category": "Kubernetes",
+    "difficulty": "Low",
     "question": "What is a DaemonSet, and when should it be used?",
     "technical": [
       "A DaemonSet runs one Pod on every eligible node, or every node matching scheduling conditions.",
@@ -252,6 +260,7 @@
     "id": "private-gke",
     "title": "Private GKE VPC Cluster",
     "category": "GCP",
+    "difficulty": "High",
     "question": "What is a private GKE cluster, and how would you design secure ingress, administration and internet egress?",
     "technical": [
       "Private GKE nodes use internal IP addresses and do not need public node IPs.",
@@ -284,6 +293,7 @@
     "id": "bastion",
     "title": "Bastion Host",
     "category": "Security",
+    "difficulty": "Medium",
     "question": "What is a bastion host, and how should it be secured?",
     "technical": [
       "A bastion or jump host is a controlled administration entry point for private resources.",
@@ -315,6 +325,7 @@
     "id": "ship-logs",
     "title": "Shipping Logs",
     "category": "Observability",
+    "difficulty": "Medium",
     "question": "How would you ship application and Kubernetes logs to a central platform?",
     "technical": [
       "Applications normally emit structured logs to stdout and stderr. A node or platform agent forwards them to Cloud Logging or a SIEM.",
@@ -346,6 +357,7 @@
     "id": "central-logs",
     "title": "Centralised Log Monitoring",
     "category": "Observability",
+    "difficulty": "Low",
     "question": "What is centralised log monitoring, and how is it different from simply storing logs?",
     "technical": [
       "Centralised monitoring combines logs from applications, infrastructure and environments in one controlled platform.",
@@ -377,6 +389,7 @@
     "id": "compute",
     "title": "Compute Engine Virtual Machines",
     "category": "GCP",
+    "difficulty": "Medium",
     "question": "What is Compute Engine, and when would you choose it instead of GKE, Cloud Run or Cloud Functions?",
     "technical": [
       "Compute Engine is Google Cloud’s IaaS VM platform. The customer controls the OS, software, machine type, disks and runtime configuration.",
@@ -409,6 +422,7 @@
     "id": "vpc",
     "title": "GCP vs AWS VPC Differences",
     "category": "Cloud Architecture",
+    "difficulty": "Medium",
     "question": "What are the key architectural differences between Google Cloud VPC and AWS VPC?",
     "technical": [
       "A Google Cloud VPC is global; its subnets are regional. One VPC can contain subnets across several regions.",
@@ -441,6 +455,7 @@
     "id": "throughput",
     "title": "Designing for Highest Throughput",
     "category": "Performance",
+    "difficulty": "High",
     "question": "How would you design a system for high throughput? How is throughput different from latency?",
     "technical": [
       "Throughput is work completed per unit of time; latency is the duration of one operation.",
@@ -474,6 +489,7 @@
     "id": "partitioning",
     "title": "BigQuery Partitioning and Clustering",
     "category": "Data",
+    "difficulty": "Medium",
     "question": "Explain partitioning and clustering in BigQuery. How are they different, and when would you use both?",
     "technical": [
       "Partitioning divides a table into segments, usually by date, timestamp, ingestion time or integer range. Queries can scan only relevant partitions.",
@@ -507,6 +523,7 @@
     "id": "validate-scale",
     "title": "Validate Claimed Production Scale",
     "category": "Candidate Validation",
+    "difficulty": "High",
     "question": "Your résumé states that you led backend engineering for a platform with more than 3 million daily active users. Describe the architecture, your personal ownership, peak traffic, latency targets, availability target and the most serious incident you handled.",
     "technical": [
       "Separate the scale of the full product from the services personally owned.",
@@ -535,6 +552,7 @@
     "id": "legacy-migration",
     "title": "Legacy-to-Microservices Migration",
     "category": "Candidate Validation",
+    "difficulty": "High",
     "question": "Walk us through one legacy-to-microservices migration you led. How did you identify service boundaries, migrate data, control risk and prove the migration improved the system?",
     "technical": [
       "Start with a measurable business or operational problem, not a preference for microservices.",
@@ -564,6 +582,7 @@
     "id": "gcp-ai-platform",
     "title": "Production-Grade AI Platform on GCP",
     "category": "AI & GenAI",
+    "difficulty": "High",
     "question": "Design a production-grade enterprise knowledge assistant on GCP for private client documents, cited answers and high concurrency.",
     "technical": [
       "Use an authenticated frontend and API layer on Cloud Run or GKE with tenant-aware authorisation.",
@@ -593,6 +612,7 @@
     "id": "gke-platform",
     "title": "Production GKE Platform",
     "category": "Candidate Validation",
+    "difficulty": "High",
     "question": "Design a secure, highly available GKE platform for approximately 40 microservices.",
     "technical": [
       "Use a regional private cluster, multiple zones, dedicated service accounts and Workload Identity.",
@@ -621,6 +641,7 @@
     "id": "event-payment",
     "title": "Reliable Event-Driven Payments or Credentials",
     "category": "Event-Driven Architecture",
+    "difficulty": "High",
     "question": "Design an event-driven flow where messages must not be lost and duplicate business actions must not occur.",
     "technical": [
       "Assume at-least-once delivery and make consumers idempotent.",
@@ -652,6 +673,7 @@
     "id": "subscription-api",
     "title": "Idempotent Paid-Subscription API",
     "category": "API & Backend",
+    "difficulty": "High",
     "question": "Design an external API that creates a paid subscription. Clients may retry after network timeouts. How do you prevent duplicate subscriptions or charges?",
     "technical": [
       "Require a client idempotency key scoped to tenant or customer and store it durably.",
@@ -684,6 +706,7 @@
     "id": "incident-lead",
     "title": "Major Production Incident Leadership",
     "category": "Production Operations",
+    "difficulty": "Complex",
     "question": "Describe the most severe production incident you personally led. What steps did you follow in the first 15 minutes, and what permanent changes followed?",
     "technical": [
       "Declare severity, establish a channel and assign incident command.",
@@ -718,6 +741,7 @@
     "id": "db-service-choice",
     "title": "Cloud SQL, Spanner, Firestore and Bigtable",
     "category": "Data & Databases",
+    "difficulty": "Medium",
     "question": "Compare Cloud SQL, Spanner, Firestore and Bigtable and give suitable and unsuitable use cases.",
     "technical": [
       "Cloud SQL suits relational transactions at moderate scale but needs connection, capacity and failover planning.",
@@ -744,6 +768,7 @@
     "id": "media-pipeline",
     "title": "Media Upload and Encoding Pipeline",
     "category": "File & Media Processing",
+    "difficulty": "High",
     "question": "Design a media upload and encoding pipeline that creates multiple renditions, subtitles, thumbnails and DRM artefacts.",
     "technical": [
       "Use signed or resumable direct upload to object storage, checksum validation and quarantine.",
@@ -771,6 +796,7 @@
     "id": "cost-validation",
     "title": "Validate Cost-Reduction Claims",
     "category": "FinOps",
+    "difficulty": "High",
     "question": "How did you calculate infrastructure cost reductions, and how did you ensure performance and availability were not sacrificed?",
     "technical": [
       "Show before-and-after cost by compute, storage, egress, licences and operations.",
@@ -798,6 +824,7 @@
     "id": "multi-tenant-security",
     "title": "Multi-Tenant Cloud Security",
     "category": "Security",
+    "difficulty": "High",
     "question": "How would you secure a multi-tenant application containing client-sensitive data on GCP?",
     "technical": [
       "Classify data and use least-privilege IAM, Workload Identity, Secret Manager and encryption.",
@@ -826,6 +853,7 @@
     "id": "observability-sre",
     "title": "Production Observability and SRE",
     "category": "Observability",
+    "difficulty": "High",
     "question": "What dashboards and alerts must exist before a service is production-ready?",
     "technical": [
       "Use RED metrics: request rate, errors and duration, plus saturation and dependency health.",
@@ -853,6 +881,7 @@
     "id": "agentic-refund",
     "title": "Agentic Refund Workflow",
     "category": "AI & GenAI",
+    "difficulty": "Complex",
     "question": "Design an agentic system that reads a support request, checks customer records, proposes a refund and executes it after approval.",
     "technical": [
       "Use deterministic workflow steps for critical operations and model reasoning only where flexibility is needed.",
@@ -881,6 +910,7 @@
     "id": "ai-coding-policy",
     "title": "Enterprise AI Coding-Assistant Policy",
     "category": "AI Governance",
+    "difficulty": "Complex",
     "question": "Define an enterprise policy for using Copilot, Cursor, Gemini Code Assist, ChatGPT or Claude on client projects.",
     "technical": [
       "Allow only approved enterprise tools and accounts after reviewing retention, training, residency and admin controls.",
@@ -910,6 +940,7 @@
     "id": "frontend-architecture",
     "title": "Frontend Architecture for Multiple Teams",
     "category": "Full-Stack Engineering",
+    "difficulty": "High",
     "question": "Design the frontend architecture for a large React application maintained by several teams.",
     "technical": [
       "Organise by business domain with explicit ownership and a shared design system.",
@@ -938,6 +969,7 @@
     "id": "bigquery-streaming",
     "title": "Near-Real-Time Analytics into BigQuery",
     "category": "Data Engineering",
+    "difficulty": "High",
     "question": "Design a near-real-time application-event pipeline into BigQuery.",
     "technical": [
       "Publish versioned events to Pub/Sub and validate or enrich them using Dataflow or another managed processor.",
@@ -965,6 +997,7 @@
     "id": "security-deadline",
     "title": "Security Finding versus Release Deadline",
     "category": "Leadership",
+    "difficulty": "Complex",
     "question": "A client insists on a Friday release, but testing finds a high-severity authorisation vulnerability. What do you do?",
     "technical": [
       "Explain the concrete risk and affected scenarios; do not minimise it.",
@@ -991,6 +1024,7 @@
     "id": "architecture-disagreement",
     "title": "Resolve an Architecture Disagreement",
     "category": "Leadership",
+    "difficulty": "Complex",
     "question": "Two senior engineers disagree: one wants GKE microservices and the other a modular monolith on Cloud Run. How do you decide?",
     "technical": [
       "Return to functional and non-functional requirements, team topology and operational maturity.",
@@ -1018,6 +1052,7 @@
     "id": "engineering-quality",
     "title": "Improve Engineering Quality",
     "category": "Leadership",
+    "difficulty": "Complex",
     "question": "Code quality varies significantly. What mechanisms would you introduce in the first 60 days?",
     "technical": [
       "Understand failure patterns before imposing standards.",
@@ -1046,6 +1081,7 @@
     "id": "presales-ai",
     "title": "Pre-Sales Estimation for an AI Assistant",
     "category": "Leadership",
+    "difficulty": "Complex",
     "question": "A client requests a fixed-price AI document assistant but provides only a one-page requirement. How would you estimate and respond?",
     "technical": [
       "Make assumptions explicit and propose discovery.",
@@ -1073,6 +1109,7 @@
     "id": "recommendation-validation",
     "title": "Recommendation-Engine Validation",
     "category": "Candidate Validation",
+    "difficulty": "High",
     "question": "You state that you designed a recommendation engine. Explain the approach, data, offline metrics, online experiment, cold-start handling and deployment.",
     "technical": [
       "Identify whether the solution was rules-based, content-based, collaborative or hybrid.",
@@ -1101,6 +1138,7 @@
     "id": "vertex-depth",
     "title": "Vertex AI and Vector Search Depth",
     "category": "Candidate Validation",
+    "difficulty": "High",
     "question": "Which Vertex AI components did you personally configure? Explain ingestion, embeddings, indexing, retrieval, evaluation, deployment and monitoring.",
     "technical": [
       "Name concrete services and configurations instead of saying only “we used Vertex AI”.",
@@ -1128,6 +1166,7 @@
     "id": "terraform-model",
     "title": "Terraform Operating Model",
     "category": "Infrastructure as Code",
+    "difficulty": "High",
     "question": "Describe the Terraform repository structure, state management, environment isolation, module design, review and drift handling you used.",
     "technical": [
       "Use remote state with controlled access and locking where supported.",
@@ -1156,6 +1195,7 @@
     "id": "outside-gke",
     "title": "Why Workloads Remained Outside GKE",
     "category": "Candidate Validation",
+    "difficulty": "High",
     "question": "You state that 90% of services moved to GKE. What remained outside, and why?",
     "technical": [
       "A strong answer chooses the platform per workload rather than treating Kubernetes as mandatory.",
@@ -1181,6 +1221,7 @@
     "id": "leadership-scope",
     "title": "Technical Leadership Scope",
     "category": "Candidate Validation",
+    "difficulty": "Medium",
     "question": "How many engineers reported to you, what disciplines were represented, and what hiring, performance, architecture and delivery decisions were you accountable for?",
     "technical": [
       "Distinguish line management, technical leadership, project coordination and informal mentoring.",
@@ -1207,6 +1248,7 @@
     "id": "production-ai-ownership",
     "title": "Production AI Ownership",
     "category": "AI & GenAI",
+    "difficulty": "High",
     "question": "Describe one production AI system where you personally owned evaluation, deployment, monitoring and rollback.",
     "technical": [
       "State the model, business purpose, data and evaluation baseline.",
@@ -1234,6 +1276,7 @@
     "id": "requirements-to-solution",
     "title": "Translate Business Requirements into Architecture",
     "category": "Software Architecture",
+    "difficulty": "High",
     "question": "How do you convert a business requirement into a technical solution?",
     "technical": [
       "Clarify business outcome, users, workflows, constraints and edge cases.",
@@ -1260,6 +1303,7 @@
     "id": "hld-lld-adr",
     "title": "HLD, LLD and ADR",
     "category": "Software Architecture",
+    "difficulty": "Low",
     "question": "What is the difference between an HLD, LLD and ADR?",
     "technical": [
       "HLD describes context, major components, integrations, data flow, deployment and major technology choices.",
@@ -1285,6 +1329,7 @@
     "id": "design-principles",
     "title": "Software Design Principles",
     "category": "Software Architecture",
+    "difficulty": "Low",
     "question": "What principles do you follow when designing software?",
     "technical": [
       "Use separation of concerns, high cohesion, low coupling, encapsulation and explicit contracts.",
@@ -1311,6 +1356,7 @@
     "id": "modular-monolith",
     "title": "When to Choose a Modular Monolith",
     "category": "Software Architecture",
+    "difficulty": "Medium",
     "question": "When would you choose a modular monolith instead of microservices?",
     "technical": [
       "Choose it when the domain is evolving, the team is small, transaction boundaries matter and independent deployment is not required.",
@@ -1336,6 +1382,7 @@
     "id": "microservice-justification",
     "title": "When Microservices Are Justified",
     "category": "Software Architecture",
+    "difficulty": "Medium",
     "question": "What factors justify using microservices?",
     "technical": [
       "Independent deployment, scaling, ownership, failure isolation or technology requirements.",
@@ -1361,6 +1408,7 @@
     "id": "technical-debt",
     "title": "Managing Technical Debt",
     "category": "Software Architecture",
+    "difficulty": "Medium",
     "question": "What is technical debt, and how should a Tech Lead manage it?",
     "technical": [
       "Technical debt is future delivery or operational cost created by shortcuts, outdated design, missing tests or accumulated complexity.",
@@ -1387,6 +1435,7 @@
     "id": "code-review",
     "title": "Effective Code Review",
     "category": "Software Development",
+    "difficulty": "Medium",
     "question": "How do you conduct an effective code review?",
     "technical": [
       "Check correctness, readability, maintainability, security, performance, error handling, tests, observability and compatibility.",
@@ -1413,6 +1462,7 @@
     "id": "definition-done",
     "title": "Definition of Done",
     "category": "Software Development",
+    "difficulty": "Low",
     "question": "What should be included in a Definition of Done?",
     "technical": [
       "Code complete, peer reviewed, tested and accepted.",
@@ -1439,6 +1489,7 @@
     "id": "production-api",
     "title": "Production-Grade API",
     "category": "API & Backend",
+    "difficulty": "High",
     "question": "What makes an API production-grade?",
     "technical": [
       "Clear resource design, authentication, authorisation, validation and consistent error contracts.",
@@ -1464,6 +1515,7 @@
     "id": "rest-graphql",
     "title": "REST versus GraphQL",
     "category": "API & Backend",
+    "difficulty": "Medium",
     "question": "How do you decide between REST and GraphQL?",
     "technical": [
       "REST is often simpler for resource-oriented external APIs, HTTP caching and predictable contracts.",
@@ -1489,6 +1541,7 @@
     "id": "sync-async",
     "title": "Synchronous versus Asynchronous Processing",
     "category": "API & Backend",
+    "difficulty": "Low",
     "question": "What is the difference between synchronous and asynchronous processing?",
     "technical": [
       "Synchronous callers wait for completion and receive an immediate result.",
@@ -1513,6 +1566,7 @@
     "id": "cascading-failure",
     "title": "Prevent Cascading Failures",
     "category": "API & Backend",
+    "difficulty": "High",
     "question": "How do you prevent cascading failures between services?",
     "technical": [
       "Use explicit timeouts, circuit breakers, bounded retries, jitter and retry budgets.",
@@ -1539,6 +1593,7 @@
     "id": "eventual-consistency",
     "title": "Eventual Consistency",
     "category": "Data & Integration",
+    "difficulty": "Low",
     "question": "What is eventual consistency?",
     "technical": [
       "Different replicas or services may temporarily show different states but should converge.",
@@ -1565,6 +1620,7 @@
     "id": "database-migrations",
     "title": "Production Database Migrations",
     "category": "Data & Databases",
+    "difficulty": "High",
     "question": "How should database migrations be handled in production?",
     "technical": [
       "Version migrations and test against production-like volume.",
@@ -1591,6 +1647,7 @@
     "id": "slow-query",
     "title": "Diagnose a Slow Database Query",
     "category": "Data & Databases",
+    "difficulty": "Medium",
     "question": "How do you diagnose a slow database query?",
     "technical": [
       "Identify and reproduce the query with representative data.",
@@ -1617,6 +1674,7 @@
     "id": "connection-exhaustion",
     "title": "Prevent Database Connection Exhaustion",
     "category": "Data & Databases",
+    "difficulty": "Medium",
     "question": "How do you prevent database connection exhaustion?",
     "technical": [
       "Use bounded pools, query and connection timeouts and correct connection release.",
@@ -1643,6 +1701,7 @@
     "id": "multi-tenancy-definition",
     "title": "Definition of Multi-Tenancy",
     "category": "Multi-Tenancy",
+    "difficulty": "Low",
     "question": "What is a multi-tenant application?",
     "technical": [
       "One platform serves multiple customer organisations while isolating data, users, configuration, billing, quotas and operations.",
@@ -1666,6 +1725,7 @@
     "id": "tenancy-models",
     "title": "Common Multi-Tenancy Models",
     "category": "Multi-Tenancy",
+    "difficulty": "Medium",
     "question": "What are the common multi-tenancy models?",
     "technical": [
       "Shared database and schema with tenant_id is efficient but carries the highest accidental-leak risk.",
@@ -1693,6 +1753,7 @@
     "id": "choose-tenancy",
     "title": "Selecting a Tenancy Model",
     "category": "Multi-Tenancy",
+    "difficulty": "Medium",
     "question": "How do you choose the correct tenancy model?",
     "technical": [
       "Consider tenant count and size, regulation, residency, restore, performance guarantees, customisation, cost and operations.",
@@ -1718,6 +1779,7 @@
     "id": "tenant-isolation",
     "title": "Enforcing Tenant Isolation",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How do you enforce tenant isolation?",
     "technical": [
       "Derive tenant context from trusted identity and membership, not a freely supplied field.",
@@ -1744,6 +1806,7 @@
     "id": "tenant-leak-causes",
     "title": "Cross-Tenant Data Leak Causes",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How can a cross-tenant data leak happen, and how do you prevent it?",
     "technical": [
       "Missing database or search filter, insecure object reference, shared cache key, wrong file path, stale signed URL, broken background context or admin bypass.",
@@ -1769,6 +1832,7 @@
     "id": "tenant-onboarding",
     "title": "Tenant Onboarding",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How would you design tenant onboarding?",
     "technical": [
       "Create tenant identity, plan, isolation tier, storage or data resources, keys, quotas, defaults, admin and SSO.",
@@ -1794,6 +1858,7 @@
     "id": "tenant-config",
     "title": "Tenant-Specific Configuration",
     "category": "Multi-Tenancy",
+    "difficulty": "Medium",
     "question": "How should tenant-specific configuration be managed?",
     "technical": [
       "Use central schema-validated, versioned configuration.",
@@ -1820,6 +1885,7 @@
     "id": "noisy-tenant",
     "title": "Handling a Noisy Tenant",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How do you handle a tenant that consumes disproportionate resources?",
     "technical": [
       "Use per-tenant quotas, rate and concurrency limits, fair queues, resource pools and usage metrics.",
@@ -1845,6 +1911,7 @@
     "id": "tenant-backup",
     "title": "Tenant-Level Backup and Restore",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How do you perform tenant-level backup and restore?",
     "technical": [
       "Define RPO and RTO and test restores.",
@@ -1871,6 +1938,7 @@
     "id": "tenant-delete",
     "title": "Safe Tenant Deletion",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How do you delete a tenant safely?",
     "technical": [
       "Verify authority, disable access, revoke sessions and stop jobs.",
@@ -1897,6 +1965,7 @@
     "id": "tenant-encryption",
     "title": "Tenant-Specific Encryption",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How do you support tenant-specific encryption?",
     "technical": [
       "Use platform-managed encryption for standard tenants and customer-managed or tenant-specific keys for higher isolation.",
@@ -1922,6 +1991,7 @@
     "id": "tenant-rbac",
     "title": "Tenant-Aware RBAC",
     "category": "Multi-Tenancy",
+    "difficulty": "Medium",
     "question": "How should RBAC work in a multi-tenant system?",
     "technical": [
       "Assign roles within tenant context and evaluate them against resource and action.",
@@ -1947,6 +2017,7 @@
     "id": "tenant-rate-limiting",
     "title": "Tenant-Aware Rate Limiting and Quotas",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "Design rate limiting and quota enforcement for a multi-tenant API platform. How do you protect shared infrastructure from one tenant while keeping limits fair and predictable?",
     "technical": [
       "Enforce limits per tenant, not per instance: a shared token bucket keyed by tenant ID in a fast store such as Redis, checked at the gateway before expensive work starts.",
@@ -1981,6 +2052,7 @@
     "id": "tenant-schema-migrations",
     "title": "Schema Migrations Across Thousands of Tenants",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "Your platform runs schema-per-tenant with 5,000 tenant schemas. How do you roll out a schema migration safely, and what goes wrong at this scale?",
     "technical": [
       "Treat it as a fleet rollout, not a single migration: an orchestrator tracks per-tenant schema version, migrates in batches and records success or failure per tenant.",
@@ -2015,6 +2087,7 @@
     "id": "multi-tenant-rag",
     "title": "Multi-Tenant RAG and Vector Store Isolation",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "Design the retrieval layer of a multi-tenant AI assistant where each tenant uploads private documents. How do you isolate tenants in the vector store, and what leaks if you get it wrong?",
     "technical": [
       "Pick the isolation level like any tenancy decision: shared index with a mandatory tenant filter (cheapest, riskiest), namespace or collection per tenant (middle), or dedicated index for regulated customers.",
@@ -2049,6 +2122,7 @@
     "id": "tenant-tiering",
     "title": "Tenant Tiers with Different SLOs and Isolation",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "Product wants Free, Pro and Enterprise tiers with different availability promises, limits and isolation. How do you implement tiering without forking the platform?",
     "technical": [
       "One codebase, tier as configuration: quotas, feature flags, SLOs and isolation level are tenant metadata, not separate deployments.",
@@ -2083,6 +2157,7 @@
     "id": "tenant-residency",
     "title": "Per-Tenant Data Residency",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "New enterprise tenants require their data to stay in specific regions (EU, Singapore). How do you add per-tenant data residency to an existing multi-tenant platform, and what breaks?",
     "technical": [
       "Split the system into control plane (tenant registry, billing — global metadata) and data plane (documents, records — region-pinned per tenant).",
@@ -2117,6 +2192,7 @@
     "id": "tenant-cache-isolation",
     "title": "Multi-Tenant Caching",
     "category": "Multi-Tenancy",
+    "difficulty": "High",
     "question": "How do you design caching in a multi-tenant system so tenants never see each other's data and one tenant cannot evict everyone else's cache?",
     "technical": [
       "Tenant ID is part of every cache key, added centrally by one cache client library — never left to individual call sites to remember.",
@@ -2151,6 +2227,7 @@
     "id": "production-grade",
     "title": "Meaning of Production-Grade",
     "category": "Production Readiness",
+    "difficulty": "Medium",
     "question": "What does production-grade mean?",
     "technical": [
       "A production system is reliable, secure, scalable, observable, maintainable, testable, recoverable, deployable and supportable.",
@@ -2175,6 +2252,7 @@
     "id": "nfrs",
     "title": "Non-Functional Requirements",
     "category": "Production Readiness",
+    "difficulty": "Low",
     "question": "What non-functional requirements should be collected?",
     "technical": [
       "Availability, latency, throughput, concurrency, scale, security, privacy and compliance.",
@@ -2200,6 +2278,7 @@
     "id": "sli-slo-sla-general",
     "title": "SLI, SLO and SLA Definitions",
     "category": "Production Readiness",
+    "difficulty": "Low",
     "question": "Explain SLI, SLO and SLA.",
     "technical": [
       "SLI is the measured indicator, such as successful-request percentage.",
@@ -2225,6 +2304,7 @@
     "id": "calculate-availability",
     "title": "Calculate Availability Correctly",
     "category": "Production Readiness",
+    "difficulty": "Medium",
     "question": "How do you calculate availability correctly, and what availability SLO would you set?",
     "technical": [
       "Use successful valid user requests divided by total valid user requests over a defined window.",
@@ -2252,6 +2332,7 @@
     "id": "error-budget",
     "title": "Error Budgets",
     "category": "Production Readiness",
+    "difficulty": "Low",
     "question": "What is an error budget?",
     "technical": [
       "It is the acceptable unreliability derived from an SLO.",
@@ -2276,6 +2357,7 @@
     "id": "high-availability",
     "title": "High Availability Design",
     "category": "Production Readiness",
+    "difficulty": "High",
     "question": "How do you design for high availability?",
     "technical": [
       "Remove single points of failure with multiple instances, zones, health checks, load balancing and automated failover.",
@@ -2301,6 +2383,7 @@
     "id": "ha-dr",
     "title": "High Availability versus Disaster Recovery",
     "category": "Production Readiness",
+    "difficulty": "Low",
     "question": "What is the difference between high availability and disaster recovery?",
     "technical": [
       "High availability keeps service operating through common component failures.",
@@ -2326,6 +2409,7 @@
     "id": "rto-rpo",
     "title": "RTO and RPO",
     "category": "Production Readiness",
+    "difficulty": "Low",
     "question": "Explain RTO and RPO.",
     "technical": [
       "RTO is the maximum acceptable time to restore service.",
@@ -2350,6 +2434,7 @@
     "id": "partial-dependency",
     "title": "Partial Dependency Failure",
     "category": "Production Readiness",
+    "difficulty": "Medium",
     "question": "How should an application handle partial dependency failure?",
     "technical": [
       "Use timeouts and circuit breakers while preserving the core user path.",
@@ -2375,6 +2460,7 @@
     "id": "config-management",
     "title": "Configuration Management",
     "category": "Production Readiness",
+    "difficulty": "Medium",
     "question": "How do you manage application configuration across environments?",
     "technical": [
       "Separate configuration from code, validate it at startup and version non-secret values.",
@@ -2400,6 +2486,7 @@
     "id": "graceful-shutdown",
     "title": "Graceful Shutdown",
     "category": "Production Readiness",
+    "difficulty": "Low",
     "question": "What is graceful shutdown?",
     "technical": [
       "Stop accepting new work and mark the instance unready.",
@@ -2425,6 +2512,7 @@
     "id": "safe-release",
     "title": "Safe Feature Releases",
     "category": "Deployment",
+    "difficulty": "High",
     "question": "How do you release features safely?",
     "technical": [
       "Use feature flags, canary, blue-green, gradual traffic or tenant cohorts.",
@@ -2451,6 +2539,7 @@
     "id": "authn-authz",
     "title": "Authentication versus Authorisation",
     "category": "Security",
+    "difficulty": "Low",
     "question": "What is the difference between authentication and authorisation?",
     "technical": [
       "Authentication proves who an identity is.",
@@ -2475,6 +2564,7 @@
     "id": "web-risks",
     "title": "Common Web Application Security Risks",
     "category": "Security",
+    "difficulty": "Medium",
     "question": "What are common web application security risks and controls?",
     "technical": [
       "Broken access control and IDOR (guessing or editing an ID in a request to reach another user's data), injection, XSS (a malicious script that runs inside another user's browser), CSRF (tricking a logged-in user's browser into submitting a request they never intended), authentication failure, SSRF (tricking the server itself into calling internal systems on the attacker's behalf), insecure configuration, vulnerable dependencies and data exposure.",
@@ -2500,6 +2590,7 @@
     "id": "secret-management",
     "title": "Secret Management",
     "category": "Security",
+    "difficulty": "Medium",
     "question": "How should secrets be managed?",
     "technical": [
       "Use Secret Manager or equivalent, not source control, images or ordinary configuration.",
@@ -2526,6 +2617,7 @@
     "id": "api-abuse",
     "title": "Protect an API from Abuse",
     "category": "Security",
+    "difficulty": "High",
     "question": "How do you protect an API from abuse?",
     "technical": [
       "Authenticate, authorise, validate input and limit request sizes.",
@@ -2551,6 +2643,7 @@
     "id": "admin-access",
     "title": "Administrative Access Control",
     "category": "Security",
+    "difficulty": "Medium",
     "question": "How should administrative access be controlled?",
     "technical": [
       "Use separate privileged identities, MFA and least privilege.",
@@ -2576,6 +2669,7 @@
     "id": "logs-metrics-traces",
     "title": "Logs, Metrics and Traces",
     "category": "Observability",
+    "difficulty": "Low",
     "question": "What is the difference between logs, metrics and traces?",
     "technical": [
       "Logs are detailed individual events.",
@@ -2601,6 +2695,7 @@
     "id": "what-to-log",
     "title": "What Should Be Logged",
     "category": "Observability",
+    "difficulty": "Low",
     "question": "What should be logged, and what must not be logged?",
     "technical": [
       "Log timestamp, service and version, severity, trace ID, operation, result, duration and safe tenant context.",
@@ -2626,6 +2721,7 @@
     "id": "actionable-alerts",
     "title": "Actionable Alerts",
     "category": "Observability",
+    "difficulty": "Medium",
     "question": "What makes an alert actionable?",
     "technical": [
       "It indicates real or imminent user or business impact and requires human action.",
@@ -2651,6 +2747,7 @@
     "id": "post-incident",
     "title": "Post-Incident Review",
     "category": "Observability",
+    "difficulty": "Low",
     "question": "What should a post-incident review contain?",
     "technical": [
       "Impact, timeline, detection, root cause, contributing factors and recovery.",
@@ -2676,6 +2773,7 @@
     "id": "testing-strategy",
     "title": "Production Testing Strategy",
     "category": "Testing & Quality",
+    "difficulty": "Medium",
     "question": "What testing strategy should a production system have?",
     "technical": [
       "Use unit, component, integration, contract and targeted end-to-end tests.",
@@ -2701,6 +2799,7 @@
     "id": "contract-testing",
     "title": "Contract Testing",
     "category": "Testing & Quality",
+    "difficulty": "Low",
     "question": "What is contract testing?",
     "technical": [
       "It verifies that a service consumer and provider agree on request, response, fields, types and error behaviour.",
@@ -2724,6 +2823,7 @@
     "id": "test-multitenancy",
     "title": "Testing Multi-Tenancy",
     "category": "Testing & Quality",
+    "difficulty": "High",
     "question": "How do you test multi-tenancy?",
     "technical": [
       "Verify tenant A cannot read, update, delete, search, export or download tenant B data.",
@@ -2749,6 +2849,7 @@
     "id": "performance-testing",
     "title": "Performance Testing",
     "category": "Testing & Quality",
+    "difficulty": "Medium",
     "question": "How do you performance-test an application?",
     "technical": [
       "Define realistic journeys, traffic shapes, data volume and NFRs.",
@@ -2775,6 +2876,7 @@
     "id": "project-estimation",
     "title": "Software Project Estimation",
     "category": "Leadership",
+    "difficulty": "High",
     "question": "How do you estimate a software project?",
     "technical": [
       "Decompose requirements and state assumptions, dependencies and unknowns.",
@@ -2800,6 +2902,7 @@
     "id": "speed-quality",
     "title": "Balance Delivery Speed and Quality",
     "category": "Leadership",
+    "difficulty": "Complex",
     "question": "How should a Tech Lead balance delivery speed and quality?",
     "technical": [
       "Set non-negotiable security and reliability controls and automate them.",
@@ -2826,6 +2929,7 @@
     "id": "developer-quality",
     "title": "Repeated Poor-Quality Delivery",
     "category": "Leadership",
+    "difficulty": "Complex",
     "question": "How do you handle a developer who repeatedly delivers poor-quality code?",
     "technical": [
       "Use concrete examples and determine whether the cause is skill, clarity, workload or motivation.",
@@ -2851,6 +2955,7 @@
     "id": "lead-bottleneck",
     "title": "Avoid the Tech Lead Bottleneck",
     "category": "Leadership",
+    "difficulty": "High",
     "question": "How do you prevent the Tech Lead from becoming a bottleneck?",
     "technical": [
       "Delegate domain ownership and develop senior engineers.",
@@ -2877,6 +2982,7 @@
     "id": "engineering-metrics",
     "title": "Engineering Effectiveness Metrics",
     "category": "Leadership",
+    "difficulty": "Medium",
     "question": "What metrics would you use to evaluate engineering effectiveness?",
     "technical": [
       "Use deployment frequency, change lead time, change-failure rate and MTTR.",
@@ -2902,6 +3008,7 @@
     "id": "firestore-postgres",
     "title": "Firestore versus PostgreSQL",
     "category": "Data & Databases",
+    "difficulty": "Medium",
     "question": "Compare Firestore and PostgreSQL for a production-grade application. How does this generalise to choosing between SQL and NoSQL?",
     "technical": [
       "Firestore is a managed document database with flexible schema, real-time listeners and query patterns that should be designed in advance.",
@@ -2933,6 +3040,7 @@
     "id": "large-upload",
     "title": "Large File Upload",
     "category": "File & Media Processing",
+    "difficulty": "High",
     "question": "Design a production-grade upload for files of 20 GB or more over unreliable networks.",
     "technical": [
       "Create an authorised upload session and issue a short-lived resumable or signed URL for direct object-storage upload.",
@@ -2961,6 +3069,7 @@
     "id": "blue-green",
     "title": "Blue-Green Deployment",
     "category": "Deployment",
+    "difficulty": "Medium",
     "question": "Explain blue-green deployment and how to handle traffic, database changes, sessions, workers and rollback.",
     "technical": [
       "Maintain two production-capable environments: current blue and new green.",
@@ -2990,6 +3099,7 @@
     "id": "scenario-tenant-leak",
     "title": "Scenario: Cross-Tenant Invoice Leak",
     "category": "Scenario Exercise",
+    "difficulty": "Complex",
     "question": "A customer reports that one user briefly saw another organisation’s invoice. What do you do?",
     "technical": [
       "Declare a critical security incident and disable or isolate the affected path.",
@@ -3016,6 +3126,7 @@
     "id": "scenario-latency",
     "title": "Scenario: Latency Regression after Deployment",
     "category": "Scenario Exercise",
+    "difficulty": "Complex",
     "question": "API p95 latency increases from 300 ms to eight seconds after a deployment. What do you do?",
     "technical": [
       "Confirm impact and correlate it with deployment timing.",
@@ -3041,6 +3152,7 @@
     "id": "scenario-noisy",
     "title": "Scenario: Noisy Tenant Import",
     "category": "Scenario Exercise",
+    "difficulty": "Complex",
     "question": "A large tenant starts importing millions of records and affects every customer. What do you do?",
     "technical": [
       "Throttle the tenant and separate interactive traffic from batch work.",
@@ -3065,6 +3177,7 @@
     "id": "scenario-db-migration",
     "title": "Scenario: Partial Database Migration Failure",
     "category": "Scenario Exercise",
+    "difficulty": "Complex",
     "question": "A deployment completes, but the database migration fails halfway. What do you do?",
     "technical": [
       "Stop further rollout and inspect the exact migration state.",
@@ -3090,6 +3203,7 @@
     "id": "scenario-knowledge-assistant",
     "title": "Scenario: Multi-Tenant Knowledge Assistant",
     "category": "Scenario Exercise",
+    "difficulty": "Complex",
     "question": "Design a knowledge assistant for 100 organisations and 50,000 users with citations, audit and 99.9% availability.",
     "technical": [
       "Cover requirements, ingestion, OCR and parsing, chunking, retrieval, ACLs, generation, security, reliability, LLMOps, operations and cost.",
@@ -3114,6 +3228,7 @@
     "id": "scenario-code-review",
     "title": "Scenario: Production-Readiness Code Review",
     "category": "Scenario Exercise",
+    "difficulty": "Complex",
     "question": "Review a queue consumer with no idempotency, unlimited retries, early acknowledgement, secrets in config, no timeout, no transaction, unbounded concurrency and weak logging.",
     "technical": [
       "Group findings under correctness, reliability, security, operability, scalability, consistency, deployment and testing.",
@@ -3138,6 +3253,7 @@
     "id": "ai-kit-001",
     "title": "Bias–Variance Trade-off",
     "category": "Math, Probability & Statistics",
+    "difficulty": "Medium",
     "question": "Explain the bias-variance tradeoff. How does it show up as underfitting vs. overfitting, and how do you manage it in practice?",
     "technical": [
       "Bias is systematic error from an overly simple model; variance is sensitivity to the particular training sample.",
@@ -3165,6 +3281,7 @@
     "id": "ai-kit-002",
     "title": "Bayes' Theorem",
     "category": "Math, Probability & Statistics",
+    "difficulty": "Medium",
     "question": "State Bayes' theorem and walk through a practical example (e.g., spam filtering or medical test false positives).",
     "technical": [
       "Bayes' theorem updates a prior belief after observing evidence: P(A|B) = P(B|A)P(A)/P(B).",
@@ -3192,6 +3309,7 @@
     "id": "ai-kit-003",
     "title": "Probability vs. Likelihood",
     "category": "Math, Probability & Statistics",
+    "difficulty": "Low",
     "question": "What is the difference between probability and likelihood?",
     "technical": [
       "Probability treats model parameters as fixed and asks how probable different data outcomes are.",
@@ -3218,6 +3336,7 @@
     "id": "ai-kit-004",
     "title": "P-values and Statistical Significance",
     "category": "Math, Probability & Statistics",
+    "difficulty": "Medium",
     "question": "What is a p-value? What does p < 0.05 actually mean - and what does it NOT mean?",
     "technical": [
       "A p-value is the probability, assuming the null hypothesis and model assumptions are true, of observing a result at least as extreme as the one obtained.",
@@ -3244,6 +3363,7 @@
     "id": "ai-kit-005",
     "title": "Central Limit Theorem",
     "category": "Math, Probability & Statistics",
+    "difficulty": "Low",
     "question": "Explain the Central Limit Theorem and why it is so important in statistics and ML.",
     "technical": [
       "For many independent, identically distributed samples with finite variance, the distribution of the sample mean approaches a normal distribution as sample size grows.",
@@ -3270,6 +3390,7 @@
     "id": "ai-kit-006",
     "title": "Type I and Type II Errors",
     "category": "Math, Probability & Statistics",
+    "difficulty": "Low",
     "question": "What are Type I and Type II errors? Give a real-world example where each one is more costly.",
     "technical": [
       "Type I error is a false positive: rejecting a true null hypothesis. Its rate is controlled by α.",
@@ -3297,6 +3418,7 @@
     "id": "ai-kit-007",
     "title": "Correlation, Covariance and Causation",
     "category": "Math, Probability & Statistics",
+    "difficulty": "Low",
     "question": "Differentiate correlation, covariance, and causation. Why doesn't correlation imply causation?",
     "technical": [
       "Covariance measures whether two variables move together and retains scale units.",
@@ -3325,6 +3447,7 @@
     "id": "ai-kit-008",
     "title": "Supervised, Unsupervised and Reinforcement Learning",
     "category": "Classical Machine Learning",
+    "difficulty": "Low",
     "question": "Explain supervised, unsupervised, and reinforcement learning with one real example of each.",
     "technical": [
       "Supervised learning learns a mapping from labelled inputs to targets.",
@@ -3352,6 +3475,7 @@
     "id": "ai-kit-009",
     "title": "Logistic vs. Linear Regression",
     "category": "Classical Machine Learning",
+    "difficulty": "Medium",
     "question": "How does logistic regression differ from linear regression? Why can't we use plain linear regression for classification?",
     "technical": [
       "Linear regression predicts a continuous value by modelling a linear conditional mean.",
@@ -3378,6 +3502,7 @@
     "id": "ai-kit-010",
     "title": "Detect and Prevent Overfitting",
     "category": "Classical Machine Learning",
+    "difficulty": "Medium",
     "question": "How do you detect overfitting, and what techniques do you use to prevent it (regularization, cross-validation, early stopping)?",
     "technical": [
       "Compare training and validation curves; a widening generalisation gap suggests overfitting.",
@@ -3404,6 +3529,7 @@
     "id": "ai-kit-011",
     "title": "Random Forest vs. Gradient Boosting",
     "category": "Classical Machine Learning",
+    "difficulty": "Medium",
     "question": "Compare Random Forest and Gradient Boosting (e.g., XGBoost). How does bagging differ from boosting?",
     "technical": [
       "Random Forest uses bagging: many trees train independently on bootstrapped data and random feature subsets, then average or vote. It mainly reduces variance.",
@@ -3430,6 +3556,7 @@
     "id": "ai-kit-012",
     "title": "K-means Clustering",
     "category": "Classical Machine Learning",
+    "difficulty": "Medium",
     "question": "How does k-means clustering work? How do you choose the right value of k?",
     "technical": [
       "K-means alternates between assigning each point to the nearest centroid and recomputing centroids until convergence.",
@@ -3457,6 +3584,7 @@
     "id": "ai-kit-013",
     "title": "Learning with Imbalanced Data",
     "category": "Classical Machine Learning",
+    "difficulty": "Medium",
     "question": "Your dataset is highly imbalanced (e.g., 1% fraud). How do you handle it - resampling, class weights, and which metrics do you use?",
     "technical": [
       "Use stratified splits and metrics that expose minority-class performance: precision, recall, F1, PR-AUC and cost-weighted outcomes.",
@@ -3483,6 +3611,7 @@
     "id": "ai-kit-014",
     "title": "L1 vs. L2 Regularisation",
     "category": "Classical Machine Learning",
+    "difficulty": "Medium",
     "question": "What is the difference between L1 (Lasso) and L2 (Ridge) regularization? Why does L1 produce sparse models?",
     "technical": [
       "L1 adds the absolute value of coefficients and tends to drive some exactly to zero, producing sparse feature selection.",
@@ -3510,6 +3639,7 @@
     "id": "ai-kit-015",
     "title": "Backpropagation",
     "category": "Deep Learning & Neural Networks",
+    "difficulty": "Medium",
     "question": "Explain backpropagation intuitively. What is actually being computed and updated?",
     "technical": [
       "A forward pass computes predictions and loss.",
@@ -3536,6 +3666,7 @@
     "id": "ai-kit-016",
     "title": "Vanishing and Exploding Gradients",
     "category": "Deep Learning & Neural Networks",
+    "difficulty": "Medium",
     "question": "What are vanishing and exploding gradients? What causes them and how do we fix them (ReLU, residual connections, normalization, clipping)?",
     "technical": [
       "Repeated multiplication through deep or recurrent networks can shrink gradients toward zero or grow them uncontrollably.",
@@ -3562,6 +3693,7 @@
     "id": "ai-kit-017",
     "title": "Activation Functions",
     "category": "Deep Learning & Neural Networks",
+    "difficulty": "Medium",
     "question": "Compare activation functions: sigmoid, tanh, ReLU, GELU. Why is ReLU the common default?",
     "technical": [
       "Sigmoid maps to 0–1 but saturates and can cause vanishing gradients; it remains useful for binary output probabilities.",
@@ -3590,6 +3722,7 @@
     "id": "ai-kit-018",
     "title": "Batch Normalisation vs. Layer Normalisation",
     "category": "Deep Learning & Neural Networks",
+    "difficulty": "Medium",
     "question": "What is the difference between Batch Normalization and Layer Normalization? Why do Transformers use LayerNorm?",
     "technical": [
       "BatchNorm normalises each feature using statistics across a mini-batch and keeps running statistics for inference.",
@@ -3616,6 +3749,7 @@
     "id": "ai-kit-019",
     "title": "Dropout",
     "category": "Deep Learning & Neural Networks",
+    "difficulty": "Low",
     "question": "How does dropout work? Why does it behave differently at training time vs. inference time?",
     "technical": [
       "During training, dropout randomly zeros selected activations, discouraging fragile co-adaptation and acting as regularisation.",
@@ -3642,6 +3776,7 @@
     "id": "ai-kit-020",
     "title": "CNN vs. RNN vs. Transformer",
     "category": "Deep Learning & Neural Networks",
+    "difficulty": "Medium",
     "question": "When would you use a CNN vs. an RNN vs. a Transformer? What limitations of RNNs did Transformers solve?",
     "technical": [
       "CNNs exploit local spatial structure and parameter sharing, making them effective for images and local patterns.",
@@ -3670,6 +3805,7 @@
     "id": "ai-kit-021",
     "title": "Transformer Architecture",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Explain the Transformer architecture at a high level. What made 'Attention Is All You Need' such a breakthrough?",
     "technical": [
       "Transformers stack attention and position-wise feed-forward layers with residual connections and normalisation.",
@@ -3698,6 +3834,7 @@
     "id": "ai-kit-022",
     "title": "Self-Attention: Query, Key and Value",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Explain self-attention. What are Query, Key, and Value, and how is the attention score computed (scaled dot-product)?",
     "technical": [
       "Each token is projected into query, key and value vectors.",
@@ -3724,6 +3861,7 @@
     "id": "ai-kit-023",
     "title": "Multi-Head Attention",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Why do Transformers use multi-head attention instead of a single attention head?",
     "technical": [
       "Multiple heads learn different projections and relationship patterns in parallel.",
@@ -3751,6 +3889,7 @@
     "id": "ai-kit-024",
     "title": "Positional Encoding and RoPE",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Why do Transformers need positional encodings? What is RoPE (rotary positional embedding)?",
     "technical": [
       "Self-attention alone is permutation-invariant, so Transformers need position information.",
@@ -3778,6 +3917,7 @@
     "id": "ai-kit-025",
     "title": "Encoder-only, Decoder-only and Encoder–Decoder Models",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Compare encoder-only (BERT), decoder-only (GPT), and encoder-decoder (T5) architectures. When is each used?",
     "technical": [
       "Encoder-only models use bidirectional context and are strong for classification, tagging and embedding tasks.",
@@ -3806,6 +3946,7 @@
     "id": "ai-kit-026",
     "title": "Tokenisation and BPE",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "What is tokenization? Explain Byte-Pair Encoding (BPE) and how token count affects cost and context limits.",
     "technical": [
       "Tokenisation converts text into model vocabulary IDs; tokens may be words, subwords, bytes or characters.",
@@ -3834,6 +3975,7 @@
     "id": "ai-kit-027",
     "title": "Temperature, Top-p and Top-k Sampling",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Explain temperature, top-p (nucleus), and top-k sampling. When would you set temperature to 0?",
     "technical": [
       "Temperature rescales logits: lower values sharpen the distribution; higher values increase diversity.",
@@ -3860,6 +4002,7 @@
     "id": "ai-kit-028",
     "title": "Context Windows and “Lost in the Middle”",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "What is a context window? What happens when it is exceeded, and what is the 'lost in the middle' problem?",
     "technical": [
       "The context window is the maximum tokens the model can attend to for input plus generated output, depending on the API/model.",
@@ -3887,6 +4030,7 @@
     "id": "ai-kit-029",
     "title": "Pre-training, SFT and Instruction Tuning",
     "category": "Large Language Models",
+    "difficulty": "Low",
     "question": "Differentiate pre-training, supervised fine-tuning (SFT), and instruction tuning.",
     "technical": [
       "Pre-training learns broad language or multimodal patterns from large-scale self-supervised data.",
@@ -3914,6 +4058,7 @@
     "id": "ai-kit-030",
     "title": "RLHF and DPO",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Explain RLHF (Reinforcement Learning from Human Feedback) end-to-end: the role of the reward model and policy optimization. How is DPO (Direct Preference Optimization) a simpler alternative?",
     "technical": [
       "RLHF commonly collects preference comparisons, trains a reward model and optimises the policy against that reward while constraining drift from a reference model.",
@@ -3940,6 +4085,7 @@
     "id": "ai-kit-031",
     "title": "LoRA and QLoRA",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "What is parameter-efficient fine-tuning? Explain LoRA and QLoRA and why they are so widely used.",
     "technical": [
       "Parameter-efficient fine-tuning updates a small number of additional parameters while freezing most base weights.",
@@ -3967,6 +4113,7 @@
     "id": "ai-kit-032",
     "title": "Model Quantisation",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "What is model quantization (8-bit, 4-bit)? What tradeoffs does it introduce?",
     "technical": [
       "Quantisation stores or computes weights/activations at lower precision, such as 8-bit or 4-bit.",
@@ -3994,6 +4141,7 @@
     "id": "ai-kit-033",
     "title": "Why LLMs Hallucinate",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Why do LLMs hallucinate? List practical mitigation strategies you would use in production.",
     "technical": [
       "LLMs optimise next-token likelihood, not a built-in truth objective; they can produce plausible completions when evidence is absent or ambiguous.",
@@ -4022,6 +4170,7 @@
     "id": "ai-kit-034",
     "title": "Zero-shot, Few-shot and Chain-of-Thought Prompting",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "Compare zero-shot, few-shot, and chain-of-thought prompting. When does CoT actually help?",
     "technical": [
       "Zero-shot gives instructions without examples; few-shot includes representative demonstrations.",
@@ -4050,6 +4199,7 @@
     "id": "ai-kit-035",
     "title": "KV Cache",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "What is the KV cache and why is it critical for fast autoregressive inference?",
     "technical": [
       "Autoregressive generation repeatedly attends to previous tokens.",
@@ -4077,6 +4227,7 @@
     "id": "ai-kit-036",
     "title": "Inference Parameters",
     "category": "Large Language Models",
+    "difficulty": "Low",
     "question": "Explain common inference parameters: max tokens, stop sequences, frequency penalty, and presence penalty.",
     "technical": [
       "max tokens limits generated output length and must fit with input inside the context limit.",
@@ -4105,6 +4256,7 @@
     "id": "ai-kit-037",
     "title": "Prompt Engineering vs. RAG vs. Fine-tuning",
     "category": "Large Language Models",
+    "difficulty": "High",
     "question": "Prompt engineering vs. RAG vs. fine-tuning: how do you decide which approach a use case needs, for example when a client asks to fine-tune because RAG answers are weak?",
     "technical": [
       "Use prompt engineering for instructions, format and lightweight behaviour changes.",
@@ -4137,6 +4289,7 @@
     "id": "ai-kit-038",
     "title": "Mixture of Experts",
     "category": "Large Language Models",
+    "difficulty": "Medium",
     "question": "What is Mixture of Experts (MoE)? How does it let models scale parameters without scaling inference cost proportionally?",
     "technical": [
       "MoE models contain many expert feed-forward sub-networks but route each token to only a small subset.",
@@ -4163,6 +4316,7 @@
     "id": "ai-kit-039",
     "title": "Prompt Injection and Jailbreaking",
     "category": "Large Language Models",
+    "difficulty": "High",
     "question": "What are prompt injection and jailbreaking? How would you defend an LLM application against them?",
     "technical": [
       "Prompt injection tries to override application instructions or misuse tools; indirect injection arrives through retrieved documents, websites or tool results.",
@@ -4193,6 +4347,7 @@
     "id": "ai-kit-040",
     "title": "System Prompts, User Prompts and Structured Output",
     "category": "Large Language Models",
+    "difficulty": "Low",
     "question": "What is the difference between a system prompt and a user prompt? How do structured outputs / JSON mode work?",
     "technical": [
       "A system prompt defines application-level behaviour and policy; a user prompt supplies the user’s request and data.",
@@ -4220,6 +4375,7 @@
     "id": "llm-inference-serving",
     "title": "LLM Inference: Prefill, Decode and Serving Optimisations",
     "category": "Large Language Models",
+    "difficulty": "High",
     "question": "Walk through what actually happens when an LLM serves a request. What are prefill and decode, which metrics matter, and what optimisations make serving economical?",
     "technical": [
       "Inference has two phases: prefill processes the whole prompt in parallel (compute-bound, sets time-to-first-token), then decode generates one token at a time (memory-bandwidth-bound, sets tokens-per-second).",
@@ -4254,6 +4410,7 @@
     "id": "token-economics",
     "title": "Token Economics: Cost, Latency and Budgets",
     "category": "Large Language Models",
+    "difficulty": "High",
     "question": "Tokens are the billing and latency unit of every LLM system. How do you model, control and reduce token spend without degrading quality?",
     "technical": [
       "Input and output tokens are priced differently — output typically costs several times more and also dominates latency, so verbose responses are the usual cost and speed killer.",
@@ -4288,6 +4445,7 @@
     "id": "context-budgeting",
     "title": "Token Maxing: Context-Window Budgeting",
     "category": "Large Language Models",
+    "difficulty": "High",
     "question": "Your prompt must fit instructions, examples, retrieved documents, conversation history and the answer inside one context window. How do you budget tokens deliberately — 'token maxing' without breaking quality?",
     "technical": [
       "Treat the window as a fixed budget with explicit allocations: system instructions, few-shot examples, retrieved context, conversation history, and a reserved slice for the output (max_tokens must be reserved up front or long inputs silently strangle the answer).",
@@ -4322,6 +4480,7 @@
     "id": "lora-production",
     "title": "LoRA in Production: Adapters, Merging and Multi-Tenant Serving",
     "category": "Large Language Models",
+    "difficulty": "High",
     "question": "You have moved past training a single LoRA: how do you run LoRA at production scale — choosing ranks, managing adapter versions, and serving many adapters efficiently? When is LoRA the wrong tool?",
     "technical": [
       "Key hyperparameters: rank r (capacity of the update), alpha (scaling), and target modules (commonly attention projections; adding MLP layers increases capacity and cost) — tune against an eval set, not folklore.",
@@ -4356,6 +4515,7 @@
     "id": "ai-kit-041",
     "title": "What RAG Solves",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Low",
     "question": "What is Retrieval-Augmented Generation? What problems does it solve compared to fine-tuning or relying on model memory?",
     "technical": [
       "RAG retrieves external evidence at request time and conditions generation on it.",
@@ -4384,6 +4544,7 @@
     "id": "ai-kit-042",
     "title": "End-to-End RAG Pipeline",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Medium",
     "question": "Walk through a complete RAG pipeline end-to-end: ingestion, chunking, embedding, indexing, retrieval, and generation.",
     "technical": [
       "Ingest source documents with identity, version, tenant and permission metadata.",
@@ -4413,6 +4574,7 @@
     "id": "ai-kit-043",
     "title": "Embeddings and Similarity",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Low",
     "question": "What are embeddings? How is similarity between two embeddings measured, and why is cosine similarity common?",
     "technical": [
       "Embeddings map text, images or other objects into vectors where semantic relationships are represented geometrically.",
@@ -4441,6 +4603,7 @@
     "id": "ai-kit-044",
     "title": "Chunking Strategies",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Medium",
     "question": "Explain chunking strategies (fixed-size, recursive, semantic). How do chunk size and overlap affect retrieval quality?",
     "technical": [
       "Fixed-size chunking is simple but can split sentences, tables and concepts.",
@@ -4467,6 +4630,7 @@
     "id": "ai-kit-045",
     "title": "Vector Databases and HNSW",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Medium",
     "question": "What is a vector database? Name a few (FAISS, Pinecone, Chroma, pgvector) and explain how ANN indexes like HNSW enable fast search.",
     "technical": [
       "A vector database stores embeddings plus metadata and supports nearest-neighbour search, filtering, updates and operational controls.",
@@ -4494,6 +4658,7 @@
     "id": "ai-kit-046",
     "title": "Dense, Sparse and Hybrid Retrieval",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Medium",
     "question": "Compare dense retrieval and sparse/keyword retrieval (BM25). What is hybrid search and when is it worth it?",
     "technical": [
       "Dense retrieval uses embeddings and captures semantic similarity, paraphrases and concepts.",
@@ -4520,6 +4685,7 @@
     "id": "ai-kit-047",
     "title": "Reranking: Bi-encoder vs. Cross-encoder",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Medium",
     "question": "What is reranking and why add it after retrieval? Explain bi-encoder vs. cross-encoder.",
     "technical": [
       "A bi-encoder independently embeds query and document, enabling fast large-scale retrieval.",
@@ -4546,6 +4712,7 @@
     "id": "ai-kit-048",
     "title": "RAG Abstention When Retrieval Fails",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "High",
     "question": "How should a RAG system behave when retrieval returns nothing relevant? How do you prevent it from answering anyway?",
     "technical": [
       "Detect insufficient evidence using retrieval thresholds, reranker scores, coverage rules and answerability evaluation.",
@@ -4572,6 +4739,7 @@
     "id": "ai-kit-049",
     "title": "Query Rewriting, Multi-query and HyDE",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Medium",
     "question": "Explain query transformation techniques: query rewriting, multi-query, and HyDE.",
     "technical": [
       "Query rewriting corrects ambiguity, spelling or conversational references while preserving user intent.",
@@ -4599,6 +4767,7 @@
     "id": "ai-kit-050",
     "title": "Advanced RAG Patterns",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "Medium",
     "question": "Describe advanced RAG patterns you know: parent-document retrieval, sentence-window retrieval, and GraphRAG.",
     "technical": [
       "Parent-document retrieval embeds small child chunks for precise search but returns a larger parent section for context.",
@@ -4627,6 +4796,7 @@
     "id": "ai-kit-051",
     "title": "Keeping the Vector Index in Sync",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "High",
     "question": "How do you keep the vector index in sync when source documents are added, updated, or deleted?",
     "technical": [
       "Assign stable source IDs, version IDs and chunk IDs and make ingestion idempotent.",
@@ -4654,6 +4824,7 @@
     "id": "ai-kit-053",
     "title": "Common RAG Failure Modes",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "High",
     "question": "What are the most common RAG failure modes, and how do you debug whether the problem is retrieval or generation?",
     "technical": [
       "Source failures: missing, stale, duplicated or poorly parsed documents.",
@@ -4683,6 +4854,7 @@
     "id": "ai-kit-054",
     "title": "Metadata Filtering and User-level ACLs in RAG",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "High",
     "question": "How do you implement metadata filtering and user-level access control in a RAG system?",
     "technical": [
       "Derive user and tenant permissions from trusted identity and policy services.",
@@ -4709,6 +4881,7 @@
     "id": "ai-kit-055",
     "title": "Do Million-token Context Windows Replace RAG?",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "High",
     "question": "With million-token context windows, do we still need RAG? Argue both sides.",
     "technical": [
       "Long context can simplify small, bounded corpora, preserve broad document context and support one-off analysis.",
@@ -4735,6 +4908,7 @@
     "id": "production-chunking",
     "title": "Chunking in Production: Tables, Code and Contextual Enrichment",
     "category": "Retrieval-Augmented Generation",
+    "difficulty": "High",
     "question": "Basic chunking strategies break down on real corpora — tables, code, contracts, slide decks. How do you chunk heterogeneous content in production, and how do you change strategy later without breaking the system?",
     "technical": [
       "Chunk by content type, not one rule: tables stay whole with a generated natural-language summary indexed alongside; code splits on function/class boundaries with imports and signatures preserved; contracts split on clauses; slides keep title plus body as one unit.",
@@ -4769,6 +4943,7 @@
     "id": "ai-kit-056",
     "title": "Precision, Recall and F1",
     "category": "Evaluation & Metrics",
+    "difficulty": "Low",
     "question": "Define precision, recall, and F1 score. Give a scenario where you'd optimize for precision and one for recall.",
     "technical": [
       "Precision = TP/(TP+FP): among predicted positives, how many are correct.",
@@ -4796,6 +4971,7 @@
     "id": "ai-kit-057",
     "title": "Accuracy, ROC-AUC and PR-AUC",
     "category": "Evaluation & Metrics",
+    "difficulty": "Medium",
     "question": "When is accuracy a misleading metric? Explain ROC-AUC vs. PR-AUC and when to prefer each.",
     "technical": [
       "Accuracy is misleading with class imbalance or unequal error cost.",
@@ -4822,6 +4998,7 @@
     "id": "ai-kit-058",
     "title": "MSE, RMSE, MAE and R²",
     "category": "Evaluation & Metrics",
+    "difficulty": "Low",
     "question": "Compare regression metrics: MSE, RMSE, MAE, and R². When would you prefer MAE over RMSE?",
     "technical": [
       "MSE averages squared errors and strongly penalises large mistakes.",
@@ -4850,6 +5027,7 @@
     "id": "ai-kit-059",
     "title": "Perplexity",
     "category": "Evaluation & Metrics",
+    "difficulty": "Low",
     "question": "What is perplexity and what does it measure for a language model? What are its limitations?",
     "technical": [
       "Perplexity is the exponentiated average negative log-likelihood of the next token; lower means the model assigns higher probability to the observed sequence.",
@@ -4877,6 +5055,7 @@
     "id": "ai-kit-060",
     "title": "BLEU and ROUGE",
     "category": "Evaluation & Metrics",
+    "difficulty": "Medium",
     "question": "Explain BLEU and ROUGE. What do they measure and why are they poor fits for open-ended LLM outputs?",
     "technical": [
       "BLEU measures n-gram precision with a brevity penalty and was designed mainly for machine translation.",
@@ -4904,6 +5083,7 @@
     "id": "ai-kit-061",
     "title": "BERTScore and Semantic Similarity",
     "category": "Evaluation & Metrics",
+    "difficulty": "Medium",
     "question": "What is BERTScore / semantic-similarity-based evaluation, and how does it improve on n-gram metrics?",
     "technical": [
       "BERTScore aligns contextual token embeddings between candidate and reference and computes precision/recall/F1-like similarity.",
@@ -4930,6 +5110,7 @@
     "id": "ai-kit-062",
     "title": "LLM-as-a-Judge",
     "category": "Evaluation & Metrics",
+    "difficulty": "Medium",
     "question": "Explain LLM-as-a-judge. What biases (position bias, verbosity bias, self-preference) must you control for?",
     "technical": [
       "An LLM judge scores or compares outputs using an explicit rubric and context.",
@@ -4957,6 +5138,7 @@
     "id": "ai-kit-063",
     "title": "Popular AI Benchmarks",
     "category": "Evaluation & Metrics",
+    "difficulty": "Medium",
     "question": "What do popular benchmarks measure - MMLU, HumanEval, GSM8K, MT-Bench? Why can benchmark scores be misleading?",
     "technical": [
       "MMLU tests broad multiple-choice knowledge/reasoning, HumanEval code-generation unit tests, GSM8K grade-school maths reasoning and MT-Bench multi-turn conversational quality.",
@@ -4982,6 +5164,7 @@
     "id": "ai-kit-064",
     "title": "Human Evaluation at Scale",
     "category": "Evaluation & Metrics",
+    "difficulty": "Medium",
     "question": "How is human evaluation done at scale? Explain pairwise comparisons and Elo-style leaderboards like Chatbot Arena.",
     "technical": [
       "Define a clear rubric, train annotators and include quality-control/overlap examples.",
@@ -5010,6 +5193,7 @@
     "id": "ai-kit-065",
     "title": "End-to-End RAG Evaluation",
     "category": "Evaluation & Metrics",
+    "difficulty": "High",
     "question": "How would you evaluate a RAG system end-to-end, separating retrieval quality from generation quality (e.g., faithfulness, answer relevance and context precision/recall as in RAGAS)?",
     "technical": [
       "Create questions with expected evidence, answer criteria and no-answer labels.",
@@ -5038,6 +5222,7 @@
     "id": "ai-kit-067",
     "title": "Production LLM Evaluation Programme",
     "category": "Evaluation & Metrics",
+    "difficulty": "High",
     "question": "How do you set up evaluation for an LLM product in production: golden datasets, regression tests, A/B testing, and drift monitoring?",
     "technical": [
       "Maintain versioned golden datasets covering common, difficult, ambiguous, no-answer, multilingual, adversarial and high-risk cases, with privacy controls.",
@@ -5068,6 +5253,7 @@
     "id": "ai-kit-068",
     "title": "Model Context Protocol and the M×N Problem",
     "category": "Model Context Protocol",
+    "difficulty": "Low",
     "question": "What is the Model Context Protocol (MCP), and what 'M×N integration problem' does it solve?",
     "technical": [
       "MCP defines a standard way for AI hosts to discover and interact with tools, resources and prompt templates exposed by servers.",
@@ -5094,6 +5280,7 @@
     "id": "ai-kit-069",
     "title": "MCP Host, Client and Server",
     "category": "Model Context Protocol",
+    "difficulty": "Low",
     "question": "Explain the MCP architecture: host, client, and server. What role does each play?",
     "technical": [
       "The host is the user-facing AI application that manages model interaction, permissions and overall experience.",
@@ -5120,6 +5307,7 @@
     "id": "ai-kit-070",
     "title": "MCP Tools, Resources and Prompts",
     "category": "Model Context Protocol",
+    "difficulty": "Low",
     "question": "What are MCP's core primitives - tools, resources, and prompts? How does each get used by the model or the user?",
     "technical": [
       "Tools are executable operations with schemas, such as creating an issue or running a query.",
@@ -5148,6 +5336,7 @@
     "id": "ai-kit-071",
     "title": "MCP Transports",
     "category": "Model Context Protocol",
+    "difficulty": "Medium",
     "question": "What transports does MCP support (stdio, streamable HTTP/SSE)? When would you use local stdio vs. a remote server?",
     "technical": [
       "Local stdio connects a host to a locally launched server process and is suitable for desktop or developer integrations.",
@@ -5175,6 +5364,7 @@
     "id": "ai-kit-072",
     "title": "MCP vs. Function Calling or Custom Integrations",
     "category": "Model Context Protocol",
+    "difficulty": "Medium",
     "question": "How is MCP different from plain function calling or a custom plugin/API integration?",
     "technical": [
       "Function calling is a model/API feature for producing structured tool requests; it does not define cross-client discovery or server lifecycle.",
@@ -5201,6 +5391,7 @@
     "id": "ai-kit-073",
     "title": "End-to-End MCP Tool Call",
     "category": "Model Context Protocol",
+    "difficulty": "Medium",
     "question": "Walk through an end-to-end MCP tool call: discovery, invocation, and how the result gets back into the model's context.",
     "technical": [
       "The host connects and negotiates capabilities with the server.",
@@ -5228,6 +5419,7 @@
     "id": "ai-kit-074",
     "title": "MCP Security Risks",
     "category": "Model Context Protocol",
+    "difficulty": "High",
     "question": "What are the security risks with MCP - tool poisoning, prompt injection through tool results, credential exposure - and how do you mitigate them?",
     "technical": [
       "Tool poisoning can advertise misleading names/descriptions or altered behaviour; pin and review trusted servers and capability changes.",
@@ -5254,6 +5446,7 @@
     "id": "ai-kit-075",
     "title": "When to Build an MCP Server",
     "category": "Model Context Protocol",
+    "difficulty": "Medium",
     "question": "When would you build an MCP server for your product vs. just exposing a REST API? What do you gain?",
     "technical": [
       "Build an MCP server when multiple AI hosts need reusable discovery and model-friendly access to product capabilities.",
@@ -5280,6 +5473,7 @@
     "id": "ai-kit-077",
     "title": "Core Agent Components",
     "category": "AI Agents",
+    "difficulty": "Low",
     "question": "What are the core components of an agent - the LLM 'brain', tools, memory, and the reasoning/acting loop?",
     "technical": [
       "The model interprets state and proposes decisions.",
@@ -5307,6 +5501,7 @@
     "id": "ai-kit-078",
     "title": "ReAct Pattern",
     "category": "AI Agents",
+    "difficulty": "Medium",
     "question": "Explain the ReAct pattern. Why does interleaving reasoning and action beat one-shot generation for complex tasks?",
     "technical": [
       "ReAct interleaves reasoning/planning with actions and observations rather than generating a complete answer in one pass.",
@@ -5334,6 +5529,7 @@
     "id": "ai-kit-079",
     "title": "How Tool Calling Works",
     "category": "AI Agents",
+    "difficulty": "Medium",
     "question": "How does function/tool calling work under the hood? How does the model decide which tool to call and who executes it?",
     "technical": [
       "The application provides the model with tool names, descriptions and argument schemas.",
@@ -5361,6 +5557,7 @@
     "id": "ai-kit-080",
     "title": "Short-term and Long-term Agent Memory",
     "category": "AI Agents",
+    "difficulty": "Medium",
     "question": "Explain short-term vs. long-term memory for agents. How would you implement persistent memory (e.g., with a vector store)?",
     "technical": [
       "Short-term memory is task/session state: conversation, plan, observations and working variables.",
@@ -5388,6 +5585,7 @@
     "id": "ai-kit-081",
     "title": "Agent Planning Approaches",
     "category": "AI Agents",
+    "difficulty": "Medium",
     "question": "How do agents plan? Compare plan-and-execute with iterative ReAct-style task decomposition.",
     "technical": [
       "Plan-and-execute creates a higher-level plan then assigns/executes steps; it provides structure but can become stale when observations change.",
@@ -5415,6 +5613,7 @@
     "id": "ai-kit-082",
     "title": "Agent Failure Modes and Cost Controls",
     "category": "AI Agents",
+    "difficulty": "High",
     "question": "How do you handle agent failure modes: infinite loops, repeated tool errors, and runaway costs (max iterations, timeouts, retries)?",
     "technical": [
       "Set maximum iterations, wall-clock deadlines, token and monetary budgets and tool-specific concurrency limits.",
@@ -5441,6 +5640,7 @@
     "id": "ai-kit-083",
     "title": "Agent Frameworks vs. Direct Model APIs",
     "category": "AI Agents",
+    "difficulty": "Medium",
     "question": "Compare agent frameworks - LangGraph, CrewAI, AutoGen. When would you skip frameworks and build directly on the model API?",
     "technical": [
       "LangGraph emphasises stateful graph workflows and durable control; CrewAI emphasises role-based teams; AutoGen supports conversational multi-agent patterns.",
@@ -5467,6 +5667,7 @@
     "id": "ai-kit-084",
     "title": "Human-in-the-Loop Approval",
     "category": "AI Agents",
+    "difficulty": "High",
     "question": "Where would you insert human-in-the-loop approval in an agent, and why is it essential for high-stakes actions?",
     "technical": [
       "Require approval before irreversible, financial, legal, privacy-sensitive or externally visible actions.",
@@ -5496,6 +5697,7 @@
     "id": "ai-kit-085",
     "title": "Agent Guardrails",
     "category": "AI Agents",
+    "difficulty": "High",
     "question": "What guardrails would you put around an agent - input/output validation, sandboxed execution, and scoped permissions?",
     "technical": [
       "Validate inputs for policy, injection and data classification; validate outputs against schemas and safety requirements.",
@@ -5523,6 +5725,7 @@
     "id": "ai-kit-086",
     "title": "Private and Sensitive Data for Agents",
     "category": "AI Agents",
+    "difficulty": "High",
     "question": "How do you safely give an agent access to private or sensitive data?",
     "technical": [
       "Authenticate the user and propagate trusted tenant/resource context.",
@@ -5550,6 +5753,7 @@
     "id": "ai-kit-087",
     "title": "Agent Observability and Replay",
     "category": "AI Agents",
+    "difficulty": "High",
     "question": "How do you make agents observable in production - tracing, logging every tool call, and replaying trajectories?",
     "technical": [
       "Trace each run with model/prompt version, state transitions, tool proposals, policy decisions, execution results, latency, tokens and cost.",
@@ -5576,6 +5780,7 @@
     "id": "ai-kit-088",
     "title": "Agentic AI Spectrum",
     "category": "Agentic AI",
+    "difficulty": "Low",
     "question": "What does 'agentic AI' mean, and how does an agent differ from a plain LLM chatbot or a fixed workflow? Describe the spectrum from a single LLM call to a fully autonomous system.",
     "technical": [
       "Agentic AI describes systems that pursue goals through multi-step decisions and actions with varying autonomy.",
@@ -5607,6 +5812,7 @@
     "id": "ai-kit-089",
     "title": "Workflows vs. Agents and Common Patterns",
     "category": "Agentic AI",
+    "difficulty": "Medium",
     "question": "Workflows vs. agents: explain patterns like prompt chaining, routing, parallelization, orchestrator-workers, and evaluator-optimizer. When is a workflow enough?",
     "technical": [
       "Prompt chaining uses known sequential stages; routing selects a specialised path; parallelisation runs independent subtasks concurrently.",
@@ -5634,6 +5840,7 @@
     "id": "ai-kit-090",
     "title": "Multi-Agent Architectures",
     "category": "Agentic AI",
+    "difficulty": "Medium",
     "question": "Describe multi-agent architectures: supervisor, hierarchical, and peer-to-peer/swarm. Give a use case for each.",
     "technical": [
       "Supervisor architecture uses a central coordinator to delegate to specialists and integrate results.",
@@ -5662,6 +5869,7 @@
     "id": "ai-kit-091",
     "title": "Agent Communication, Shared State and A2A",
     "category": "Agentic AI",
+    "difficulty": "Medium",
     "question": "How do agents in a multi-agent system communicate and coordinate - shared state vs. message passing? What is the A2A idea?",
     "technical": [
       "Shared state gives agents a common durable workspace but requires concurrency, schema and access controls.",
@@ -5689,6 +5897,7 @@
     "id": "ai-kit-092",
     "title": "Single Agent vs. Multiple Specialists",
     "category": "Agentic AI",
+    "difficulty": "Medium",
     "question": "Single powerful agent vs. multiple specialized agents: what are the cost, latency, and complexity tradeoffs?",
     "technical": [
       "A single strong agent has simpler context, lower coordination latency and easier debugging.",
@@ -5715,6 +5924,7 @@
     "id": "ai-kit-093",
     "title": "Durable Long-running Agent Workflows",
     "category": "Agentic AI",
+    "difficulty": "High",
     "question": "How do you manage state and orchestration in a long-running agentic workflow (checkpointing, resumability, durable execution)?",
     "technical": [
       "Persist explicit workflow state and checkpoint after meaningful steps.",
@@ -5741,6 +5951,7 @@
     "id": "ai-kit-094",
     "title": "Context Engineering for Agents",
     "category": "Agentic AI",
+    "difficulty": "High",
     "question": "What is context engineering for agents? How do you handle context-window limits over long tasks (summarization, compaction, scratchpads)?",
     "technical": [
       "Context engineering selects and formats the instructions, task state, evidence, memory, tool descriptions and recent observations needed for each step.",
@@ -5767,6 +5978,7 @@
     "id": "ai-kit-095",
     "title": "Optimising Agent Cost and Latency",
     "category": "Agentic AI",
+    "difficulty": "High",
     "question": "How do you optimize cost and latency of an agentic system - model routing (small vs. large models), prompt caching, and parallel tool calls?",
     "technical": [
       "Route simple tasks to smaller models and escalate uncertain/complex tasks to larger models.",
@@ -5794,6 +6006,7 @@
     "id": "ai-kit-096",
     "title": "Reliability Across Multi-step Trajectories",
     "category": "Agentic AI",
+    "difficulty": "Complex",
     "question": "Errors compound across multi-step trajectories: if each step is 95% reliable, a 20-step task mostly fails. How do you engineer reliability into agentic pipelines?",
     "technical": [
       "Step-level accuracy compounds, so reduce unnecessary steps and make each step verifiable.",
@@ -5820,6 +6033,7 @@
     "id": "ai-kit-097",
     "title": "Safety Risks Unique to Agentic AI",
     "category": "Agentic AI",
+    "difficulty": "Complex",
     "question": "What safety concerns are unique to agentic AI - irreversible actions, permission scoping, sandboxing - and how do you address them?",
     "technical": [
       "Agents can take irreversible actions, amplify a mistaken plan, combine permissions and operate at machine speed.",
@@ -5846,6 +6060,7 @@
     "id": "ai-kit-098",
     "title": "Evaluating Agentic Systems",
     "category": "Agentic AI",
+    "difficulty": "High",
     "question": "How do you evaluate agentic systems - task completion rate, tool-call accuracy, trajectory analysis, and benchmarks like SWE-bench or GAIA?",
     "technical": [
       "Measure end-to-end task completion under realistic environments and constraints.",
@@ -5876,6 +6091,7 @@
     "id": "ai-kit-099",
     "title": "Why Real Agentic Use Cases Are Hard",
     "category": "Agentic AI",
+    "difficulty": "Complex",
     "question": "Pick a real agentic use case (coding agent, deep research, customer support automation). What makes it hard in practice?",
     "technical": [
       "Coding agents face incomplete requirements, large repositories, environment setup, flaky tests and safe patch/application constraints.",
@@ -5904,6 +6120,7 @@
     "id": "ai-kit-100",
     "title": "Current Limits and Near-term Direction of Agentic AI",
     "category": "Agentic AI",
+    "difficulty": "High",
     "question": "What are the current limitations of agentic AI (long-horizon planning, reliability, cost), and where do you see it going in the next 2 years?",
     "technical": [
       "Current limitations include unreliable long-horizon planning, compounding errors, brittle tool use, incomplete environment understanding, security risk, latency and cost.",
@@ -5930,6 +6147,7 @@
     "id": "multimodal-rag-structure-preserving",
     "title": "Multimodal RAG · Preserve Tables, Images and Text Relationships",
     "category": "Multimodal RAG Deep Dive",
+    "difficulty": "High",
     "question": "Your PDF contains tables, images and text. After chunking, the relationships between them are lost. How will you design a RAG pipeline?",
     "technical": [
       "<strong>Core problem:</strong> a PDF is a layout, not a plain stream of text. Fixed-size splitting can separate a table from its caption and the paragraph that explains it.",
@@ -5969,6 +6187,7 @@
     "id": "agentic-support-ops",
     "title": "Use Case: Autonomous Customer-Support Agent",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "Design an agent that resolves support tickets end-to-end: it reads the ticket, queries order and billing systems, and can issue refunds or replacements. What issues does this use case create?",
     "technical": [
       "Split tools into reads (order lookup) and writes (refund, replacement); writes pass policy checks in code and require human approval above thresholds.",
@@ -6003,6 +6222,7 @@
     "id": "agentic-code-migration",
     "title": "Use Case: Codebase Migration Agent Fleet",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "You want agents to migrate a 2,000-file codebase to a new framework, with the test suite as the verifier. Design it and name the issues this use case runs into.",
     "technical": [
       "Decompose by dependency graph into small, independently verifiable changes: one agent per module, a shared migration playbook, one pull request per module.",
@@ -6037,6 +6257,7 @@
     "id": "agentic-data-healer",
     "title": "Use Case: Self-Healing Data Pipeline Agent",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "Design an agent that watches production data pipelines, diagnoses failures like schema drift, and writes fixes. What issues make this use case dangerous?",
     "technical": [
       "Detection and diagnosis are the safe majority of the value: the agent reads logs, samples records, compares schema versions and drafts a diagnosis with evidence attached.",
@@ -6071,6 +6292,7 @@
     "id": "agentic-incident-copilot",
     "title": "Use Case: Incident-Response Copilot",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "Design an on-call copilot agent that correlates alerts, proposes a diagnosis and can execute remediations. What issues does the incident context create?",
     "technical": [
       "Correlation is the safe, high-value core: gather alerts, recent deploys, config changes and dashboards into one cited timeline with at least two competing hypotheses.",
@@ -6105,6 +6327,7 @@
     "id": "agentic-research-analyst",
     "title": "Use Case: Deep-Research Analyst Agent",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "Design an agent that produces market and competitor research memos using web search and internal data. What issues does this use case have?",
     "technical": [
       "Run a plan-search-synthesise loop with mandatory citation: every claim in the memo links to a source snippet retrieved during the run, with a retrieval date.",
@@ -6139,6 +6362,7 @@
     "id": "agentic-browser-ops",
     "title": "Use Case: Browser-Automation Back-Office Agent",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "Design an agent that operates web UIs — vendor portals, internal SaaS — to do back-office work like invoice entry. Why is this use case more fragile than API-based agents?",
     "technical": [
       "A computer-use agent perceives the DOM or pixels and acts with clicks, so everything an API contract gives you — types, validation, idempotency — disappears; the UI is the contract, and it changes without notice.",
@@ -6173,6 +6397,7 @@
     "id": "agentic-procurement",
     "title": "Use Case: Autonomous Procurement Agent",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "Design an agent that handles procurement end-to-end: finding vendors, requesting quotes by email, comparing offers and placing orders under a budget. What issues come with giving an agent purchasing power?",
     "technical": [
       "Purchasing power means irreversible external actions with legal weight: cap authority with hard budget limits, an approved-vendor list, and human sign-off above thresholds.",
@@ -6207,6 +6432,7 @@
     "id": "agentic-hr-screening",
     "title": "Use Case: Resume Screening and Scheduling Agent",
     "category": "Agentic AI Scenarios",
+    "difficulty": "Complex",
     "question": "Design an agent that screens resumes, shortlists candidates and schedules interviews. What legal and technical issues does this use case carry?",
     "technical": [
       "This is a regulated decision context: employment discrimination law applies regardless of whether 'the AI did it', and some jurisdictions (NYC Local Law 144, the EU AI Act's high-risk class) mandate bias audits and disclosure.",
@@ -6241,6 +6467,7 @@
     "id": "llmops-lifecycle",
     "title": "LLMOps: Shipping and Operating LLM Systems",
     "category": "LLMOps",
+    "difficulty": "High",
     "question": "What does LLMOps cover that classic DevOps and MLOps do not, and how do you ship a prompt or model change to production safely?",
     "technical": [
       "The deployable unit is a bundle: model version + prompt version + tool definitions + retrieval index version + parameters — any one changing changes behaviour, so version and release them together.",
@@ -6275,6 +6502,7 @@
     "id": "llm-observability",
     "title": "LLM Observability: Tracing, Drift and Quality Monitoring",
     "category": "LLMOps",
+    "difficulty": "High",
     "question": "Classic APM tells you a request was fast and returned 200 — and the answer can still be wrong. What does observability look like for an LLM system in production?",
     "technical": [
       "Trace the full generation path per request: prompt version, model, parameters, token counts, latency split (TTFT/decode), tool calls with inputs and outputs, retrieval chunks used, and final response — a bad answer must be reconstructable.",

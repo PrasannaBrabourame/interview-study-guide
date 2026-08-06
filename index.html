@@ -42,7 +42,10 @@
 <small id="streaktext"></small>
 </div>
 </div>
-<h2 class="dtitle">Categories</h2>
+<h2 class="dtitle">Difficulty <small>— click a level to drill</small></h2>
+<div class="dlegend" id="dlegend"></div>
+<h2 class="dtitle">Categories <small>— coloured by domain</small></h2>
+<div class="flegend" id="flegend"></div>
 <div class="tiles" id="tiles"></div>
 </section>
 <section id="browse" hidden>
@@ -52,6 +55,7 @@
 </div>
 <div class="tools">
 <select id="state" class="select"><option value="all">All topics</option><option value="unstudied">Not studied</option><option value="studied">Studied</option><option value="starred">★ Starred</option></select>
+<select id="diff" class="select"><option value="all">All levels</option><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option><option value="Complex">Complex</option></select>
 <button class="btn" id="expand">Expand all</button>
 <button class="btn" id="collapse">Collapse all</button>
 <button class="btn" id="quiz">Quiz mode</button>
