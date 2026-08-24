@@ -1590,6 +1590,41 @@
     "memory": "Contain dependency failure with time, retry, concurrency and fallback controls."
   },
   {
+    "id": "double-booking",
+    "title": "Prevent Double Booking Under Extreme Contention",
+    "category": "API & Backend",
+    "difficulty": "High",
+    "question": "Two million users open at 12:00 for five thousand seats. Two of them tap seat A1 in the same millisecond. How do you guarantee the seat is sold exactly once — and why is \"check if free, then book\" wrong?",
+    "technical": [
+      "\"Read then write\" is a check-then-act race: both requests read <em>free</em> before either writes. The fix is to make claiming the seat a single atomic operation, so the loser is told <em>no</em> by the system rather than by a refund.",
+      "<strong>Admission control first.</strong> A virtual waiting room issues signed queue tokens and admits a bounded number of users into the booking path; the rest hold a position. This protects the database from two million concurrent sessions competing for five thousand rows.",
+      "<strong>Short-lived hold.</strong> <code>SET seat:{show}:{seat} {holdId} NX EX 300</code> claims the seat atomically — <code>NX</code> means the second tap simply fails. Release with a Lua compare-and-delete so a slow request cannot delete a hold that has already expired and been re-issued to someone else.",
+      "<strong>The database is the source of truth.</strong> Redis is throughput, not correctness: a failover can lose holds. Enforce <code>UNIQUE (show_id, seat_id)</code> on confirmed bookings, and confirm with a conditional write — <code>UPDATE ... WHERE status = 'HELD' AND hold_id = $1</code> — so a lost hold degrades to a rejected booking, never a duplicate one.",
+      "Make payment idempotent on the hold id, and define the compensation path: if payment settles after the hold expired and the seat was resold, auto-refund and notify. At this scale that case is rare but never zero, so it needs an owner, not an assumption."
+    ],
+    "layman": "You do not ask whether a seat is free and then sit down. You put your coat on it the moment you choose it — and only one coat fits. If you never come back, the coat is removed and the seat returns to the room.",
+    "usecases": [
+      "Ticketing, cinema and travel seat maps",
+      "Flash sales and limited-inventory drops",
+      "Appointment and slot booking",
+      "Any finite inventory with a burst of demand"
+    ],
+    "code": "-- atomic claim (Redis): only one caller can succeed\nSET seat:show42:A1 hold_9f3 NX EX 300\n\n-- safe release: delete only if the hold is still mine\n-- EVAL \"if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end\" 1 seat:show42:A1 hold_9f3\n\n-- durable truth: the database refuses the duplicate even if Redis failed over\nCREATE UNIQUE INDEX booked_once ON bookings (show_id, seat_id)\n  WHERE status = 'BOOKED';\n\nUPDATE seats SET status = 'BOOKED', booking_id = $2\nWHERE show_id = $3 AND seat_id = $4\n  AND status = 'HELD' AND hold_id = $1;   -- 0 rows updated = lost the race",
+    "followups": [
+      "Redis fails over and loses the hold keys. What still stops the double booking?",
+      "Payment succeeds after the five-minute hold expired. What happens to the user and the seat?",
+      "Why not <code>SELECT ... FOR UPDATE</code> on the seat row for every request?",
+      "How do you stop bots from holding the whole seat map for five minutes at a time?"
+    ],
+    "redflags": [
+      "Checks availability and then writes, in two statements, without a lock or constraint",
+      "Treats a Redis lock as the guarantee and puts no constraint in the database",
+      "Holds a database transaction open for the duration of the payment",
+      "Has no answer for expired holds, refunds, or the payment/hold race"
+    ],
+    "memory": "Claim atomically, hold briefly, confirm conditionally — Redis for throughput, a unique constraint for truth."
+  },
+  {
     "id": "eventual-consistency",
     "title": "Eventual Consistency",
     "category": "Data & Integration",
@@ -1696,6 +1731,41 @@
       "Unbounded pool"
     ],
     "memory": "Pool size must be coordinated with total replicas and database capacity."
+  },
+  {
+    "id": "ephemeral-expiry",
+    "title": "Expire Ephemeral Content Without a Cron Job",
+    "category": "Data & Databases",
+    "difficulty": "High",
+    "question": "Design Stories that disappear after 24 hours for two billion users. A cron job running <code>DELETE FROM stories WHERE expires_at &lt; NOW()</code> is not acceptable — what do you do instead?",
+    "technical": [
+      "Separate <strong>visibility</strong> from <strong>reclamation</strong>. Correctness comes from the read path: every query carries <code>AND expires_at &gt; NOW()</code>, so a story becomes invisible the exact second it expires regardless of when its bytes are removed. No job can be late.",
+      "Reclaim space at the storage layer, where the engine already walks the data: native row TTL in Cassandra, DynamoDB or Scylla; <code>EXPIRE</code> on the Redis feed keys; and an object-lifecycle rule on S3/GCS for the media, which is the bulk of the bytes.",
+      "In a relational store, partition by day and <code>DROP</code> or <code>DETACH</code> the whole partition after a grace window. Dropping a partition is a catalogue operation; deleting its rows one by one writes every row to the WAL, bloats the table, and stalls replicas.",
+      "Index correctly: a partial index cannot use <code>NOW()</code> (Postgres requires an IMMUTABLE predicate), so use a composite <code>(author_id, expires_at DESC)</code> per partition and let partition pruning skip expired days entirely.",
+      "TTL is eventual, so bound the grace window and keep a real deletion path for takedowns and GDPR erasure — \"hidden on read\" is not \"erased\", and an auditor will ask for proof of the second one."
+    ],
+    "layman": "A cinema does not send staff to tear down every expired poster at midnight. The poster carries its own date, the ushers stop pointing at it, and the cleaning crew clears the wall on its normal round.",
+    "usecases": [
+      "Stories, disappearing messages and ephemeral media",
+      "Time-boxed offers, OTPs and share links",
+      "Session and idempotency-key records",
+      "Any table where rows outnumber the reads that touch them"
+    ],
+    "code": "-- 1. read path decides visibility (a late cleanup can never leak a story)\nSELECT id, media_url\nFROM stories\nWHERE author_id = ANY($1) AND expires_at > NOW()\nORDER BY created_at DESC;\n\n-- 2. daily partition; reclaim with DDL, not DELETE\nCREATE TABLE stories_2026_08_24 PARTITION OF stories\n  FOR VALUES FROM ('2026-08-24') TO ('2026-08-25');\nDROP TABLE stories_2026_08_24;   -- instant, no WAL storm, no replica lag\n\n-- 3. storage-layer TTL does the rest\n-- Cassandra:  INSERT INTO stories (...) VALUES (...) USING TTL 86400;\n-- DynamoDB:   enable TTL on the expires_at attribute (epoch seconds)\n-- Redis feed: SET story:123 <payload> EX 86400\n-- S3 media:   lifecycle rule -> Expiration: Days: 1",
+    "followups": [
+      "Why does a nightly bulk DELETE hurt replicas and autovacuum?",
+      "The row is hidden but still on disk — how do you answer a GDPR erasure request?",
+      "Cassandra TTL leaves tombstones. What breaks if compaction falls behind?",
+      "Clocks differ between app and database. Whose NOW() decides expiry?"
+    ],
+    "redflags": [
+      "Reaches for a cron job or a scheduler as the first and only answer",
+      "Deletes rows to expire them, then argues about batch size instead of dropping partitions",
+      "Assumes TTL is a compliance-grade deletion guarantee",
+      "Proposes a partial index on NOW(), or forgets the expiry predicate on the read path"
+    ],
+    "memory": "Hide on read, reclaim on write: predicate for correctness, TTL and partition DROP for space."
   },
   {
     "id": "multi-tenancy-definition",
@@ -2559,6 +2629,42 @@
       "Login considered sufficient"
     ],
     "memory": "Authenticate identity and independently authorise every action."
+  },
+  {
+    "id": "password-storage",
+    "title": "Storing User Passwords Safely",
+    "category": "Security",
+    "difficulty": "Medium",
+    "question": "How do you store user passwords? Why is encrypting them the wrong answer?",
+    "technical": [
+      "Encryption is reversible by design, so it only moves the problem to the key — anyone holding the database and the key holds every password. Password storage is a one-way problem: hash, never encrypt, and never store plaintext.",
+      "General-purpose hashes are the wrong tool for the opposite reason: MD5 and SHA-256 are built to be fast, and commodity GPUs try them in the billions per second. Use a deliberately expensive password KDF — <strong>Argon2id</strong> first choice, <code>scrypt</code> or <code>bcrypt</code> otherwise, PBKDF2 where FIPS compliance forces it.",
+      "Tune cost to your hardware, not to a blog post: OWASP's baseline is Argon2id at 19 MiB, 2 iterations, parallelism 1, or bcrypt cost 10–12 — then measure and aim for roughly 100–250 ms per verification on production hardware. Argon2 and scrypt are also memory-hard, which is what actually blunts GPU and ASIC attacks.",
+      "A unique random <strong>salt</strong> per user kills rainbow tables and stops identical passwords producing identical hashes; bcrypt and Argon2 generate and embed it in the output string, so you store one field, not two. A <strong>pepper</strong> — <code>HMAC-SHA256(password, key)</code> with the key in a KMS or HSM, never in the database — means a stolen database alone is not enough, and the key can be rotated.",
+      "Verify by recomputing and comparing in constant time, then rehash transparently on successful login when parameters have moved on. Around it: throttle per account and per IP, return the same message for wrong user and wrong password, screen against known-breached passwords, allow long passphrases, and prefer progressive delays over permanent lockout, which is itself a denial-of-service lever."
+    ],
+    "layman": "You do not keep a copy of the key to someone's house so you can check it later. You keep the shape of the lock it turns — and you make testing each candidate key slow enough that trying millions is pointless.",
+    "usecases": [
+      "First-party login and credential storage",
+      "Rotating a legacy MD5 or SHA-1 password table",
+      "Service and API credentials at rest",
+      "Security review or threat-model discussions"
+    ],
+    "code": "from argon2 import PasswordHasher\nfrom argon2.exceptions import VerifyMismatchError\nimport hmac, hashlib, os\n\nPEPPER = os.environ[\"PASSWORD_PEPPER\"].encode()      # from KMS, not the DB\nph = PasswordHasher(memory_cost=19456, time_cost=2, parallelism=1)\n\ndef pre(password: str) -> bytes:                     # pepper before hashing\n    return hmac.new(PEPPER, password.encode(), hashlib.sha256).digest()\n\ndef store(password: str) -> str:\n    return ph.hash(pre(password))                    # salt is generated + embedded\n\ndef verify(stored: str, password: str) -> bool:\n    try:\n        ph.verify(stored, pre(password))             # constant-time inside\n    except VerifyMismatchError:\n        return False\n    if ph.check_needs_rehash(stored):                # upgrade cost silently\n        save(ph.hash(pre(password)))\n    return True",
+    "followups": [
+      "Your table is full of unsalted MD5 hashes. How do you migrate without a forced reset?",
+      "Where does the pepper live, and how do you rotate it?",
+      "Why does bcrypt silently ignore anything past 72 bytes, and what breaks if you pre-hash to work around it?",
+      "Login is now 200 ms of CPU per attempt. How do you stop that becoming the DoS vector?"
+    ],
+    "redflags": [
+      "Says encrypt, or reversible so we can email it back",
+      "Uses MD5, SHA-1 or plain SHA-256, or writes their own hashing scheme",
+      "One shared salt for every user, or a salt kept alongside a hash with no per-user randomness",
+      "Caps password length at 12 characters, or strips characters before hashing",
+      "Compares hashes with <code>==</code> and has no rate limiting on the login endpoint"
+    ],
+    "memory": "Argon2id, unique salt, KMS pepper, slow by design — plus rate limiting; encryption is reversible, so never."
   },
   {
     "id": "web-risks",
