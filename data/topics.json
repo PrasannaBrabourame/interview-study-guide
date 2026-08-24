@@ -1594,7 +1594,7 @@
     "title": "Prevent Double Booking Under Extreme Contention",
     "category": "API & Backend",
     "difficulty": "High",
-    "question": "Two million users open at 12:00 for five thousand seats. Two of them tap seat A1 in the same millisecond. How do you guarantee the seat is sold exactly once — and why is \"check if free, then book\" wrong?",
+    "question": "Booking opens at 12:00. Two million people are online and only five thousand seats exist. Two people tap the same seat at the same moment. How do you make sure only one of them gets it?",
     "technical": [
       "\"Read then write\" is a check-then-act race: both requests read <em>free</em> before either writes. The fix is to make claiming the seat a single atomic operation, so the loser is told <em>no</em> by the system rather than by a refund.",
       "<strong>Admission control first.</strong> A virtual waiting room issues signed queue tokens and admits a bounded number of users into the booking path; the rest hold a position. This protects the database from two million concurrent sessions competing for five thousand rows.",
@@ -1737,7 +1737,7 @@
     "title": "Expire Ephemeral Content Without a Cron Job",
     "category": "Data & Databases",
     "difficulty": "High",
-    "question": "Design Stories that disappear after 24 hours for two billion users. A cron job running <code>DELETE FROM stories WHERE expires_at &lt; NOW()</code> is not acceptable — what do you do instead?",
+    "question": "Instagram Stories vanish after 24 hours. With two billion users that is billions of old rows piling up. How do you make them disappear on time without a nightly job that deletes them all?",
     "technical": [
       "Separate <strong>visibility</strong> from <strong>reclamation</strong>. Correctness comes from the read path: every query carries <code>AND expires_at &gt; NOW()</code>, so a story becomes invisible the exact second it expires regardless of when its bytes are removed. No job can be late.",
       "Reclaim space at the storage layer, where the engine already walks the data: native row TTL in Cassandra, DynamoDB or Scylla; <code>EXPIRE</code> on the Redis feed keys; and an object-lifecycle rule on S3/GCS for the media, which is the bulk of the bytes.",
@@ -2635,7 +2635,7 @@
     "title": "Storing User Passwords Safely",
     "category": "Security",
     "difficulty": "Medium",
-    "question": "How do you store user passwords? Why is encrypting them the wrong answer?",
+    "question": "Where do you keep user passwords, and what do you actually save in the database? Why is locking them away with encryption still the wrong answer?",
     "technical": [
       "Encryption is reversible by design, so it only moves the problem to the key — anyone holding the database and the key holds every password. Password storage is a one-way problem: hash, never encrypt, and never store plaintext.",
       "General-purpose hashes are the wrong tool for the opposite reason: MD5 and SHA-256 are built to be fast, and commodity GPUs try them in the billions per second. Use a deliberately expensive password KDF — <strong>Argon2id</strong> first choice, <code>scrypt</code> or <code>bcrypt</code> otherwise, PBKDF2 where FIPS compliance forces it.",
