@@ -1,6 +1,6 @@
 # Interview Study Guide
 
-A static study guide for Technical Lead & AI Engineer interviews, covering 247 topics. No build step, no dependencies — just serve the folder.
+A static study guide for Technical Lead & AI Engineer interviews, covering 259 topics. No build step, no dependencies — just serve the folder.
 
 Each topic is broken down into:
 - 🧠 Technical answer
@@ -19,7 +19,7 @@ the toolbar, or click a level on the dashboard to drill straight into it.
 Each badge shows its label as text, so the level never depends on colour
 alone; all eight badge colours clear WCAG AA contrast in both themes.
 
-The 42 categories are coloured by **domain family** (Cloud & Infrastructure,
+The 43 categories are coloured by **domain family** (Cloud & Infrastructure,
 Architecture & Platform, AI & LLM, Agents & MCP, Security & Governance,
 Leadership & Business, Reliability & Ops, Data, RAG & Retrieval) rather than
 one hue each — 41 hues are not visually distinguishable, 9 are, and the
@@ -33,7 +33,7 @@ assets/styles.css Styling (light/dark theme, aurora backdrop, tiles, print)
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
-data/topics.json  The 247 topics as plain JSON (incl. per-topic difficulty)
+data/topics.json  The 259 topics as plain JSON (incl. per-topic difficulty)
 ```
 
 Data, styling, and behavior are split into separate files so each can be
