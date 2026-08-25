@@ -6570,6 +6570,567 @@
     "memory": "Regulated, adversarial and biased by default: evidence extraction yes, autonomous rejection no, audit continuously."
   },
   {
+    "id": "lg-checkpointer-growth",
+    "title": "LangGraph Checkpointers in Production",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "Your LangGraph agent has been live for a month and the checkpoint tables are now the largest thing in the database. Why does that happen, and what do you do about it?",
+    "technical": [
+      "LangGraph writes a checkpoint after every <strong>super-step</strong>, not once per conversation. A twenty-step run leaves roughly twenty checkpoints plus channel blobs and pending writes across <code>checkpoints</code>, <code>checkpoint_blobs</code> and <code>checkpoint_writes</code>. Growth tracks steps times threads, so it outruns user count.",
+      "Whatever sits in state is serialised into every one of those checkpoints. Retrieved documents, file contents and images belong in object storage with only the key in state; message history needs a trimming or summarising reducer, or every future checkpoint carries the whole transcript again.",
+      "Plan deletion on day one. Recent versions expose <code>delete_thread(thread_id)</code>, LangGraph Platform has TTL settings, and self-hosted setups need a scheduled prune of threads idle beyond your retention window. This is a requirement, not an optimisation.",
+      "Checkpoints hold full message history and tool payloads, so they are customer data: same encryption, same retention promise, and they must be reachable by an erasure request. Most teams remember the primary tables and forget these.",
+      "Match durability to the workload. Writing synchronously at every step costs latency but loses at most one step on a crash; deferring writes is faster and loses more. Cheap, short graphs rarely need per-step durability, long human-in-the-loop workflows always do."
+    ],
+    "layman": "Every step the assistant takes is photographed and filed so it can pick up where it left off. Nobody empties the filing cabinet, and if you file whole documents instead of a reference number, it fills up fast.",
+    "usecases": [
+      "Long-running chat threads",
+      "Approval workflows that wait days for a human",
+      "Resumable batch agents",
+      "Auditing what an agent did and when"
+    ],
+    "code": "from langgraph.checkpoint.postgres import PostgresSaver\n\ncheckpointer = PostgresSaver.from_conn_string(DB_URL)\ncheckpointer.setup()                      # creates the checkpoint tables\n\n# keep state small: reference, do not embed\nclass State(TypedDict):\n    messages: Annotated[list[AnyMessage], add_messages]\n    doc_keys: list[str]                   # gs://bucket/key, not the PDF bytes\n\ngraph = builder.compile(checkpointer=checkpointer)\ngraph.invoke(inputs, config={\"configurable\": {\"thread_id\": thread_id}})\n\n# retention: prune idle threads on a schedule\n# SELECT DISTINCT thread_id FROM checkpoints\n#   GROUP BY thread_id HAVING max(created_at) < now() - interval '30 days';\n# then checkpointer.delete_thread(tid) for each",
+    "followups": [
+      "What is the difference between a checkpointer and a store, and which one holds memory across threads?",
+      "Someone puts a 4 MB PDF into state. Walk me through what that costs over a long thread.",
+      "A user asks you to erase their data. Which tables do you touch?",
+      "When is an in-memory checkpointer acceptable in production?"
+    ],
+    "redflags": [
+      "Ships an in-memory checkpointer with more than one replica",
+      "Has no retention or deletion plan",
+      "Stores documents and images in graph state",
+      "Thinks the checkpointer gives cross-conversation memory"
+    ],
+    "memory": "One checkpoint per super-step: keep state small, prune threads on a schedule, treat checkpoints as customer data."
+  },
+  {
+    "id": "lg-interrupt-resume",
+    "title": "Human Approval Without Double Side Effects",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "You add a human approval step with interrupt() before the agent issues a refund. After the approver clicks yes, the notification email that was sent earlier in that node goes out a second time. What is going on?",
+    "technical": [
+      "<code>interrupt()</code> does not pause a node the way a debugger pauses a line. It raises out of the graph, and resuming with <code>Command(resume=...)</code> re-runs that node <strong>from its first line</strong>. Everything above the interrupt happens again.",
+      "Fix it structurally: give approval its own node that does nothing but interrupt, and put the side effect in a node after the decision. If the effect must share the node, it goes below the interrupt, never above it.",
+      "Anything irreversible needs an idempotency key derived from the run rather than from time: thread id plus step plus a hash of the arguments. Check-then-act inside the node is not enough, because the check re-runs too.",
+      "Multiple interrupts in one node are resumed positionally, so inserting a new interrupt above an existing one silently shifts which answer maps to which question. One interrupt per node keeps that from becoming a mystery.",
+      "The resume arrives from a different process, possibly days later, so it needs a checkpointer and a durable thread id carried in the approval link. Decide up front what happens when nobody ever clicks: a sweeper that expires the interrupt, escalates it, or auto-rejects."
+    ],
+    "layman": "The node is a recipe and the interrupt is you stepping out to ask permission. When you come back you start the recipe from the top, so anything you already did, you do again.",
+    "usecases": [
+      "Refunds, payments and credit notes",
+      "Sending anything to a customer",
+      "Destructive admin actions",
+      "Anything a regulator expects a human to sign off"
+    ],
+    "code": "# WRONG: the email is above the interrupt, so it re-sends on resume\ndef refund_node(state):\n    send_email(state[\"customer\"], \"We are reviewing your refund\")   # runs twice\n    ok = interrupt({\"amount\": state[\"amount\"], \"reason\": state[\"reason\"]})\n    if ok: issue_refund(state)\n\n# RIGHT: approval is its own node, effects come after the decision\ndef approval_node(state):\n    decision = interrupt({\"amount\": state[\"amount\"], \"reason\": state[\"reason\"]})\n    return {\"approved\": decision[\"approved\"]}\n\ndef refund_node(state):\n    key = f\"{state['thread_id']}:refund:{state['order_id']}\"\n    issue_refund(state, idempotency_key=key)      # safe if it runs twice\n    return {\"status\": \"refunded\"}\n\ngraph.invoke(Command(resume={\"approved\": True}), config)",
+    "followups": [
+      "How is interrupt() different from setting interrupt_before on a node?",
+      "The approver never responds. What happens to that thread in a week?",
+      "Two approvers open the same link and both click approve. What happens?",
+      "How do you show the approver exactly what they are approving, including what the agent already did?"
+    ],
+    "redflags": [
+      "Assumes execution resumes at the interrupt line",
+      "Puts side effects above the interrupt",
+      "Uses interrupt without a checkpointer",
+      "Has no expiry or escalation for pending approvals"
+    ],
+    "memory": "Resume re-runs the whole node: interrupt first, act afterwards, and make anything irreversible idempotent."
+  },
+  {
+    "id": "lg-parallel-state",
+    "title": "Parallel Branches and State Conflicts",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "You fan out to three retrieval nodes to save time and the graph dies with an error about receiving more than one value per step. What went wrong, and how do you fan out properly?",
+    "technical": [
+      "Two nodes in the same super-step wrote the same state key. LangGraph refuses to guess and raises <code>InvalidUpdateError</code>, because the right answer is a design decision: append, merge, or last-write-wins.",
+      "Declare it with a reducer on the key. <code>Annotated[list[Doc], operator.add]</code> concatenates, <code>add_messages</code> appends and updates messages by id, and a custom reducer can dedupe or merge by score. Without one, a key holds a single writer per step.",
+      "For dynamic fan-out, where the number of branches depends on the data, use <code>Send</code> from a conditional edge. It creates one task per item with its own input, instead of trying to draw N branches into a static graph.",
+      "Partial failure is the real production issue. By default one failing branch fails the super-step, so decide per branch whether to catch inside the node and return a degraded result, letting the other four continue.",
+      "Fan-out multiplies rate-limit pressure and cost in one step. Cap it with <code>max_concurrency</code> in the config so a two-hundred-item Send does not open two hundred simultaneous model calls."
+    ],
+    "layman": "Three people typing into the same spreadsheet cell at the same moment. The spreadsheet stops and asks you which answer you actually wanted.",
+    "usecases": [
+      "Querying several retrievers at once",
+      "Scoring or summarising many documents",
+      "Calling independent tools in parallel",
+      "Map-reduce over a list of items"
+    ],
+    "code": "from typing import Annotated\nfrom operator import add\nfrom langgraph.types import Send\n\nclass State(TypedDict):\n    docs: Annotated[list[Doc], add]        # reducer: parallel writers concatenate\n    messages: Annotated[list[AnyMessage], add_messages]\n\ndef fan_out(state):                        # dynamic: one task per query\n    return [Send(\"retrieve\", {\"query\": q}) for q in state[\"queries\"]]\n\ndef retrieve(payload):\n    try:\n        return {\"docs\": search(payload[\"query\"])}\n    except SearchError as e:\n        return {\"docs\": [], \"warnings\": [str(e)]}   # degrade, do not kill the step\n\nbuilder.add_conditional_edges(\"plan\", fan_out, [\"retrieve\"])\ngraph.invoke(inputs, config={\"max_concurrency\": 8})",
+    "followups": [
+      "What does add_messages do that a plain list append does not?",
+      "One of five branches raises. What do you want to happen, and how do you make it happen?",
+      "How do you keep results deterministic when branches finish out of order?",
+      "How does a fan-out appear in a trace, and how do you spot the slow branch?"
+    ],
+    "redflags": [
+      "Removes the parallelism instead of adding a reducer",
+      "Mutates state in place inside a node",
+      "Unbounded Send over a large list",
+      "Cannot say what happens when one branch fails"
+    ],
+    "memory": "Parallel writes need a reducer, dynamic fan-out needs Send, and both need a concurrency cap."
+  },
+  {
+    "id": "lg-runaway-loops",
+    "title": "Runaway Agent Loops and Cost Blowups",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "One user request burned a few hundred dollars of tokens because the agent kept calling the same tool over and over. How do you make that impossible rather than unlikely?",
+    "technical": [
+      "The recursion limit (25 super-steps by default) raises <code>GraphRecursionError</code> and stops the graph, but it stops it with an exception rather than an answer, and it counts steps rather than money. It is a seatbelt, not a budget.",
+      "Put the budget in state: steps taken, tokens spent, calls per tool. A guard on the conditional edge routes to a graceful-exit node that returns partial results and a handoff, which is a far better user experience than a stack trace at step 25.",
+      "Detect the loop itself. The same tool name with the same arguments twice in a row is nearly always a stuck agent. Short-circuit the repeat and tell the model plainly that the call was already made and what it returned, so it stops trying.",
+      "The root cause is usually a tool that hands back something unusable: an empty list, a raw stack trace, a 300 KB blob. Tools need a contract that returns short, structured, actionable text, and most loops disappear when the tool explains what to do next.",
+      "Enforce ceilings outside the graph too, because the graph is not the only way to spend money: per-tenant token quota, a hard wall-clock timeout on the run, and an alert on cost per conversation so finance is not the monitoring system."
+    ],
+    "layman": "A satnav that keeps recalculating the same wrong turn. The car needs a rule that says after ten attempts, stop and admit it is lost.",
+    "usecases": [
+      "Tool-calling agents in customer-facing paths",
+      "Agents with search or browsing tools",
+      "Anything looping until a condition is met",
+      "Per-tenant cost control"
+    ],
+    "code": "class State(TypedDict):\n    messages: Annotated[list[AnyMessage], add_messages]\n    steps: int\n    tokens: int\n    last_call: str | None\n\nMAX_STEPS, MAX_TOKENS = 12, 60_000\n\ndef guard(state) -> str:\n    if state[\"steps\"] >= MAX_STEPS or state[\"tokens\"] >= MAX_TOKENS:\n        return \"give_up\"                       # answer partially, hand off\n    return \"tools\" if state[\"messages\"][-1].tool_calls else \"end\"\n\ndef call_tool(state):\n    call = state[\"messages\"][-1].tool_calls[0]\n    sig = f\"{call['name']}:{hash(str(call['args']))}\"\n    if sig == state[\"last_call\"]:              # identical repeat: break the loop\n        return {\"messages\": [ToolMessage(\"Already called with these arguments. \"\n                                         \"Use the previous result or ask the user.\",\n                                         tool_call_id=call[\"id\"])]}\n    return {\"messages\": [run(call)], \"last_call\": sig, \"steps\": state[\"steps\"] + 1}\n\ngraph.invoke(inputs, config={\"recursion_limit\": 30})   # backstop only",
+    "followups": [
+      "What state is left behind when GraphRecursionError is raised, and can the user resume?",
+      "Why does a badly worded tool error make an agent loop?",
+      "How would you alert on this before the invoice arrives?",
+      "What does the user see when the budget runs out?"
+    ],
+    "redflags": [
+      "Answers by raising the recursion limit",
+      "No cost ceiling per request or per tenant",
+      "Tools that return raw exceptions to the model",
+      "No detection of repeated identical calls"
+    ],
+    "memory": "Recursion limit is the seatbelt; budgets in state, repeat detection and good tool errors are the brakes."
+  },
+  {
+    "id": "lg-durable-recovery",
+    "title": "Crash Recovery and At-Least-Once Tools",
+    "category": "LangChain Stack",
+    "difficulty": "Complex",
+    "question": "Your pod is rescheduled while an agent is halfway through a five-minute run. What happens to that run, and how do you make sure the customer is not charged twice when it resumes?",
+    "technical": [
+      "With a checkpointer, the run is resumable: invoke again with the same thread id and LangGraph replays from the last completed super-step rather than from the beginning. Without one, the work is gone and the user gets nothing.",
+      "Resumption is <strong>at-least-once</strong>. Anything a node did after its last checkpoint may happen again, so every external side effect needs an idempotency key: the provider's Idempotency-Key header, a unique constraint, or a dedupe table keyed on thread id and step.",
+      "Durability mode sets how much you lose. Synchronous per-step writes cost latency and lose one step; deferring writes to the end is faster and loses everything on a crash. Choose per graph, based on how expensive the steps are to redo.",
+      "Long runs do not belong inside an HTTP request. Start them as background work, return an id, then stream or poll, otherwise a sixty-second gateway timeout quietly becomes the maximum time your agent is allowed to think.",
+      "Handle SIGTERM: stop taking new steps, finish the current one, checkpoint, then exit. Most duplicate execution in practice is an ungraceful kill rather than anything exotic in the framework."
+    ],
+    "layman": "A saved game. You restart at the last save point, which means anything you did after that save happens for a second time.",
+    "usecases": [
+      "Deployments and node preemption during live runs",
+      "Agents that call payment or email providers",
+      "Long research or migration jobs",
+      "Anything a user expects to survive a refresh"
+    ],
+    "code": "# resume is just the same thread id again\nconfig = {\"configurable\": {\"thread_id\": thread_id}}\ntry:\n    result = graph.invoke(inputs, config)\nexcept (PodShutdown, TimeoutError):\n    result = graph.invoke(None, config)      # replays from last checkpoint\n\n# every side effect carries a key derived from the run, not the clock\ndef charge(state):\n    key = f\"{state['thread_id']}:{state['step']}:{state['order_id']}\"\n    return {\"payment\": stripe.PaymentIntent.create(\n        amount=state[\"amount\"], idempotency_key=key)}\n\n# find runs that never finished\n# SELECT thread_id, max(created_at) FROM checkpoints\n#  GROUP BY thread_id HAVING max(created_at) < now() - interval '1 hour';",
+    "followups": [
+      "Exactly which parts of the interrupted super-step run a second time?",
+      "Where does the idempotency key come from, and why not a timestamp or a UUID generated in the node?",
+      "Are you offering at-least-once or exactly-once to the caller? Say it precisely.",
+      "How do you find and finish runs that were abandoned mid-flight?"
+    ],
+    "redflags": [
+      "Claims exactly-once execution",
+      "No idempotency on payments, emails or ticket creation",
+      "Runs multi-minute agents inside a request thread",
+      "In-memory checkpointer behind a load balancer"
+    ],
+    "memory": "Checkpoints make a run resumable, not exactly-once. Idempotency keys are what stop the second charge."
+  },
+  {
+    "id": "lg-multi-agent-context",
+    "title": "Multi-Agent Graphs and Context Bloat",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "You split one agent into a supervisor and four specialists, and the bill triples while the answers get worse. Why does that happen, and how do you build multi-agent properly?",
+    "technical": [
+      "The naive supervisor forwards the entire message list to every specialist, so each hop resends the whole transcript. Cost grows with agents times turns, and the model's attention is diluted across history it does not need.",
+      "Pass a task, not a transcript. Give each subagent a narrow input, the instruction and the identifiers it needs, and have it return a compact structured result. Subgraphs with their own state schema make that boundary explicit, with shared keys opted into rather than inherited.",
+      "Handoffs should be data. <code>Command(goto=..., update=...)</code> moves control and state together; parsing intent out of a sentence like 'I will pass this to billing' is where these systems become flaky.",
+      "Be honest about whether you have a multi-agent problem at all. If the specialists share tools, prompts and permissions, this is routing wearing a costume, and one agent with well-described tools is cheaper, faster and far easier to debug.",
+      "Debuggability is the hidden cost. Four agents mean four timelines to correlate during an incident, so propagate one request id, namespace the subgraph runs and stream with subgraph events enabled, or you will be reading disconnected traces at 2am."
+    ],
+    "layman": "Instead of asking a colleague a question, you forward them the entire email thread every time. They spend longer reading and often answer the wrong part.",
+    "usecases": [
+      "Supervisor and specialist architectures",
+      "Domain agents with different tool permissions",
+      "Pipelines where a step needs its own scratchpad",
+      "Anywhere multi-agent is being proposed and should be challenged"
+    ],
+    "code": "from langgraph.types import Command\n\n# subgraph with its own schema: it sees a task, not the whole conversation\nclass BillingState(TypedDict):\n    task: str\n    account_id: str\n    findings: list[str]\n\ndef supervisor(state) -> Command:\n    task = plan(state[\"messages\"])                # decide once, in structured form\n    return Command(goto=\"billing_agent\",\n                   update={\"task\": task.text, \"account_id\": task.account_id})\n\ndef billing_agent(state: BillingState):\n    result = billing_graph.invoke(state)          # isolated context\n    return {\"messages\": [AIMessage(summarise(result[\"findings\"]))]}   # compact return\n\nfor chunk in graph.stream(inputs, config, subgraphs=True, stream_mode=\"updates\"):\n    ...                                           # keeps subagent steps in one trace",
+    "followups": [
+      "When is a single agent with more tools the better answer?",
+      "Two agents keep handing work back and forth. How do you stop it?",
+      "What exactly does the supervisor see when a specialist finishes?",
+      "How do you evaluate one specialist on its own rather than the whole system?"
+    ],
+    "redflags": [
+      "Forwards full message history to every agent",
+      "Specialists with identical tools and prompts",
+      "Handoff decided by parsing free text",
+      "No shared request id across agents"
+    ],
+    "memory": "Send tasks, not transcripts. Subgraph boundaries and structured handoffs are what make multi-agent worth its cost."
+  },
+  {
+    "id": "lg-streaming-ux",
+    "title": "Streaming a Graph to a Real UI",
+    "category": "LangChain Stack",
+    "difficulty": "Medium",
+    "question": "Your agent takes twenty seconds and the user stares at a blank screen for eighteen of them, even though you are streaming. Where does streaming actually break?",
+    "technical": [
+      "Choose the right stream mode, or several: <code>updates</code> for what each node produced, <code>messages</code> for token-by-token output from model calls inside nodes, <code>values</code> for the whole state each step, and <code>custom</code> for events you emit yourself. Most UIs want messages plus updates.",
+      "Tokens only stream if the call is streamed end to end and the config is propagated. A node that calls the model without passing config through, or custom code that spawns a thread, quietly breaks both streaming and trace nesting at the same point.",
+      "Long tool calls are silent by design: nothing streams while a twelve-second API call runs. Emit your own progress events so the gap is narrated rather than blank, which is most of the perceived latency problem.",
+      "Infrastructure eats server-sent events. Reverse proxies buffer responses by default, so disable proxy buffering on that route and keep the connection alive, or the tokens arrive in one lump at the end and everything looks broken.",
+      "Streaming changes error handling: a failure after four hundred streamed tokens cannot be an HTTP 500. You need an in-band error event and a UI that can display a partial answer that stopped, plus a decision about whether partial output is kept or discarded."
+    ],
+    "layman": "A chef who talks you through the cooking feels quicker than a silent kitchen, even when dinner arrives at the same time.",
+    "usecases": [
+      "Chat interfaces",
+      "Long agent runs with visible progress",
+      "Showing which step is executing",
+      "Partial answers on failure"
+    ],
+    "code": "async for mode, chunk in graph.astream(\n        inputs, config, stream_mode=[\"updates\", \"messages\", \"custom\"],\n        subgraphs=True):                       # without this, subagent tokens vanish\n    if mode == \"messages\":\n        token, meta = chunk\n        yield sse(\"token\", token.content)\n    elif mode == \"custom\":\n        yield sse(\"progress\", chunk)           # narrate the silent gaps\n\n# inside a slow node\nfrom langgraph.config import get_stream_writer\ndef search_node(state):\n    get_stream_writer()({\"status\": \"searching invoices\"})\n    ...\n\n# nginx: stop the proxy from swallowing the stream\n# proxy_buffering off;  add_header X-Accel-Buffering no;",
+    "followups": [
+      "Tokens from a subgraph never reach the client. What is the usual cause?",
+      "How do you stream when the response is a structured object rather than prose?",
+      "The model call fails after 400 tokens. What does the user see?",
+      "What do you log for a response that was streamed?"
+    ],
+    "redflags": [
+      "Buffers the whole answer then returns it",
+      "No progress events during tool calls",
+      "Forgets proxy buffering and blames the framework",
+      "Drops config when calling the model inside a node"
+    ],
+    "memory": "Stream modes decide what, config propagation decides whether, custom events fill the silent gaps."
+  },
+  {
+    "id": "lg-testing-ci",
+    "title": "Testing an Agent Graph in CI",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "How do you test a graph whose output is different every run, so that a pull request can actually be blocked when someone makes it worse?",
+    "technical": [
+      "Test in three layers. Nodes are ordinary functions, so unit-test them with a scripted fake model. Routing functions are pure, so assert which edge a given state takes. The graph as a whole is evaluated against a dataset, not asserted against a string.",
+      "A fake model that returns scripted tool calls turns the graph into a deterministic state machine, which is the only cheap way to test the paths that never appear in a demo: tool errors, empty retrieval, budget exhaustion, the resume-after-interrupt path.",
+      "Behaviour belongs in a versioned dataset with evaluators that match the risk: did it call the right tool with the right arguments, is the answer grounded in what was retrieved, did it stay inside budget. Score the trajectory, not only the final text.",
+      "Gate on movement rather than absolutes. Compare each experiment against the previous one and fail on a drop beyond a threshold, because judge scores wobble by a point or two and an absolute bar either blocks everything or nothing.",
+      "Split the suite by cost: fast deterministic tests on every pull request, the expensive evaluation on merge to main or nightly. An eval that takes forty minutes and costs real money on every push gets switched off within a fortnight."
+    ],
+    "layman": "You can unit test that the indicator works. You cannot unit test good driving, so for that you run a driving test with a marking sheet and compare against the last attempt.",
+    "usecases": [
+      "Pull request gates for agent changes",
+      "Prompt and model upgrades",
+      "Refactoring a graph without changing behaviour",
+      "Proving a fix for a reported failure"
+    ],
+    "code": "class ScriptedModel(FakeChatModel):\n    def __init__(self, script): self.script = list(script)\n    def _generate(self, messages, **kw): return self.script.pop(0)\n\ndef test_budget_exhaustion_exits_gracefully():\n    model = ScriptedModel([tool_call(\"search\", {\"q\": \"x\"})] * 20)\n    out = build_graph(model).invoke({\"messages\": [HumanMessage(\"hi\")], \"steps\": 0})\n    assert out[\"status\"] == \"gave_up\"           # no exception reaches the user\n    assert out[\"steps\"] <= MAX_STEPS\n\ndef test_router_sends_billing_questions_to_billing():\n    assert route({\"intent\": \"refund\"}) == \"billing_agent\"\n\n# behaviour: dataset + evaluators, compared against the previous experiment\nresults = evaluate(run_agent, data=\"support-golden-v4\",\n                   evaluators=[correct_tool_called, grounded_in_context],\n                   experiment_prefix=\"pr-482\")",
+    "followups": [
+      "How do you test the human-in-the-loop branch without a human?",
+      "How do you stop the golden dataset going stale as the product changes?",
+      "The judge is flaky on ten percent of cases. What do you do?",
+      "What runs on every pull request, and what runs nightly?"
+    ],
+    "redflags": [
+      "Only tests the happy path",
+      "Asserts exact model output strings",
+      "No dataset, only manual spot checks",
+      "An evaluation that can never fail a build"
+    ],
+    "memory": "Unit-test the parts with a fake model, evaluate the whole against a dataset, and gate on regression from the last run."
+  },
+  {
+    "id": "ls-tracing-overhead",
+    "title": "LangSmith Tracing at Production Volume",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "You switch tracing on in production. What does it cost you in latency, money and risk, and how do you keep all three under control?",
+    "technical": [
+      "Tracing is batched and sent on a background worker, so the request path should not wait for it. The catch is that the process must live long enough to flush: in Lambda and other freeze-on-return runtimes, traces disappear unless you flush explicitly before returning.",
+      "Volume is the bill. Sample deliberately: everything in staging, a percentage of normal production traffic, and one hundred percent of the runs you actually investigate, which means errors, negative feedback and your highest-value tenants routed to their own project.",
+      "Metadata is what makes a trace searchable later. Attach request id, tenant, user, app version, prompt version and model at the root, or you cannot answer whether last Tuesday's prompt change hurt one particular customer.",
+      "Broken parent-child nesting is the most common complaint and almost always the same cause: config not propagated through a custom function, a thread, or a plain SDK call. Pass config through, or decorate with <code>@traceable</code>, rather than accepting orphaned runs.",
+      "Tracing must never take the application down. Fail open when the collector is unreachable, cap the queue rather than growing it without limit, and keep the feature behind a flag you can turn off during an incident without a deploy."
+    ],
+    "layman": "CCTV in a shop. Useful when something goes wrong, expensive if you keep every frame forever, and pointless if the recordings are not labelled with which till they came from.",
+    "usecases": [
+      "Debugging a bad answer a customer reported",
+      "Latency and cost breakdown per step",
+      "Comparing prompt or model versions in production",
+      "Serverless and short-lived worker deployments"
+    ],
+    "code": "import os\nfrom langsmith import traceable\nfrom langchain_core.tracers.langchain import wait_for_all_tracers\n\nos.environ[\"LANGSMITH_TRACING\"] = \"true\"\nos.environ[\"LANGSMITH_PROJECT\"] = f\"support-agent-{ENV}\"\nos.environ[\"LANGSMITH_SAMPLING_RATE\"] = \"0.1\"      # 10% of normal traffic\n\n@traceable(name=\"answer_ticket\")\ndef answer_ticket(ticket, config):\n    return graph.invoke({\"messages\": [...]}, config)\n\nconfig = {\"configurable\": {\"thread_id\": tid},\n          \"metadata\": {\"tenant\": tenant_id, \"user\": user_id,\n                       \"prompt_version\": PROMPT_V, \"release\": GIT_SHA},\n          \"tags\": [\"prod\", tier], \"run_name\": \"support-agent\"}\n\ndef lambda_handler(event, ctx):\n    try:\n        return answer_ticket(event, config)\n    finally:\n        wait_for_all_tracers()      # the process freezes on return; flush first",
+    "followups": [
+      "Which runs do you always trace regardless of the sampling rate?",
+      "A user reports a bad answer with only a timestamp. How do you find the run?",
+      "Hosted or self-hosted, and what decides it?",
+      "The collector is down and your queue is filling. What happens to the request?"
+    ],
+    "redflags": [
+      "Traces one hundred percent of high-volume traffic with no plan",
+      "Puts trace submission in the request path",
+      "No tenant or version metadata",
+      "Loses traces in serverless and blames the tool"
+    ],
+    "memory": "Sample, tag with identity, flush before the process dies, and fail open when the collector does not answer."
+  },
+  {
+    "id": "ls-pii-governance",
+    "title": "Traces, PII and the Compliance Conversation",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "Your traces contain everything the user typed plus whatever the tools returned. Legal asks where that data goes and who can see it. What is your answer?",
+    "technical": [
+      "Trace payloads are prompts, retrieved documents and tool responses, which is usually the most sensitive data in the whole system. On a hosted collector that data leaves your infrastructure, so residency, retention and subprocessor status are engineering questions, not paperwork.",
+      "Redact at source. Hide inputs and outputs wholesale with the environment flags, or give the client a redaction function so identifiers are stripped inside your process before anything is sent. Masking configured at the dashboard is not a promise you can make to a customer.",
+      "Total redaction produces traces nobody can debug with. The workable middle is to remove identifiers and keep structure: hash the customer id, keep the tool name and argument shape, keep the model's reasoning and the retrieved chunk ids rather than their full text.",
+      "Erasure requests reach traces too. You need to be able to find every run for a user, which means the user id must be in metadata in a hashed but searchable form, and short retention so most of the exposure ages out on its own.",
+      "Self-hosting exists for estates where nothing may leave, but price the operational cost honestly against the compliance gain, and check what your existing enterprise agreement and data-processing addendum already permit before rebuilding anything."
+    ],
+    "layman": "Recording every customer phone call is fine until someone asks how long you keep them, who can listen, and whether a customer can demand theirs be destroyed.",
+    "usecases": [
+      "Regulated industries and client data",
+      "Health, financial or identity data in prompts",
+      "Data residency commitments",
+      "Answering a security questionnaire"
+    ],
+    "code": "from langsmith import Client\n\ndef redact(payload: dict) -> dict:\n    out = dict(payload)\n    for field in (\"email\", \"phone\", \"national_id\", \"card\"):\n        if field in out:\n            out[field] = \"[redacted]\"\n    if \"customer_id\" in out:                       # keep it joinable, not readable\n        out[\"customer_id\"] = hashlib.sha256(\n            (SALT + out[\"customer_id\"]).encode()).hexdigest()[:16]\n    return out\n\nclient = Client(hide_inputs=redact, hide_outputs=redact)\n\n# blunt instrument when a whole surface must never be captured:\n# LANGSMITH_HIDE_INPUTS=true  LANGSMITH_HIDE_OUTPUTS=true",
+    "followups": [
+      "What is still useful in a redacted trace when you are debugging?",
+      "How do you find every run belonging to one user after redaction?",
+      "What retention would you set, and how did you arrive at it?",
+      "The tool returns full bank statements. Does anything change?"
+    ],
+    "redflags": [
+      "Assumes traces are internal-only",
+      "No redaction before data leaves the process",
+      "Indefinite retention with no owner",
+      "Cannot say which region the traces are stored in"
+    ],
+    "memory": "Redact inside your process, keep structure rather than identifiers, and be able to find and delete one user's runs."
+  },
+  {
+    "id": "ls-eval-regression",
+    "title": "Stopping Prompt Regressions Before Users Find Them",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "Someone tweaks a prompt to fix one complaint, and three other things quietly get worse. How do you catch that before release rather than after?",
+    "technical": [
+      "The dataset has to come from production, not imagination: real failures, awkward edge cases and a fair share of ordinary traffic, curated out of traces. Every incident ends with a case added, which is what stops the same bug shipping twice.",
+      "Run an experiment per change and compare against the previous experiment example by example. Averages hide the ten cases that broke, and the interesting output of an evaluation is the diff, not the headline number.",
+      "Pick evaluators that match the failure mode: deterministic checks where there is a correct answer, groundedness for retrieval, tool-call accuracy for agents, and a model judge only where nothing cheaper works. Calibrate the judge against human labels before you let it gate anything.",
+      "Version every input that can move the result: prompt, model, retrieval settings, tool definitions. If an experiment cannot tell you which of those changed, it cannot tell you what caused the drop.",
+      "Close the loop in production. Online evaluators scoring a sample of live traffic turn drift into a chart you watch rather than a support ticket you receive, and they catch the failures your dataset never imagined."
+    ],
+    "layman": "Changing a recipe to please one diner. You cook the same ten dishes again and check nobody else's dinner got worse.",
+    "usecases": [
+      "Prompt and model changes",
+      "Retrieval or chunking changes",
+      "Provider or version upgrades",
+      "Release gates for AI features"
+    ],
+    "code": "from langsmith import Client, evaluate\nclient = Client()\n\n# grow the dataset from real traces, especially the bad ones\nruns = client.list_runs(project_name=\"support-agent-prod\",\n                        filter='and(eq(feedback_key,\"user_score\"), lt(feedback_score,1))',\n                        limit=50)\nclient.create_examples(dataset_name=\"support-golden-v4\",\n                       inputs=[r.inputs for r in runs],\n                       outputs=[{\"expected\": review(r)} for r in runs])\n\ndef grounded(run, example):\n    cited = set(run.outputs[\"chunk_ids\"])\n    return {\"key\": \"grounded\", \"score\": float(cited <= set(run.outputs[\"retrieved\"]))}\n\nexp = evaluate(target, data=\"support-golden-v4\",\n               evaluators=[grounded, correct_tool_called, judge_helpfulness],\n               experiment_prefix=f\"prompt-{PROMPT_V}\",\n               metadata={\"model\": MODEL, \"prompt_version\": PROMPT_V})\n# CI fails when any metric drops more than the threshold vs the last experiment",
+    "followups": [
+      "How many examples are enough, and what makes a bad one?",
+      "How do you keep the dataset honest as the product changes?",
+      "Would you block a release on a judge score alone? Why not?",
+      "Who signs off a prompt change, and what do they look at?"
+    ],
+    "redflags": [
+      "Compares two prompts by eye and ships",
+      "Looks only at the average score",
+      "Uses a judge that was never calibrated",
+      "Dataset written by the same person who wrote the prompt"
+    ],
+    "memory": "Curate cases from real traces, compare experiments per example, and calibrate the judge before it gates a release."
+  },
+  {
+    "id": "ls-production-feedback",
+    "title": "From a Thumbs-Down to a Fixed Prompt",
+    "category": "LangChain Stack",
+    "difficulty": "Medium",
+    "question": "A user clicks thumbs-down on an answer. Walk me through everything that has to be wired up for that click to become a fix.",
+    "technical": [
+      "The run must be identifiable at the moment you answer. Capture the run or trace id while generating and return it to the client, so feedback attaches to that exact run instead of to a timestamp somebody has to correlate by hand.",
+      "The feedback is written back against the run, and the trace carries the context that explains it: retrieved chunks, tool calls, model version, prompt version. Without that link you know something was wrong but never what.",
+      "Triage needs to be automatic. A rule routes negative-feedback runs into an annotation queue where a human labels the actual failure: wrong retrieval, wrong tool, right facts with the wrong tone, or a user disagreeing with a correct answer.",
+      "The label decides where the fix goes, and they are different places: retrieval into the index or chunking, tool problems into the tool contract, tone into the prompt. Every confirmed case is added to the dataset so the fix stays fixed.",
+      "Read the aggregate rather than the anecdote. Feedback rate by tenant, by version and over time tells you whether you are improving; a single thumbs-down is a story, and a meaningful share of them are users disagreeing with an answer that was right."
+    ],
+    "layman": "A complaint card that arrives with the receipt attached. Without the receipt you know someone was unhappy, but not what they ordered.",
+    "usecases": [
+      "In-product thumbs up and down",
+      "Support escalation from an AI answer",
+      "Weekly quality review",
+      "Building a dataset from real failures"
+    ],
+    "code": "from langsmith import Client\nfrom langsmith.run_helpers import get_current_run_tree\n\nclient = Client()\n\ndef answer(question, config):\n    result = graph.invoke({\"messages\": [HumanMessage(question)]}, config)\n    run_id = get_current_run_tree().id            # hand the id back to the client\n    return {\"answer\": result[\"messages\"][-1].content, \"run_id\": str(run_id)}\n\n# POST /feedback  {\"run_id\": \"...\", \"score\": 0, \"comment\": \"wrong invoice\"}\ndef record_feedback(run_id, score, comment):\n    client.create_feedback(run_id, key=\"user_score\", score=score, comment=comment)\n    # an automation rule sends score=0 runs to an annotation queue for labelling",
+    "followups": [
+      "The user gives feedback ten minutes later from another page. Does it still attach?",
+      "How do you handle feedback that is simply wrong?",
+      "Who reads the annotation queue, and how often?",
+      "How long is the loop from complaint to a released fix?"
+    ],
+    "redflags": [
+      "Stores thumbs in its own table with no link to the run",
+      "Nobody is responsible for reading it",
+      "Feedback never becomes dataset examples",
+      "Treats every complaint as a defect"
+    ],
+    "memory": "Return the run id with the answer. Feedback that cannot find its run is just a number on a dashboard."
+  },
+  {
+    "id": "lc-version-churn",
+    "title": "Living With LangChain Upgrades",
+    "category": "LangChain Stack",
+    "difficulty": "Medium",
+    "question": "You are a year behind on LangChain and every upgrade breaks something. How do you keep a production application on a framework that moves this fast?",
+    "technical": [
+      "Pin exact versions and upgrade on purpose. The core package, the umbrella package and each provider integration move on their own cadence, and core is what decides compatibility, so a lockfile plus a scheduled upgrade slot beats an emergency bump during an incident.",
+      "Keep the framework at the edges. A thin internal interface, your own function that takes a question and returns an answer, means a breaking change touches a handful of files rather than the whole codebase, and lets you drop the abstraction on one path without a rewrite.",
+      "Know what you are buying. The value is provider-agnostic messages and tool calls, the integration surface and the ecosystem around it. If your application is one prompt against one provider, the vendor SDK is less code and one fewer dependency to chase.",
+      "Migrations follow a rhythm: the old API keeps working, gets deprecated, then goes. Agent executors giving way to the newer agent constructor, Pydantic v1 to v2, providers moving out of the monolith into their own packages. Move at the deprecation warning, not at the removal.",
+      "Your evaluation dataset is the real upgrade test. Code that type-checks can still behave differently because prompt formatting, message coercion and tool-call handling change between versions, so run the experiment before and after every bump."
+    ],
+    "layman": "Renovating with a supplier who keeps changing their fittings. You keep the plumbing behind one panel so next year's change is a panel, not the whole house.",
+    "usecases": [
+      "Long-lived production applications",
+      "Regulated environments with slow dependency approval",
+      "Deciding whether to keep or drop the framework",
+      "Planning a major version migration"
+    ],
+    "code": "# pin the pieces that move independently\nlangchain-core==<pinned>\nlangchain==<pinned>\nlangchain-openai==<pinned>\nlanggraph==<pinned>\n\n# keep the framework behind one seam\nclass AnswerService:\n    \"\"\"Everything LangChain-shaped lives below this line.\"\"\"\n    def answer(self, question: str, ctx: Context) -> Answer:\n        result = self._graph.invoke(...)\n        return Answer(text=..., citations=..., usage=...)\n\n# upgrade procedure: bump -> run the same eval dataset -> compare experiments\n# a green test suite is not evidence that behaviour is unchanged",
+    "followups": [
+      "When would you drop the framework entirely for a given path?",
+      "How do you test an upgrade beyond the test suite?",
+      "Which kinds of change break quietly rather than loudly?",
+      "Who owns dependency upgrades on your team?"
+    ],
+    "redflags": [
+      "Unpinned dependencies in production",
+      "Framework calls scattered through business logic",
+      "Upgrades postponed until something forces it",
+      "Ships an upgrade without re-running evaluations"
+    ],
+    "memory": "Pin it, wrap it behind one seam, upgrade on a schedule, and re-run the evals because behaviour moves even when code compiles."
+  },
+  {
+    "id": "lc-structured-output",
+    "title": "Structured Output That Survives Production",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "Structured output works perfectly on your laptop and fails a few times an hour in production. What is actually going wrong, and what do you do about it?",
+    "technical": [
+      "Underneath it is either tool calling or a constrained JSON mode, and providers differ in how strictly they enforce a schema. Failures cluster in predictable places: unusual inputs, refusals, output truncated by the token limit, and streaming, none of which appear in a happy-path demo.",
+      "Design the schema for the model as well as the database. Shallow beats deeply nested, enums beat free text, field descriptions carry the instruction, and every optional field needs an explicit unknown value or the model invents something plausible to fill it.",
+      "Handle failure as a normal path: keep the raw response so you can see what came back, retry once with the validation error fed back in, then fall back to a simpler schema or a safe default. A validation exception surfaced to the user is not error handling.",
+      "Structure is not truth. A perfectly typed object can be entirely wrong, so validate the values against your own systems before acting on them: does that order id exist, is that amount within policy, is that date in the future.",
+      "Track the validation failure rate per model version as a metric with an alert on it. Provider-side changes show up as a step change in that rate days before anyone raises a support ticket."
+    ],
+    "layman": "Asking someone to fill in a form. Give them a short form with tick boxes and you get usable answers; give them a long one with blank boxes and they will write something in every field, whether they know it or not.",
+    "usecases": [
+      "Extraction from documents and emails",
+      "Routing and classification",
+      "Tool arguments and function calls",
+      "Anything whose output another system consumes"
+    ],
+    "code": "class Extraction(BaseModel):\n    intent: Literal[\"refund\", \"status\", \"complaint\", \"other\"]     # enum, not free text\n    order_id: str | None = Field(None, description=\"Format ORD-12345, null if absent\")\n    confidence: float = Field(ge=0, le=1)\n\nchain = model.with_structured_output(Extraction, include_raw=True)\n\ndef extract(text: str) -> Extraction:\n    out = chain.invoke(text)\n    if out[\"parsing_error\"]:\n        out = chain.invoke(f\"{text}\\n\\nYour last reply failed validation: \"\n                           f\"{out['parsing_error']}. Return valid JSON only.\")\n    if out[\"parsing_error\"]:\n        metrics.incr(\"extraction.failed\", tags=[f\"model:{MODEL}\"])\n        return Extraction(intent=\"other\", confidence=0.0)          # safe default\n    parsed = out[\"parsed\"]\n    if parsed.order_id and not orders.exists(parsed.order_id):     # shape is not truth\n        parsed.order_id = None\n    return parsed",
+    "followups": [
+      "The model refuses instead of returning the object. What happens next?",
+      "How do you stream a structured response to a UI?",
+      "The provider you need does not support tool calling. Now what?",
+      "How do you version a schema that another team already consumes?"
+    ],
+    "redflags": [
+      "No retry or fallback path",
+      "Deeply nested schema with free-text fields",
+      "Trusts values because the object validated",
+      "Falls back to regex over free text"
+    ],
+    "memory": "Shallow schema, keep the raw reply, retry once with the error, fall back safely, and validate values as well as shape."
+  },
+  {
+    "id": "lf-prototype-to-prod",
+    "title": "Taking a Langflow Flow to Production",
+    "category": "LangChain Stack",
+    "difficulty": "High",
+    "question": "A team built a working assistant on the Langflow canvas and the business now wants it live for real customers. What has to change before that is a good idea?",
+    "technical": [
+      "The defaults are prototype defaults: an embedded file-based database, automatic login rather than real authentication, and secrets typed into components on the canvas. Production needs an external Postgres, authentication and API keys turned on, and secrets in encrypted variables backed by a stable secret key, because rotating that key invalidates everything stored with it.",
+      "Flows are JSON artefacts, so treat them as build artefacts: exported into git, promoted from dev to staging to production through the API rather than rebuilt by hand in each environment. Reviewing a diff of flow JSON is genuinely painful, which is an argument for small flows with the real logic inside custom components.",
+      "Decide what the flow actually is. Serving internal tools and pilots from the visual runtime is reasonable; for a customer-facing path that needs retries, rate limiting, streaming, human-in-the-loop and tests, the flow is a design document you implement in code, and LangGraph is the natural target.",
+      "Operationally it is a web service with a database, so it needs the same things as any other: replicas behind a load balancer, health checks, resource limits, backups of the flow database, and an answer for flows that run longer than an HTTP request will wait.",
+      "Observability is not automatic. Point it at your tracing stack so a flow run produces the same traces as everything else, and put the same token budgets and rate limits in front of it that you would put in front of any other consumer of a paid model."
+    ],
+    "layman": "A kitchen drawn on a design tool is not a kitchen. The drawing is genuinely useful, but nobody plumbs in the sink by printing the picture and hanging it on the wall.",
+    "usecases": [
+      "Prototypes that got adopted",
+      "Internal tools built by non-engineers",
+      "Demonstrating a flow to stakeholders",
+      "Deciding whether to promote or rewrite"
+    ],
+    "code": "# production configuration, not the quickstart\nLANGFLOW_DATABASE_URL=postgresql://user:pass@host:5432/langflow\nLANGFLOW_AUTO_LOGIN=false\nLANGFLOW_SUPERUSER=admin\nLANGFLOW_SECRET_KEY=<stable key from the secret manager; rotating breaks variables>\nLANGSMITH_TRACING=true\nLANGSMITH_PROJECT=langflow-prod\n\n# promote the same artefact rather than rebuilding by hand\n# git: flows/support-assistant.json  (reviewed, tagged, deployed)\n# POST /api/v1/flows/upload  with the exported JSON\n# POST /api/v1/run/{flow_id}  with x-api-key",
+    "followups": [
+      "How do you code-review a change to a flow?",
+      "Who is allowed to edit the production flow, and when?",
+      "The pod restarts and the flow database was local. What just happened?",
+      "What is the signal that this flow should be rewritten in code?"
+    ],
+    "redflags": [
+      "File-based database on a pod with no persistent volume",
+      "Automatic login left enabled",
+      "Secrets typed into components on the canvas",
+      "Editing flows directly in production",
+      "No export into version control"
+    ],
+    "memory": "External database, real authentication, encrypted secrets, flow JSON in git, and be clear whether the flow is the product or the blueprint."
+  },
+  {
+    "id": "lf-flow-governance",
+    "title": "Flow Governance When Analysts Build",
+    "category": "LangChain Stack",
+    "difficulty": "Medium",
+    "question": "Your Langflow canvas is now edited by analysts rather than engineers. How do you let them build without letting them ship something unsafe?",
+    "technical": [
+      "Put the risky logic inside custom components rather than on the canvas. A component is Python you own, reviewed and tested, holding the tool contract, timeouts, retries and permission checks. Analysts compose components; they do not hand-write the part that can spend money or delete rows.",
+      "Separate environments and permissions. Building happens on a development instance, production runs a promoted flow that nobody edits live, and the ability to publish is a role rather than a default. Without that, a Tuesday afternoon experiment becomes a customer incident.",
+      "Offer a paved path: a library of approved components, your retriever, your model wrapper with rate limiting already inside it, your sanctioned tools. When the default way to build is also the safe way, unapproved components become the exception that gets reviewed rather than the norm.",
+      "A flow change is a behaviour change, so the same rules apply as to code: run it against the evaluation dataset before promotion and trace it afterwards. Otherwise you have a system whose behaviour is edited by people with no way of knowing whether they made it worse.",
+      "Be honest about the ceiling. Branching, loops, retries, streaming and human-in-the-loop all get awkward on a canvas, and a flow sprouting conditional edges and error paths is telling you it has outgrown the tool. The canvas has already done its real job as a prototyping and communication surface."
+    ],
+    "layman": "Give people a set of tested, pre-wired appliances they can arrange however they like. Do not hand them the fuse box and hope.",
+    "usecases": [
+      "Analyst or operations teams building their own flows",
+      "Internal AI tooling at low engineering cost",
+      "Standardising retrieval and model access across a company",
+      "Deciding when to graduate a flow into code"
+    ],
+    "code": "from langflow.custom import Component\nfrom langflow.io import MessageTextInput, Output\n\nclass ApprovedRefundLookup(Component):\n    \"\"\"Reviewed, tested, permission-checked. The analyst just drops it on the canvas.\"\"\"\n    display_name = \"Refund Lookup (approved)\"\n    inputs = [MessageTextInput(name=\"order_id\", display_name=\"Order ID\")]\n    outputs = [Output(name=\"result\", display_name=\"Result\", method=\"run\")]\n\n    def run(self) -> str:\n        if not self.user_can(\"refunds:read\"):          # permission inside the component\n            return \"Not permitted for this user.\"\n        try:\n            order = orders.get(self.order_id, timeout=5)   # timeout inside, not on canvas\n        except NotFound:\n            return \"No order with that id. Ask the customer to confirm it.\"\n        return summarise(order)                        # short, structured, model-friendly",
+    "followups": [
+      "An analyst needs a component that does not exist yet. What is the path?",
+      "How do you stop a flow quietly calling an expensive model on every request?",
+      "What do you do when two people edit the same flow?",
+      "What would make you move this flow into LangGraph?"
+    ],
+    "redflags": [
+      "Anyone with the URL can edit production",
+      "Tools and credentials wired ad hoc on the canvas",
+      "No evaluation before a flow is promoted",
+      "Growing conditional logic on a canvas instead of moving to code"
+    ],
+    "memory": "Analysts compose, engineers own the components: promote flows like code and evaluate before they go live."
+  },
+  {
     "id": "llmops-lifecycle",
     "title": "LLMOps: Shipping and Operating LLM Systems",
     "category": "LLMOps",
