@@ -7131,6 +7131,430 @@
     "memory": "Analysts compose, engineers own the components: promote flows like code and evaluate before they go live."
   },
   {
+    "id": "crewai-crew-production",
+    "title": "CrewAI Crews Under Production Load",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "A CrewAI demo with four role-playing agents impressed everyone, and in production it is slow, expensive and gives a different answer every time. What is actually going wrong?",
+    "technical": [
+      "Crews are built on role-play: each agent has a role, goal and backstory, and the model decides how much to say and when it is finished. That freedom is what makes the demo charming and the production system non-deterministic, so <code>expected_output</code> on every task, and structured output via <code>output_pydantic</code>, is what turns prose into something a downstream system can consume.",
+      "Cost comes from conversation. The hierarchical process adds a manager model on top of every delegation, and <code>allow_delegation</code> lets agents bounce work between themselves. Start sequential, turn delegation on only where it earns its keep, and cap the damage with <code>max_iter</code>, <code>max_rpm</code> and a request-level token budget.",
+      "Memory is not free or portable. Enabling crew memory writes embeddings and history to a local storage directory, which quietly means an ephemeral container loses it on restart and two replicas do not share it. Point the storage at a real volume or an external store, and know what is in it before promising a retention policy.",
+      "Failure handling is the weak spot. A task that throws takes the run with it, and long crews run for minutes, so treat a kickoff as a background job with a queue, a timeout, retries at the task boundary and idempotent tools, rather than something a web request waits on.",
+      "Test it like a pipeline, not like a chat. Pin the model version, evaluate against a dataset of real inputs, assert on the structured fields rather than the prose, and watch tokens per kickoff as a metric, because the failure mode is usually gradual cost drift rather than a crash."
+    ],
+    "layman": "A meeting of enthusiastic colleagues will eventually produce a good answer, but the length of the meeting is not fixed and everyone is billing by the minute.",
+    "usecases": [
+      "Research and report generation",
+      "Content pipelines with review steps",
+      "Back-office workflows with distinct roles",
+      "Rapid prototyping of a multi-role process"
+    ],
+    "code": "from crewai import Agent, Task, Crew, Process\nfrom pydantic import BaseModel\n\nclass Brief(BaseModel):            # structure beats prose downstream\n    summary: str\n    risks: list[str]\n    sources: list[str]\n\nanalyst = Agent(role=\"Market analyst\", goal=\"Find and verify facts\",\n                backstory=\"Careful, cites sources.\", tools=[search],\n                allow_delegation=False,          # delegation is opt-in, not default\n                max_iter=6, llm=MODEL)\n\ntask = Task(description=\"Research {company} funding history\",\n            expected_output=\"Three verified facts with sources\",   # anti-rambling\n            agent=analyst, output_pydantic=Brief)\n\ncrew = Crew(agents=[analyst, writer], tasks=[task, write_task],\n            process=Process.sequential,          # hierarchical adds a manager LLM\n            memory=True, max_rpm=60, verbose=False)\n\n# run it as a job, not inside a request\nresult = crew.kickoff(inputs={\"company\": name})   # minutes, not milliseconds\n# CREWAI_STORAGE_DIR=/data/crewai   <- otherwise memory dies with the container",
+    "followups": [
+      "When would you use the hierarchical process, and what does it cost?",
+      "A task in the middle of the crew fails. What happens to the work already done?",
+      "Where does crew memory live by default, and what breaks when you scale to three replicas?",
+      "How would you make the output of a crew safe for another system to consume?"
+    ],
+    "redflags": [
+      "Runs a crew inside an HTTP request",
+      "Leaves delegation on everywhere",
+      "No expected_output, so agents ramble",
+      "Enables memory without knowing where it is stored",
+      "No token budget or cost monitoring per kickoff"
+    ],
+    "memory": "Constrain the role-play: structured outputs, delegation off by default, iteration and rate caps, and run kickoffs as background jobs."
+  },
+  {
+    "id": "crewai-flows-determinism",
+    "title": "CrewAI Flows: Putting Determinism Back In",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Most of your process is fixed business logic with two genuinely fuzzy steps, but you built it all as autonomous agents. How do you restructure it in CrewAI?",
+    "technical": [
+      "Flows are the deterministic layer: <code>@start</code>, <code>@listen</code> and <code>@router</code> give you an explicit event-driven graph with typed state you control, and a crew becomes one step inside it rather than the whole design. The rule of thumb is that anything you can express as an if-statement should be an if-statement.",
+      "State is a Pydantic model on the flow, so it is inspectable and testable, and <code>@persist</code> writes it so a flow can be resumed rather than restarted. Without persistence a crash in step seven means paying for steps one to six again.",
+      "Routing decisions belong in code wherever the input allows it. Use a router on a classified field rather than asking an agent to decide who acts next, which removes an entire class of non-determinism and a model call from every run.",
+      "Keep the agentic part small and bounded: one crew, a clear task, structured output, its own budget. That way the unpredictable part of the system has a fence around it and the rest can be tested like ordinary software.",
+      "Instrument the seams. Log the state transition at each listener, emit the structured output of each crew, and record tokens per step, so when quality drops you know which step moved rather than re-reading a transcript."
+    ],
+    "layman": "A production line with one skilled craftsman at a single station beats a workshop where everyone wanders around deciding what to do next.",
+    "usecases": [
+      "Business processes with a few judgement calls",
+      "Multi-stage document workflows",
+      "Anything needing resumability or audit",
+      "Reducing cost of an over-agentic prototype"
+    ],
+    "code": "from crewai.flow.flow import Flow, start, listen, router\nfrom crewai.flow.persistence import persist\nfrom pydantic import BaseModel\n\nclass State(BaseModel):\n    ticket_id: str = \"\"\n    category: str = \"\"\n    draft: str = \"\"\n\n@persist()                                   # survive a crash; resume, do not restart\nclass SupportFlow(Flow[State]):\n    @start()\n    def classify(self):\n        self.state.category = classifier.predict(self.state.ticket_id)   # cheap, deterministic\n\n    @router(classify)\n    def route(self):\n        return \"refund\" if self.state.category == \"refund\" else \"answer\"\n\n    @listen(\"answer\")\n    def answer(self):\n        out = research_crew.kickoff(inputs={\"id\": self.state.ticket_id})  # the fuzzy bit\n        self.state.draft = out.pydantic.summary\n\n    @listen(\"refund\")\n    def refund(self):\n        return process_refund(self.state.ticket_id)   # plain code, no agent needed",
+    "followups": [
+      "Which parts of your process genuinely need an agent, and how did you decide?",
+      "What does @persist store, and where would you put it in production?",
+      "How do you test a flow without calling a model?",
+      "How is this different from what LangGraph gives you?"
+    ],
+    "redflags": [
+      "Uses agents for decisions a rule could make",
+      "No persisted state, so failures restart from scratch",
+      "Routing decided by an LLM on every run",
+      "Cannot say which step caused a quality drop"
+    ],
+    "memory": "Flows for the deterministic skeleton, crews for the genuinely fuzzy steps, and persisted state so a crash resumes."
+  },
+  {
+    "id": "adk-sessions-state",
+    "title": "Google ADK: Sessions, State and Memory in Production",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Your ADK agent works perfectly in local development and forgets everything the moment you deploy two replicas. What did you miss, and how do sessions, state and memory actually differ?",
+    "technical": [
+      "The default in-memory session service is a development convenience: it lives in one process, so a restart wipes it and a second replica cannot see it. Production means a database-backed session service or the managed Vertex service, chosen before launch rather than after the first support ticket.",
+      "Three different things get confused. <strong>Session</strong> is the current conversation and its events; <strong>state</strong> is the key-value scratchpad attached to it; <strong>memory</strong> is the searchable long-term store across sessions. Wanting the agent to remember last week is a memory service question, not a session one.",
+      "State prefixes carry real semantics: unprefixed keys are session-scoped, <code>user:</code> spans that user's sessions, <code>app:</code> is global, and <code>temp:</code> is not persisted at all. Getting these wrong is how one user's preference leaks into another's conversation in a multi-tenant deployment.",
+      "State should be written through the event flow, using an agent's output key or an explicit state delta, rather than mutated directly on a session object. Direct mutation is invisible to the runner, so it is not persisted, not replayed, and not visible in the trace.",
+      "Artifacts are separate again: files and binary data belong in the artifact service backed by object storage, not stuffed into state, or every session load starts dragging PDFs and images across the wire."
+    ],
+    "layman": "The conversation you are having, the notepad next to you, and the filing cabinet behind you are three different things. Development mode keeps all three in your head and forgets them when you stand up.",
+    "usecases": [
+      "Multi-turn assistants on Cloud Run or GKE",
+      "Multi-tenant deployments",
+      "Agents that must recall earlier conversations",
+      "Handling uploaded files in an agent"
+    ],
+    "code": "from google.adk.agents import LlmAgent\nfrom google.adk.runners import Runner\nfrom google.adk.sessions import DatabaseSessionService      # not InMemory in prod\nfrom google.adk.memory import VertexAiMemoryBankService\nfrom google.adk.artifacts import GcsArtifactService\n\nagent = LlmAgent(name=\"support\", model=MODEL,\n                 instruction=\"Help with orders. Preferences: {user:language}\",\n                 tools=[lookup_order], output_key=\"last_answer\")   # writes to state\n\nrunner = Runner(app_name=\"support\", agent=agent,\n                session_service=DatabaseSessionService(db_url=DB_URL),\n                memory_service=VertexAiMemoryBankService(...),\n                artifact_service=GcsArtifactService(bucket=BUCKET))\n\nasync for event in runner.run_async(user_id=uid, session_id=sid, new_message=msg):\n    if event.is_final_response():\n        yield event.content\n\n# state scoping matters in multi-tenant systems:\n#   \"cart_items\"      -> this session only\n#   \"user:language\"   -> all sessions for this user\n#   \"app:model_flags\" -> everyone\n#   \"temp:raw_tool\"   -> never persisted",
+    "followups": [
+      "What is the difference between the session service and the memory service?",
+      "How does a preference get from one conversation into the next?",
+      "Where do uploaded files go, and why not into state?",
+      "How do you keep tenant A's state away from tenant B?"
+    ],
+    "redflags": [
+      "Ships the in-memory session service",
+      "Mutates session state directly instead of through events",
+      "Uses state as long-term memory",
+      "Stores file contents in state",
+      "No thought about state key scoping in multi-tenant apps"
+    ],
+    "memory": "Session is the conversation, state is the notepad, memory is the filing cabinet, and only the development services are in-memory."
+  },
+  {
+    "id": "adk-callbacks-eval",
+    "title": "Google ADK: Callbacks as the Control Plane",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Security asks you to block certain tool calls, redact data before it reaches the model, and prove the agent behaves the same after every change. Where does that go in an ADK agent?",
+    "technical": [
+      "Callbacks are the seam for all of it. Before and after hooks around the agent, the model and each tool let you inspect and, crucially, short-circuit: returning a response from a before-model or before-tool callback stops the call from ever happening, which is how you implement a real block rather than a polite instruction in the prompt.",
+      "Put policy in a callback, not in the instruction text. A before-tool callback checks permissions and argument sanity for the current user, a before-model callback redacts identifiers, an after-model callback screens the output. Prompt instructions are advisory, callbacks are enforced.",
+      "The same hooks carry observability and cost control: attach request and tenant identifiers, count tokens per step, cache expensive tool results, and enforce a per-run budget by refusing further model calls once it is spent.",
+      "Behaviour gets locked in with evaluation sets rather than assertions, scoring both the final response and the tool trajectory, since an agent that reaches the right answer through the wrong tools is a bug waiting to bite. Run them in CI with the model version pinned.",
+      "Compose deterministic structure with workflow agents where the process is known: sequential, parallel and loop agents make the shape explicit instead of hoping the model orchestrates itself, and each sub-agent stays small enough to evaluate on its own."
+    ],
+    "layman": "A doorman who can actually stop someone entering is a different thing from a sign asking people not to come in. Callbacks are the doorman.",
+    "usecases": [
+      "Enforcing permissions on tool calls",
+      "Redacting sensitive data before it reaches the model",
+      "Per-run cost ceilings",
+      "Regression testing agent behaviour in CI"
+    ],
+    "code": "from google.adk.agents.callback_context import CallbackContext\nfrom google.genai import types\n\ndef before_tool(tool, args, tool_context):\n    user = tool_context.state.get(\"user:role\")\n    if tool.name == \"issue_refund\" and user != \"supervisor\":\n        return {\"error\": \"Not permitted. Ask a supervisor to approve.\"}   # blocked\n    if tool.name == \"issue_refund\" and args.get(\"amount\", 0) > 500:\n        return {\"error\": \"Above the automatic limit; escalate instead.\"}\n    return None                                    # None = allow the call\n\ndef before_model(ctx: CallbackContext, llm_request):\n    if ctx.state.get(\"tokens\", 0) > BUDGET:        # hard stop on spend\n        return types.Content(parts=[types.Part(text=\"Budget reached; handing to a human.\")])\n    redact_in_place(llm_request)                   # strip identifiers pre-send\n    return None\n\nagent = LlmAgent(name=\"support\", model=MODEL, tools=[issue_refund],\n                 before_tool_callback=before_tool,\n                 before_model_callback=before_model)\n\n# behaviour is pinned by evalsets, scoring tool trajectory as well as the answer:\n#   adk eval ./support_agent ./evalsets/refunds.evalset.json",
+    "followups": [
+      "Which callback do you use to stop a tool call, and what do you return?",
+      "Why is a permission check in the prompt not a control?",
+      "What does tool trajectory scoring catch that response scoring misses?",
+      "When would you reach for a sequential or loop agent instead of one LLM agent?"
+    ],
+    "redflags": [
+      "Enforces permissions by asking the model nicely",
+      "No way to block a tool call at runtime",
+      "Evaluates only the final text",
+      "One large agent where the process is actually fixed"
+    ],
+    "memory": "Callbacks are where policy, redaction, budgets and telemetry are enforced; evalsets are what keep behaviour from drifting."
+  },
+  {
+    "id": "openai-agents-sdk-guardrails",
+    "title": "OpenAI Agents SDK: Handoffs, Guardrails and Where Traces Go",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "You built an agent with the OpenAI Agents SDK. Legal asks where the conversation traces are stored, and the team asks why a jailbreak attempt still costs a full model call. What do you tell them?",
+    "technical": [
+      "Tracing is on by default and goes to the provider's dashboard, which is a data-governance decision someone has to make consciously. Disable it or point the exporter at your own collector when prompts contain customer data, and record that decision somewhere auditable.",
+      "Input guardrails run alongside the agent and trip a tripwire that raises immediately, which is the point: a cheap classifier can stop an abusive or off-topic request before the expensive model call happens. Output guardrails do the same on the way back for leakage and policy.",
+      "Handoffs and agent-as-tool are different shapes. A handoff transfers control and the conversation continues in the other agent; agent-as-tool calls a sub-agent, gets a result and keeps control. Choosing wrongly is why some systems lose track of who is answering.",
+      "Bound the loop with a maximum number of turns and a timeout, then decide what happens when the ceiling is hit, because the default failure is an exception at the worst possible moment rather than a graceful partial answer.",
+      "Sessions give conversation history for free, but the default local storage is single-process; a real deployment needs a shared, durable session store and a retention policy, since that store now holds the full transcript."
+    ],
+    "layman": "A bouncer who checks people at the door costs less than a waiter who takes an order, cooks the meal, and then throws it away.",
+    "usecases": [
+      "Customer-facing assistants",
+      "Routing between specialised agents",
+      "Blocking abuse and off-topic use cheaply",
+      "Regulated environments with data-residency rules"
+    ],
+    "code": "from agents import Agent, Runner, input_guardrail, GuardrailFunctionOutput\nfrom agents import InputGuardrailTripwireTriggered, set_tracing_disabled\n\nset_tracing_disabled(True)          # or export to your own collector; decide deliberately\n\n@input_guardrail\nasync def topical(ctx, agent, user_input) -> GuardrailFunctionOutput:\n    verdict = await cheap_classifier(user_input)      # small model, runs first\n    return GuardrailFunctionOutput(\n        output_info=verdict,\n        tripwire_triggered=verdict.off_topic or verdict.jailbreak)\n\nbilling = Agent(name=\"Billing\", instructions=\"Handle invoices only.\", tools=[lookup])\ntriage = Agent(name=\"Triage\", instructions=\"Route the customer.\",\n               handoffs=[billing],                    # transfers control\n               input_guardrails=[topical])\n\ntry:\n    result = await Runner.run(triage, user_text, max_turns=8)\nexcept InputGuardrailTripwireTriggered:\n    return \"I can only help with account and billing questions.\"   # no expensive call made",
+    "followups": [
+      "When do you use a handoff rather than calling an agent as a tool?",
+      "What happens when max_turns is reached, and what should the user see?",
+      "Where do sessions live once you run more than one instance?",
+      "What is the cost argument for guardrails, separate from the safety argument?"
+    ],
+    "redflags": [
+      "Leaves default tracing on with customer data",
+      "Guardrails implemented as instructions in the prompt",
+      "No turn ceiling or timeout",
+      "Assumes local session storage will scale"
+    ],
+    "memory": "Guardrails trip before you pay, handoffs move control, and default tracing and sessions both need a deliberate decision."
+  },
+  {
+    "id": "ms-agent-framework",
+    "title": "AutoGen, Semantic Kernel and Conversation-Driven Agents",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "Medium",
+    "question": "A .NET-heavy enterprise wants agents, and someone suggests AutoGen because the multi-agent conversation demos look impressive. What do you warn them about?",
+    "technical": [
+      "Conversation-driven multi-agent is the most expensive way to be non-deterministic. Agents that chat until they agree have no natural stopping point, so explicit termination conditions, a maximum message count and a cost ceiling are mandatory rather than tuning knobs.",
+      "The two Microsoft lineages solve different problems: AutoGen came from research into multi-agent conversation and is excellent for exploration, while Semantic Kernel came from enterprise application development with plugins, filters and first-class .NET and Java support. Microsoft has been converging them into a single agent framework, so a new build should target the converged path rather than the older ones.",
+      "For an enterprise the deciding factors are usually not agent cleverness: language support across .NET and Python, identity integration, network and data-residency constraints, OpenTelemetry that lands in the APM they already run, and a support relationship. Those matter more than which library has the nicer demo.",
+      "Whatever the framework, the production shape is the same: bound the loop, make tool calls idempotent, checkpoint long workflows so a crash resumes, and keep human approval in front of anything irreversible.",
+      "Watch out for demos that dissolve on contact with real data. Agents debating in a transcript looks like reasoning, but if the same result comes from one model call with two good tools, the multi-agent version is just a slower, costlier way to get there."
+    ],
+    "layman": "A committee that keeps talking until everyone agrees will get there eventually, but nobody scheduled the end of the meeting and the room is charged by the hour.",
+    "usecases": [
+      "Microsoft-centric enterprises",
+      "Existing .NET application estates",
+      "Exploratory research with multiple perspectives",
+      "Azure-hosted AI platforms"
+    ],
+    "code": "Interview focus:\n- Conversation-based multi-agent needs explicit termination, message caps and a budget.\n- AutoGen came from research on agent conversation; Semantic Kernel from enterprise\n  application development with plugins and filters; Microsoft has been converging\n  them into one agent framework, which is what a new build should target.\n- The enterprise decision is usually language support, identity, data residency,\n  OpenTelemetry into the existing APM, and support - not agent cleverness.\n- Same production rules regardless of framework: bound the loop, idempotent tools,\n  checkpoint long runs, human approval before anything irreversible.",
+    "followups": [
+      "How does a group of chatting agents decide it is finished?",
+      "What would make you choose this stack over LangGraph or ADK?",
+      "How do you get these traces into the APM the company already pays for?",
+      "How would you prove the multi-agent version beats one agent with good tools?"
+    ],
+    "redflags": [
+      "No termination condition on a group chat",
+      "Chooses on demo quality rather than platform fit",
+      "Assumes multi-agent is inherently better",
+      "No plan for tracing into existing monitoring"
+    ],
+    "memory": "Conversation-driven agents need hard termination and budgets; in an enterprise, platform fit beats framework cleverness."
+  },
+  {
+    "id": "agent-framework-choice",
+    "title": "Choosing an Agent Framework You Will Not Regret",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "Complex",
+    "question": "LangGraph, CrewAI, ADK, the OpenAI Agents SDK, or no framework at all. How do you actually make this decision, and how much does it cost you if you get it wrong?",
+    "technical": [
+      "Start with the shape of the problem, not the library. A fixed process with a couple of judgement calls wants explicit orchestration; an open-ended task with tools wants a bounded agent loop; a single prompt with structured output wants no framework at all. Most production systems are the first or third, and are built as the second by mistake.",
+      "Then let the non-negotiables eliminate options: language, cloud and data residency, whether you need durable multi-day runs, human-in-the-loop, streaming, per-tenant isolation, and where traces are allowed to go. That list usually leaves two candidates, at which point ergonomics can decide.",
+      "Know what is actually portable. Prompts, tool implementations, evaluation datasets and business logic move between frameworks with modest effort. The orchestration graph, the state model and the runtime do not. So keep tools as plain functions with the framework wrapper on the outside, and the migration cost stays bounded.",
+      "Weigh the ecosystem honestly: tracing, evaluation, deployment targets, security review of transitive dependencies, and how quickly the API is still changing. A framework that moves fast is a running upgrade cost that someone has to own.",
+      "Judge with a spike, not a demo. Build the same nasty case in two candidates, including a tool failure, a human approval and a resume after a crash, and measure tokens, latency and how long debugging took. The framework that makes the ugly path clear is the right one."
+    ],
+    "layman": "Choosing a delivery van by watching an advert on a smooth road tells you nothing. Load it up, drive it uphill in the rain, and see which one you can still service yourself.",
+    "usecases": [
+      "Starting a new AI product",
+      "Standardising across teams",
+      "Replacing a prototype that reached production",
+      "Justifying the choice to an architecture board"
+    ],
+    "code": "Interview focus:\n- Match the shape first: fixed process + judgement -> explicit orchestration;\n  open-ended with tools -> bounded agent loop; one prompt -> no framework.\n- Eliminate on non-negotiables: language, cloud, residency, durability,\n  human-in-the-loop, streaming, tenant isolation, where traces may go.\n- Portable: prompts, tools, eval datasets, business logic.\n  Not portable: orchestration graph, state model, runtime.\n  So write tools as plain functions and wrap them at the edge.\n- Decide with a spike on the ugly path: tool failure, approval, crash + resume.\n  Measure tokens, latency and debugging time - not demo quality.",
+    "followups": [
+      "What would make you use no framework at all?",
+      "Which parts of your system would survive a framework migration untouched?",
+      "How do you stop three teams picking three different frameworks?",
+      "Your framework releases a breaking major version. What is the plan?"
+    ],
+    "redflags": [
+      "Picks on popularity or demo quality",
+      "Cannot name what is portable",
+      "No spike, only a proof of concept on the happy path",
+      "Framework calls spread through business logic"
+    ],
+    "memory": "Match the problem shape, eliminate on non-negotiables, keep tools plain, and decide with a spike on the ugly path."
+  },
+  {
+    "id": "durable-agent-execution",
+    "title": "When Framework Checkpointing Is Not Enough",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "Complex",
+    "question": "Your agent workflow spans three days, calls four external systems and must survive deploys. Framework checkpointing is not covering it. What do you reach for?",
+    "technical": [
+      "Framework checkpointers are built for a run: they persist graph state so a process can resume. A durable execution engine such as Temporal, Restate, Step Functions or Durable Functions is built for a business process: retries with backoff per activity, timers measured in days, signals from outside, versioning of running workflows and visibility into every one in flight.",
+      "The split that works is orchestration outside, intelligence inside. Workflow code stays deterministic and does no model calls; every model call, tool call and database write is an activity with its own timeout and retry policy. The agent loop becomes an activity, or a child workflow when it needs its own steps.",
+      "That determinism rule is the part teams get wrong. Random values, timestamps and non-deterministic library calls in workflow code break replay, and an LLM is the least deterministic thing there is, which is exactly why it belongs behind an activity boundary.",
+      "Long processes need compensation, not just retries. Three days in, step four fails and step two already sent money, so you need a saga that reverses or escalates, plus idempotency keys everywhere, because at-least-once delivery means activities re-run.",
+      "Human steps become first-class: a signal or an update wakes the workflow when an approval arrives, with a durable timer that escalates if nobody responds. That is far more robust than a row in a table and a cron job, and it is visible in one place when someone asks where a case is stuck."
+    ],
+    "layman": "A recipe card helps you resume cooking after a phone call. Running a restaurant for three days needs a rota, a booking system and someone who notices an order never came back from the kitchen.",
+    "usecases": [
+      "Onboarding, claims and approval processes",
+      "Agents that wait days for a human or an external system",
+      "Multi-system workflows needing compensation",
+      "Anything an auditor will ask to trace end to end"
+    ],
+    "code": "# workflow: deterministic, no model calls, survives deploys\n@workflow.defn\nclass ClaimWorkflow:\n    @workflow.run\n    async def run(self, claim_id: str):\n        facts = await workflow.execute_activity(\n            gather_evidence, claim_id,\n            start_to_close_timeout=timedelta(minutes=5),\n            retry_policy=RetryPolicy(maximum_attempts=3))\n\n        assessment = await workflow.execute_activity(     # the agent lives here\n            run_agent, facts, start_to_close_timeout=timedelta(minutes=15))\n\n        if assessment.amount > 5_000:\n            await workflow.wait_condition(                # days, not seconds\n                lambda: self.approved is not None,\n                timeout=timedelta(days=3))\n            if self.approved is None:\n                return await workflow.execute_activity(escalate, claim_id)\n\n        try:\n            await workflow.execute_activity(pay, claim_id)   # idempotency key inside\n        except ActivityError:\n            await workflow.execute_activity(compensate, claim_id)   # saga, not retry\n\n    @workflow.signal\n    def approve(self, decision: bool): self.approved = decision",
+    "followups": [
+      "Why can the model call not live in workflow code?",
+      "Step four fails after step two moved money. What happens?",
+      "How do you deploy a change while thousands of workflows are mid-flight?",
+      "When is framework checkpointing genuinely sufficient?"
+    ],
+    "redflags": [
+      "Model calls inside deterministic workflow code",
+      "Retries without idempotency or compensation",
+      "Multi-day waits implemented with sleeps or cron",
+      "No way to list workflows currently stuck"
+    ],
+    "memory": "Durable engine outside for retries, timers, signals and versioning; the agent inside an activity, with sagas for what cannot be retried."
+  },
+  {
+    "id": "guardrails-runtime",
+    "title": "Running Guardrails Without Wrecking Latency",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "You add moderation, jailbreak detection and PII checks around your agent, and now every answer takes two seconds longer and support is complaining about false blocks. How do you build this properly?",
+    "technical": [
+      "Layer by cost and place each check where it pays. Cheap deterministic checks first, regex and allow-lists and length limits; then a small classifier for jailbreak and topicality on the input; then policy at the tool boundary; then an output check for leakage. A large model as a judge on every request is the expensive last resort, not the first line.",
+      "Spend latency in parallel, not in series. Input checks run alongside the first model call and cancel it on a trip; output checks on a streamed response run per chunk with a small buffer so nothing reaches the screen unchecked, rather than holding the whole answer back.",
+      "False positives are a product decision with a cost. Measure the block rate against sampled human labels, tune per surface rather than globally, and prefer a clarifying reply over a hard refusal when confidence is middling. A guardrail nobody trusts gets switched off, which is worse than a slightly leaky one.",
+      "The real enforcement point is the tool, not the text. Instructions in a prompt are advisory; permission checks, argument validation and spend limits inside the tool are what actually stop an injected instruction from doing damage, which matters more as tool results feed back into context.",
+      "Treat it as a living control: log every trip with enough context to review, keep a red-team set that grows with each new bypass, re-run it on model and prompt changes, and be careful about where blocked content is stored, since that store now holds the worst inputs you have ever received."
+    ],
+    "layman": "Airport security works because the quick checks come first and only a few bags get opened. Hand-searching every suitcase would be safer and nobody would ever catch a flight.",
+    "usecases": [
+      "Public-facing assistants",
+      "Agents with tools that can act",
+      "Regulated or child-safe products",
+      "Defending against prompt injection through retrieved content"
+    ],
+    "code": "async def answer(user_text, ctx):\n    # layer 1: deterministic, microseconds\n    if len(user_text) > MAX_INPUT or blocklist.search(user_text):\n        return refuse(\"input_rejected\")\n\n    # layer 2: small classifier in parallel with the real call; cancel on trip\n    guard = asyncio.create_task(jailbreak_classifier(user_text))\n    main  = asyncio.create_task(agent.astream(user_text, ctx))\n    verdict = await guard\n    if verdict.blocked:\n        main.cancel()\n        metrics.incr(\"guardrail.trip\", tags=[\"stage:input\", f\"rule:{verdict.rule}\"])\n        return refuse(\"off_policy\")\n\n    # layer 3: stream out, checking a small buffer at a time\n    buf = \"\"\n    async for chunk in main:\n        buf += chunk\n        if len(buf) > 200:\n            if pii.detect(buf): return refuse(\"pii_leak\")\n            yield buf; buf = \"\"\n\n# layer 4 (the one that matters): enforcement inside the tool\ndef issue_refund(order_id, amount, *, actor):\n    require_permission(actor, \"refunds:write\")\n    assert amount <= POLICY_LIMIT",
+    "followups": [
+      "Which check catches an injection that arrives inside a retrieved document?",
+      "How do you moderate a streamed answer without buffering all of it?",
+      "What is your false-positive rate, and how do you know?",
+      "Where do you store blocked content, and for how long?"
+    ],
+    "redflags": [
+      "A large judge model on every request",
+      "Guardrails only in the system prompt",
+      "No measurement of false positives",
+      "Serial checks that double latency",
+      "Blocked content logged with no retention thought"
+    ],
+    "memory": "Cheap checks first and in parallel, enforcement at the tool boundary, and measure false positives or it gets turned off."
+  },
+  {
+    "id": "managed-agent-runtimes",
+    "title": "Managed Agent Runtimes and What They Cost You",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Vertex AI Agent Engine, Bedrock AgentCore, LangGraph Platform, Azure AI Foundry. When is a managed agent runtime worth it, and what are you giving up?",
+    "technical": [
+      "What you are buying is the boring infrastructure: session and thread persistence, long-running executions that outlive an HTTP request, per-session isolation, scaling to zero, background runs and schedules, identity plumbing and tracing already wired in. Building that yourself is several months of platform work that has nothing to do with your product.",
+      "What you give up is portability and visibility. The runtime holds your session model and its scaling behaviour, debugging happens through their console, quotas and regional availability become your constraints, and the exit cost lands squarely on the orchestration layer, which is the least portable part of the system.",
+      "The economics turn on shape of load. Spiky, session-heavy, long-running workloads suit a managed runtime; steady high-throughput traffic on infrastructure you already run often does not, and per-session pricing can quietly exceed a small always-on service.",
+      "Compliance decides more of this than architecture does. Where sessions and memory are stored, which regions exist, what the retention and deletion story is, and whether prompts crossing into a managed service is acceptable at all: settle those before evaluating features.",
+      "The hedge is the same in every case: keep tools, prompts and evaluation datasets outside the runtime as ordinary code and data, and treat the runtime as deployment target rather than the home of your business logic. Then a move is a redeploy, not a rewrite."
+    ],
+    "layman": "Renting a fully serviced office gets you working on Monday. It is a genuinely good deal until you need to knock a wall through, and moving out means packing everything you put in the fitted cupboards.",
+    "usecases": [
+      "Small teams without platform engineers",
+      "Long-running or session-heavy agents",
+      "Enterprises standardising on one cloud",
+      "Getting a pilot in front of users quickly"
+    ],
+    "code": "Interview focus:\n- Buying: session/thread persistence, long runs past request timeouts, session\n  isolation, scale to zero, background runs and schedules, identity, tracing.\n- Giving up: portability of the orchestration layer, debugging outside your\n  own tooling, quotas and regional limits, per-session cost at scale.\n- Economics: spiky and session-heavy suits managed; steady high throughput on\n  infrastructure you already run usually does not.\n- Compliance first: where sessions and memory live, regions, retention, deletion.\n- Hedge: tools, prompts and eval datasets stay outside as ordinary code and data;\n  the runtime is a deployment target, not where business logic lives.",
+    "followups": [
+      "What exactly would you have to rewrite to move off it?",
+      "How do you debug a failing run when the runtime is not yours?",
+      "At what traffic level does self-hosting become cheaper?",
+      "What does the runtime store, and can you delete one user's data from it?"
+    ],
+    "redflags": [
+      "Adopts on convenience with no exit analysis",
+      "Business logic written inside the runtime's abstractions",
+      "No check on region availability or quotas",
+      "Cannot answer where session data is stored"
+    ],
+    "memory": "Managed runtimes sell you the boring infrastructure and charge you in portability: keep tools, prompts and evals outside."
+  },
+  {
+    "id": "agent-identity-permissions",
+    "title": "What Credentials Should an Agent Actually Hold?",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Your agent needs to read orders, issue refunds and email customers. Someone gives it a service account with all three permissions permanently. What is wrong with that, and what does good look like?",
+    "technical": [
+      "A standing account with the union of every permission is the worst case: one successful prompt injection now has all of it, and the audit log shows the service account rather than the person, so you cannot answer who authorised a refund.",
+      "Act on behalf of the user, not instead of them. Exchange the user's session for a short-lived, scoped token per action, so the agent can never do something the user could not do themselves, and the trail carries the real identity through to the downstream system.",
+      "Scope credentials per tool, per tenant and per run. Read tools get read tokens, the refund tool gets a token minted only after approval and only for that order, and tokens expire in minutes rather than living in the environment for the lifetime of the pod.",
+      "The classic failure is the confused deputy: content the agent reads instructs it to use its own privileges for something the user never asked for. Nothing in the prompt layer prevents that, so the tool itself must re-check who the actor is and what policy allows, on every call.",
+      "Log the authorisation decision, not only the action: which identity, which scope, which policy allowed it, which approval covered it. That is what makes an incident reviewable and what an auditor will ask for the moment an agent touches money."
+    ],
+    "layman": "You would not give a new contractor a master key to the building because they occasionally need the stockroom. They get a badge that opens that door, during their shift, with their name on the log.",
+    "usecases": [
+      "Agents acting on customer accounts",
+      "Multi-tenant SaaS with agent features",
+      "Agents calling internal APIs and MCP servers",
+      "Anything touching money, PII or production data"
+    ],
+    "code": "# BAD: standing credentials with the union of every permission\nagent = Agent(tools=[orders, refunds, email], creds=SERVICE_ACCOUNT_ALL)\n\n# BETTER: short-lived, scoped, on behalf of the actual user\ndef refund_tool(order_id: str, amount: int, *, ctx: ToolContext):\n    actor = ctx.user                                  # the human, not the agent\n    if not policy.allows(actor, \"refunds:write\", order_id):\n        return \"Not permitted for this user.\"         # re-checked at the tool\n    if amount > POLICY_LIMIT and not ctx.approval_id:\n        return \"Needs supervisor approval.\"\n\n    token = sts.exchange(subject_token=ctx.user_token,   # on-behalf-of\n                         scope=\"refunds:write\",\n                         resource=f\"order/{order_id}\",\n                         ttl_seconds=120)                # minutes, not months\n    resp = payments.refund(order_id, amount, token=token,\n                           idempotency_key=f\"{ctx.run_id}:{order_id}\")\n    audit.write(actor=actor, action=\"refund\", order=order_id,\n                amount=amount, policy=\"refunds:write\",\n                approval=ctx.approval_id, run=ctx.run_id)\n    return resp",
+    "followups": [
+      "The agent reads a document that tells it to email every customer. What stops it?",
+      "Who appears in the audit log when the agent acts, and is that enough?",
+      "How do you scope credentials in a multi-tenant deployment?",
+      "Which actions require approval, and who decides that list?"
+    ],
+    "redflags": [
+      "One service account holding every permission",
+      "Permission checks only in the prompt",
+      "Long-lived tokens in environment variables",
+      "Audit log shows the agent rather than the user",
+      "No approval step for irreversible actions"
+    ],
+    "memory": "Short-lived scoped tokens on behalf of the user, re-checked inside the tool, with the human identity in the audit trail."
+  },
+  {
+    "id": "vendor-neutral-agent-observability",
+    "title": "Agent Observability Without Vendor Lock-In",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "Medium",
+    "question": "Your agent traces live in one AI tool, your application traces in the company APM, and during an incident nobody can tell which is which. How do you fix that?",
+    "technical": [
+      "One request should be one trace. Agent spans belong under the same trace as the HTTP request, the database calls and the downstream services, which means propagating the trace context into the agent rather than starting a separate trace in a separate tool.",
+      "Use the OpenTelemetry generative-AI conventions as the common vocabulary: model, provider, token counts, tool name, run id. Once the spans carry standard attributes, they can be exported to more than one backend and can be queried alongside everything else you already monitor.",
+      "Most agent tracing tools are OpenTelemetry-compatible in one direction or another, so instrument once and export where it is useful: the AI-specific tool for prompt-level debugging and evaluation, the existing APM for latency, errors and correlation with the rest of the system.",
+      "Design the attributes you will need before the incident: tenant, user, request id, prompt version, model version, agent name, step index, tokens and cost per span. Those are what turn a trace from a story into a query you can aggregate over.",
+      "Mind what you put in span attributes. Full prompts and tool payloads mean your APM now stores customer data under a different retention policy, so redact at the exporter and decide deliberately what is captured at each level."
+    ],
+    "layman": "Two sets of CCTV with different clocks and no shared labels. Neither is wrong, and together they still cannot tell you what happened.",
+    "usecases": [
+      "Incidents spanning app and model calls",
+      "Cost attribution per tenant or feature",
+      "Comparing model or prompt versions in production",
+      "Companies with an existing APM investment"
+    ],
+    "code": "from opentelemetry import trace\ntracer = trace.get_tracer(\"agent\")\n\ndef handle(request):\n    with tracer.start_as_current_span(\"http.request\") as span:      # one trace\n        span.set_attribute(\"tenant.id\", request.tenant)\n        return run_agent(request, ctx=trace.get_current_span())      # context flows in\n\ndef call_model(messages, ctx):\n    with tracer.start_as_current_span(\"chat\", context=ctx) as span:\n        span.set_attributes({\n            \"gen_ai.system\": \"anthropic\",\n            \"gen_ai.request.model\": MODEL,\n            \"gen_ai.usage.input_tokens\": usage.input,\n            \"gen_ai.usage.output_tokens\": usage.output,\n            \"app.prompt_version\": PROMPT_V,\n            \"app.run_id\": run_id,\n        })\n        # prompts are NOT attributes by default: redact or sample deliberately\n\n# export once, fan out: AI tool for prompt debugging, APM for latency and errors",
+    "followups": [
+      "How does a trace id get from the load balancer into an agent step?",
+      "Which attributes do you need to answer cost per tenant?",
+      "What do you deliberately not put in a span, and why?",
+      "How do you avoid instrumenting twice when you change agent tooling?"
+    ],
+    "redflags": [
+      "Separate traces for app and agent",
+      "No shared request id",
+      "Full prompts written into APM attributes",
+      "Instrumentation tied to one vendor's SDK"
+    ],
+    "memory": "One trace per request, standard generative-AI attributes, export to more than one backend, and redact before the span leaves."
+  },
+  {
     "id": "llmops-lifecycle",
     "title": "LLMOps: Shipping and Operating LLM Systems",
     "category": "LLMOps",
