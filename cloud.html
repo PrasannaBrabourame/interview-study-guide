@@ -176,6 +176,76 @@
   .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
   .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
   .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:'IBM Plex Mono',monospace; color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:'IBM Plex Mono',monospace; font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .cmd{font-family:'IBM Plex Mono',monospace; font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
 </style>
 </head>
 <body>
@@ -194,6 +264,8 @@
 
   <div class="tabs" role="tablist">
     <button class="tab on" data-pane="journey" role="tab">How it works</button>
+    <button class="tab" data-pane="osi" role="tab">OSI layers</button>
+    <button class="tab" data-pane="netsim" role="tab">Network simulator</button>
     <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
     <button class="tab" data-pane="dr" role="tab">DR simulator</button>
     <button class="tab" data-pane="map" role="tab">AWS ↔ GCP translator</button>
@@ -243,6 +315,64 @@
           <h2 class="sec">Every stop</h2>
           <div class="jlist" id="jlist"></div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= OSI ================= -->
+  <section class="pane" id="pane-osi">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">One request, wrapped and unwrapped — what each layer adds</h2>
+      <div id="encapDiagram"></div>
+    </div>
+    <div class="osi-layout">
+      <div class="card">
+        <h2 class="sec">The seven layers</h2>
+        <div class="osi-stack" id="osiStack"></div>
+        <p class="simnote"><b>Reality check:</b> real networks run TCP/IP, which folds layers 5 to 7 into one. OSI survives because it gives everyone a shared vocabulary for where a problem lives.</p>
+      </div>
+      <div class="card" id="osiDetail"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2 class="sec">The comparison interviewers actually ask for</h2>
+      <div id="osiCompare"></div>
+    </div>
+  </section>
+
+  <!-- ================= NETWORK SIM ================= -->
+  <section class="pane" id="pane-netsim">
+    <div class="segmented" id="sceneTabs"></div>
+    <div class="sim-layout">
+      <div class="card">
+        <h2 class="sec" id="sceneTitle"></h2>
+        <div id="scenes"></div>
+        <div class="term" id="term" role="log" aria-live="polite" aria-label="Simulator output"></div>
+      </div>
+      <div>
+        <div class="card">
+          <h2 class="sec">Send traffic</h2>
+          <div id="sceneControls"></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h2 class="sec">What this shows</h2>
+          <p class="simnote" id="sceneNote"></p>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2 class="sec">CIDR calculator — how many addresses does that block actually give you?</h2>
+      <div class="sim-layout">
+        <div>
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:6px">Network address</label>
+          <input class="ip" id="cidrIp" value="10.0.0.0" spellcheck="false" aria-label="Base network address">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin:14px 0 6px">
+            Prefix <b style="font-family:'IBM Plex Mono',monospace;color:var(--amber)">/<span id="cidrVal">24</span></b>
+            <span id="cidrWarn" style="color:var(--red);font-size:11.5px"></span>
+          </label>
+          <input type="range" id="cidrSlider" min="8" max="32" value="24" aria-label="CIDR prefix length">
+          <p class="simnote"><b>Why five are missing:</b> AWS reserves the first four addresses and the last one in every subnet — network, VPC router, DNS, one held for future use, and broadcast. GCP reserves four. That is why a /28 gives you 11 usable addresses, not 16.</p>
+        </div>
+        <div class="cidr-out" id="cidrOut"></div>
       </div>
     </div>
   </section>
@@ -960,6 +1090,332 @@ jRender(0);
     if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
       document.getElementById('themeBtn').click();
   });
+})();
+
+/* ================= NETWORK SIMULATOR ================= */
+/* Nodes are anchored at percentage coordinates and centred with a transform, so the packet
+   can travel to the same coordinates without measuring anything. That keeps it correct in a
+   hidden pane, after a resize, and at any width. */
+const SCENES=[
+{id:'vpc', name:'VPC routing', title:'Public and private subnets — what a route table actually decides',
+ note:'A private subnet is not private because of a firewall. It is private because <b>its route table has no path to the internet gateway</b>. Outbound still works if you give it a NAT gateway, which is one-way by design: it lets replies back in, never new connections.',
+ zones:[{x:4,y:44,w:44,h:50,cls:'pub',l:'Public subnet · 10.0.1.0/24'},
+        {x:52,y:44,w:44,h:50,cls:'priv',l:'Private subnet · 10.0.2.0/24'}],
+ nodes:[{id:'net',x:50,y:9,cls:'net',t:'Internet',s:'0.0.0.0/0'},
+        {id:'igw',x:50,y:27,cls:'gw',t:'Internet gateway',s:'attached to the VPC'},
+        {id:'web',x:17,y:70,cls:'vm',t:'Web server',s:'has a public IP'},
+        {id:'nat',x:36,y:70,cls:'nat',t:'NAT gateway',s:'outbound only'},
+        {id:'db', x:74,y:70,cls:'db',t:'Database',s:'private IP only'}],
+ flows:[
+  {b:'Internet → web server', path:['net','igw','web'], block:null,
+   log:[['i','Public subnet route table: 0.0.0.0/0 → igw-0a1b'],['i','Packet accepted by the internet gateway'],
+        ['ok','Reached the web server. This is what a public subnet means.']]},
+  {b:'Internet → database', path:['net','igw'], block:1,
+   log:[['i','Looking for a route into 10.0.2.0/24 from outside'],
+        ['no','Private subnet route table has no 0.0.0.0/0 entry via the gateway'],
+        ['no','Dropped at the gateway. Nothing reaches the database, and no firewall was involved.']]},
+  {b:'Database → internet (via NAT)', path:['db','nat','igw','net'], block:null,
+   log:[['i','Private route table: 0.0.0.0/0 → nat-07f2'],['i','NAT rewrites the source to its own public address'],
+        ['ok','Outbound succeeded. Replies return through the same NAT translation.']]},
+  {b:'Internet → NAT gateway', path:['net','igw'], block:1,
+   log:[['i','Attempting a new inbound connection to the NAT gateway'],
+        ['no','NAT gateways accept no inbound connections — they only translate outbound flows'],
+        ['no','Dropped. For inbound you need a load balancer or a public instance.']]}]},
+
+{id:'ingress', name:'Ingress', title:'API Gateway, ALB and NLB — three doors at different layers',
+ note:'The choice is a layer choice. <b>ALB reads HTTP</b>, so it can route on path and host, and it terminates TLS. <b>NLB works at TCP/UDP</b>, so it is faster, keeps the client IP, and can hand encrypted bytes straight through. <b>API Gateway</b> adds auth, throttling and per-route contracts.',
+ zones:[],
+ nodes:[{id:'cli',x:50,y:10,cls:'net',t:'Client',s:'https request'},
+        {id:'apigw',x:17,y:42,cls:'gw',t:'API Gateway',s:'L7 · auth, quotas'},
+        {id:'alb',  x:50,y:42,cls:'gw',t:'ALB',s:'L7 · paths, hosts'},
+        {id:'nlb',  x:83,y:42,cls:'gw',t:'NLB',s:'L4 · TCP/UDP'},
+        {id:'fn',   x:17,y:78,cls:'db',t:'Lambda',s:'no server to run'},
+        {id:'web2', x:50,y:78,cls:'vm',t:'Web cluster',s:'target group :8080'},
+        {id:'game', x:83,y:78,cls:'vm',t:'Game server',s:'raw TCP :7777'}],
+ flows:[
+  {b:'API Gateway → Lambda', path:['cli','apigw','fn'], block:null,
+   log:[['i','POST /orders with a bearer token'],['i','API Gateway validates the token and applies the usage plan'],
+        ['ok','Invoked the function. You paid for the request, not for a server.']]},
+  {b:'ALB → web cluster (L7)', path:['cli','alb','web2'], block:null,
+   log:[['i','GET /checkout, Host: shop.example.com'],['i','TLS terminates here, so the ALB can read the path'],
+        ['i','Rule matched /checkout* → target group web-8080'],['ok','Forwarded to a healthy target.']]},
+  {b:'NLB → game server (L4)', path:['cli','nlb','game'], block:null,
+   log:[['i','TCP connection to port 7777'],['i','No HTTP is parsed — the NLB moves bytes, not requests'],
+        ['ok','Connected. The server sees the real client IP, not the load balancer.']]},
+  {b:'ALB → game server (TCP)', path:['cli','alb'], block:1,
+   log:[['i','Trying to carry a raw TCP game protocol through an HTTP listener'],
+        ['no','The ALB expects HTTP and cannot parse these bytes'],
+        ['no','Wrong layer. Non-HTTP protocols need the NLB.']]}]},
+
+{id:'security', name:'Security groups', title:'A stateful firewall, one port at a time',
+ note:'A security group is <b>stateful</b>: allow a connection in and the reply is automatically allowed out. A NACL is stateless and sits on the subnet, so it needs both directions written by hand. Both deny by default — with no rule at all, nothing gets through.',
+ zones:[{x:12,y:36,w:76,h:56,cls:'fw',l:'Security group · deny by default'}],
+ nodes:[{id:'usr',x:22,y:14,cls:'net',t:'Admin',s:'from the office'},
+        {id:'sg', x:50,y:36,cls:'gw',t:'Security group',s:'inbound rules'},
+        {id:'srv',x:50,y:70,cls:'vm',t:'Server',s:'sshd :22 · nginx :443'}],
+ flows:[], toggles:true},
+
+{id:'link', name:'PrivateLink', title:'Reaching another VPC without touching the internet',
+ note:'PrivateLink puts an endpoint <b>inside your own VPC</b>, so traffic to someone else’s service never leaves the provider backbone and needs no peering, no NAT and no public IP. Getting there is only half of it: the target’s own resource policy still decides whether you are allowed in.',
+ zones:[{x:4,y:24,w:32,h:52,cls:'priv',l:'VPC A · consumer'},
+        {x:64,y:24,w:32,h:52,cls:'priv',l:'VPC B · provider'}],
+ nodes:[{id:'app',x:20,y:50,cls:'vm',t:'App',s:'10.0.1.20'},
+        {id:'ep', x:50,y:50,cls:'nat',t:'VPC endpoint',s:'an ENI in your subnet'},
+        {id:'svc',x:80,y:50,cls:'vm',t:'SaaS service',s:'endpoint service'},
+        {id:'s3', x:50,y:88,cls:'db',t:'S3 bucket',s:'bucket policy applies'}],
+ flows:[
+  {b:'VPC A → PrivateLink → VPC B', path:['app','ep','svc'], block:null,
+   log:[['i','Resolving the service name to the endpoint ENI in your own subnet'],
+        ['i','Traffic stays on the provider backbone — no IGW, no NAT, no public IP'],
+        ['ok','Connected. The two VPCs never became routable to each other.']]},
+  {b:'VPC A → S3 (policy denies)', path:['app','ep','s3'], block:2,
+   log:[['i','Reaching S3 through the gateway endpoint'],['i','Network path is fine — the packet arrives'],
+        ['no','Bucket policy has a condition on aws:SourceVpce and this endpoint is not listed'],
+        ['no','Denied at the destination. Connectivity and authorisation are different problems.']]}]}
+];
+
+const stagesEl=document.getElementById('scenes'), segEl=document.getElementById('sceneTabs');
+const termEl=document.getElementById('term'), ctlEl=document.getElementById('sceneControls');
+const noteEl=document.getElementById('sceneNote'), titleEl=document.getElementById('sceneTitle');
+let curScene=SCENES[0], timers=[];
+
+const esc2=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+stagesEl.innerHTML=SCENES.map(s=>`<div class="scene${s===SCENES[0]?' on':''}" id="scene-${s.id}">
+  <div class="stage" id="stage-${s.id}">
+    ${s.zones.map(z=>`<div class="zone ${z.cls}" style="left:${z.x}%;top:${z.y}%;width:${z.w}%;height:${z.h}%"><span class="zl">${z.l}</span></div>`).join('')}
+    ${s.nodes.map(n=>`<div class="nd ${n.cls}" id="${s.id}-${n.id}" style="left:${n.x}%;top:${n.y}%">${esc2(n.t)}<small>${esc2(n.s)}</small></div>`).join('')}
+    <div class="pkt" id="pkt-${s.id}"></div>
+  </div></div>`).join('');
+
+segEl.innerHTML=SCENES.map((s,i)=>`<button class="seg${i===0?' on':''}" data-s="${s.id}">${s.name}</button>`).join('');
+
+function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
+function log(cls,msg){
+  const d=document.createElement('div'); d.className=cls; d.innerHTML=msg;
+  termEl.insertBefore(d, termEl.firstChild);
+  while(termEl.children.length>40) termEl.removeChild(termEl.lastChild);
+}
+function nodeAt(scene,id){ return scene.nodes.find(n=>n.id===id); }
+
+function runFlow(flow){
+  clearTimers();
+  const s=curScene, pkt=document.getElementById('pkt-'+s.id);
+  s.nodes.forEach(n=>document.getElementById(s.id+'-'+n.id).classList.remove('hit','deny'));
+  const stop = flow.block===null ? flow.path.length-1 : flow.block;
+  const first=nodeAt(s,flow.path[0]);
+  pkt.style.transition='none'; pkt.style.background='var(--amber)'; pkt.style.boxShadow='0 0 10px var(--amber)';
+  pkt.style.left=first.x+'%'; pkt.style.top=first.y+'%'; pkt.style.opacity='1';
+  void pkt.offsetWidth;                        // commit the start position before transitioning
+  pkt.style.transition='';
+  log('i','<b>&gt;</b> '+flow.b);
+  flow.log.forEach((l,i)=> timers.push(setTimeout(()=>log(l[0],l[1]), 380*(i+1))));
+  flow.path.slice(1, stop+1).forEach((id,i)=>{
+    timers.push(setTimeout(()=>{
+      const n=nodeAt(s,id);
+      pkt.style.left=n.x+'%'; pkt.style.top=n.y+'%';
+      document.getElementById(s.id+'-'+id).classList.add('hit');
+    }, 120+700*i));
+  });
+  timers.push(setTimeout(()=>{
+    const lastId=flow.path[stop], el=document.getElementById(s.id+'-'+lastId);
+    if(flow.block!==null){
+      pkt.style.background='var(--red)'; pkt.style.boxShadow='0 0 12px var(--red)';
+      el.classList.remove('hit'); el.classList.add('deny');
+    } else {
+      pkt.style.background='var(--green)'; pkt.style.boxShadow='0 0 12px var(--green)';
+    }
+    timers.push(setTimeout(()=>{ pkt.style.opacity='0'; }, 1400));
+  }, 120+700*Math.max(0,stop-1)+660));
+}
+
+function sgFlows(){
+  const ssh=document.getElementById('sg-ssh')?.checked, https=document.getElementById('sg-https')?.checked;
+  return [
+   {b:'SSH · port 22', path:['usr','sg','srv'], block: ssh?null:1,
+    log: ssh ? [['i','TCP SYN to port 22'],['i','Inbound rule: allow tcp/22 from your address'],
+                ['ok','Session established. The reply is allowed automatically — the group is stateful.']]
+             : [['i','TCP SYN to port 22'],['no','No inbound rule matches tcp/22'],
+                ['no','Dropped silently. That is why it times out rather than refusing — a refusal would confirm the host exists.']]},
+   {b:'HTTPS · port 443', path:['usr','sg','srv'], block: https?null:1,
+    log: https ? [['i','TCP SYN to port 443'],['i','Inbound rule: allow tcp/443 from 0.0.0.0/0'],
+                  ['ok','Connected, then the TLS handshake begins at the application.']]
+               : [['i','TCP SYN to port 443'],['no','No inbound rule matches tcp/443'],['no','Dropped at the security group.']]}];
+}
+
+function renderControls(){
+  const s=curScene;
+  titleEl.textContent=s.title;
+  noteEl.innerHTML=s.note;
+  const flows = s.toggles ? sgFlows() : s.flows;
+  ctlEl.innerHTML = (s.toggles ? `<div class="toggles">
+      <label><input type="checkbox" id="sg-ssh"> allow SSH — tcp/22</label>
+      <label><input type="checkbox" id="sg-https" checked> allow HTTPS — tcp/443</label>
+    </div>` : '')
+    + `<div style="display:flex;flex-direction:column;gap:8px;margin-top:${s.toggles?'12px':'0'}">`
+    + flows.map((f,i)=>`<button class="btn" data-f="${i}" style="text-align:left">${f.b}</button>`).join('')
+    + `</div>`;
+}
+
+ctlEl.addEventListener('click',e=>{
+  const b=e.target.closest('[data-f]'); if(!b) return;
+  const flows = curScene.toggles ? sgFlows() : curScene.flows;
+  runFlow(flows[Number(b.dataset.f)]);
+});
+ctlEl.addEventListener('change',e=>{ if(e.target.type==='checkbox') renderControls(); });
+segEl.addEventListener('click',e=>{
+  const b=e.target.closest('[data-s]'); if(!b) return;
+  clearTimers();
+  curScene=SCENES.find(s=>s.id===b.dataset.s);
+  document.querySelectorAll('.seg').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  document.querySelectorAll('.scene').forEach(x=>x.classList.remove('on'));
+  document.getElementById('scene-'+curScene.id).classList.add('on');
+  termEl.innerHTML=''; renderControls();
+});
+renderControls();
+log('i','Pick a flow on the right. Green means it arrived; red means it stopped where it was blocked.');
+
+/* ---- CIDR ---- */
+const ipEl=document.getElementById('cidrIp'), slEl=document.getElementById('cidrSlider'),
+      outEl=document.getElementById('cidrOut'), valEl=document.getElementById('cidrVal'), warnEl=document.getElementById('cidrWarn');
+const toInt=ip=>ip.split('.').reduce((a,o)=>a*256+Number(o),0);
+const toIp=n=>[24,16,8,0].map(s=>(n>>>s)&255).join('.');
+const validIp=ip=>/^(\d{1,3}\.){3}\d{1,3}$/.test(ip) && ip.split('.').every(o=>Number(o)>=0&&Number(o)<=255);
+
+function cidr(){
+  const p=Number(slEl.value); valEl.textContent=p;
+  const ok=validIp(ipEl.value.trim());
+  ipEl.classList.toggle('bad',!ok);
+  if(!ok){ outEl.innerHTML='<div class="r"><span>Enter a valid IPv4 address</span></div>'; return; }
+  const total=Math.pow(2,32-p), base=toInt(ipEl.value.trim());
+  const mask=p===0?0:(0xFFFFFFFF<<(32-p))>>>0;
+  const netw=(base & mask)>>>0, bcast=(netw+total-1)>>>0;
+  const awsUsable=total>=16 ? total-5 : Math.max(0,total-5);
+  warnEl.textContent = p>28 ? '· AWS subnets stop at /28' : (p<16 ? '· a VPC itself stops at /16' : '');
+  const rows=[
+    ['Block', `${toIp(netw)}/${p}`],
+    ['Subnet mask', toIp(mask)],
+    ['Total addresses', total.toLocaleString()],
+    ['Usable on AWS', p>28 ? 'not allowed' : awsUsable.toLocaleString()+' (5 reserved)'],
+    ['Usable on GCP', p>29 ? 'not allowed' : Math.max(0,total-4).toLocaleString()+' (4 reserved)'],
+    ['First usable', p>28 ? '—' : toIp(netw+4)],
+    ['Last usable', p>28 ? '—' : toIp(bcast-1)],
+    ['Broadcast', toIp(bcast)],
+    ['/24s that fit', p<=24 ? Math.pow(2,24-p).toLocaleString() : 'smaller than a /24'],
+  ];
+  outEl.innerHTML=rows.map(r=>`<div class="r"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');
+}
+slEl.addEventListener('input',cidr); ipEl.addEventListener('input',cidr); cidr();
+
+/* ================= OSI ================= */
+const OSI=[
+{n:7,name:'Application',sub:'the actual request',
+ plain:'The conversation itself: a GET for a page, a gRPC call, a DNS lookup. This is the only layer your application code normally thinks about.',
+ touch:'Routing on path and host, TLS certificates, authentication, rate limits, WAF rules, caching headers.',
+ aws:'ALB (listener rules) · API Gateway · CloudFront · Route 53 · WAF · AppSync',
+ gcp:'Global external HTTP(S) LB (URL maps) · API Gateway and Apigee · Cloud CDN · Cloud DNS · Cloud Armor',
+ breaks:'A 404 from a rule that matched the wrong target group, a 502 when the target is healthy at TCP level but returning garbage, an expired certificate.',
+ test:'curl -v https://host/path'},
+{n:6,name:'Presentation',sub:'encoding and encryption',
+ plain:'How the payload is dressed before it travels: TLS encryption, gzip or brotli compression, JSON or protobuf serialisation.',
+ touch:'Where TLS terminates, which cipher policy you allow, certificate issuance and renewal, whether you compress.',
+ aws:'ACM certificates · TLS termination on ALB, CloudFront or NLB · security policies · mTLS on API Gateway',
+ gcp:'Certificate Manager and Google-managed certificates · SSL policies · TLS on the global LB',
+ breaks:'A handshake failure with an old client because you disabled a cipher, or content compressed twice and arriving as gibberish.',
+ test:'openssl s_client -connect host:443'},
+{n:5,name:'Session',sub:'keeping the conversation open',
+ plain:'Starting a conversation, keeping it alive and closing it: TLS resumption, a WebSocket that stays open, an SSH session, a VPN tunnel.',
+ touch:'Sticky sessions, idle timeouts, keep-alives, connection draining during a deploy, IKE negotiation for VPN.',
+ aws:'ALB stickiness cookies · deregistration delay · Site-to-Site VPN (IKE) · Session Manager',
+ gcp:'Backend service session affinity · connection draining · Cloud VPN (IKE) · IAP TCP forwarding',
+ breaks:'Users randomly logged out because there is no stickiness, or a long poll that dies at exactly sixty seconds — a number that round is a timeout setting, never a bug in your code.',
+ test:'watch when it fails: a suspiciously round number of seconds is a configured timeout'},
+{n:4,name:'Transport',sub:'ports and delivery',
+ plain:'Getting bytes to the right program on the right machine: TCP with its handshake and retransmits, or UDP which just fires and hopes.',
+ touch:'Port rules, listener protocols, target group ports, health check type, TCP versus UDP.',
+ aws:'NLB · security groups · network ACLs · Global Accelerator · target groups',
+ gcp:'Passthrough TCP/UDP load balancer · VPC firewall rules · health checks',
+ breaks:'The distinction that finds the bug fastest: <b>connection refused</b> means you reached the host and nothing was listening; <b>connection timed out</b> means a firewall dropped you silently and never replied.',
+ test:'nc -vz host 443'},
+{n:3,name:'Network',sub:'addresses and routes',
+ plain:'Where things live and how to get there: IP addresses, CIDR blocks, subnets and the routes between them. Almost all cloud networking design happens here.',
+ touch:'VPC and subnet CIDRs, route tables, internet and NAT gateways, peering, transit, private endpoints.',
+ aws:'VPC · subnets · route tables · IGW · NAT gateway · Transit Gateway · VPC peering · PrivateLink',
+ gcp:'VPC (global) · subnets (regional) · routes · Cloud NAT · Cloud Router · Network Peering · Private Service Connect',
+ breaks:'No route to the destination, or two networks with overlapping CIDRs that can never be peered — which is why address planning happens before anything is built.',
+ test:'ping (ICMP) and traceroute; then Reachability Analyzer or Connectivity Tests'},
+{n:2,name:'Data link',sub:'the local segment',
+ plain:'Moving frames between directly connected devices: MAC addresses, ARP, VLANs and the maximum size a frame may be.',
+ touch:'Almost nothing — the cloud hides it. Except MTU, which will genuinely ruin a day.',
+ aws:'Elastic network interfaces · jumbo frames at 9001 bytes inside a VPC · 802.1Q VLANs on Direct Connect',
+ gcp:'vNICs · per-network MTU, 1460 by default and up to 8896 · VLAN attachments for Interconnect',
+ breaks:'The classic: small requests work perfectly and large uploads hang forever. That is an MTU mismatch with fragmentation blocked, and it is almost never the application.',
+ test:'ping -M do -s 1472 host — shrink until it stops failing to find the real path MTU'},
+{n:1,name:'Physical',sub:'cables and buildings',
+ plain:'Fibre, copper, radio, power and the data centres they run through. Real, and entirely someone else’s problem.',
+ touch:'Nothing directly. You choose placement instead: which regions, how many availability zones, whether you take a cross-connect.',
+ aws:'Availability zones · region hardware · Direct Connect cross-connect ports · Local Zones and Outposts',
+ gcp:'Zones and regions · Dedicated and Partner Interconnect · edge points of presence',
+ breaks:'A zone loses power or a fibre is cut. You cannot fix it and you cannot appeal it, so the answer is spread across zones before it happens.',
+ test:'the status page — and whether your design survived it'}];
+
+const stackEl=document.getElementById('osiStack'), detEl=document.getElementById('osiDetail');
+stackEl.innerHTML=OSI.map((l,i)=>`<button class="osi-l${i===0?' on':''}" data-i="${i}">
+  <span class="lv">L${l.n}</span><span>${l.name}<small>${l.sub}</small></span></button>`).join('');
+function osiRender(i){
+  const l=OSI[i];
+  document.querySelectorAll('.osi-l').forEach((b,k)=>b.classList.toggle('on',k===i));
+  detEl.innerHTML=`<div class="cat">layer ${l.n}</div><h3 style="font-size:18px;font-weight:600;margin-bottom:8px">${l.name}</h3>
+    <div class="plain-line"><b>In plain English:</b> ${l.plain}</div>
+    <h4>What you actually configure</h4><p style="font-size:13px;color:var(--muted);line-height:1.65">${l.touch}</p>
+    <div class="vs2"><div class="col aws"><b>AWS</b>${l.aws}</div><div class="col gcp"><b>GCP</b>${l.gcp}</div></div>
+    <h4>When it breaks</h4><p style="font-size:13px;color:var(--muted);line-height:1.65">${l.breaks}</p>
+    <h4>How you prove it</h4><div class="cmd">${l.test}</div>`;
+}
+stackEl.addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) osiRender(Number(b.dataset.i));});
+osiRender(0);
+
+document.getElementById('osiCompare').innerHTML=`
+<h4 style="margin-top:0">ALB or NLB — the same question asked as a layer question</h4>
+<table class="osi"><thead><tr><th></th><th>ALB — layer 7</th><th>NLB — layer 4</th></tr></thead><tbody>
+<tr><td><b>Sees</b></td><td>The whole HTTP request: method, path, host, headers, cookies</td><td>Only addresses and ports. The payload is opaque bytes</td></tr>
+<tr><td><b>So it can</b></td><td>Route by path or host, rewrite, authenticate, stick a session to a target</td><td>Carry any TCP or UDP protocol, including ones it has never heard of</td></tr>
+<tr><td><b>TLS</b></td><td>Terminates it, which is how it reads the request at all</td><td>Terminates or passes encrypted bytes straight through, untouched</td></tr>
+<tr><td><b>Client IP</b></td><td>Replaced — the target sees the balancer, so you read X-Forwarded-For</td><td>Preserved. The target sees the real client address</td></tr>
+<tr><td><b>Reach for it when</b></td><td>It is HTTP and you want routing rules, WAF or per-path targets</td><td>It is not HTTP, or you need extreme throughput, static IPs or the true source IP</td></tr>
+<tr><td><b>On GCP</b></td><td>Global external HTTP(S) load balancer with URL maps</td><td>Passthrough network load balancer</td></tr>
+</tbody></table>
+
+<h4>Four different things can block your packet, at four different layers</h4>
+<table class="osi"><thead><tr><th>Layer</th><th>Control</th><th>Scope and behaviour</th><th>What the failure looks like</th></tr></thead><tbody>
+<tr><td><b>L3</b></td><td><b>Route table</b></td><td>Subnet. There is simply no path to the destination</td><td>Timeout, and no firewall log anywhere, because nothing was denied — nothing was routed</td></tr>
+<tr><td><b>L3/L4</b></td><td><b>Network ACL</b></td><td>Subnet, <b>stateless</b> — return traffic needs its own explicit rule</td><td>Requests leave and replies vanish; ephemeral return ports are the usual culprit</td></tr>
+<tr><td><b>L4</b></td><td><b>Security group</b></td><td>Instance, <b>stateful</b> — allow it in and the reply leaves automatically</td><td>Silent timeout on the blocked port while other ports on the same host work</td></tr>
+<tr><td><b>L7</b></td><td><b>WAF rule</b></td><td>The request itself, inspected and judged on content</td><td>A fast, clean 403 with a rule id — the connection succeeded, the request was refused</td></tr>
+</tbody></table>
+
+<h4>Debugging by climbing the stack</h4>
+<table class="osi"><thead><tr><th>Step</th><th>Command</th><th>If it works, you have proved</th></tr></thead><tbody>
+<tr><td><b>L3</b></td><td>ping host</td><td>Addressing and routing are fine. (ICMP is often blocked, so failure alone proves little)</td></tr>
+<tr><td><b>L4</b></td><td>nc -vz host 443</td><td>Route, ACL, security group and a listening process all line up</td></tr>
+<tr><td><b>L6</b></td><td>openssl s_client -connect host:443</td><td>Certificate and cipher agreement are good</td></tr>
+<tr><td><b>L7</b></td><td>curl -v https://host/path</td><td>Everything below works, so what is left is the application or its routing rules</td></tr>
+</tbody></table>
+<p class="simnote" style="margin-top:12px"><b>Why this order:</b> each rung only makes sense if the one below it passed. Working upward turns &ldquo;the site is down&rdquo; into a specific layer within about four commands, which is the whole reason the model is worth memorising.</p>`;
+
+/* encapsulation diagram: headers wrapped on the way down, unwrapped on the way up */
+document.getElementById('encapDiagram').innerHTML=(()=>{
+  const rows=[[7,'HTTP','GET /checkout',0],[4,'TCP','port 443',1],[3,'IP','to 10.0.2.15',2],[2,'Frame','next hop',3]];
+  const body=rows.map((r,i)=>{
+    const y=18+i*44, pad=r[3]*46;
+    return `<text x="8" y="${y+26}" style="${MONO};fill:var(--dim)" text-anchor="start">L${r[0]}</text>
+      <rect x="${52+pad}" y="${y}" width="${520-pad*2}" height="34" rx="6" style="fill:var(--panel2);stroke:var(--wire)"/>
+      ${pad?`<text x="${74+pad-46}" y="${y+22}" style="${MONO};fill:var(--amber)">${r[1]}</text>`:''}
+      <rect x="${98+pad}" y="${y+5}" width="${428-pad*2}" height="24" rx="4" style="fill:var(--n-blue);stroke:var(--blue)"/>
+      <text x="${312}" y="${y+22}" text-anchor="middle" style="${MONO};fill:var(--text)">${i===0?r[2]:'everything above, now just payload'}</text>`;
+  }).join('');
+  return `<div class="diagram"><svg viewBox="0 0 620 205" role="img" aria-label="Each layer wraps the one above it in its own header: HTTP inside TCP inside IP inside a frame.">
+    ${body}<text x="596" y="200" text-anchor="end" style="${MONO};fill:var(--dim)">each layer wraps the one above and reads only its own header</text></svg>
+    <div class="diagcap"><b>How to read it:</b> going down the stack each layer adds its own header and treats everything above as payload it never opens. That is why an NLB can carry a protocol it has never seen, and why an ALB has to decrypt before it can route on a path.</div></div>`;
 })();
 
 </script>
