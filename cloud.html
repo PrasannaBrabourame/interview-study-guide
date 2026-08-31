@@ -275,6 +275,7 @@
     <button class="tab" data-pane="osi" role="tab">OSI layers</button>
     <button class="tab" data-pane="netsim" role="tab">Network simulator</button>
     <button class="tab" data-pane="nginx" role="tab">NGINX</button>
+    <button class="tab" data-pane="iam" role="tab">IAM &amp; policy</button>
     <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
     <button class="tab" data-pane="dr" role="tab">DR simulator</button>
     <button class="tab" data-pane="map" role="tab">Service translator</button>
@@ -445,6 +446,63 @@
     <div class="card" style="margin-top:16px">
       <h2 class="sec">What goes wrong in production, and what you see when it does</h2>
       <div id="ngxGotchas"></div>
+    </div>
+  </section>
+
+  <!-- ================= IAM ================= -->
+  <section class="pane" id="pane-iam">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">The one sentence every permission system is trying to write</h2>
+      <div class="plain-line"><b>In plain English:</b> <b>somebody</b> is allowed to <b>do something</b> to <b>a particular thing</b>, and sometimes only <b>under certain conditions</b>. That is the whole idea. All three clouds write that sentence — they just disagree about the grammar, and about what happens when two sentences contradict each other.</div>
+      <div id="iamAnatomy"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Where permissions come from — and why they flow downhill</h2>
+      <div id="iamTree"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Two different gates: what you may do, and what may exist</h2>
+      <div class="plain-line"><b>The distinction people miss:</b> a permission answers &ldquo;may <em>this person</em> do it?&rdquo; A guardrail answers &ldquo;may <em>anyone</em> do it here, ever?&rdquo; They are separate systems, checked separately — which is why a full administrator can still be refused, and why nobody can grant their way around a guardrail.</div>
+      <div id="iamGates"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it — will this request be allowed?</h2>
+      <div class="plain-line"><b>Try this:</b> give the developer admin rights, then turn the region guardrail on and try to create a VM in the wrong region anyway. Admin does not help. That is the point of a guardrail.</div>
+      <div class="sim-layout">
+        <div><div id="iamStage"></div><div class="term" id="iamTerm" role="log" aria-live="polite"></div></div>
+        <div>
+          <div class="toggles" id="iamControls"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px" id="iamActions"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">How a machine proves who it is</h2>
+      <div id="iamWorkload"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">How privilege escalates quietly</h2>
+      <div id="iamEscalate"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Segregation — where to draw the lines</h2>
+      <div id="iamSegregate"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Provisioning roles without creating a second job for yourself</h2>
+      <div id="iamProvision"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">The checklist, and what a reviewer looks for</h2>
+      <div id="iamChecklist"></div>
     </div>
   </section>
 
@@ -1931,6 +1989,213 @@ document.getElementById('ngxReset').onclick=()=>{ ngxState={hit:0,miss:0,ok:0,r4
 ngxMeters();
 ngxLog('i','Send some traffic. Then break the upstream and watch what changes.');
 
+
+/* ================= IAM: diagrams ================= */
+document.getElementById('iamAnatomy').innerHTML=D('0 0 640 250',
+ 'The four parts of a permission — who, what, which resource and under what conditions — shown once, then written in AWS, GCP and Azure syntax.',
+ `${box(14,14,140,50,'var(--blue)')}${t(84,36,'WHO',SANS)}${tm(84,54,'the principal')}
+  ${box(168,14,140,50,'var(--teal)')}${t(238,36,'WHAT',SANS)}${tm(238,54,'the action')}
+  ${box(322,14,140,50,'var(--violet)')}${t(392,36,'ON WHICH',SANS)}${tm(392,54,'the resource')}
+  ${box(476,14,150,50,'var(--amber)')}${t(551,36,'WHEN',SANS)}${tm(551,54,'the conditions')}
+  ${tm(320,86,'the same sentence, three grammars','var(--dim)')}
+  ${box(14,100,612,42,'var(--awsorange)')}${tm(28,120,'AWS','var(--awsorange)','start')}
+  ${tm(28,136,'a JSON document — Effect, Action, Resource, Condition — attached to an identity or a resource','var(--muted)','start')}
+  ${box(14,150,612,42,'var(--gcpblue)')}${tm(28,170,'GCP','var(--gcpblue)','start')}
+  ${tm(28,186,'a binding: member gets a role at a resource, and it flows down to everything beneath','var(--muted)','start')}
+  ${box(14,200,612,42,'var(--azblue)')}${tm(28,220,'AZURE','var(--azblue)','start')}
+  ${tm(28,236,'a role assignment: principal plus role definition plus scope, flowing down from that scope','var(--muted)','start')}`,
+ 'Every cloud writes the same four-part sentence. AWS writes it as a document you attach; GCP and Azure write it as a binding at a point in the tree. That single difference explains most of what follows.');
+
+document.getElementById('iamTree').innerHTML=D('0 0 640 250',
+ 'A hierarchy from organisation down to a single resource, with permissions inherited downward and guardrails applied from the top.',
+ `${box(230,10,180,34,'var(--blue)')}${t(320,32,'Organisation',SANS)}
+  <path d="M320 44 V60 M150 60 H490 M150 60 V76 M320 60 V76 M490 60 V76" style="stroke:var(--wire)" stroke-width="1.2" fill="none"/>
+  ${box(80,76,140,34,'var(--teal)')}${t(150,98,'Folder / OU / MG',SANS)}
+  ${box(250,76,140,34,'var(--teal)')}${t(320,98,'Folder / OU / MG',SANS)}
+  ${box(420,76,140,34,'var(--teal)')}${tm(490,98,'…','var(--text)')}
+  <path d="M150 110 V126 M320 110 V126" style="stroke:var(--wire)" stroke-width="1.2"/>
+  ${box(60,126,180,34,'var(--violet)')}${t(150,148,'Project / Account / Sub',SANS)}
+  ${box(230,126,180,34,'var(--violet)')}${t(320,148,'Project / Account / Sub',SANS)}
+  <path d="M150 160 V176" style="stroke:var(--wire)" stroke-width="1.2"/>
+  ${box(70,176,160,34,'var(--green)')}${t(150,198,'A bucket, a VM, a database',SANS)}
+  <path d="M596 22 V206" style="stroke:var(--red)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+  ${tm(586,60,'guardrails','var(--red)','end')}${tm(586,76,'apply downward','var(--red)','end')}
+  ${tm(586,150,'and cannot be','var(--red)','end')}${tm(586,166,'granted around','var(--red)','end')}
+  ${tm(320,232,'a grant made high up is a grant on everything underneath it, forever, silently','var(--dim)')}`,
+ 'Permissions are inherited downward and are additive: granting at the organisation grants on every resource beneath. There is no way to subtract with another grant lower down — only a deny rule or a guardrail can take something back. That is why a temporary grant at the top is never temporary.');
+
+document.getElementById('iamGates').innerHTML=D('0 0 640 190',
+ 'A request passing through two gates in series: first the guardrail, then the permission check.',
+ `${box(10,66,110,44,'var(--blue)')}${t(65,88,'A request',SANS)}${tm(65,104,'create a VM')}
+  <path d="M122 88 H176" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+  ${box(180,52,170,72,'var(--red)')}${t(265,76,'Gate 1 — guardrail',SANS)}${tm(265,94,'may this exist here','var(--red)')}${tm(265,110,'at all, for anyone?','var(--red)')}
+  <path d="M352 88 H406" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+  ${box(410,52,170,72,'var(--teal)')}${t(495,76,'Gate 2 — permission',SANS)}${tm(495,94,'may THIS caller','var(--teal)')}${tm(495,110,'do it?','var(--teal)')}
+  ${tm(265,150,'SCP · Org Policy · Azure Policy','var(--red)')}
+  ${tm(265,166,'nobody can grant past it','var(--dim)')}
+  ${tm(495,150,'IAM policy · binding · role assignment','var(--teal)')}
+  ${tm(495,166,'this is the part you usually edit','var(--dim)')}
+  ${tm(320,32,'both gates must open — and only the second one is about who you are','var(--dim)')}`,
+ 'The guardrail is checked without caring who is asking, so an administrator hits it too. The permission check is the part that knows your name. Most confusion comes from debugging the second gate when the first one is what refused you.');
+
+document.getElementById('iamEscalate').innerHTML=D('0 0 640 200',
+ 'A modest identity gaining administrator power by being allowed to hand a privileged identity to a new resource.',
+ `${box(10,74,140,48,'var(--teal)')}${t(80,96,'Developer',SANS)}${tm(80,113,'can deploy things')}
+  <path d="M152 98 H208" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+  ${box(212,74,190,48,'var(--amber)')}${t(307,94,'may attach an identity',SANS)}${tm(307,112,'PassRole · actAs · assign','var(--amber)')}
+  <path d="M404 98 H460" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+  ${box(464,74,160,48,'var(--red)')}${t(544,94,'…to a new machine',SANS)}${tm(544,112,'running as admin','var(--red)')}
+  ${tm(320,32,'nobody granted the developer admin. They did not need it.','var(--red)')}
+  ${tm(320,158,'AWS iam:PassRole · GCP iam.serviceAccounts.actAs · Azure assigning a managed identity','var(--dim)')}
+  ${tm(320,178,'the permission to hand out an identity is the permission to become it','var(--dim)')}`,
+ 'This is the escalation path that audits miss, because no policy anywhere says administrator. If someone can attach a powerful identity to something they control, they have that power — so restrict which identities may be passed, not just who may deploy.');
+
+/* ================= IAM: will this be allowed? ================= */
+const IAMGATES=[
+ {id:'deny',  n:'1 · explicit deny',      why:'An explicit deny anywhere wins immediately. Nothing later can undo it.'},
+ {id:'guard', n:'2 · guardrail',          why:'SCP, org policy or Azure Policy. Checked without caring who is asking.'},
+ {id:'grant', n:'3 · a grant that allows',why:'An IAM policy, binding or role assignment covering this action.'},
+ {id:'bound', n:'4 · permission boundary',why:'A ceiling on an identity: it can never exceed this, however much is granted.'},
+ {id:'cond',  n:'5 · conditions',         why:'MFA, source address, time, resource tag. All must hold.'},
+];
+const IAMOPTS=[
+ {id:'admin',   label:'give the developer the admin role',        on:false},
+ {id:'guardOn', label:'guardrail: resources only in eu-west-1',   on:true},
+ {id:'denyOn',  label:'explicit deny on deleting production',     on:true},
+ {id:'boundOn', label:'permission boundary caps them at read-only', on:false},
+ {id:'mfa',     label:'the caller authenticated with MFA',        on:false},
+];
+const IAMACTS=[
+ {b:'Read a bucket in eu-west-1',      act:'read',   region:'eu-west-1'},
+ {b:'Create a VM in eu-west-1',        act:'write',  region:'eu-west-1'},
+ {b:'Create a VM in ap-south-1',       act:'write',  region:'ap-south-1'},
+ {b:'Delete the production database',  act:'delete', region:'eu-west-1'},
+ {b:'Grant themselves a new role',     act:'iam',    region:'eu-west-1'},
+];
+document.getElementById('iamControls').innerHTML=IAMOPTS.map(o=>
+  `<label><input type="checkbox" id="iam-${o.id}" ${o.on?'checked':''}> ${o.label}</label>`).join('');
+document.getElementById('iamActions').innerHTML=IAMACTS.map((a,i)=>
+  `<button class="btn" data-a="${i}" style="text-align:left">${a.b}</button>`).join('');
+document.getElementById('iamStage').innerHTML=`<div class="diagram"><svg viewBox="0 0 620 250" role="img" aria-label="Five checks in order; the request stops at whichever one refuses it.">
+  ${IAMGATES.map((g,i)=>{const y=14+i*44;return `<g id="iamg-${g.id}">
+    <rect x="14" y="${y}" width="592" height="34" rx="6" style="fill:var(--panel2);stroke:var(--wire)"/>
+    ${tm(30,y+22,g.n,'var(--text)','start')}${tm(592,y+22,g.why,'var(--dim)','end')}</g>`}).join('')}
+  <circle id="iamPkt" cx="0" cy="0" r="6" style="fill:var(--amber)" opacity="0"/>
+</svg><div class="diagcap"><b>How to read it:</b> checks run top to bottom and the first refusal ends it. Only a request that survives all five is allowed — everything else is denied by default, because nothing is permitted unless something says so.</div></div>`;
+
+const iamTermEl=document.getElementById('iamTerm'), iamPkt=document.getElementById('iamPkt');
+let iamTimers=[];
+function iamLog(c,m){const d=document.createElement('div');d.className=c;d.innerHTML=m;iamTermEl.appendChild(d);iamTermEl.scrollTop=iamTermEl.scrollHeight;}
+const iamOpt=id=>document.getElementById('iam-'+id)?.checked;
+
+function iamDecide(a){
+  const steps=[];
+  if(a.act==='delete' && iamOpt('denyOn'))
+    return {stop:'deny', steps, msg:'An explicit deny on deleting production matched. <b>Being an admin changes nothing</b> — deny is evaluated first and wins outright.'};
+  steps.push('deny');
+  if(a.region!=='eu-west-1' && iamOpt('guardOn'))
+    return {stop:'guard', steps, msg:'The guardrail allows resources only in eu-west-1. It never asked who you are, so <b>admin does not help</b>. Nobody in this organisation can create that resource here.'};
+  steps.push('guard');
+  const granted = iamOpt('admin') || a.act==='read';
+  if(!granted)
+    return {stop:'grant', steps, msg:'Nothing grants this action. Not a denial — an <b>absence</b>. Everything is refused unless some policy allows it, which is why a missing grant and a deliberate block look identical from outside.'};
+  steps.push('grant');
+  if(iamOpt('boundOn') && a.act!=='read')
+    return {stop:'bound', steps, msg:'The permission boundary caps this identity at read-only. The grant said yes, the ceiling said no, and <b>the ceiling wins</b>. This is how you delegate admin safely.'};
+  steps.push('bound');
+  if(a.act==='iam' && !iamOpt('mfa'))
+    return {stop:'cond', steps, msg:'The grant carries a condition requiring MFA for identity changes, and this session has none. <b>Conditions are the cheapest control here</b> — the same role, fenced by circumstance.'};
+  steps.push('cond');
+  return {stop:null, steps, msg:'Allowed. Every check passed, and this is the only path that ends in yes.'};
+}
+function runIam(i){
+  iamTimers.forEach(clearTimeout); iamTimers=[];
+  const a=IAMACTS[i], r=iamDecide(a);
+  iamTermEl.innerHTML=''; iamPkt.setAttribute('opacity','1');
+  IAMGATES.forEach(g=>{const el=document.getElementById('iamg-'+g.id).querySelector('rect');
+    el.style.stroke='var(--wire)'; el.style.fill='var(--panel2)';});
+  iamLog('i','<b>&gt;</b> '+a.b);
+  IAMGATES.forEach((g,k)=>{
+    const passed=r.steps.includes(g.id), stopped=r.stop===g.id;
+    if(!passed && !stopped) return;
+    iamTimers.push(setTimeout(()=>{
+      const el=document.getElementById('iamg-'+g.id).querySelector('rect');
+      el.style.stroke = stopped ? 'var(--red)' : 'var(--green)';
+      el.style.fill   = stopped ? 'rgba(248,113,113,.12)' : 'rgba(52,211,153,.08)';
+      iamPkt.setAttribute('cx',10); iamPkt.setAttribute('cy',31+k*44);
+      iamPkt.style.fill = stopped ? 'var(--red)' : 'var(--amber)';
+    }, 240*k));
+  });
+  iamTimers.push(setTimeout(()=>{
+    iamLog(r.stop?'no':'ok', r.stop ? '<b>DENIED</b> at ' + IAMGATES.find(g=>g.id===r.stop).n : '<b>ALLOWED</b>');
+    iamLog('i', r.msg);
+    if(!r.stop) iamPkt.style.fill='var(--green)';
+  }, 240*IAMGATES.length));
+}
+document.getElementById('iamActions').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]'); if(b) runIam(Number(b.dataset.a));});
+document.getElementById('iamControls').addEventListener('change',()=>
+  iamLog('i','policy changed — try the same request again'));
+runIam(1);
+
+/* ================= IAM: reference sections ================= */
+document.getElementById('iamWorkload').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> a person proves who they are by logging in. A machine cannot, so the platform vouches for it: the code asks its surroundings for a token, and the surroundings already know what it is. Nothing is stored, nothing can be copied out, and the credential expires within the hour.</div>
+<div class="vs2" style="grid-template-columns:repeat(3,1fr)">
+  <div class="col aws"><b>AWS</b>An <b>IAM role</b>, reached through an instance profile for a VM or IRSA / Pod Identity for a pod. STS hands back temporary credentials.</div>
+  <div class="col gcp"><b>GCP</b>A <b>service account</b> attached to the resource. Unusually, it is both an identity and a resource — you grant roles <em>to</em> it and also <em>on</em> it.</div>
+  <div class="col az"><b>AZURE</b>A <b>managed identity</b>: system-assigned, born and deleted with one resource, or user-assigned and shared across several.</div>
+</div>
+<table class="osi"><thead><tr><th>Decision</th><th>What to do</th><th>Why</th></tr></thead><tbody>
+<tr><td><b>Long-lived keys</b></td><td>None. Turn off key creation with a guardrail rather than a policy document</td><td>An exported key file is a password with no expiry that nobody will ever rotate. Most cloud breaches start with one in a repository</td></tr>
+<tr><td><b>One identity per workload</b></td><td>Never share one across services, and never reuse the default account the platform created for you</td><td>Shared identities collect the union of everyone's permissions and make an audit log useless — you can see what happened, not who did it</td></tr>
+<tr><td><b>System or user assigned</b></td><td>System-assigned by default; user-assigned only when several resources genuinely need the same identity</td><td>System-assigned dies with the resource, so it cannot be left behind as an orphan with live permissions</td></tr>
+<tr><td><b>Outside the cloud</b></td><td>Workload identity federation, not a key. GitHub Actions and external clusters can all exchange their own token for a short-lived cloud one</td><td>It removes the last reason anyone had to store a credential in a CI secret</td></tr>
+<tr><td><b>Who may use it</b></td><td>Restrict who can attach or impersonate the identity, separately from who can deploy</td><td>Whoever can hand out a powerful identity effectively has its power — the escalation path above</td></tr>
+</tbody></table>`;
+
+document.getElementById('iamSegregate').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> segregation is deciding where the walls go before you need them. Two questions do most of the work: <b>what should never be able to touch what</b>, and <b>who should never be able to approve their own work</b>.</div>
+<table class="osi"><thead><tr><th>Line to draw</th><th>How</th><th>What it buys you</th></tr></thead><tbody>
+<tr><td><b>Environment</b></td><td>A separate account, project or subscription per environment. Not a folder, not a tag, not a naming convention</td><td>The only boundary that genuinely stops a script pointed at the wrong place. Prod and dev sharing one account is a single typo away from an outage</td></tr>
+<tr><td><b>Application</b></td><td>One account or project per application per environment, where the estate is big enough to carry it</td><td>Blast radius, clean cost attribution, and permissions that can be broad inside without being broad anywhere else</td></tr>
+<tr><td><b>Duty</b></td><td>Whoever can <em>grant</em> permissions should not be whoever <em>uses</em> them. Pipelines deploy; people approve</td><td>Removes the quiet path where one person grants themselves what they need and puts it back afterwards</td></tr>
+<tr><td><b>Human and machine</b></td><td>Never let a person use a workload identity, and never let a pipeline use a person's account</td><td>Two very different lifecycles: people leave, workloads are redeployed. Mixing them means neither can be revoked cleanly</td></tr>
+<tr><td><b>Read, write, administer</b></td><td>Three tiers, and admin is time-boxed rather than held</td><td>Most day-to-day work is reading. Standing admin is the thing an attacker is hoping to find</td></tr>
+<tr><td><b>Break glass</b></td><td>Two accounts nobody uses, credentials split and sealed, every use alerting loudly</td><td>Guardrails will one day block something you genuinely need. Without this, the answer is to weaken the guardrail permanently</td></tr>
+</tbody></table>`;
+
+document.getElementById('iamProvision').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> grant to <b>groups</b>, never to people. A person joining or leaving should be one change in your directory, not a hunt through every project for their name. If someone has to remember to remove access, it will not be removed.</div>
+<table class="osi"><thead><tr><th>Step</th><th>What good looks like</th><th>The failure it prevents</th></tr></thead><tbody>
+<tr><td><b>1 · Identity in one place</b></td><td>One identity provider, federated into every cloud. Cloud-local users only for break glass</td><td>Someone leaves and still has access somewhere nobody thought to check</td></tr>
+<tr><td><b>2 · Groups carry the access</b></td><td>Grants attach to a group; joining the group is the whole of onboarding</td><td>Access that took nine tickets to assemble and can never be reproduced or removed</td></tr>
+<tr><td><b>3 · Roles from the catalogue</b></td><td>Start with the provider's predefined roles. Write a custom role only when the closest one is genuinely too wide, and own it deliberately</td><td>Both extremes: handing out Owner because it works, and a hand-written role set nobody dares to change</td></tr>
+<tr><td><b>4 · Elevation is temporary</b></td><td>Eligible rather than assigned: request, justify, get approved, expire automatically</td><td>Standing admin, which is the single most valuable thing an attacker can find</td></tr>
+<tr><td><b>5 · Grants live in code</b></td><td>Role assignments in Terraform, reviewed like any other change</td><td>Console clicks nobody can explain a year later, and drift no audit will catch</td></tr>
+<tr><td><b>6 · Review on a schedule</b></td><td>Access reviews, plus tooling that reports what is actually reachable rather than what was granted</td><td>Permission creep — the slow accumulation that turns a developer into an unintentional administrator</td></tr>
+</tbody></table>
+<h4>Three clouds, the same job</h4>
+<div class="vs2" style="grid-template-columns:repeat(3,1fr)">
+  <div class="col aws"><b>AWS</b>IAM Identity Center with permission sets mapped to groups. SCPs at the organisation for guardrails, permission boundaries for safe delegation.</div>
+  <div class="col gcp"><b>GCP</b>Google groups bound to predefined roles at folder or project. Org policy constraints for guardrails, IAM Deny policies where you need a real refusal.</div>
+  <div class="col az"><b>AZURE</b>Entra groups with role assignments at management group or subscription. Azure Policy for guardrails, PIM for time-boxed elevation.</div>
+</div>`;
+
+document.getElementById('iamChecklist').innerHTML=`
+<table class="osi"><thead><tr><th>Check</th><th>What a reviewer actually asks</th></tr></thead><tbody>
+<tr><td><b>Wildcards</b></td><td>Any policy with action and resource both set to everything. There is nearly always a narrower answer, and the wide one is never revisited</td></tr>
+<tr><td><b>Standing admin</b></td><td>How many identities hold permanent administrative rights, and could you name them from memory?</td></tr>
+<tr><td><b>Long-lived keys</b></td><td>Does any exist at all — and is key creation blocked by a guardrail, or merely discouraged?</td></tr>
+<tr><td><b>The escalation path</b></td><td>Who may attach or impersonate a privileged identity? That list is your real administrator list</td></tr>
+<tr><td><b>Who edits the policy</b></td><td>Anyone who can change permissions has every permission, eventually. This is the most under-guarded privilege in most estates</td></tr>
+<tr><td><b>Environment boundary</b></td><td>Is production a different account, project or subscription — or the same one with a different tag?</td></tr>
+<tr><td><b>Conditions</b></td><td>Are sensitive actions fenced by MFA, source address or time? The cheapest control available and the least used</td></tr>
+<tr><td><b>Logging</b></td><td>Is every authorisation decision recorded somewhere the account being audited cannot edit?</td></tr>
+<tr><td><b>Break glass</b></td><td>Does it exist, has it been tested this year, and does using it wake somebody up?</td></tr>
+<tr><td><b>Reviews</b></td><td>When did someone last remove access, rather than grant it?</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>The one to remember:</b> permissions only ever accumulate unless something deliberately removes them. Every design decision here is really about making removal automatic — expiry, group membership, a resource dying and taking its identity with it — because nothing that relies on a human remembering will survive the year.</div>`;
 
 </script>
 </body>
