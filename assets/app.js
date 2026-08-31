@@ -27,6 +27,11 @@ function init(topics) {
   const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` };
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* topic counts come from the data, never from hard-coded markup */
+  $("#msearch").placeholder = `Search ${topics.length} topics…   ( / )`;
+  const dsubEl = document.querySelector(".dsub");
+  if (dsubEl) dsubEl.textContent = dsubEl.textContent.replace(/^\d+/, topics.length);
+
   /* ============ categories: semantic colour families ============
      One hue per domain family rather than a unique hue per category —
      41 hues are not distinguishable, 9 families are, and the colour

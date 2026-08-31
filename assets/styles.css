@@ -46,6 +46,7 @@ mark{background:color-mix(in srgb,var(--warn) 32%,transparent);color:inherit;bor
 main{min-width:0;padding:26px clamp(14px,3.5vw,44px) 60px;max-width:1240px;margin:0 auto}
 .btn{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font-weight:750;font-size:13px;cursor:pointer}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
+a.btn{text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap}
 .btn.primary{border:0;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white}
 .btn.big{padding:12px 18px;font-size:14px;border-radius:12px}
 .badge{display:inline-block;padding:6px 11px;border-radius:99px;background:var(--accentsoft);color:var(--accent);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
