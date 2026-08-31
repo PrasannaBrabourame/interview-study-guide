@@ -328,6 +328,212 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.getElementById('pane-'+t.dataset.pane).classList.add('on');
 }));
 
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px 'IBM Plex Mono'", SANS="font:500 12px 'Space Grotesk'";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" fill="${fill||'#0E1626'}" stroke="${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:#E6EDF7">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'#8FA3C0'}">${s}</text>`;
+
+const PDIAG={};
+
+/* --- compute: ladder of abstraction --- */
+PDIAG.compute=(()=>{
+  const rows=[['EC2',.86,'patch, scale, secure the box'],['ECS / EKS on EC2',.62,'you still own the nodes'],
+              ['Fargate',.30,'containers, no servers'],['Lambda',.10,'just your function']];
+  const body=rows.map((r,i)=>{const y=26+i*40, w=Math.round(400*r[1]);
+    return `${t(150,y+19,r[0],SANS,'end')}
+      <rect x="162" y="${y}" width="${w}" height="26" rx="5" fill="rgba(251,191,36,.22)" stroke="#FBBF24"/>
+      <rect x="${162+w}" y="${y}" width="${400-w}" height="26" rx="5" fill="rgba(45,212,191,.16)" stroke="#2DD4BF"/>
+      ${tm(576,y+17,r[2],'#5A6E8F','end')}`;}).join('');
+  return D('0 0 620 210','Four compute options as bars: the amber part is what you operate, the teal part is what the cloud operates. EC2 is mostly amber, Lambda is almost entirely teal.',
+    body+`${tm(162,200,'amber = your job','#FBBF24','start')}${tm(562,200,'teal = the cloud does it','#2DD4BF','end')}`,
+    'Every rung down hands more of the work to the cloud and takes away more control. Pick the lowest bar your constraints allow, because everything amber is work your team does forever.');
+})();
+
+/* --- storage: three shapes, then the cost ladder --- */
+PDIAG.storage=D('0 0 620 220','Three storage shapes side by side, then S3 tiers getting cheaper and slower to retrieve.',
+  `${box(10,10,190,62,'#A78BFA')}${t(105,34,'Object — S3',SANS)}${tm(105,54,'any file, endless shelf')}
+   ${box(215,10,190,62,'#2DD4BF')}${t(310,34,'Block — EBS',SANS)}${tm(310,54,'one machine&#39;s hard disk')}
+   ${box(420,10,190,62,'#60A5FA')}${t(515,34,'File — EFS',SANS)}${tm(515,54,'shared office drive')}
+   ${tm(10,105,'the same file gets cheaper as it goes cold:','#5A6E8F','start')}
+   ${box(10,120,190,58,'#34D399')}${t(105,143,'Standard',SANS)}${tm(105,163,'instant · dearest','#34D399')}
+   ${box(215,120,190,58,'#FBBF24')}${t(310,143,'Infrequent access',SANS)}${tm(310,163,'instant · cheaper','#FBBF24')}
+   ${box(420,120,190,58,'#F87171')}${t(515,143,'Glacier',SANS)}${tm(515,163,'minutes to hours · cheapest','#F87171')}
+   <path d="M10 196 H610" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>
+   ${tm(10,212,'files nobody opens slide right automatically, by lifecycle rule','#5A6E8F','start')}`,
+  'Left to right is the same data getting cheaper to keep and slower to get back. A lifecycle rule moves it for you, so the saving needs no one to remember it.');
+
+/* --- databases: pick by shape of the data --- */
+PDIAG.db=D('0 0 620 200','A decision tree from the shape of the data to a database type.',
+  `${box(210,8,200,44,'#60A5FA')}${t(310,28,'What shape is the data?',SANS)}${tm(310,44,'ask this first')}
+   <path d="M310 52 V70 M100 70 H520 M100 70 V96 M240 70 V96 M380 70 V96 M520 70 V96" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(20,96,160,64,'#A78BFA')}${t(100,120,'Rows + joins',SANS)}${tm(100,138,'RDS · Aurora','#A78BFA')}${tm(100,152,'Cloud SQL','#A78BFA')}
+   ${box(162,96,160,64,'#2DD4BF')}${t(242,120,'Key lookups, huge',SANS)}${tm(242,138,'DynamoDB','#2DD4BF')}${tm(242,152,'Bigtable','#2DD4BF')}
+   ${box(302,96,160,64,'#FBBF24')}${t(382,120,'Flexible documents',SANS)}${tm(382,138,'DocumentDB','#FBBF24')}${tm(382,152,'Firestore','#FBBF24')}
+   ${box(442,96,160,64,'#34D399')}${t(522,120,'Questions over history',SANS)}${tm(522,138,'Redshift','#34D399')}${tm(522,152,'BigQuery','#34D399')}
+   ${tm(310,186,'wrong branch = a rewrite later, so this is the decision that matters','#5A6E8F')}`,
+  'Start from how the data is shaped and how it will be read, not from a favourite product. Each branch ends in a different answer, and picking the wrong branch is the expensive mistake.');
+
+/* --- security: defence in depth --- */
+PDIAG.security=D('0 0 620 210','Five nested boxes: organisation, account, network, identity, and data at the centre.',
+  `${box(10,10,600,190,'#60A5FA','rgba(96,165,250,.05)')}${tm(24,30,'ORGANISATION · SCPs set what is even possible','#60A5FA','start')}
+   ${box(40,42,540,148,'#2DD4BF','rgba(45,212,191,.05)')}${tm(54,62,'ACCOUNT / PROJECT · blast-radius boundary','#2DD4BF','start')}
+   ${box(70,74,480,106,'#A78BFA','rgba(167,139,250,.05)')}${tm(84,94,'NETWORK · VPC, subnets, security groups','#A78BFA','start')}
+   ${box(100,106,420,64,'#FBBF24','rgba(251,191,36,.05)')}${tm(114,126,'IDENTITY · IAM roles, short-lived credentials','#FBBF24','start')}
+   ${box(150,134,320,28,'#F87171','rgba(248,113,113,.08)')}${tm(310,152,'DATA · encrypted with KMS, the last line','#F87171')}`,
+  'An attacker has to get through every ring, not one. Each layer assumes the one outside it has already failed, which is why a single misconfigured rule is survivable.');
+
+/* --- resilience: the RPO / RTO timeline --- */
+PDIAG.resilience=D('0 0 620 190','A timeline showing the last backup, the disaster, and service being restored, with RPO measured before the disaster and RTO after it.',
+  `<path d="M20 96 H600" stroke="#39507C" stroke-width="1.6"/>
+   <line x1="170" y1="80" x2="170" y2="112" stroke="#34D399" stroke-width="2"/>${tm(170,72,'last backup','#34D399')}
+   <line x1="340" y1="66" x2="340" y2="126" stroke="#F87171" stroke-width="2.4"/>${t(340,58,'⚡ disaster',SANS)}
+   <line x1="520" y1="80" x2="520" y2="112" stroke="#60A5FA" stroke-width="2"/>${tm(520,72,'back online','#60A5FA')}
+   <path d="M170 140 H340" stroke="#FBBF24" stroke-width="1.6"/><path d="M170 136 V144 M340 136 V144" stroke="#FBBF24" stroke-width="1.6"/>
+   ${tm(255,158,'RPO — work you lose','#FBBF24')}${tm(255,172,'(everything since the backup)','#5A6E8F')}
+   <path d="M340 140 H520" stroke="#2DD4BF" stroke-width="1.6"/><path d="M340 136 V144 M520 136 V144" stroke="#2DD4BF" stroke-width="1.6"/>
+   ${tm(430,158,'RTO — time you are down','#2DD4BF')}${tm(430,172,'(customers waiting)','#5A6E8F')}
+   ${tm(20,116,'time','#5A6E8F','start')}`,
+  'RPO is measured backwards from the disaster and is about lost data. RTO is measured forwards and is about lost time. Backing up more often shrinks the amber bar; a warmer standby shrinks the teal one.');
+
+/* --- migration: the 7 Rs by effort --- */
+PDIAG.migration=(()=>{
+  const rs=[['Retire','switch it off',0],['Retain','leave it where it is',1],['Relocate','move the VMs wholesale',2],
+            ['Rehost','lift and shift',3],['Replatform','small tweaks on the way',4],['Repurchase','buy the SaaS instead',5],
+            ['Refactor','rewrite it cloud-native',6]];
+  const body=rs.map((r,i)=>{const x=12+i*86;const hgt=18+i*13;
+    return `<rect x="${x}" y="${130-hgt}" width="76" height="${hgt}" rx="5" fill="rgba(167,139,250,.16)" stroke="#A78BFA"/>
+      ${tm(x+38,148,r[0],'#E6EDF7')}${tm(x+38,163,r[1],'#5A6E8F')}`;}).join('');
+  return D('0 0 620 185','Seven migration options as bars of increasing height, from retire to refactor.',
+    body+`<path d="M12 176 H602" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>${tm(12,124,'effort and cost','#5A6E8F','start')}`,
+    'Bar height is how much work it is. Most estates are a mix, and the winning answer usually starts at the cheap left end: the fastest migration is the servers you turn off instead of moving.');
+})();
+
+/* --- cost: what you actually pay for --- */
+PDIAG.cost=D('0 0 620 195','A daily traffic curve under a flat on-demand capacity line, showing paid-for but unused capacity, with a committed baseline and a spot spike.',
+  `<path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146" fill="none" stroke="#60A5FA" stroke-width="2"/>
+   <path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146 L 590 40 L 40 40 Z" fill="rgba(248,113,113,.07)"/>
+   <line x1="40" y1="40" x2="590" y2="40" stroke="#F87171" stroke-width="1.4" stroke-dasharray="5 4"/>
+   ${tm(590,32,'capacity you bought for the peak','#F87171','end')}
+   ${tm(300,66,'paid for, nobody using it','#F87171')}
+   <line x1="40" y1="128" x2="590" y2="128" stroke="#34D399" stroke-width="1.4"/>
+   ${tm(44,122,'always-on baseline → commit and save (Savings Plan / CUD)','#34D399','start')}
+   <rect x="392" y="152" width="120" height="22" rx="5" fill="rgba(251,191,36,.16)" stroke="#FBBF24"/>${tm(452,167,'batch on Spot','#FBBF24')}
+   <path d="M40 150 H590" stroke="#39507C" stroke-width="1.2"/>${tm(40,188,'midnight','#5A6E8F','start')}${tm(590,188,'midnight','#5A6E8F','end')}
+   ${tm(315,188,'one day of real traffic','#5A6E8F')}`,
+  'The blue line is demand; the red band above it is money burned on idle capacity. Commit to the flat green part, autoscale the bump, and run interruptible work on Spot.');
+
+/* --- observability: three questions --- */
+PDIAG.observability=D('0 0 620 165','Three panels for metrics, logs and traces, each with the question it answers, feeding an alert.',
+  `${box(10,14,190,86,'#34D399')}${t(105,42,'Metrics',SANS)}${tm(105,62,'is something wrong?','#34D399')}${tm(105,80,'numbers over time')}
+   ${box(215,14,190,86,'#FBBF24')}${t(310,42,'Logs',SANS)}${tm(310,62,'what exactly happened?','#FBBF24')}${tm(310,80,'the event, in words')}
+   ${box(420,14,190,86,'#A78BFA')}${t(515,42,'Traces',SANS)}${tm(515,62,'where did the time go?','#A78BFA')}${tm(515,80,'one request, every hop')}
+   <path d="M105 100 V118 H515 V100 M310 100 V118" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(210,124,200,32,'#F87171')}${t(310,145,'an alert worth waking up for',SANS)}`,
+  'Metrics tell you there is a problem, logs tell you what happened, traces tell you where it happened. Alerting on metrics alone leaves you awake with no idea why.');
+
+/* --- integration: what a queue buys you --- */
+PDIAG.integration=D('0 0 620 195','Top row: three services chained directly, the last one failing and turning the whole chain red. Bottom row: a queue between them, so the failure is contained.',
+  `${tm(10,20,'directly chained — everyone fails together','#F87171','start')}
+   ${box(10,30,150,44,'#60A5FA')}${t(85,57,'Checkout',SANS)}
+   <path d="M162 52 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
+   ${box(210,30,150,44,'#60A5FA')}${t(285,57,'Order service',SANS)}
+   <path d="M362 52 H406" stroke="#F87171" stroke-width="1.4" marker-end="url(#ah)"/>
+   ${box(410,30,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,52,'Email service',SANS)}${tm(485,68,'down','#F87171')}
+   ${tm(575,57,'✕','#F87171','start')}
+   ${tm(10,110,'queue in the middle — the failure is contained','#34D399','start')}
+   ${box(10,120,150,44,'#60A5FA')}${t(85,147,'Checkout',SANS)}
+   <path d="M162 142 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
+   ${box(210,120,150,44,'#2DD4BF','rgba(45,212,191,.08)')}${t(285,142,'Queue',SANS)}${tm(285,158,'holding 412 messages','#2DD4BF')}
+   <path d="M362 142 H406" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+   ${box(410,120,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,142,'Email service',SANS)}${tm(485,158,'still down','#F87171')}
+   ${tm(575,147,'✓','#34D399','start')}`,
+  'Same outage, two outcomes. Chained directly, a broken email service breaks checkout. With a queue, checkout still works and the emails simply go out late.');
+
+/* --- edge: why distance is latency --- */
+PDIAG.edge=D('0 0 620 170','A user far from a single origin region compared with the same user reaching a nearby edge location.',
+  `${box(10,20,110,44,'#60A5FA')}${t(65,47,'User in Sydney',SANS)}
+   <path d="M122 42 H466" stroke="#F87171" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#ah)"/>
+   ${tm(300,32,'~250 ms each way, every single request','#F87171')}
+   ${box(470,20,140,44,'#A78BFA')}${t(540,47,'Origin · Ireland',SANS)}
+   ${box(10,104,110,44,'#60A5FA')}${t(65,131,'User in Sydney',SANS)}
+   <path d="M122 126 H196" stroke="#34D399" stroke-width="1.6" marker-end="url(#ah)"/>
+   ${tm(240,116,'~20 ms','#34D399')}
+   ${box(200,104,150,44,'#2DD4BF')}${t(275,126,'Edge · Sydney',SANS)}${tm(275,142,'cached copy','#2DD4BF')}
+   <path d="M352 126 H466" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+   ${tm(410,116,'only on a miss','#5A6E8F')}
+   ${box(470,104,140,44,'#A78BFA')}${t(540,131,'Origin · Ireland',SANS)}`,
+  'Distance is latency, and no amount of server tuning beats physics. Putting a copy near the user turns a quarter-second wait into an instant one, and quietly removes most of the traffic from your servers.');
+
+/* --- cloud-difference diagrams --- */
+const DDIAG={};
+DDIAG['Network model — the biggest one']=D('0 0 620 150','Left: three separate AWS VPCs joined by manual peering links. Right: one global GCP VPC containing three regions.',
+  `${tm(10,16,'AWS — one VPC per region, you build the links','#FBBF24','start')}
+   ${box(14,26,80,50,'#FBBF24')}${tm(54,56,'Tokyo','#E6EDF7')}
+   ${box(114,26,80,50,'#FBBF24')}${tm(154,56,'Dublin','#E6EDF7')}
+   ${box(214,26,80,50,'#FBBF24')}${tm(254,56,'Ohio','#E6EDF7')}
+   <path d="M94 51 H114 M194 51 H214" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3"/>
+   <path d="M54 76 C 54 106, 254 106, 254 76" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3" fill="none"/>
+   ${tm(154,122,'peering / Transit Gateway you configure','#F87171')}
+   ${tm(330,16,'GCP — one VPC, regions inside it','#7CACF8','start')}
+   ${box(324,26,286,76,'#7CACF8','rgba(124,172,248,.06)')}
+   ${box(338,44,80,44,'#7CACF8')}${tm(378,71,'Tokyo','#E6EDF7')}
+   ${box(428,44,80,44,'#7CACF8')}${tm(468,71,'Dublin','#E6EDF7')}
+   ${box(518,44,80,44,'#7CACF8')}${tm(558,71,'Ohio','#E6EDF7')}
+   ${tm(467,122,'already one network, one firewall policy','#7CACF8')}`,
+  'The red dashed lines on the left are work you do and keep maintaining. On the right they do not exist, because the network is global to begin with.');
+
+DDIAG['Isolation & org boundary']=D('0 0 620 150','Left: three heavy separate AWS accounts. Right: a light GCP org, folder and project tree.',
+  `${tm(10,16,'AWS — the account is the wall','#FBBF24','start')}
+   ${box(14,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(57,58,'Account','#E6EDF7')}${tm(57,74,'prod','#8FA3C0')}
+   ${box(112,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(155,58,'Account','#E6EDF7')}${tm(155,74,'staging','#8FA3C0')}
+   ${box(210,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(253,58,'Account','#E6EDF7')}${tm(253,74,'data','#8FA3C0')}
+   ${tm(155,122,'heavyweight: Organizations, SCPs, cross-account roles','#F87171')}
+   ${tm(330,16,'GCP — the project is the wall','#7CACF8','start')}
+   ${box(392,26,150,26,'#7CACF8')}${tm(467,44,'Organisation','#E6EDF7')}
+   <path d="M467 52 V62 M370 62 H564 M370 62 V72 M467 62 V72 M564 62 V72" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(330,72,80,30,'#7CACF8')}${tm(370,92,'prod','#E6EDF7')}
+   ${box(427,72,80,30,'#7CACF8')}${tm(467,92,'staging','#E6EDF7')}
+   ${box(524,72,80,30,'#7CACF8')}${tm(564,92,'data','#E6EDF7')}
+   ${tm(467,122,'lightweight: a project takes seconds','#7CACF8')}`,
+  'Both give you the same isolation. The difference is what it costs to create one, which is why AWS estates plan accounts carefully and GCP estates hand them out freely.');
+
+DDIAG['Load balancing & global traffic']=D('0 0 620 150','Left: AWS user reaching CloudFront then three regional load balancers. Right: GCP user reaching one global IP then regions.',
+  `${tm(10,16,'AWS — layers you assemble','#FBBF24','start')}
+   ${box(14,28,70,32,'#60A5FA')}${tm(49,48,'Users','#E6EDF7')}
+   <path d="M86 44 H116" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
+   ${box(120,28,110,32,'#FBBF24')}${tm(175,48,'CloudFront','#E6EDF7')}
+   <path d="M175 60 V72 M60 72 H290 M60 72 V84 M175 72 V84 M290 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(22,84,76,28,'#FBBF24')}${tm(60,102,'ALB · eu','#E6EDF7')}
+   ${box(137,84,76,28,'#FBBF24')}${tm(175,102,'ALB · us','#E6EDF7')}
+   ${box(252,84,76,28,'#FBBF24')}${tm(290,102,'ALB · ap','#E6EDF7')}
+   ${tm(175,134,'plus Route 53 policies and health checks','#F87171')}
+   ${tm(340,16,'GCP — one address, worldwide','#7CACF8','start')}
+   ${box(344,28,70,32,'#60A5FA')}${tm(379,48,'Users','#E6EDF7')}
+   <path d="M416 44 H446" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
+   ${box(450,28,150,32,'#7CACF8')}${tm(525,48,'one anycast IP','#E6EDF7')}
+   <path d="M525 60 V72 M400 72 H600 M400 72 V84 M500 72 V84 M600 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(366,84,68,28,'#7CACF8')}${tm(400,102,'eu','#E6EDF7')}
+   ${box(466,84,68,28,'#7CACF8')}${tm(500,102,'us','#E6EDF7')}
+   ${box(566,84,50,28,'#7CACF8')}${tm(591,102,'ap','#E6EDF7')}
+   ${tm(500,134,'CDN is a checkbox on the same thing','#7CACF8')}`,
+  'The same requirement — serve everyone from their nearest healthy region — is three or four moving parts on one side and one on the other.');
+
+DDIAG['Analytics stance']=D('0 0 620 150','Left: a fixed Redshift cluster with idle capacity shaded. Right: BigQuery charging only for the slice of data a query reads.',
+  `${tm(10,16,'Redshift — a building you size and keep','#FBBF24','start')}
+   ${box(14,28,280,74,'#FBBF24','rgba(251,191,36,.05)')}
+   <rect x="26" y="40" width="120" height="50" rx="5" fill="rgba(251,191,36,.3)" stroke="#FBBF24"/>${tm(86,70,'used','#E6EDF7')}
+   <rect x="152" y="40" width="130" height="50" rx="5" fill="rgba(248,113,113,.08)" stroke="#F87171" stroke-dasharray="4 3"/>${tm(217,64,'idle','#F87171')}${tm(217,80,'still paid for','#F87171')}
+   ${tm(154,124,'you pick the size, quiet days cost the same','#F87171')}
+   ${tm(330,16,'BigQuery — pay per byte read','#7CACF8','start')}
+   ${box(324,28,286,74,'#7CACF8','rgba(124,172,248,.05)')}
+   ${tm(467,46,'a petabyte sitting still costs storage only','#8FA3C0')}
+   <rect x="344" y="56" width="46" height="34" rx="5" fill="rgba(124,172,248,.35)" stroke="#7CACF8"/>${tm(367,78,'query','#E6EDF7')}
+   ${tm(500,78,'only this slice is billed','#7CACF8')}
+   ${tm(467,124,'no cluster to run, quiet days cost nothing','#7CACF8')}`,
+  'One charges for the machine whether you use it or not; the other charges for the data each question actually reads. That single difference decides a lot of platform choices.');
+
 /* ================= PILLARS ================= */
 const PILLARS = [
 {id:'compute', tag:'D2', title:'Compute', sub:'EC2 · Lambda · containers · pricing',
@@ -714,211 +920,6 @@ jlist.addEventListener('click',e=>{const b=e.target.closest('.jitem'); if(b){jSt
 jsvg.addEventListener('click',e=>{const g=e.target.closest('.jnode'); if(g){jStop(); jRender(Number(g.dataset.i));}});
 jRender(0);
 
-/* ================= DIAGRAMS ================= */
-const MONO="font:10.5px 'IBM Plex Mono'", SANS="font:500 12px 'Space Grotesk'";
-const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
-const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" fill="${fill||'#0E1626'}" stroke="${stroke}"/>`;
-const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:#E6EDF7">${s}</text>`;
-const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'#8FA3C0'}">${s}</text>`;
-
-const PDIAG={};
-
-/* --- compute: ladder of abstraction --- */
-PDIAG.compute=(()=>{
-  const rows=[['EC2',.86,'patch, scale, secure the box'],['ECS / EKS on EC2',.62,'you still own the nodes'],
-              ['Fargate',.30,'containers, no servers'],['Lambda',.10,'just your function']];
-  const body=rows.map((r,i)=>{const y=26+i*40, w=Math.round(400*r[1]);
-    return `${t(150,y+19,r[0],SANS,'end')}
-      <rect x="162" y="${y}" width="${w}" height="26" rx="5" fill="rgba(251,191,36,.22)" stroke="#FBBF24"/>
-      <rect x="${162+w}" y="${y}" width="${400-w}" height="26" rx="5" fill="rgba(45,212,191,.16)" stroke="#2DD4BF"/>
-      ${tm(576,y+17,r[2],'#5A6E8F','end')}`;}).join('');
-  return D('0 0 620 210','Four compute options as bars: the amber part is what you operate, the teal part is what the cloud operates. EC2 is mostly amber, Lambda is almost entirely teal.',
-    body+`${tm(162,200,'amber = your job','#FBBF24','start')}${tm(562,200,'teal = the cloud does it','#2DD4BF','end')}`,
-    'Every rung down hands more of the work to the cloud and takes away more control. Pick the lowest bar your constraints allow, because everything amber is work your team does forever.');
-})();
-
-/* --- storage: three shapes, then the cost ladder --- */
-PDIAG.storage=D('0 0 620 220','Three storage shapes side by side, then S3 tiers getting cheaper and slower to retrieve.',
-  `${box(10,10,190,62,'#A78BFA')}${t(105,34,'Object — S3',SANS)}${tm(105,54,'any file, endless shelf')}
-   ${box(215,10,190,62,'#2DD4BF')}${t(310,34,'Block — EBS',SANS)}${tm(310,54,'one machine&#39;s hard disk')}
-   ${box(420,10,190,62,'#60A5FA')}${t(515,34,'File — EFS',SANS)}${tm(515,54,'shared office drive')}
-   ${tm(10,105,'the same file gets cheaper as it goes cold:','#5A6E8F','start')}
-   ${box(10,120,190,58,'#34D399')}${t(105,143,'Standard',SANS)}${tm(105,163,'instant · dearest','#34D399')}
-   ${box(215,120,190,58,'#FBBF24')}${t(310,143,'Infrequent access',SANS)}${tm(310,163,'instant · cheaper','#FBBF24')}
-   ${box(420,120,190,58,'#F87171')}${t(515,143,'Glacier',SANS)}${tm(515,163,'minutes to hours · cheapest','#F87171')}
-   <path d="M10 196 H610" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>
-   ${tm(10,212,'files nobody opens slide right automatically, by lifecycle rule','#5A6E8F','start')}`,
-  'Left to right is the same data getting cheaper to keep and slower to get back. A lifecycle rule moves it for you, so the saving needs no one to remember it.');
-
-/* --- databases: pick by shape of the data --- */
-PDIAG.db=D('0 0 620 200','A decision tree from the shape of the data to a database type.',
-  `${box(210,8,200,44,'#60A5FA')}${t(310,28,'What shape is the data?',SANS)}${tm(310,44,'ask this first')}
-   <path d="M310 52 V70 M100 70 H520 M100 70 V96 M240 70 V96 M380 70 V96 M520 70 V96" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(20,96,160,64,'#A78BFA')}${t(100,120,'Rows + joins',SANS)}${tm(100,138,'RDS · Aurora','#A78BFA')}${tm(100,152,'Cloud SQL','#A78BFA')}
-   ${box(162,96,160,64,'#2DD4BF')}${t(242,120,'Key lookups, huge',SANS)}${tm(242,138,'DynamoDB','#2DD4BF')}${tm(242,152,'Bigtable','#2DD4BF')}
-   ${box(302,96,160,64,'#FBBF24')}${t(382,120,'Flexible documents',SANS)}${tm(382,138,'DocumentDB','#FBBF24')}${tm(382,152,'Firestore','#FBBF24')}
-   ${box(442,96,160,64,'#34D399')}${t(522,120,'Questions over history',SANS)}${tm(522,138,'Redshift','#34D399')}${tm(522,152,'BigQuery','#34D399')}
-   ${tm(310,186,'wrong branch = a rewrite later, so this is the decision that matters','#5A6E8F')}`,
-  'Start from how the data is shaped and how it will be read, not from a favourite product. Each branch ends in a different answer, and picking the wrong branch is the expensive mistake.');
-
-/* --- security: defence in depth --- */
-PDIAG.security=D('0 0 620 210','Five nested boxes: organisation, account, network, identity, and data at the centre.',
-  `${box(10,10,600,190,'#60A5FA','rgba(96,165,250,.05)')}${tm(24,30,'ORGANISATION · SCPs set what is even possible','#60A5FA','start')}
-   ${box(40,42,540,148,'#2DD4BF','rgba(45,212,191,.05)')}${tm(54,62,'ACCOUNT / PROJECT · blast-radius boundary','#2DD4BF','start')}
-   ${box(70,74,480,106,'#A78BFA','rgba(167,139,250,.05)')}${tm(84,94,'NETWORK · VPC, subnets, security groups','#A78BFA','start')}
-   ${box(100,106,420,64,'#FBBF24','rgba(251,191,36,.05)')}${tm(114,126,'IDENTITY · IAM roles, short-lived credentials','#FBBF24','start')}
-   ${box(150,134,320,28,'#F87171','rgba(248,113,113,.08)')}${tm(310,152,'DATA · encrypted with KMS, the last line','#F87171')}`,
-  'An attacker has to get through every ring, not one. Each layer assumes the one outside it has already failed, which is why a single misconfigured rule is survivable.');
-
-/* --- resilience: the RPO / RTO timeline --- */
-PDIAG.resilience=D('0 0 620 190','A timeline showing the last backup, the disaster, and service being restored, with RPO measured before the disaster and RTO after it.',
-  `<path d="M20 96 H600" stroke="#39507C" stroke-width="1.6"/>
-   <line x1="170" y1="80" x2="170" y2="112" stroke="#34D399" stroke-width="2"/>${tm(170,72,'last backup','#34D399')}
-   <line x1="340" y1="66" x2="340" y2="126" stroke="#F87171" stroke-width="2.4"/>${t(340,58,'⚡ disaster',SANS)}
-   <line x1="520" y1="80" x2="520" y2="112" stroke="#60A5FA" stroke-width="2"/>${tm(520,72,'back online','#60A5FA')}
-   <path d="M170 140 H340" stroke="#FBBF24" stroke-width="1.6"/><path d="M170 136 V144 M340 136 V144" stroke="#FBBF24" stroke-width="1.6"/>
-   ${tm(255,158,'RPO — work you lose','#FBBF24')}${tm(255,172,'(everything since the backup)','#5A6E8F')}
-   <path d="M340 140 H520" stroke="#2DD4BF" stroke-width="1.6"/><path d="M340 136 V144 M520 136 V144" stroke="#2DD4BF" stroke-width="1.6"/>
-   ${tm(430,158,'RTO — time you are down','#2DD4BF')}${tm(430,172,'(customers waiting)','#5A6E8F')}
-   ${tm(20,116,'time','#5A6E8F','start')}`,
-  'RPO is measured backwards from the disaster and is about lost data. RTO is measured forwards and is about lost time. Backing up more often shrinks the amber bar; a warmer standby shrinks the teal one.');
-
-/* --- migration: the 7 Rs by effort --- */
-PDIAG.migration=(()=>{
-  const rs=[['Retire','switch it off',0],['Retain','leave it where it is',1],['Relocate','move the VMs wholesale',2],
-            ['Rehost','lift and shift',3],['Replatform','small tweaks on the way',4],['Repurchase','buy the SaaS instead',5],
-            ['Refactor','rewrite it cloud-native',6]];
-  const body=rs.map((r,i)=>{const x=12+i*86;const hgt=18+i*13;
-    return `<rect x="${x}" y="${130-hgt}" width="76" height="${hgt}" rx="5" fill="rgba(167,139,250,.16)" stroke="#A78BFA"/>
-      ${tm(x+38,148,r[0],'#E6EDF7')}${tm(x+38,163,r[1],'#5A6E8F')}`;}).join('');
-  return D('0 0 620 185','Seven migration options as bars of increasing height, from retire to refactor.',
-    body+`<path d="M12 176 H602" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>${tm(12,124,'effort and cost','#5A6E8F','start')}`,
-    'Bar height is how much work it is. Most estates are a mix, and the winning answer usually starts at the cheap left end: the fastest migration is the servers you turn off instead of moving.');
-})();
-
-/* --- cost: what you actually pay for --- */
-PDIAG.cost=D('0 0 620 195','A daily traffic curve under a flat on-demand capacity line, showing paid-for but unused capacity, with a committed baseline and a spot spike.',
-  `<path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146" fill="none" stroke="#60A5FA" stroke-width="2"/>
-   <path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146 L 590 40 L 40 40 Z" fill="rgba(248,113,113,.07)"/>
-   <line x1="40" y1="40" x2="590" y2="40" stroke="#F87171" stroke-width="1.4" stroke-dasharray="5 4"/>
-   ${tm(590,32,'capacity you bought for the peak','#F87171','end')}
-   ${tm(300,66,'paid for, nobody using it','#F87171')}
-   <line x1="40" y1="128" x2="590" y2="128" stroke="#34D399" stroke-width="1.4"/>
-   ${tm(44,122,'always-on baseline → commit and save (Savings Plan / CUD)','#34D399','start')}
-   <rect x="392" y="152" width="120" height="22" rx="5" fill="rgba(251,191,36,.16)" stroke="#FBBF24"/>${tm(452,167,'batch on Spot','#FBBF24')}
-   <path d="M40 150 H590" stroke="#39507C" stroke-width="1.2"/>${tm(40,188,'midnight','#5A6E8F','start')}${tm(590,188,'midnight','#5A6E8F','end')}
-   ${tm(315,188,'one day of real traffic','#5A6E8F')}`,
-  'The blue line is demand; the red band above it is money burned on idle capacity. Commit to the flat green part, autoscale the bump, and run interruptible work on Spot.');
-
-/* --- observability: three questions --- */
-PDIAG.observability=D('0 0 620 165','Three panels for metrics, logs and traces, each with the question it answers, feeding an alert.',
-  `${box(10,14,190,86,'#34D399')}${t(105,42,'Metrics',SANS)}${tm(105,62,'is something wrong?','#34D399')}${tm(105,80,'numbers over time')}
-   ${box(215,14,190,86,'#FBBF24')}${t(310,42,'Logs',SANS)}${tm(310,62,'what exactly happened?','#FBBF24')}${tm(310,80,'the event, in words')}
-   ${box(420,14,190,86,'#A78BFA')}${t(515,42,'Traces',SANS)}${tm(515,62,'where did the time go?','#A78BFA')}${tm(515,80,'one request, every hop')}
-   <path d="M105 100 V118 H515 V100 M310 100 V118" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(210,124,200,32,'#F87171')}${t(310,145,'an alert worth waking up for',SANS)}`,
-  'Metrics tell you there is a problem, logs tell you what happened, traces tell you where it happened. Alerting on metrics alone leaves you awake with no idea why.');
-
-/* --- integration: what a queue buys you --- */
-PDIAG.integration=D('0 0 620 195','Top row: three services chained directly, the last one failing and turning the whole chain red. Bottom row: a queue between them, so the failure is contained.',
-  `${tm(10,20,'directly chained — everyone fails together','#F87171','start')}
-   ${box(10,30,150,44,'#60A5FA')}${t(85,57,'Checkout',SANS)}
-   <path d="M162 52 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
-   ${box(210,30,150,44,'#60A5FA')}${t(285,57,'Order service',SANS)}
-   <path d="M362 52 H406" stroke="#F87171" stroke-width="1.4" marker-end="url(#ah)"/>
-   ${box(410,30,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,52,'Email service',SANS)}${tm(485,68,'down','#F87171')}
-   ${tm(575,57,'✕','#F87171','start')}
-   ${tm(10,110,'queue in the middle — the failure is contained','#34D399','start')}
-   ${box(10,120,150,44,'#60A5FA')}${t(85,147,'Checkout',SANS)}
-   <path d="M162 142 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
-   ${box(210,120,150,44,'#2DD4BF','rgba(45,212,191,.08)')}${t(285,142,'Queue',SANS)}${tm(285,158,'holding 412 messages','#2DD4BF')}
-   <path d="M362 142 H406" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
-   ${box(410,120,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,142,'Email service',SANS)}${tm(485,158,'still down','#F87171')}
-   ${tm(575,147,'✓','#34D399','start')}`,
-  'Same outage, two outcomes. Chained directly, a broken email service breaks checkout. With a queue, checkout still works and the emails simply go out late.');
-
-/* --- edge: why distance is latency --- */
-PDIAG.edge=D('0 0 620 170','A user far from a single origin region compared with the same user reaching a nearby edge location.',
-  `${box(10,20,110,44,'#60A5FA')}${t(65,47,'User in Sydney',SANS)}
-   <path d="M122 42 H466" stroke="#F87171" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#ah)"/>
-   ${tm(300,32,'~250 ms each way, every single request','#F87171')}
-   ${box(470,20,140,44,'#A78BFA')}${t(540,47,'Origin · Ireland',SANS)}
-   ${box(10,104,110,44,'#60A5FA')}${t(65,131,'User in Sydney',SANS)}
-   <path d="M122 126 H196" stroke="#34D399" stroke-width="1.6" marker-end="url(#ah)"/>
-   ${tm(240,116,'~20 ms','#34D399')}
-   ${box(200,104,150,44,'#2DD4BF')}${t(275,126,'Edge · Sydney',SANS)}${tm(275,142,'cached copy','#2DD4BF')}
-   <path d="M352 126 H466" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
-   ${tm(410,116,'only on a miss','#5A6E8F')}
-   ${box(470,104,140,44,'#A78BFA')}${t(540,131,'Origin · Ireland',SANS)}`,
-  'Distance is latency, and no amount of server tuning beats physics. Putting a copy near the user turns a quarter-second wait into an instant one, and quietly removes most of the traffic from your servers.');
-
-/* --- cloud-difference diagrams --- */
-const DDIAG={};
-DDIAG['Network model — the biggest one']=D('0 0 620 150','Left: three separate AWS VPCs joined by manual peering links. Right: one global GCP VPC containing three regions.',
-  `${tm(10,16,'AWS — one VPC per region, you build the links','#FBBF24','start')}
-   ${box(14,26,80,50,'#FBBF24')}${tm(54,56,'Tokyo','#E6EDF7')}
-   ${box(114,26,80,50,'#FBBF24')}${tm(154,56,'Dublin','#E6EDF7')}
-   ${box(214,26,80,50,'#FBBF24')}${tm(254,56,'Ohio','#E6EDF7')}
-   <path d="M94 51 H114 M194 51 H214" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3"/>
-   <path d="M54 76 C 54 106, 254 106, 254 76" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3" fill="none"/>
-   ${tm(154,122,'peering / Transit Gateway you configure','#F87171')}
-   ${tm(330,16,'GCP — one VPC, regions inside it','#7CACF8','start')}
-   ${box(324,26,286,76,'#7CACF8','rgba(124,172,248,.06)')}
-   ${box(338,44,80,44,'#7CACF8')}${tm(378,71,'Tokyo','#E6EDF7')}
-   ${box(428,44,80,44,'#7CACF8')}${tm(468,71,'Dublin','#E6EDF7')}
-   ${box(518,44,80,44,'#7CACF8')}${tm(558,71,'Ohio','#E6EDF7')}
-   ${tm(467,122,'already one network, one firewall policy','#7CACF8')}`,
-  'The red dashed lines on the left are work you do and keep maintaining. On the right they do not exist, because the network is global to begin with.');
-
-DDIAG['Isolation & org boundary']=D('0 0 620 150','Left: three heavy separate AWS accounts. Right: a light GCP org, folder and project tree.',
-  `${tm(10,16,'AWS — the account is the wall','#FBBF24','start')}
-   ${box(14,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(57,58,'Account','#E6EDF7')}${tm(57,74,'prod','#8FA3C0')}
-   ${box(112,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(155,58,'Account','#E6EDF7')}${tm(155,74,'staging','#8FA3C0')}
-   ${box(210,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(253,58,'Account','#E6EDF7')}${tm(253,74,'data','#8FA3C0')}
-   ${tm(155,122,'heavyweight: Organizations, SCPs, cross-account roles','#F87171')}
-   ${tm(330,16,'GCP — the project is the wall','#7CACF8','start')}
-   ${box(392,26,150,26,'#7CACF8')}${tm(467,44,'Organisation','#E6EDF7')}
-   <path d="M467 52 V62 M370 62 H564 M370 62 V72 M467 62 V72 M564 62 V72" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(330,72,80,30,'#7CACF8')}${tm(370,92,'prod','#E6EDF7')}
-   ${box(427,72,80,30,'#7CACF8')}${tm(467,92,'staging','#E6EDF7')}
-   ${box(524,72,80,30,'#7CACF8')}${tm(564,92,'data','#E6EDF7')}
-   ${tm(467,122,'lightweight: a project takes seconds','#7CACF8')}`,
-  'Both give you the same isolation. The difference is what it costs to create one, which is why AWS estates plan accounts carefully and GCP estates hand them out freely.');
-
-DDIAG['Load balancing & global traffic']=D('0 0 620 150','Left: AWS user reaching CloudFront then three regional load balancers. Right: GCP user reaching one global IP then regions.',
-  `${tm(10,16,'AWS — layers you assemble','#FBBF24','start')}
-   ${box(14,28,70,32,'#60A5FA')}${tm(49,48,'Users','#E6EDF7')}
-   <path d="M86 44 H116" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
-   ${box(120,28,110,32,'#FBBF24')}${tm(175,48,'CloudFront','#E6EDF7')}
-   <path d="M175 60 V72 M60 72 H290 M60 72 V84 M175 72 V84 M290 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(22,84,76,28,'#FBBF24')}${tm(60,102,'ALB · eu','#E6EDF7')}
-   ${box(137,84,76,28,'#FBBF24')}${tm(175,102,'ALB · us','#E6EDF7')}
-   ${box(252,84,76,28,'#FBBF24')}${tm(290,102,'ALB · ap','#E6EDF7')}
-   ${tm(175,134,'plus Route 53 policies and health checks','#F87171')}
-   ${tm(340,16,'GCP — one address, worldwide','#7CACF8','start')}
-   ${box(344,28,70,32,'#60A5FA')}${tm(379,48,'Users','#E6EDF7')}
-   <path d="M416 44 H446" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
-   ${box(450,28,150,32,'#7CACF8')}${tm(525,48,'one anycast IP','#E6EDF7')}
-   <path d="M525 60 V72 M400 72 H600 M400 72 V84 M500 72 V84 M600 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(366,84,68,28,'#7CACF8')}${tm(400,102,'eu','#E6EDF7')}
-   ${box(466,84,68,28,'#7CACF8')}${tm(500,102,'us','#E6EDF7')}
-   ${box(566,84,50,28,'#7CACF8')}${tm(591,102,'ap','#E6EDF7')}
-   ${tm(500,134,'CDN is a checkbox on the same thing','#7CACF8')}`,
-  'The same requirement — serve everyone from their nearest healthy region — is three or four moving parts on one side and one on the other.');
-
-DDIAG['Analytics stance']=D('0 0 620 150','Left: a fixed Redshift cluster with idle capacity shaded. Right: BigQuery charging only for the slice of data a query reads.',
-  `${tm(10,16,'Redshift — a building you size and keep','#FBBF24','start')}
-   ${box(14,28,280,74,'#FBBF24','rgba(251,191,36,.05)')}
-   <rect x="26" y="40" width="120" height="50" rx="5" fill="rgba(251,191,36,.3)" stroke="#FBBF24"/>${tm(86,70,'used','#E6EDF7')}
-   <rect x="152" y="40" width="130" height="50" rx="5" fill="rgba(248,113,113,.08)" stroke="#F87171" stroke-dasharray="4 3"/>${tm(217,64,'idle','#F87171')}${tm(217,80,'still paid for','#F87171')}
-   ${tm(154,124,'you pick the size, quiet days cost the same','#F87171')}
-   ${tm(330,16,'BigQuery — pay per byte read','#7CACF8','start')}
-   ${box(324,28,286,74,'#7CACF8','rgba(124,172,248,.05)')}
-   ${tm(467,46,'a petabyte sitting still costs storage only','#8FA3C0')}
-   <rect x="344" y="56" width="46" height="34" rx="5" fill="rgba(124,172,248,.35)" stroke="#7CACF8"/>${tm(367,78,'query','#E6EDF7')}
-   ${tm(500,78,'only this slice is billed','#7CACF8')}
-   ${tm(467,124,'no cluster to run, quiet days cost nothing','#7CACF8')}`,
-  'One charges for the machine whether you use it or not; the other charges for the data each question actually reads. That single difference decides a lot of platform choices.');
 
 </script>
 </body>
