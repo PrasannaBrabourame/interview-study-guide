@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cloud study hub — request journey, pillars, DR simulator, AWS ↔ GCP</title>
+<title>Cloud study hub — request journey, OSI, network sim, three-cloud translator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -13,7 +13,7 @@
     --text:#E6EDF7; --muted:#8FA3C0; --dim:#6E82A4;
     --blue:#60A5FA; --teal:#2DD4BF; --violet:#A78BFA; --amber:#FBBF24;
     --green:#34D399; --red:#F87171; --orange:#FB923C;
-    --gcpblue:#7CACF8; --awsorange:#FBBF24;
+    --gcpblue:#7CACF8; --awsorange:#FBBF24; --azblue:#5AC8F5;
     /* structural tokens used inside the diagrams */
     --wire:#39507C; --dot:#16233C; --sel:#1A2440;
     --n-blue:#0F1B33; --n-violet:#171331; --n-teal:#0F2431; --n-amber:#2A2013;
@@ -26,7 +26,7 @@
     --text:#172033; --muted:#4A5B75; --dim:#5F708A;
     --blue:#2563EB; --teal:#0E7C70; --violet:#6D3FD4; --amber:#8A5A00;
     --green:#087A61; --red:#B73549; --orange:#B45309;
-    --gcpblue:#2563EB; --awsorange:#8A5A00;
+    --gcpblue:#2563EB; --awsorange:#8A5A00; --azblue:#0F6C9E;
     --wire:#94A8C4; --dot:#DEE7F4; --sel:#EDF2FF;
     --n-blue:#EAF1FE; --n-violet:#F2EDFE; --n-teal:#E4F6F3; --n-amber:#FDF3E0;
     --regA:#5FA98F; --regB:#7FA8E4;
@@ -125,18 +125,20 @@
   table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
   table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
   table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
   table.map td.note{color:var(--muted); font-size:12.5px}
   table.map td.catcell{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
   @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
 
   /* ---- diffs ---- */
-  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:12px}
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
   .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
   .diff h3{font-size:14.5px; font-weight:600; margin-bottom:8px}
-  .diff .vs{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
   .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
   .diff .side b{display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
-  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
   .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
   .diff p.why b{color:var(--text); font-weight:500}
 
@@ -258,8 +260,8 @@
     <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
     <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← back to the interview study guide</a>
     <div class="eyebrow">solutions architect · study hub</div>
-    <h1>How the cloud actually works <span class="thin">— one request, every pillar, plus AWS ↔ GCP</span></h1>
-    <p class="sub">Companion to the network visualizer. Five sections: a step-by-step walk of one request from phone to database (start here if any of this is new), the non-networking exam domains as decision-oriented cards with a diagram each, an animated disaster-recovery failover simulator, a searchable AWS ↔ GCP service translator, and the deep conceptual differences between the two clouds that actually change your architecture. Every diagram has a plain-English caption — no cloud background assumed.</p>
+    <h1>How the cloud actually works <span class="thin">— one request, every pillar, across AWS, GCP and Azure</span></h1>
+    <p class="sub">Companion to the network visualizer. Five sections: a step-by-step walk of one request from phone to database (start here if any of this is new), the non-networking exam domains as decision-oriented cards with a diagram each, an animated disaster-recovery failover simulator, a searchable service translator across AWS, GCP and Azure, and the deep conceptual differences between the three clouds that actually change your architecture. Every diagram has a plain-English caption — no cloud background assumed.</p>
   </header>
 
   <div class="tabs" role="tablist">
@@ -268,7 +270,7 @@
     <button class="tab" data-pane="netsim" role="tab">Network simulator</button>
     <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
     <button class="tab" data-pane="dr" role="tab">DR simulator</button>
-    <button class="tab" data-pane="map" role="tab">AWS ↔ GCP translator</button>
+    <button class="tab" data-pane="map" role="tab">Service translator</button>
     <button class="tab" data-pane="diffs" role="tab">Cloud differences</button>
   </div>
 
@@ -450,12 +452,12 @@
   <!-- ================= TRANSLATOR ================= -->
   <section class="pane" id="pane-map">
     <div class="card">
-      <h2 class="sec">Service translator — search either cloud's name</h2>
-      <input class="search" id="q" placeholder="try: lambda, bigquery, pub/sub, transit, spanner…" aria-label="Search services">
+      <h2 class="sec">Service translator — search any of the three clouds</h2>
+      <input class="search" id="q" placeholder="try: lambda, bigquery, cosmos, front door, transit, spanner…" aria-label="Search services">
       <div class="cats" id="catFilters"></div>
       <div style="overflow-x:auto">
         <table class="map">
-          <thead><tr><th class="catcell">Domain</th><th>AWS</th><th>GCP</th><th>The difference that matters</th></tr></thead>
+          <thead><tr><th class="catcell">Domain</th><th>AWS</th><th>GCP</th><th>Azure</th><th>The difference that matters</th></tr></thead>
           <tbody id="mapBody"></tbody>
         </table>
       </div>
@@ -899,52 +901,52 @@ setStrat(STRATS[1]);
 
 /* ================= TRANSLATOR ================= */
 const MAP=[
-['compute','EC2','Compute Engine','GCP bills per second with automatic sustained-use discounts; live-migrates VMs during host maintenance (no reboot). AWS relies on Savings Plans/RIs you must commit to.'],
-['compute','Auto Scaling groups','Managed instance groups (MIGs)','Same idea; GCP MIGs integrate with global load balancing natively.'],
-['compute','Lambda','Cloud Functions / Cloud Run','Cloud Run (containers, scale-to-zero, up to 60-min requests) covers many cases where AWS needs Lambda + Fargate together.'],
-['compute','Fargate','Cloud Run','Cloud Run is GCP\u2019s serverless container answer and is generally simpler to adopt.'],
-['containers','EKS','GKE','GKE is widely considered the most mature managed K8s (Google wrote Kubernetes); Autopilot mode manages nodes entirely. EKS gives more AWS-ecosystem control.'],
-['containers','ECS','— (no direct equivalent)','GCP has no proprietary orchestrator; everything container-shaped goes to Cloud Run or GKE.'],
-['containers','ECR','Artifact Registry','Artifact Registry also handles language packages (npm, Maven), not just images.'],
-['storage','S3','Cloud Storage','One GCS bucket can be multi-region natively; storage classes (Standard/Nearline/Coldline/Archive) all keep millisecond access — no \u201cthaw\u201d like Glacier Flexible/Deep.'],
-['storage','EBS','Persistent Disk','PD can be regional (synchronously replicated across two zones) — AWS EBS is single-AZ, full stop.'],
-['storage','EFS','Filestore','Similar managed NFS; Filestore tiers by performance.'],
-['storage','Glacier','Cloud Storage Archive class','Archive class still has ms latency; you pay retrieval fees but never wait hours. Changes DR design.'],
-['db','RDS','Cloud SQL','Same concept. GCP\u2019s AlloyDB is the Aurora-Postgres competitor.'],
-['db','Aurora','AlloyDB / Cloud Spanner','Spanner is the headline difference: horizontally scalable, strongly consistent, GLOBAL relational SQL — AWS has no true equivalent (Aurora Global is read-replicas + promote).'],
-['db','DynamoDB','Firestore / Bigtable','Firestore = document DB with live sync to mobile clients; Bigtable = wide-column for huge analytical/time-series workloads (HBase API).'],
-['db','ElastiCache','Memorystore','Managed Redis/Memcached on both.'],
-['db','Redshift','BigQuery','Philosophical split: Redshift = provisioned clusters you size; BigQuery = fully serverless, pay-per-query-scanned. BigQuery is often the reason companies pick GCP.'],
-['networking','VPC (regional)','VPC (GLOBAL)','The single biggest difference: a GCP VPC spans all regions with regional subnets — instances in different continents talk privately with zero peering/TGW. AWS needs TGW/peering per region.'],
-['networking','Transit Gateway','Network Connectivity Center / VPC peering','Because GCP VPCs are global, much of what TGW solves doesn\u2019t exist; NCC handles hybrid hub-and-spoke.'],
-['networking','ALB/NLB','Cloud Load Balancing','GCP\u2019s external LB is GLOBAL with one anycast IP out of the box — AWS approximates that only by adding Global Accelerator or CloudFront in front of regional LBs.'],
-['networking','Route 53','Cloud DNS','Comparable; Route 53\u2019s routing-policy set (geoproximity etc.) is richer.'],
-['networking','Direct Connect','Cloud Interconnect','Dedicated/Partner Interconnect mirror DX tiers; both pair with VPN for encryption.'],
-['networking','CloudFront','Cloud CDN','Cloud CDN attaches to the global LB; Lambda@Edge-style compute is a separate service (Cloud Run + CDN patterns).'],
-['networking','Global Accelerator','(built into global LB)','GCP\u2019s LB is already anycast-global, so a separate accelerator product isn\u2019t needed.'],
-['networking','PrivateLink','Private Service Connect','Same pattern: consumer-side endpoint fronting a producer service, no route exchange.'],
-['identity','IAM (policies/roles)','Cloud IAM (bindings)','AWS: JSON policies attached to identities/resources; roles are assumed temporarily. GCP: you bind members → roles on a resource hierarchy; service accounts are first-class identities attached to workloads.'],
-['identity','AWS Organizations','Resource hierarchy (Org → Folders → Projects)','GCP\u2019s PROJECT is the isolation + billing boundary (lightweight, you make many). AWS\u2019s equivalent boundary is a whole ACCOUNT — heavier, hence Control Tower/landing zones.'],
-['identity','SCPs','Organization Policy','Same guardrail idea; GCP\u2019s constraints are predefined (e.g. \u201cdisable external IPs\u201d), AWS SCPs are free-form policy JSON.'],
-['identity','KMS','Cloud KMS','Comparable, including HSM tiers and customer-managed keys.'],
-['analytics','Athena','BigQuery','BigQuery natively queries its own storage AND external data; Athena is S3-only Presto.'],
-['analytics','Kinesis','Pub/Sub + Dataflow','Pub/Sub is global by default (no shards to size!); Dataflow (Apache Beam) does the stream processing. Kinesis makes you manage shard capacity.'],
-['analytics','EMR','Dataproc','Managed Spark/Hadoop on both; Dataproc spins clusters in ~90s, encouraging ephemeral clusters.'],
-['analytics','Glue','Dataflow / Data Fusion / Dataform','GCP splits ETL across several tools; Glue bundles catalog + ETL.'],
-['analytics','QuickSight','Looker / Looker Studio','Looker is a full BI platform (owned by Google).'],
-['integration','SQS','Pub/Sub (pull)','Pub/Sub merges SQS+SNS into one global service with pull and push subscriptions.'],
-['integration','SNS','Pub/Sub (push)','Same service on GCP — one fewer distinction to manage.'],
-['integration','EventBridge','Eventarc','Eventarc routes GCP/SaaS events, typically into Cloud Run.'],
-['integration','Step Functions','Workflows','Comparable serverless orchestration; Step Functions\u2019 ecosystem integrations are broader.'],
-['integration','API Gateway','API Gateway / Apigee','Apigee is a much heavier enterprise API-management suite (monetization, analytics).'],
-['ops','CloudWatch','Cloud Monitoring & Logging','Both born from ops suites; GCP\u2019s Logging has strong ad-hoc query UX; CloudWatch alarms integrate tighter with ASG.'],
-['ops','CloudTrail','Cloud Audit Logs','Same purpose: admin/data access audit.'],
-['ops','CloudFormation','Deployment Manager (legacy) — use Terraform','GCP\u2019s native IaC is weak; Terraform is the de-facto standard there (and increasingly on AWS too, alongside CDK).'],
-['ops','Systems Manager','OS Config / IAP','GCP\u2019s Identity-Aware Proxy ≈ Session Manager\u2019s \u201cno open ports\u201d SSH story.'],
-['migration','DMS','Database Migration Service','Same name, same job on both clouds.'],
-['migration','MGN','Migrate to Virtual Machines','Both do block-level lift-and-shift.'],
-['migration','Snowball','Transfer Appliance','Physical data shipping exists on both.'],
-['ml','SageMaker','Vertex AI','Vertex AI is tightly unified (AutoML + custom + pipelines + model garden); SageMaker is broader but more assembled-from-parts.'],
+['compute','EC2','Compute Engine','Virtual Machines','GCP bills per second with automatic sustained-use discounts; live-migrates VMs during host maintenance (no reboot). AWS relies on Savings Plans/RIs you must commit to.'],
+['compute','Auto Scaling groups','Managed instance groups (MIGs)','Virtual Machine Scale Sets (VMSS)','Same idea; GCP MIGs integrate with global load balancing natively.'],
+['compute','Lambda','Cloud Functions / Cloud Run','Azure Functions','Azure Functions matches Lambda closely; Container Apps covers the longer-running container cases that need Fargate on AWS or Cloud Run on GCP.'],
+['compute','Fargate','Cloud Run','Container Apps / Container Instances','Cloud Run is GCP\u2019s serverless container answer and is generally simpler to adopt.'],
+['containers','EKS','GKE','AKS','GKE is widely considered the most mature managed K8s (Google wrote Kubernetes); Autopilot mode manages nodes entirely. EKS gives more AWS-ecosystem control.'],
+['containers','ECS','— (no direct equivalent)','— (Container Apps is the closest)','Neither GCP nor Azure has a proprietary orchestrator to match ECS: container work lands on Kubernetes or the serverless container service.'],
+['containers','ECR','Artifact Registry','Azure Container Registry','Artifact Registry also handles language packages (npm, Maven), not just images.'],
+['storage','S3','Cloud Storage','Blob Storage','One GCS bucket can be multi-region natively; storage classes (Standard/Nearline/Coldline/Archive) all keep millisecond access — no \u201cthaw\u201d like Glacier Flexible/Deep.'],
+['storage','EBS','Persistent Disk','Managed Disks','PD can be regional (synchronously replicated across two zones) — AWS EBS is single-AZ, full stop.'],
+['storage','EFS','Filestore','Azure Files / NetApp Files','Similar managed NFS; Filestore tiers by performance.'],
+['storage','Glacier','Cloud Storage Archive class','Blob Archive tier','Archive class still has ms latency; you pay retrieval fees but never wait hours. Changes DR design.'],
+['db','RDS','Cloud SQL','Azure Database for PostgreSQL / MySQL','Same concept. GCP\u2019s AlloyDB is the Aurora-Postgres competitor.'],
+['db','Aurora','AlloyDB / Cloud Spanner','Azure SQL Database (Hyperscale)','Spanner is the headline difference: horizontally scalable, strongly consistent, GLOBAL relational SQL — AWS has no true equivalent (Aurora Global is read-replicas + promote).'],
+['db','DynamoDB','Firestore / Bigtable','Cosmos DB','Firestore = document DB with live sync to mobile clients; Bigtable = wide-column for huge analytical/time-series workloads (HBase API).'],
+['db','ElastiCache','Memorystore','Azure Cache for Redis','Managed Redis/Memcached on both.'],
+['db','Redshift','BigQuery','Synapse / Microsoft Fabric','Philosophical split: Redshift = provisioned clusters you size; BigQuery = fully serverless, pay-per-query-scanned. BigQuery is often the reason companies pick GCP.'],
+['networking','VPC (regional)','VPC (GLOBAL)','Virtual Network (regional)','The single biggest structural difference. AWS and Azure networks are <b>regional</b>; GCP’s VPC is <b>global</b>. Azure differs again on subnets: an AWS subnet lives in one availability zone, an Azure subnet spans the whole region.'],
+['networking','Transit Gateway','Network Connectivity Center / VPC peering','Virtual WAN','Because GCP VPCs are global, much of what TGW solves doesn\u2019t exist; NCC handles hybrid hub-and-spoke.'],
+['networking','ALB/NLB','Cloud Load Balancing','Load Balancer (L4) / Application Gateway (L7)','Azure splits by scope as well as layer: Front Door is the global L7 door, Application Gateway the regional L7 one, Load Balancer the L4 one. GCP does all of it with a single global load balancer.'],
+['networking','Route 53','Cloud DNS','Azure DNS + Traffic Manager','Comparable; Route 53\u2019s routing-policy set (geoproximity etc.) is richer.'],
+['networking','Direct Connect','Cloud Interconnect','ExpressRoute','Dedicated/Partner Interconnect mirror DX tiers; both pair with VPN for encryption.'],
+['networking','CloudFront','Cloud CDN','Azure Front Door / CDN','Cloud CDN attaches to the global LB; Lambda@Edge-style compute is a separate service (Cloud Run + CDN patterns).'],
+['networking','Global Accelerator','(built into global LB)','Front Door (anycast)','Anycast global entry: Global Accelerator on AWS, built into the global LB on GCP, Front Door on Azure.'],
+['networking','PrivateLink','Private Service Connect','Private Link / Private Endpoint','Same pattern: consumer-side endpoint fronting a producer service, no route exchange.'],
+['identity','IAM (policies/roles)','Cloud IAM (bindings)','Entra ID + Azure RBAC','GCP and Azure both attach a principal to a role at a scope and inherit downward. AWS writes JSON policy documents instead — more expressive, and easier to get wrong.'],
+['identity','AWS Organizations','Resource hierarchy (Org → Folders → Projects)','Management Groups → Subscriptions → Resource Groups','Three different weights of boundary: an AWS account is heavyweight, a GCP project is light, and Azure splits the job between a subscription (billing and quota) and a resource group (lifecycle — deleting it deletes everything inside).'],
+['identity','SCPs','Organization Policy','Azure Policy','Guardrails that say what may not be done: SCPs on AWS, Organization Policy on GCP, Azure Policy — which can also audit and auto-remediate, not only deny.'],
+['identity','KMS','Cloud KMS','Key Vault / Managed HSM','Key Vault covers secrets, keys and certificates in one service; on AWS those are KMS plus Secrets Manager plus ACM.'],
+['analytics','Athena','BigQuery','Synapse serverless SQL','BigQuery natively queries its own storage AND external data; Athena is S3-only Presto.'],
+['analytics','Kinesis','Pub/Sub + Dataflow','Event Hubs (Kafka-compatible)','Event Hubs speaks the Kafka protocol, so existing Kafka clients point at it with a connection-string change.'],
+['analytics','EMR','Dataproc','HDInsight / Databricks','Managed Spark/Hadoop on both; Dataproc spins clusters in ~90s, encouraging ephemeral clusters.'],
+['analytics','Glue','Dataflow / Data Fusion / Dataform','Data Factory','GCP splits ETL across several tools; Glue bundles catalog + ETL.'],
+['analytics','QuickSight','Looker / Looker Studio','Power BI','Looker is a full BI platform (owned by Google).'],
+['integration','SQS','Pub/Sub (pull)','Service Bus queues / Storage queues','Azure separates the two properly: Service Bus for ordered, transactional queues, Storage queues for cheap and simple. GCP uses one Pub/Sub for both push and pull.'],
+['integration','SNS','Pub/Sub (push)','Service Bus topics / Event Grid','Same service on GCP — one fewer distinction to manage.'],
+['integration','EventBridge','Eventarc','Event Grid','Eventarc routes GCP/SaaS events, typically into Cloud Run.'],
+['integration','Step Functions','Workflows','Logic Apps / Durable Functions','Comparable serverless orchestration; Step Functions\u2019 ecosystem integrations are broader.'],
+['integration','API Gateway','API Gateway / Apigee','API Management','Apigee is a much heavier enterprise API-management suite (monetization, analytics).'],
+['ops','CloudWatch','Cloud Monitoring & Logging','Azure Monitor + Log Analytics','Azure Monitor collects it all and you query with KQL, which is closer to Log Analytics than to CloudWatch Insights.'],
+['ops','CloudTrail','Cloud Audit Logs','Activity Log','Same purpose: admin/data access audit.'],
+['ops','CloudFormation','Deployment Manager (legacy) — use Terraform','ARM templates / Bicep','Bicep is the readable language that compiles to ARM JSON. As on GCP, most teams still reach for Terraform across clouds.'],
+['ops','Systems Manager','OS Config / IAP','Azure Automation / Run Command / Bastion','GCP\u2019s Identity-Aware Proxy ≈ Session Manager\u2019s \u201cno open ports\u201d SSH story.'],
+['migration','DMS','Database Migration Service','Database Migration Service','Same name, same job on both clouds.'],
+['migration','MGN','Migrate to Virtual Machines','Azure Migrate','Both do block-level lift-and-shift.'],
+['migration','Snowball','Transfer Appliance','Data Box','Physical data shipping exists on both.'],
+['ml','SageMaker','Vertex AI','Azure Machine Learning / AI Foundry','Vertex AI is tightly unified (AutoML + custom + pipelines + model garden); SageMaker is broader but more assembled-from-parts.'],
 ];
 const CATS=['all','compute','containers','storage','db','networking','identity','analytics','integration','ops','migration','ml'];
 let activeCat='all';
@@ -960,29 +962,30 @@ function renderMap(){
   const term=q.value.trim().toLowerCase();
   body.innerHTML = MAP
     .filter(r=>(activeCat==='all'||r[0]===activeCat) && (!term || r.join(' ').toLowerCase().includes(term)))
-    .map(r=>`<tr><td class="catcell">${r[0]}</td><td class="aws">${r[1]}</td><td class="gcp">${r[2]}</td><td class="note">${r[3]}</td></tr>`)
-    .join('') || '<tr><td colspan="4" class="note">no matches — try another term</td></tr>';
+    .map(r=>`<tr><td class="catcell">${r[0]}</td><td class="aws">${r[1]}</td><td class="gcp">${r[2]}</td><td class="az">${r[3]}</td><td class="note">${r[4]}</td></tr>`)
+    .join('') || '<tr><td colspan="5" class="note">no matches — try another term</td></tr>';
 }
 renderMap();
 
 /* ================= DIFFS ================= */
 const DIFFS=[
-{t:'Network model — the biggest one', aws:'VPC is <b>regional</b>; subnets are zonal. Multi-region = TGW peering, cross-region routing, DNS work. You build the global network yourself.', gcp:'VPC is <b>global</b>; subnets are regional. A VM in Tokyo and one in Frankfurt share one VPC and one firewall policy with zero extra plumbing.', plain:'AWS gives you a separate office per city — you must install the phone lines between them yourself (peering, Transit Gateway). GCP gives you one worldwide office with a single corridor: a colleague in Tokyo and one in Frankfurt are already on the same network.', why:'This reshapes everything: on GCP, half of the SAP-C02 networking exam (TGW meshes, inter-region peering) simply isn\u2019t needed. On AWS you get finer blast-radius isolation by default. Know this cold if you ever interview across clouds.'},
-{t:'Isolation & org boundary', aws:'The <b>account</b> is the boundary — heavyweight, so multi-account needs Organizations, SCPs, Control Tower, cross-account roles.', gcp:'The <b>project</b> is the boundary — lightweight, created in seconds, natural per-app/per-env granularity under folders.', plain:'An AWS account is like registering a separate legal company for each team — real isolation, real paperwork. A GCP project is like creating a new folder: two clicks, done, and it still keeps teams\u2019 stuff cleanly apart.', why:'Same goal (blast radius, billing, least privilege) achieved at different weights. AWS multi-account design is a whole exam domain; GCP gets similar isolation almost for free with projects.'},
-{t:'IAM philosophy', aws:'Identity-based + resource-based <b>JSON policies</b>; temporary credentials via STS role assumption; permission boundary = SCPs + boundaries.', gcp:'<b>Bindings</b>: member → role → resource, inherited down Org→Folder→Project. Service accounts ARE the workload identity, attached directly to VMs/functions.', plain:'AWS permissions are detailed legal contracts written in JSON — you can express almost anything, and also misplace a comma that opens a vault. GCP is a guest list on each room\u2019s door: \u201cAlice can view, Bob can edit\u201d — simpler to read, fewer knobs.', why:'AWS is more expressive (conditions, resource policies) but easier to get wrong; GCP is simpler to reason about but coarser. Both converge on: never long-lived keys, always workload identity.'},
-{t:'Load balancing & global traffic', aws:'Regional ALB/NLB. Global = add CloudFront and/or Global Accelerator on top, plus Route 53 policies.', gcp:'One <b>global anycast LB</b> with a single IP, cross-region backends, and CDN as a checkbox.', plain:'GCP hands you one phone number that works worldwide and always connects callers to the nearest open branch. AWS gives you a phone number per country plus a separate call-forwarding service (Global Accelerator/CloudFront) to glue them together.', why:'A \u201cserve users worldwide from the nearest healthy region\u201d design is 3–4 AWS services or 1 GCP service. Conversely AWS gives more per-region control and more LB flavors.'},
-{t:'Pricing philosophy', aws:'You commit: <b>Savings Plans / RIs</b> (1–3 yr) for discounts; Spot for scraps. Discounts are a planning exercise.', gcp:'<b>Sustained-use discounts apply automatically</b>; committed-use available; per-second billing everywhere; preemptible/Spot VMs similar.', plain:'GCP is the shop that automatically applies a loyalty discount at checkout because you visited a lot this month. AWS has better deals — but only if you commit upfront to the 1-year membership, and it\u2019s on you to remember to buy it.', why:'On AWS, cost optimization is an active skill (and exam domain). GCP\u2019s defaults are more forgiving for steady workloads without planning. Egress out of both clouds costs real money — architect to keep data inside.'},
-{t:'Analytics stance', aws:'<b>Redshift</b>: provisioned (or serverless-ish) warehouse you size and manage; Athena for ad-hoc S3 SQL; Kinesis shards you capacity-plan.', gcp:'<b>BigQuery</b>: no clusters, pay per TB scanned, scales to petabytes invisibly; Pub/Sub has no shards to manage.', plain:'Redshift = owning a library building: you decide how many shelves and staff, and pay for them even on quiet days. BigQuery = an infinite public library where you pay only per book you actually read — no building to run at all.', why:'Data teams often choose GCP because of BigQuery alone. If a workload is analytics-first, evaluate BigQuery before defaulting to the AWS stack.'},
-{t:'Relational at global scale', aws:'<b>Aurora Global Database</b>: one writer region, replicas elsewhere (~1s lag), promote on failure. DynamoDB covers active-active but is NoSQL.', gcp:'<b>Cloud Spanner</b>: strongly consistent, horizontally scaling SQL across regions — genuine multi-region writes with SQL semantics.', plain:'Aurora Global = one master ledger in the head office, with photocopies mailed to branches every second; if head office burns, a branch\u2019s copy gets promoted. Spanner = one magical shared ledger every office writes into simultaneously without ever conflicting.', why:'If a requirement says \u201crelational + strong consistency + multi-region writes\u201d, AWS answers involve trade-offs; Spanner is built for exactly that (at a price).'},
-{t:'Kubernetes & containers', aws:'<b>EKS</b> is solid but you feel the assembly: node groups, add-ons, IRSA for pod IAM. ECS exists as the simpler proprietary path.', gcp:'<b>GKE</b> is the reference managed K8s; Autopilot removes node management entirely. Cloud Run handles the \u201cI just have a container\u201d case beautifully.', plain:'Kubernetes is a recipe Google wrote — GKE is the kitchen designed by the original chef, and Autopilot even does the dishes (manages the servers). EKS cooks the same recipe well but hands you more of the cleanup.', why:'Container-native startups often find GCP smoother; AWS wins when the container platform must integrate with a large existing AWS estate.'},
-{t:'Maintenance & VMs', aws:'Scheduled maintenance can mean instance reboots/retirements you must plan around (though rare).', gcp:'<b>Live migration</b> moves running VMs between hosts during maintenance — your instance doesn\u2019t notice.', plain:'When GCP needs to fix the physical machine under your VM, it carries your running VM to another machine like moving a sleeping baby to another room — it never wakes up. On AWS, maintenance can occasionally mean a scheduled reboot you plan around.', why:'Small but telling: it changes how you think about single-instance workloads and maintenance windows.'},
-{t:'Learning strategy', aws:'Deepest ecosystem, most jobs, most mature certs — your SAP-C02 plan is the right call.', gcp:'Learn the DELTAS after AWS: global VPC, projects, BigQuery, Spanner, Cloud Run, IAM bindings. That\u2019s ~80% of the mental remapping.', plain:'Learning a second cloud is like learning American English after British English — same language, you just need the small dictionary of words that differ (lift/elevator = TGW/global VPC). Don\u2019t study both from scratch.', why:'Concepts transfer almost 1:1 (regions/zones, LB, IAM, queues, IaC). Master one cloud deeply — the second takes weeks, not years. The translator tab is exactly that delta list.'},
+{t:'Network model — the biggest one', az:'VNet is <b>regional</b>, like AWS. But an Azure <b>subnet spans the whole region</b> rather than sitting in one zone, so zone placement is a property of the VM, not of the subnet. Cross-region uses VNet peering or Virtual WAN.', aws:'VPC is <b>regional</b>; subnets are zonal. Multi-region = TGW peering, cross-region routing, DNS work. You build the global network yourself.', gcp:'VPC is <b>global</b>; subnets are regional. A VM in Tokyo and one in Frankfurt share one VPC and one firewall policy with zero extra plumbing.', plain:'AWS gives you a separate office per city — you must install the phone lines between them yourself (peering, Transit Gateway). GCP gives you one worldwide office with a single corridor: a colleague in Tokyo and one in Frankfurt are already on the same network.', why:'This reshapes everything: on GCP, half of the SAP-C02 networking exam (TGW meshes, inter-region peering) simply isn\u2019t needed. On AWS you get finer blast-radius isolation by default. Know this cold if you ever interview across clouds.'},
+{t:'Isolation & org boundary', az:'Two boundaries doing different jobs: the <b>subscription</b> carries billing, quota and policy, and the <b>resource group</b> carries lifecycle — delete it and everything inside goes with it. Management groups sit above for policy inheritance.', aws:'The <b>account</b> is the boundary — heavyweight, so multi-account needs Organizations, SCPs, Control Tower, cross-account roles.', gcp:'The <b>project</b> is the boundary — lightweight, created in seconds, natural per-app/per-env granularity under folders.', plain:'An AWS account is like registering a separate legal company for each team — real isolation, real paperwork. A GCP project is like creating a new folder: two clicks, done, and it still keeps teams\u2019 stuff cleanly apart.', why:'Same goal (blast radius, billing, least privilege) achieved at different weights. AWS multi-account design is a whole exam domain; GCP gets similar isolation almost for free with projects.'},
+{t:'IAM philosophy', az:'<b>Entra ID</b> plus Azure RBAC: assign a principal a role at a scope, inherited down management group → subscription → resource group → resource. Very close to GCP in shape. Managed identities are the workload identity, and Azure Policy is the guardrail layer.', aws:'Identity-based + resource-based <b>JSON policies</b>; temporary credentials via STS role assumption; permission boundary = SCPs + boundaries.', gcp:'<b>Bindings</b>: member → role → resource, inherited down Org→Folder→Project. Service accounts ARE the workload identity, attached directly to VMs/functions.', plain:'AWS permissions are detailed legal contracts written in JSON — you can express almost anything, and also misplace a comma that opens a vault. GCP is a guest list on each room\u2019s door: \u201cAlice can view, Bob can edit\u201d — simpler to read, fewer knobs.', why:'AWS is more expressive (conditions, resource policies) but easier to get wrong; GCP is simpler to reason about but coarser. Both converge on: never long-lived keys, always workload identity.'},
+{t:'Load balancing & global traffic', az:'Split by scope and layer: <b>Front Door</b> is the global anycast L7 door with CDN and WAF, <b>Application Gateway</b> the regional L7, <b>Load Balancer</b> the L4, and <b>Traffic Manager</b> does DNS-level routing.', aws:'Regional ALB/NLB. Global = add CloudFront and/or Global Accelerator on top, plus Route 53 policies.', gcp:'One <b>global anycast LB</b> with a single IP, cross-region backends, and CDN as a checkbox.', plain:'GCP hands you one phone number that works worldwide and always connects callers to the nearest open branch. AWS gives you a phone number per country plus a separate call-forwarding service (Global Accelerator/CloudFront) to glue them together.', why:'A \u201cserve users worldwide from the nearest healthy region\u201d design is 3–4 AWS services or 1 GCP service. Conversely AWS gives more per-region control and more LB flavors.'},
+{t:'Pricing philosophy', az:'Reservations and savings plans like AWS, plus the lever nobody else has: <b>Azure Hybrid Benefit</b>, which lets existing Windows Server and SQL Server licences carry into the cloud. For a Microsoft-licensed estate that often decides the whole business case.', aws:'You commit: <b>Savings Plans / RIs</b> (1–3 yr) for discounts; Spot for scraps. Discounts are a planning exercise.', gcp:'<b>Sustained-use discounts apply automatically</b>; committed-use available; per-second billing everywhere; preemptible/Spot VMs similar.', plain:'GCP is the shop that automatically applies a loyalty discount at checkout because you visited a lot this month. AWS has better deals — but only if you commit upfront to the 1-year membership, and it\u2019s on you to remember to buy it.', why:'On AWS, cost optimization is an active skill (and exam domain). GCP\u2019s defaults are more forgiving for steady workloads without planning. Egress out of both clouds costs real money — architect to keep data inside.'},
+{t:'Analytics stance', az:'<b>Synapse</b> for warehousing, converging into <b>Microsoft Fabric</b> as a single SaaS analytics surface, with first-party Databricks alongside. <b>Power BI</b> is the reason many organisations land here at all.', aws:'<b>Redshift</b>: provisioned (or serverless-ish) warehouse you size and manage; Athena for ad-hoc S3 SQL; Kinesis shards you capacity-plan.', gcp:'<b>BigQuery</b>: no clusters, pay per TB scanned, scales to petabytes invisibly; Pub/Sub has no shards to manage.', plain:'Redshift = owning a library building: you decide how many shelves and staff, and pay for them even on quiet days. BigQuery = an infinite public library where you pay only per book you actually read — no building to run at all.', why:'Data teams often choose GCP because of BigQuery alone. If a workload is analytics-first, evaluate BigQuery before defaulting to the AWS stack.'},
+{t:'Relational at global scale', az:'<b>Azure SQL</b> with failover groups and active geo-replication is the Aurora-shaped answer. <b>Cosmos DB</b> gives genuine multi-region writes with five tunable consistency levels, but like DynamoDB it is not relational — there is no Spanner equivalent.', aws:'<b>Aurora Global Database</b>: one writer region, replicas elsewhere (~1s lag), promote on failure. DynamoDB covers active-active but is NoSQL.', gcp:'<b>Cloud Spanner</b>: strongly consistent, horizontally scaling SQL across regions — genuine multi-region writes with SQL semantics.', plain:'Aurora Global = one master ledger in the head office, with photocopies mailed to branches every second; if head office burns, a branch\u2019s copy gets promoted. Spanner = one magical shared ledger every office writes into simultaneously without ever conflicting.', why:'If a requirement says \u201crelational + strong consistency + multi-region writes\u201d, AWS answers involve trade-offs; Spanner is built for exactly that (at a price).'},
+{t:'Kubernetes & containers', az:'<b>AKS</b> is well integrated with Entra ID and Azure Policy, and you still choose a networking mode. <b>Container Apps</b> covers the just-a-container case, and <b>App Service</b> remains the path of least resistance for classic web apps.', aws:'<b>EKS</b> is solid but you feel the assembly: node groups, add-ons, IRSA for pod IAM. ECS exists as the simpler proprietary path.', gcp:'<b>GKE</b> is the reference managed K8s; Autopilot removes node management entirely. Cloud Run handles the \u201cI just have a container\u201d case beautifully.', plain:'Kubernetes is a recipe Google wrote — GKE is the kitchen designed by the original chef, and Autopilot even does the dishes (manages the servers). EKS cooks the same recipe well but hands you more of the cleanup.', why:'Container-native startups often find GCP smoother; AWS wins when the container platform must integrate with a large existing AWS estate.'},
+{t:'Maintenance & VMs', az:'Memory-preserving live migration handles most host updates, and scheduled events give the VM advance warning. Azure also has <b>availability sets</b> with fault and update domains, a concept with no AWS or GCP equivalent.', aws:'Scheduled maintenance can mean instance reboots/retirements you must plan around (though rare).', gcp:'<b>Live migration</b> moves running VMs between hosts during maintenance — your instance doesn\u2019t notice.', plain:'When GCP needs to fix the physical machine under your VM, it carries your running VM to another machine like moving a sleeping baby to another room — it never wakes up. On AWS, maintenance can occasionally mean a scheduled reboot you plan around.', why:'Small but telling: it changes how you think about single-instance workloads and maintenance windows.'},
+{t:'Learning strategy', az:'The enterprise default wherever Active Directory, Office 365 and SQL Server already live, because identity and licensing carry over. AZ-104 then AZ-305 is the ladder; most of your AWS knowledge transfers, with Azure naming as the tax.', aws:'Deepest ecosystem, most jobs, most mature certs — your SAP-C02 plan is the right call.', gcp:'Learn the DELTAS after AWS: global VPC, projects, BigQuery, Spanner, Cloud Run, IAM bindings. That\u2019s ~80% of the mental remapping.', plain:'Learning a second cloud is like learning American English after British English — same language, you just need the small dictionary of words that differ (lift/elevator = TGW/global VPC). Don\u2019t study both from scratch.', why:'Concepts transfer almost 1:1 (regions/zones, LB, IAM, queues, IaC). Master one cloud deeply — the second takes weeks, not years. The translator tab is exactly that delta list.'},
 ];
 document.getElementById('diffGrid').innerHTML = DIFFS.map(d=>`
   <div class="diff"><h3>${d.t}</h3>
     <div class="vs">
       <div class="side aws"><b>AWS</b>${d.aws}</div>
       <div class="side gcp"><b>GCP</b>${d.gcp}</div>
+      <div class="side az"><b>AZURE</b>${d.az}</div>
     </div>
     ${DDIAG[d.t]||''}
     <div class="plain-line" style="margin:0 0 10px"><b>In plain English:</b> ${d.plain}</div>
