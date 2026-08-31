@@ -343,6 +343,17 @@
       <div class="card" id="osiDetail"></div>
     </div>
     <div class="card" style="margin-top:16px">
+      <h2 class="sec">Break something — and see which layer stops it</h2>
+      <div class="plain-line"><b>Try this:</b> every one of these faults looks identical to a user (&ldquo;the site is down&rdquo;) and completely different to whoever has to fix it. Pick one, watch how far the request gets, and read what the command actually prints.</div>
+      <div class="sim-layout">
+        <div><div id="osiStage"></div></div>
+        <div>
+          <div class="segmented" id="osiFaults" style="flex-direction:column;align-items:stretch"></div>
+          <div class="term" id="osiTerm" role="log" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
       <h2 class="sec">The comparison interviewers actually ask for</h2>
       <div id="osiCompare"></div>
     </div>
@@ -413,6 +424,24 @@
       <div id="ngxJobs"></div>
     </div>
 
+    <div class="card" style="margin-top:16px">
+      <h2 class="sec">Run it yourself — turn things on and send traffic</h2>
+      <div class="plain-line"><b>Try this:</b> switch the cache off and send twenty requests, then switch it on and send twenty more. Then break the upstream and watch the difference between a cache that can serve stale and one that cannot.</div>
+      <div class="sim-layout">
+        <div>
+          <div id="ngxMeters"></div>
+          <div class="term" id="ngxTerm" role="log" aria-live="polite"></div>
+        </div>
+        <div>
+          <div class="toggles" id="ngxToggles"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+            <button class="btn" id="ngxSend1">send 1 request</button>
+            <button class="btn" id="ngxSend20">send 20 requests</button>
+            <button class="btn" id="ngxReset">reset counters</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="card" style="margin-top:16px">
       <h2 class="sec">What goes wrong in production, and what you see when it does</h2>
       <div id="ngxGotchas"></div>
@@ -727,6 +756,62 @@ DDIAG['Analytics stance']=D('0 0 620 150','Left: a fixed Redshift cluster with i
    ${tm(467,124,'no cluster to run, quiet days cost nothing','var(--gcpblue)')}`,
   'One charges for the machine whether you use it or not; the other charges for the data each question actually reads. That single difference decides a lot of platform choices.');
 
+/* ================= SIM: per-pillar playgrounds ================= */
+/* Illustrative list prices, rounded, for shape rather than for a quote. */
+const PSIM={};
+
+PSIM.compute=`<div class="card" style="margin:0 0 14px;padding:14px">
+  <h4 style="margin-top:0">Playground — what does the peak actually cost you?</h4>
+  <div class="plain-line"><b>Try this:</b> drag the spike up. Fixed capacity has to be bought for the worst minute of the day and paid for all night; autoscaling only pays for what is running.</div>
+  <label style="font-size:12.5px;color:var(--muted)">Quiet-hours traffic <b id="cbaseV" style="color:var(--amber)">2</b> servers</label>
+  <input type="range" id="cbase" min="1" max="10" value="2">
+  <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Peak is <b id="cpeakV" style="color:var(--amber)">5</b>x the quiet hours</label>
+  <input type="range" id="cpeak" min="1" max="10" value="5">
+  <div id="cout" class="cidr-out" style="margin-top:12px"></div></div>`;
+
+PSIM.storage=`<div class="card" style="margin:0 0 14px;padding:14px">
+  <h4 style="margin-top:0">Playground — one terabyte, as it gets older</h4>
+  <div class="plain-line"><b>Try this:</b> drag the age forward. The lifecycle rule moves the data for you; the saving needs nobody to remember it. Notice what happens to how long a retrieval takes.</div>
+  <label style="font-size:12.5px;color:var(--muted)">Days since it was uploaded <b id="sdayV" style="color:var(--amber)">0</b></label>
+  <input type="range" id="sday" min="0" max="400" value="0">
+  <div id="sout" class="cidr-out" style="margin-top:12px"></div></div>`;
+
+function simCompute(){
+  const base=Number(document.getElementById('cbase').value), mult=Number(document.getElementById('cpeak').value);
+  document.getElementById('cbaseV').textContent=base; document.getElementById('cpeakV').textContent=mult;
+  const peak=base*mult, RATE=0.10, H=730;
+  // a day shaped like real traffic: quiet overnight, busy for about eight hours
+  const hours=Array.from({length:24},(_,i)=> base + (peak-base)*Math.max(0, Math.sin((i-6)/12*Math.PI)));
+  const avg=hours.reduce((a,b)=>a+b,0)/24;
+  const fixed=peak*RATE*H, auto=avg*RATE*H, commit=base*RATE*H*0.6 + (avg-base)*RATE*H;
+  const row=(k,v,extra)=>`<div class="r"><span>${k}</span><b>${v}${extra?' <span style="color:var(--green)">'+extra+'</span>':''}</b></div>`;
+  document.getElementById('cout').innerHTML=
+    row('Servers at peak', peak) + row('Average across the day', avg.toFixed(1)) +
+    row('Fixed for peak, all month', 'about ' + Math.round(fixed).toLocaleString() + ' a month') +
+    row('Autoscaled, on demand', 'about ' + Math.round(auto).toLocaleString(), Math.round((1-auto/fixed)*100)+'% less') +
+    row('Autoscaled + commit the baseline', 'about ' + Math.round(commit).toLocaleString(), Math.round((1-commit/fixed)*100)+'% less') +
+    `<div class="r"><span>Idle capacity you paid for</span><b style="color:var(--red)">${Math.round((peak-avg)/peak*100)}% of the fixed bill</b></div>`;
+}
+function simStorage(){
+  const d=Number(document.getElementById('sday').value);
+  document.getElementById('sdayV').textContent=d;
+  const tiers=[[0,'Standard',23,'instant'],[30,'Infrequent Access',12.5,'instant'],
+               [90,'Glacier Instant',4,'instant'],[180,'Glacier Flexible',3.6,'minutes to hours'],
+               [365,'Deep Archive',1,'up to 12 hours']];
+  let t=tiers[0]; for(const x of tiers) if(d>=x[0]) t=x;
+  const row=(k,v,c)=>`<div class="r"><span>${k}</span><b${c?' style="color:'+c+'"':''}>${v}</b></div>`;
+  document.getElementById('sout').innerHTML=
+    row('Tier today', t[1], 'var(--teal)') + row('Cost for 1 TB this month', 'about ' + t[2].toFixed(2)) +
+    row('Time to get it back', t[3], d>=180?'var(--amber)':'') +
+    row('If it had stayed in Standard', 'about 23.00') +
+    row('Saving, this month', Math.round((1-t[2]/23)*100) + '%', 'var(--green)') +
+    `<div class="r"><span>Next move</span><b>${(tiers.find(x=>x[0]>d)||[null,'stays here'])[0] ? 'day '+(tiers.find(x=>x[0]>d)[0])+' → '+tiers.find(x=>x[0]>d)[1] : 'stays here'}</b></div>`;
+}
+function wirePillarSim(id){
+  if(id==='compute'){ ['cbase','cpeak'].forEach(k=>document.getElementById(k).addEventListener('input',simCompute)); simCompute(); }
+  if(id==='storage'){ document.getElementById('sday').addEventListener('input',simStorage); simStorage(); }
+}
+
 /* ================= PILLARS ================= */
 const PILLARS = [
 {id:'compute', tag:'D2', title:'Compute', sub:'EC2 · Lambda · containers · pricing',
@@ -842,10 +927,12 @@ PILLARS.forEach((p,i)=>{
 function renderPillar(p){
   pillarDetail.innerHTML = `<div class="cat">SAP-C02 domain ${p.tag}</div><h3>${p.title}</h3>
     <p class="lead">${p.lead}</p>
+    ${PSIM[p.id]||''}
     ${PDIAG[p.id]||''}
     <div class="plain-line"><b>In plain English:</b> ${p.plain}</div><h4>Decisions</h4>
     <div class="kv">${p.rows.map(r=>`<div class="row"><div class="k">${r[0]}</div><div class="v">${r[1]}</div></div>`).join('')}</div>
     <div class="exam-line">★ ${p.exam.replace('EXAM ·','<b>EXAM</b> ·')}</div>`;
+  wirePillarSim(p.id);
 }
 renderPillar(PILLARS[0]);
 
@@ -1668,6 +1755,150 @@ document.getElementById('ngxGotchas').innerHTML=`<table class="osi"><thead><tr><
 <tr><td><b>Portable</b></td><td>The same config in any cloud, or none</td><td>Rewritten for each cloud</td></tr>
 <tr><td><b>In practice</b></td><td>ALB / Cloud LB / Front Door at the edge, then <b>NGINX as the Kubernetes ingress controller</b> inside — which is how most teams end up running both without ever deciding to</td><td></td></tr>
 </tbody></table>`;
+
+/* ================= SIM: which layer stops it ================= */
+const LAYERS=[['L1','Physical','the cable is there'],['L2','Data link','frames fit'],['L3','Network','a route exists'],
+              ['L4','Transport','the port is open'],['L5','Session','the session holds'],['L6','Presentation','TLS agrees'],
+              ['L7','Application','the request is allowed']];
+const FAULTS=[
+ {b:'Everything is fine', stop:7, ok:true,
+  log:[['i','$ curl -sS -o /dev/null -w "%{http_code}" https://shop.example.com/checkout'],['ok','200'],
+       ['i','Every layer passed, so the answer came from the application itself.']]},
+ {b:'Cable cut · an AZ loses power', stop:1,
+  log:[['i','$ ping 10.0.2.15'],['no','no route to host'],
+       ['no','Nothing above layer 1 matters. This is why the answer is another zone, not a retry.']]},
+ {b:'MTU mismatch · big uploads hang', stop:2,
+  log:[['i','$ curl https://api/health          # 200, instantly'],
+       ['i','$ curl -F file=@10mb.bin https://api/upload'],['no','hangs, then times out'],
+       ['no','$ ping -M do -s 1472 host  ->  message too long'],
+       ['no','Small requests fit in one frame, large ones do not. Classic layer 2, and never your code.']]},
+ {b:'No route · private subnet, no NAT', stop:3,
+  log:[['i','$ ping 10.0.2.15'],['no','100% packet loss'],['no','$ traceroute 10.0.2.15  ->  * * *'],
+       ['no','Nothing denied it. There is simply no path, so no firewall log will ever show this.']]},
+ {b:'Port closed · security group', stop:4,
+  log:[['i','$ nc -vz shop.example.com 443'],['no','connection timed out'],
+       ['i','A refusal would have said "connection refused" straight away.'],
+       ['no','Silence means something dropped it on purpose. Timeout = firewall, refused = nothing listening.']]},
+ {b:'Idle timeout · long poll dies at 60s', stop:5,
+  log:[['i','$ curl -N https://api/events     # streams fine...'],['no','...connection closed after exactly 60s'],
+       ['no','A suspiciously round number is a configured timeout, never a bug in your code.']]},
+ {b:'Expired certificate', stop:6,
+  log:[['i','$ openssl s_client -connect shop.example.com:443'],['no','verify error:num=10:certificate has expired'],
+       ['i','The TCP connection succeeded — port 443 was wide open.'],
+       ['no','Everything below worked. Renewal, or the automation that was meant to do it, is what broke.']]},
+ {b:'WAF rule blocks the request', stop:7, denied:true,
+  log:[['i','$ curl -i https://shop.example.com/checkout?q=1%20OR%201=1'],['no','HTTP/1.1 403 Forbidden'],
+       ['no','Fast and clean, with a rule id. The connection succeeded; the request was refused on its content.']]},
+];
+document.getElementById('osiStage').innerHTML=`<div class="diagram"><svg viewBox="0 0 620 320" id="osiSvg" role="img" aria-label="The seven layers stacked, with a request climbing from the bottom and stopping at whichever layer is broken.">
+  ${LAYERS.map((l,i)=>{const y=290-i*40;return `
+    <g id="osl-${i+1}">
+      <rect x="96" y="${y}" width="500" height="30" rx="6" style="fill:var(--panel2);stroke:var(--wire)"/>
+      ${tm(112,y+20,l[0],'var(--dim)','start')}
+      ${tm(150,y+20,l[1],'var(--text)','start')}
+      ${tm(586,y+20,l[2],'var(--dim)','end')}
+    </g>`}).join('')}
+  <circle id="osiPkt" cx="70" cy="305" r="8" style="fill:var(--amber)" opacity="0"/>
+</svg><div class="diagcap"><b>How to read it:</b> the request climbs from the bottom. Every layer it passes is one you can stop suspecting — which is exactly what the commands on the right are for.</div></div>`;
+
+const osiFaultsEl=document.getElementById('osiFaults'), osiTermEl=document.getElementById('osiTerm'), osiPkt=document.getElementById('osiPkt');
+osiFaultsEl.innerHTML=FAULTS.map((f,i)=>`<button class="seg" data-f="${i}" style="text-align:left">${f.b}</button>`).join('');
+let osiTimers=[];
+function osiLog(c,m){const d=document.createElement('div');d.className=c;d.textContent=m;osiTermEl.appendChild(d);osiTermEl.scrollTop=osiTermEl.scrollHeight;}
+function runFault(i){
+  osiTimers.forEach(clearTimeout); osiTimers=[];
+  const f=FAULTS[i];
+  document.querySelectorAll('#osiFaults .seg').forEach((b,k)=>b.classList.toggle('on',k===i));
+  LAYERS.forEach((_,k)=>{const g=document.getElementById('osl-'+(k+1));
+    g.querySelector('rect').style.stroke='var(--wire)'; g.querySelector('rect').style.fill='var(--panel2)';});
+  osiTermEl.innerHTML='';
+  osiPkt.setAttribute('opacity','1');
+  for(let k=1;k<=f.stop;k++){
+    osiTimers.push(setTimeout(()=>{
+      osiPkt.setAttribute('cy', 305-(k-1)*40);
+      const g=document.getElementById('osl-'+k), passed = k<f.stop || f.ok;
+      g.querySelector('rect').style.stroke = passed ? 'var(--green)' : 'var(--red)';
+      g.querySelector('rect').style.fill = passed ? 'rgba(52,211,153,.08)' : 'rgba(248,113,113,.12)';
+      osiPkt.style.fill = passed ? 'var(--amber)' : 'var(--red)';
+      if(k===f.stop && f.ok) osiPkt.style.fill='var(--green)';
+    }, 260*k));
+  }
+  f.log.forEach((l,k)=> osiTimers.push(setTimeout(()=>osiLog(l[0],l[1]), 260*f.stop + 260*k)));
+}
+osiFaultsEl.addEventListener('click',e=>{const b=e.target.closest('[data-f]'); if(b) runFault(Number(b.dataset.f));});
+runFault(0);
+
+/* ================= SIM: NGINX request lab ================= */
+const NGXCFG=[
+ {id:'cache',   label:'proxy_cache — remember answers',        on:true},
+ {id:'stale',   label:'proxy_cache_use_stale — serve the old copy when the app is down', on:false},
+ {id:'limit',   label:'limit_req — 5 requests a second, burst 10', on:false},
+ {id:'keepalive',label:'keepalive to upstream — reuse connections', on:true},
+];
+const NGXUP=[['healthy','app answers in 40ms'],['slow','app takes 90 seconds'],['down','app is not listening']];
+let ngxUp='healthy', ngxState={hit:0,miss:0,ok:0,r429:0,r502:0,r504:0,bucket:0,ms:[]};
+const ngxCfg=()=>Object.fromEntries(NGXCFG.map(c=>[c.id, document.getElementById('ngx-'+c.id)?.checked ?? c.on]));
+
+document.getElementById('ngxToggles').innerHTML =
+  `<label style="color:var(--text);font-weight:500">upstream state</label>`
+  + NGXUP.map(u=>`<label><input type="radio" name="ngxup" value="${u[0]}" ${u[0]===ngxUp?'checked':''}> ${u[0]} — <span style="color:var(--dim)">${u[1]}</span></label>`).join('')
+  + `<label style="color:var(--text);font-weight:500;margin-top:8px">nginx.conf</label>`
+  + NGXCFG.map(c=>`<label><input type="checkbox" id="ngx-${c.id}" ${c.on?'checked':''}> ${c.label}</label>`).join('');
+
+const ngxTermEl=document.getElementById('ngxTerm');
+function ngxLog(c,m){const d=document.createElement('div');d.className=c;d.innerHTML=m;
+  ngxTermEl.insertBefore(d,ngxTermEl.firstChild); while(ngxTermEl.children.length>60) ngxTermEl.removeChild(ngxTermEl.lastChild);}
+function ngxMeters(){
+  const s=ngxState, total=s.ok+s.r429+s.r502+s.r504;
+  const hitRate = (s.hit+s.miss) ? Math.round(s.hit/(s.hit+s.miss)*100) : 0;
+  const p50 = s.ms.length ? [...s.ms].sort((a,b)=>a-b)[Math.floor(s.ms.length/2)] : 0;
+  const bar=(label,v,max,colour)=>`<div class="gauge"><label>${label} <b>${v}</b></label>
+     <div class="bar"><i style="width:${max?Math.min(100,v/max*100):0}%;background:${colour}"></i></div></div>`;
+  document.getElementById('ngxMeters').innerHTML=`<div class="gauges">
+    ${bar('cache hit rate', hitRate+'%', 100, 'var(--teal)')}
+    ${bar('200 OK', s.ok, Math.max(total,1), 'var(--green)')}
+    ${bar('429 rate limited', s.r429, Math.max(total,1), 'var(--amber)')}
+    ${bar('502 upstream unreachable', s.r502, Math.max(total,1), 'var(--red)')}
+    ${bar('504 upstream too slow', s.r504, Math.max(total,1), 'var(--red)')}
+    <div class="gauge"><label>median response <b>${p50} ms</b></label></div>
+    <div class="gauge"><label>leaky bucket <b>${Math.round(ngxState.bucket)} / 10</b></label>
+      <div class="bar"><i style="width:${Math.min(100,ngxState.bucket/10*100)}%;background:var(--amber)"></i></div></div>
+  </div>`;
+}
+function ngxRequest(){
+  const c=ngxCfg(), s=ngxState;
+  if(c.limit){
+    s.bucket=Math.max(0, s.bucket-0.2);            // drains at the configured rate
+    if(s.bucket>=10){ s.r429++; ngxLog('no','<b>429</b> rate limited — the bucket is full, so this one is refused before your app is touched'); ngxMeters(); return; }
+    s.bucket+=1;
+  }
+  const cached = c.cache && s.hit+s.miss>0 && Math.random()<0.7;
+  if(cached){ s.hit++; s.ok++; s.ms.push(3);
+    ngxLog('ok','<b>200</b> served from cache in 3ms — your application never heard about this request'); ngxMeters(); return; }
+  if(c.cache) s.miss++;
+  if(ngxUp==='down'){
+    if(c.cache && c.stale && s.hit+s.miss>1){ s.ok++; s.hit++; s.ms.push(4);
+      ngxLog('ok','<b>200</b> stale copy served while the app is down — visitors see slightly old content instead of an error'); }
+    else { s.r502++; ngxLog('no','<b>502</b> nothing answered upstream — nginx is healthy, your app is not'); }
+    ngxMeters(); return;
+  }
+  if(ngxUp==='slow'){ s.r504++; s.ms.push(60000);
+    ngxLog('no','<b>504</b> upstream still silent after the 60s proxy_read_timeout — nginx gave up waiting'); ngxMeters(); return; }
+  const base = c.keepalive ? 42 : 55;              // a fresh TCP handshake per request costs real time
+  s.ok++; s.ms.push(base);
+  ngxLog('ok',`<b>200</b> from the app in ${base}ms${c.keepalive?' on a reused connection':' — new connection each time, left in TIME_WAIT'}`);
+  ngxMeters();
+}
+document.getElementById('ngxToggles').addEventListener('change',e=>{
+  if(e.target.name==='ngxup'){ ngxUp=e.target.value; ngxLog('i','upstream is now <b>'+ngxUp+'</b>'); }
+  else ngxLog('i','config reloaded — <b>nginx -t &amp;&amp; nginx -s reload</b>, old workers finish their requests first');
+});
+document.getElementById('ngxSend1').onclick=()=>ngxRequest();
+document.getElementById('ngxSend20').onclick=()=>{ for(let i=0;i<20;i++) setTimeout(ngxRequest, i*45); };
+document.getElementById('ngxReset').onclick=()=>{ ngxState={hit:0,miss:0,ok:0,r429:0,r502:0,r504:0,bucket:0,ms:[]}; ngxTermEl.innerHTML=''; ngxMeters(); };
+ngxMeters();
+ngxLog('i','Send some traffic. Then break the upstream and watch what changes.');
+
 
 </script>
 </body>
