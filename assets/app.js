@@ -35,7 +35,7 @@ function init(topics) {
     ["Cloud & Infrastructure", 212, ["Kubernetes", "GCP", "Cloud Architecture", "DevOps", "Deployment", "Infrastructure as Code"]],
     ["Architecture & Platform", 250, ["Software Architecture", "Software Development", "API & Backend", "Event-Driven Architecture", "Full-Stack Engineering", "Multi-Tenancy"]],
     ["AI & LLM", 280, ["Large Language Models", "AI & GenAI", "Deep Learning & Neural Networks", "Classical Machine Learning", "Math, Probability & Statistics"]],
-    ["Agents & MCP", 320, ["AI Agents", "Agentic AI", "Agentic AI Scenarios", "Model Context Protocol", "LangChain Stack"]],
+    ["Agents & MCP", 320, ["AI Agents", "Agentic AI", "Agentic AI Scenarios", "Model Context Protocol", "LangChain Stack", "Agent Frameworks & Runtimes"]],
     ["Security & Governance", 352, ["Security", "AI Security", "AI Governance"]],
     ["Leadership & Business", 20, ["Leadership", "Candidate Validation", "Scenario Exercise", "FinOps"]],
     ["Reliability & Ops", 48, ["Observability", "Production Readiness", "Production Operations", "LLMOps", "Performance", "Testing & Quality", "Evaluation & Metrics"]],
