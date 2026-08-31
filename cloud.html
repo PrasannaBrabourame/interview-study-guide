@@ -518,9 +518,9 @@ PDIAG.db=D('0 0 620 200','A decision tree from the shape of the data to a databa
   `${box(210,8,200,44,'var(--blue)')}${t(310,28,'What shape is the data?',SANS)}${tm(310,44,'ask this first')}
    <path d="M310 52 V70 M100 70 H520 M100 70 V96 M240 70 V96 M380 70 V96 M520 70 V96" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
    ${box(20,96,160,64,'var(--violet)')}${t(100,120,'Rows + joins',SANS)}${tm(100,138,'RDS · Aurora','var(--violet)')}${tm(100,152,'Cloud SQL','var(--violet)')}
-   ${box(162,96,160,64,'var(--teal)')}${t(242,120,'Key lookups, huge',SANS)}${tm(242,138,'DynamoDB','var(--teal)')}${tm(242,152,'Bigtable','var(--teal)')}
-   ${box(302,96,160,64,'var(--amber)')}${t(382,120,'Flexible documents',SANS)}${tm(382,138,'DocumentDB','var(--amber)')}${tm(382,152,'Firestore','var(--amber)')}
-   ${box(442,96,160,64,'var(--green)')}${t(522,120,'Questions over history',SANS)}${tm(522,138,'Redshift','var(--green)')}${tm(522,152,'BigQuery','var(--green)')}
+   ${box(162,96,160,64,'var(--teal)')}${t(242,120,'Key lookups',SANS)}${tm(242,138,'DynamoDB','var(--teal)')}${tm(242,152,'Bigtable','var(--teal)')}
+   ${box(302,96,160,64,'var(--amber)')}${t(382,120,'Documents',SANS)}${tm(382,138,'DocumentDB','var(--amber)')}${tm(382,152,'Firestore','var(--amber)')}
+   ${box(442,96,160,64,'var(--green)')}${t(522,120,'Analytics',SANS)}${tm(522,138,'Redshift','var(--green)')}${tm(522,152,'BigQuery','var(--green)')}
    ${tm(310,186,'wrong branch = a rewrite later, so this is the decision that matters','var(--dim)')}`,
   'Start from how the data is shaped and how it will be read, not from a favourite product. Each branch ends in a different answer, and picking the wrong branch is the expensive mistake.');
 
@@ -548,15 +548,17 @@ PDIAG.resilience=D('0 0 620 190','A timeline showing the last backup, the disast
 
 /* --- migration: the 7 Rs by effort --- */
 PDIAG.migration=(()=>{
-  const rs=[['Retire','switch it off',0],['Retain','leave it where it is',1],['Relocate','move the VMs wholesale',2],
-            ['Rehost','lift and shift',3],['Replatform','small tweaks on the way',4],['Repurchase','buy the SaaS instead',5],
-            ['Refactor','rewrite it cloud-native',6]];
-  const body=rs.map((r,i)=>{const x=12+i*86;const hgt=18+i*13;
-    return `<rect x="${x}" y="${130-hgt}" width="76" height="${hgt}" rx="5" fill="rgba(167,139,250,.16)" style="stroke:var(--violet)"/>
-      ${tm(x+38,148,r[0],'var(--text)')}${tm(x+38,163,r[1],'var(--dim)')}`;}).join('');
-  return D('0 0 620 185','Seven migration options as bars of increasing height, from retire to refactor.',
-    body+`<path d="M12 176 H602" stroke-width="1.2" marker-end="url(#ah)" style="stroke:var(--wire)"/>${tm(12,124,'effort and cost','var(--dim)','start')}`,
-    'Bar height is how much work it is. Most estates are a mix, and the winning answer usually starts at the cheap left end: the fastest migration is the servers you turn off instead of moving.');
+  const rs=[['Retire','switch it off'],['Retain','leave it where it is'],['Relocate','move the VMs wholesale'],
+            ['Rehost','lift and shift'],['Replatform','small tweaks on the way'],['Repurchase','buy the SaaS instead'],
+            ['Refactor','rewrite it cloud-native']];
+  const body=rs.map((r,i)=>{const y=10+i*24, w=26+i*38;
+    return `${tm(150,y+15,r[0],'var(--text)','end')}
+      <rect x="158" y="${y+3}" width="${w}" height="16" rx="4" style="fill:rgba(167,139,250,.18);stroke:var(--violet)"/>
+      ${tm(420,y+15,r[1],'var(--dim)','start')}`;}).join('');
+  return D('0 0 640 200','Seven migration options as rows, each with a bar whose length shows how much effort it takes, from retire to refactor.',
+    body+`<path d="M158 186 H520" style="stroke:var(--wire)" stroke-width="1.2" marker-end="url(#ah)"/>
+      ${tm(158,182,'less effort','var(--dim)','start')}${tm(520,182,'more effort','var(--dim)','end')}`,
+    'Bar length is how much work each option is. Most estates are a mix, and the winning answer usually starts at the cheap top: the fastest migration is the servers you switch off instead of moving.');
 })();
 
 /* --- cost: what you actually pay for --- */
@@ -608,7 +610,7 @@ PDIAG.edge=D('0 0 620 170','A user far from a single origin region compared with
    ${box(470,20,140,44,'var(--violet)')}${t(540,47,'Origin · Ireland',SANS)}
    ${box(10,104,110,44,'var(--blue)')}${t(65,131,'User in Sydney',SANS)}
    <path d="M122 126 H196" stroke-width="1.6" marker-end="url(#ah)" style="stroke:var(--green)"/>
-   ${tm(240,116,'~20 ms','var(--green)')}
+   ${tm(159,118,'~20 ms','var(--green)')}
    ${box(200,104,150,44,'var(--teal)')}${t(275,126,'Edge · Sydney',SANS)}${tm(275,142,'cached copy','var(--teal)')}
    <path d="M352 126 H466" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)" style="stroke:var(--wire)"/>
    ${tm(410,116,'only on a miss','var(--dim)')}
@@ -638,7 +640,7 @@ DDIAG['Isolation & org boundary']=D('0 0 620 150','Left: three heavy separate AW
    ${box(14,26,86,72,'var(--amber)','rgba(251,191,36,.08)')}${tm(57,58,'Account','var(--text)')}${tm(57,74,'prod','var(--muted)')}
    ${box(112,26,86,72,'var(--amber)','rgba(251,191,36,.08)')}${tm(155,58,'Account','var(--text)')}${tm(155,74,'staging','var(--muted)')}
    ${box(210,26,86,72,'var(--amber)','rgba(251,191,36,.08)')}${tm(253,58,'Account','var(--text)')}${tm(253,74,'data','var(--muted)')}
-   ${tm(155,122,'heavyweight: Organizations, SCPs, cross-account roles','var(--red)')}
+   ${tm(155,122,'heavyweight: Organizations + SCPs','var(--red)')}
    ${tm(330,16,'GCP — the project is the wall','var(--gcpblue)','start')}
    ${box(392,26,150,26,'var(--gcpblue)')}${tm(467,44,'Organisation','var(--text)')}
    <path d="M467 52 V62 M370 62 H564 M370 62 V72 M467 62 V72 M564 62 V72" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
@@ -1402,20 +1404,27 @@ document.getElementById('osiCompare').innerHTML=`
 </tbody></table>
 <p class="simnote" style="margin-top:12px"><b>Why this order:</b> each rung only makes sense if the one below it passed. Working upward turns &ldquo;the site is down&rdquo; into a specific layer within about four commands, which is the whole reason the model is worth memorising.</p>`;
 
-/* encapsulation diagram: headers wrapped on the way down, unwrapped on the way up */
+/* encapsulation diagram: each layer wraps the one above in its own header */
 document.getElementById('encapDiagram').innerHTML=(()=>{
-  const rows=[[7,'HTTP','GET /checkout',0],[4,'TCP','port 443',1],[3,'IP','to 10.0.2.15',2],[2,'Frame','next hop',3]];
+  const rows=[
+    {l:7, hdr:'HTTP', carries:'GET /checkout',  note:'method, path, headers'},
+    {l:4, hdr:'TCP',  carries:'HTTP request',   note:'source and dest port 443'},
+    {l:3, hdr:'IP',   carries:'TCP segment',    note:'source and dest address'},
+    {l:2, hdr:'Eth',  carries:'IP packet',      note:'MAC of the next hop'}];
   const body=rows.map((r,i)=>{
-    const y=18+i*44, pad=r[3]*46;
-    return `<text x="8" y="${y+26}" style="${MONO};fill:var(--dim)" text-anchor="start">L${r[0]}</text>
-      <rect x="${52+pad}" y="${y}" width="${520-pad*2}" height="34" rx="6" style="fill:var(--panel2);stroke:var(--wire)"/>
-      ${pad?`<text x="${74+pad-46}" y="${y+22}" style="${MONO};fill:var(--amber)">${r[1]}</text>`:''}
-      <rect x="${98+pad}" y="${y+5}" width="${428-pad*2}" height="24" rx="4" style="fill:var(--n-blue);stroke:var(--blue)"/>
-      <text x="${312}" y="${y+22}" text-anchor="middle" style="${MONO};fill:var(--text)">${i===0?r[2]:'everything above, now just payload'}</text>`;
+    const y=16+i*50, pad=i*34, ox=44+pad, ow=376-pad*2, ix=ox+30, iw=ow-60;
+    return `<text x="8" y="${y+24}" style="${MONO};fill:var(--dim)">L${r.l}</text>
+      <rect x="${ox}" y="${y}" width="${ow}" height="38" rx="6" style="fill:var(--panel2);stroke:var(--wire)"/>
+      <text x="${ox+15}" y="${y+24}" text-anchor="middle" style="${MONO};fill:var(--amber)">${r.hdr}</text>
+      <rect x="${ix}" y="${y+6}" width="${iw}" height="26" rx="4" style="fill:var(--n-blue);stroke:var(--blue)"/>
+      <text x="${ix+iw/2}" y="${y+24}" text-anchor="middle" style="${MONO};fill:var(--text)">${r.carries}</text>
+      <text x="430" y="${y+24}" style="${MONO};fill:var(--dim)">${r.note}</text>`;
   }).join('');
-  return `<div class="diagram"><svg viewBox="0 0 620 205" role="img" aria-label="Each layer wraps the one above it in its own header: HTTP inside TCP inside IP inside a frame.">
-    ${body}<text x="596" y="200" text-anchor="end" style="${MONO};fill:var(--dim)">each layer wraps the one above and reads only its own header</text></svg>
-    <div class="diagcap"><b>How to read it:</b> going down the stack each layer adds its own header and treats everything above as payload it never opens. That is why an NLB can carry a protocol it has never seen, and why an ALB has to decrypt before it can route on a path.</div></div>`;
+  return `<div class="diagram"><svg viewBox="0 0 640 236" role="img" aria-label="Four nested rows. An HTTP request is wrapped in a TCP header, then an IP header, then an Ethernet frame header, each box sitting inside the one below it.">
+    ${body}
+    <text x="320" y="228" text-anchor="middle" style="${MONO};fill:var(--dim)">each layer reads only its own header and never opens the payload</text>
+  </svg>
+    <div class="diagcap"><b>How to read it:</b> going down the stack, every layer wraps what came from above in its own header and treats the rest as payload it never opens. That is why an NLB can carry a protocol it has never seen, and why an ALB must decrypt before it can route on a path.</div></div>`;
 })();
 
 </script>
