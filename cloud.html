@@ -246,6 +246,12 @@
   table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
   table.osi td b{color:var(--text); font-weight:500}
   table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  .code pre{margin:0}
+  .code code{font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
   .cmd{font-family:'IBM Plex Mono',monospace; font-size:12px; background:var(--panel2); border:1px solid var(--line);
     border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
 </style>
@@ -268,6 +274,7 @@
     <button class="tab on" data-pane="journey" role="tab">How it works</button>
     <button class="tab" data-pane="osi" role="tab">OSI layers</button>
     <button class="tab" data-pane="netsim" role="tab">Network simulator</button>
+    <button class="tab" data-pane="nginx" role="tab">NGINX</button>
     <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
     <button class="tab" data-pane="dr" role="tab">DR simulator</button>
     <button class="tab" data-pane="map" role="tab">Service translator</button>
@@ -379,6 +386,39 @@
     </div>
   </section>
 
+  <!-- ================= NGINX ================= -->
+  <section class="pane" id="pane-nginx">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">What NGINX actually is</h2>
+      <div class="plain-line"><b>In plain English:</b> NGINX is a very fast, very calm receptionist that sits in front of your application. Everything arriving from the internet talks to it first. It checks who the visitor asked for, hands them a leaflet from the drawer if it already has one, deals with the locked front door, and only bothers your staff when it genuinely has to. It is the same job the cloud load balancers do — except this one is a program you run and configure yourself, which is exactly why it is still everywhere.</div>
+      <p style="font-size:13.5px;color:var(--muted);line-height:1.65">One process does four jobs that used to need four products: <b style="color:var(--text)">web server</b> (hands out files), <b style="color:var(--text)">reverse proxy</b> (forwards requests to your app), <b style="color:var(--text)">load balancer</b> (spreads them across several copies), and <b style="color:var(--text)">edge</b> (TLS, caching, compression, rate limiting). In Kubernetes it is usually running as the ingress controller, so if you use Kubernetes you almost certainly run NGINX already, whether you chose it or not.</p>
+      <div id="nginxWhy"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Why it stays fast when a thousand people arrive at once</h2>
+      <div id="nginxLoop"></div>
+    </div>
+
+    <div class="sim-layout">
+      <div class="card">
+        <h2 class="sec">One request, step by step through NGINX</h2>
+        <div class="jlist" id="ngxSteps"></div>
+      </div>
+      <div class="card jstep" id="ngxDetail"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2 class="sec">The jobs you actually configure</h2>
+      <div id="ngxJobs"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2 class="sec">What goes wrong in production, and what you see when it does</h2>
+      <div id="ngxGotchas"></div>
+    </div>
+  </section>
+
   <!-- ================= PILLARS ================= -->
   <section class="pane" id="pane-pillars">
     <div class="pillars-layout">
@@ -452,7 +492,7 @@
   <!-- ================= TRANSLATOR ================= -->
   <section class="pane" id="pane-map">
     <div class="card">
-      <h2 class="sec">Service translator — search any of the three clouds</h2>
+      <h2 class="sec">Service translator — search any of the three clouds</h2><div class="plain-line" style="margin-bottom:12px"><b>What this is for:</b> the three clouds mostly sell the same things under different names, the way the same shop is a chemist, a drugstore and a pharmacy. Type what you know in any cloud and read across for the other two. The last column is the part that actually matters — where the two are <em>not</em> the same thing wearing a different label.</div>
       <input class="search" id="q" placeholder="try: lambda, bigquery, cosmos, front door, transit, spanner…" aria-label="Search services">
       <div class="cats" id="catFilters"></div>
       <div style="overflow-x:auto">
@@ -813,7 +853,7 @@ renderPillar(PILLARS[0]);
 const STRATS=[
  {id:'backup', name:'Backup & restore', small:'cheapest · slowest', rto:[95,'hours (4–24h)'], rpo:[85,'hours (last backup)'], cost:[12,'very low'],
   plain:'Like house insurance plus blueprints: if the house burns down, you have the money and the plans to rebuild — but rebuilding takes days, and anything you bought since the last photo inventory is gone.',
-  note:'Nothing runs in the recovery region — only backups (S3 CRR, snapshot copies, AMIs). On disaster you provision everything from IaC and restore data. Automate the restore with CloudFormation or it becomes days, not hours.',
+  plain:'A doorman with a list. The list says which doors may be knocked on. Knock on a door not on the list and he says nothing at all — he does not even tell you the room exists. And because he remembers letting you in, you do not need permission to walk back out.', note:'Nothing runs in the recovery region — only backups (S3 CRR, snapshot copies, AMIs). On disaster you provision everything from IaC and restore data. Automate the restore with CloudFormation or it becomes days, not hours.',
   exam:'★ <b>EXAM</b> · Chosen when RTO/RPO are measured in hours and cost dominates. \u201cIaC templates + copied snapshots\u201d in the answer text = backup & restore.',
   B:{lb:'off', app:'off', db:'off', dbt:'snapshots only', appt:'not provisioned', repl:'S3 CRR / snapshot copy', failSecs:6}},
  {id:'pilot', name:'Pilot light', small:'data live · compute off', rto:[55,'10s of minutes'], rpo:[25,'minutes'], cost:[28,'low'],
@@ -1182,7 +1222,7 @@ jRender(0);
    hidden pane, after a resize, and at any width. */
 const SCENES=[
 {id:'vpc', name:'VPC routing', title:'Public and private subnets — what a route table actually decides',
- note:'A private subnet is not private because of a firewall. It is private because <b>its route table has no path to the internet gateway</b>. Outbound still works if you give it a NAT gateway, which is one-way by design: it lets replies back in, never new connections.',
+ plain:'Think of a gated estate. The public houses have a path to the front gate, so visitors can walk up to them. The private houses have no path to the gate at all — nobody blocked the visitor, there is simply no way through. Residents can still order a taxi out through the gate, and the taxi brings them back — but a stranger cannot ride that taxi in.', note:'A private subnet is not private because of a firewall. It is private because <b>its route table has no path to the internet gateway</b>. Outbound still works if you give it a NAT gateway, which is one-way by design: it lets replies back in, never new connections.',
  zones:[{x:4,y:44,w:44,h:50,cls:'pub',l:'Public subnet · 10.0.1.0/24'},
         {x:52,y:44,w:44,h:50,cls:'priv',l:'Private subnet · 10.0.2.0/24'}],
  nodes:[{id:'net',x:50,y:9,cls:'net',t:'Internet',s:'0.0.0.0/0'},
@@ -1207,7 +1247,7 @@ const SCENES=[
         ['no','Dropped. For inbound you need a load balancer or a public instance.']]}]},
 
 {id:'ingress', name:'Ingress', title:'API Gateway, ALB and NLB — three doors at different layers',
- note:'The choice is a layer choice. <b>ALB reads HTTP</b>, so it can route on path and host, and it terminates TLS. <b>NLB works at TCP/UDP</b>, so it is faster, keeps the client IP, and can hand encrypted bytes straight through. <b>API Gateway</b> adds auth, throttling and per-route contracts.',
+ plain:'Three receptionists. One reads your letter and decides which department it belongs to. One just forwards the sealed envelope without opening it, which is faster and works for any kind of post. One checks your appointment and membership before letting you in at all.', note:'The choice is a layer choice. <b>ALB reads HTTP</b>, so it can route on path and host, and it terminates TLS. <b>NLB works at TCP/UDP</b>, so it is faster, keeps the client IP, and can hand encrypted bytes straight through. <b>API Gateway</b> adds auth, throttling and per-route contracts.',
  zones:[],
  nodes:[{id:'cli',x:50,y:10,cls:'net',t:'Client',s:'https request'},
         {id:'apigw',x:17,y:42,cls:'gw',t:'API Gateway',s:'L7 · auth, quotas'},
@@ -1240,7 +1280,7 @@ const SCENES=[
  flows:[], toggles:true},
 
 {id:'link', name:'PrivateLink', title:'Reaching another VPC without touching the internet',
- note:'PrivateLink puts an endpoint <b>inside your own VPC</b>, so traffic to someone else’s service never leaves the provider backbone and needs no peering, no NAT and no public IP. Getting there is only half of it: the target’s own resource policy still decides whether you are allowed in.',
+ plain:'Instead of building a road between two private estates, each estate gets a private letterbox that leads straight to the other. Nothing goes on the public road. But arriving at the letterbox is not the same as being allowed in — the house can still refuse your letter.', note:'PrivateLink puts an endpoint <b>inside your own VPC</b>, so traffic to someone else’s service never leaves the provider backbone and needs no peering, no NAT and no public IP. Getting there is only half of it: the target’s own resource policy still decides whether you are allowed in.',
  zones:[{x:4,y:24,w:32,h:52,cls:'priv',l:'VPC A · consumer'},
         {x:64,y:24,w:32,h:52,cls:'priv',l:'VPC B · provider'}],
  nodes:[{id:'app',x:20,y:50,cls:'vm',t:'App',s:'10.0.1.20'},
@@ -1329,7 +1369,7 @@ function sgFlows(){
 function renderControls(){
   const s=curScene;
   titleEl.textContent=s.title;
-  noteEl.innerHTML=s.note;
+  noteEl.innerHTML='<span class="plain-inline"><b>Picture it:</b> '+s.plain+'</span>'+s.note;
   const flows = s.toggles ? sgFlows() : s.flows;
   ctlEl.innerHTML = (s.toggles ? `<div class="toggles">
       <label><input type="checkbox" id="sg-ssh"> allow SSH — tcp/22</label>
@@ -1459,7 +1499,7 @@ stackEl.addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b)
 osiRender(0);
 
 document.getElementById('osiCompare').innerHTML=`
-<h4 style="margin-top:0">ALB or NLB — the same question asked as a layer question</h4>
+<h4 style="margin-top:0">ALB or NLB — the same question asked as a layer question</h4><div class="plain-line"><b>In plain English:</b> one reads your letter before deciding where to send it, so it can act on what the letter says — but it has to open the envelope. The other just forwards the sealed envelope, which is faster, works for any kind of post, and keeps your return address on it.</div>
 <table class="osi"><thead><tr><th></th><th>ALB — layer 7</th><th>NLB — layer 4</th></tr></thead><tbody>
 <tr><td><b>Sees</b></td><td>The whole HTTP request: method, path, host, headers, cookies</td><td>Only addresses and ports. The payload is opaque bytes</td></tr>
 <tr><td><b>So it can</b></td><td>Route by path or host, rewrite, authenticate, stick a session to a target</td><td>Carry any TCP or UDP protocol, including ones it has never heard of</td></tr>
@@ -1469,7 +1509,7 @@ document.getElementById('osiCompare').innerHTML=`
 <tr><td><b>On GCP</b></td><td>Global external HTTP(S) load balancer with URL maps</td><td>Passthrough network load balancer</td></tr>
 </tbody></table>
 
-<h4>Four different things can block your packet, at four different layers</h4>
+<h4>Four different things can block your packet, at four different layers</h4><div class="plain-line"><b>In plain English:</b> there is no road to the address; the gate lets you in but not back out; the door is locked; or you got all the way to the desk and were turned away for what you asked. Four very different problems that all look like it does not work.</div>
 <table class="osi"><thead><tr><th>Layer</th><th>Control</th><th>Scope and behaviour</th><th>What the failure looks like</th></tr></thead><tbody>
 <tr><td><b>L3</b></td><td><b>Route table</b></td><td>Subnet. There is simply no path to the destination</td><td>Timeout, and no firewall log anywhere, because nothing was denied — nothing was routed</td></tr>
 <tr><td><b>L3/L4</b></td><td><b>Network ACL</b></td><td>Subnet, <b>stateless</b> — return traffic needs its own explicit rule</td><td>Requests leave and replies vanish; ephemeral return ports are the usual culprit</td></tr>
@@ -1477,7 +1517,7 @@ document.getElementById('osiCompare').innerHTML=`
 <tr><td><b>L7</b></td><td><b>WAF rule</b></td><td>The request itself, inspected and judged on content</td><td>A fast, clean 403 with a rule id — the connection succeeded, the request was refused</td></tr>
 </tbody></table>
 
-<h4>Debugging by climbing the stack</h4>
+<h4>Debugging by climbing the stack</h4><div class="plain-line"><b>In plain English:</b> check the road exists, then that the door opens, then that you can speak the language, then that they understood the question. Each step only makes sense once the one before it passed.</div>
 <table class="osi"><thead><tr><th>Step</th><th>Command</th><th>If it works, you have proved</th></tr></thead><tbody>
 <tr><td><b>L3</b></td><td>ping host</td><td>Addressing and routing are fine. (ICMP is often blocked, so failure alone proves little)</td></tr>
 <tr><td><b>L4</b></td><td>nc -vz host 443</td><td>Route, ACL, security group and a listening process all line up</td></tr>
@@ -1508,6 +1548,126 @@ document.getElementById('encapDiagram').innerHTML=(()=>{
   </svg>
     <div class="diagcap"><b>How to read it:</b> going down the stack, every layer wraps what came from above in its own header and treats the rest as payload it never opens. That is why an NLB can carry a protocol it has never seen, and why an ALB must decrypt before it can route on a path.</div></div>`;
 })();
+
+/* ================= NGINX ================= */
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+/* where it sits */
+document.getElementById('nginxWhy').innerHTML=D('0 0 620 150',
+ 'Clients on the left reach NGINX in the middle, which serves files and cached answers itself and forwards the rest to three application servers.',
+ `${box(10,44,96,44,'var(--blue)')}${t(58,64,'Visitors',SANS)}${tm(58,80,'the internet')}
+  <path d="M110 66 H186" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+  ${box(190,20,150,92,'var(--teal)')}${t(265,44,'NGINX',SANS)}${tm(265,62,'TLS ends here','var(--teal)')}${tm(265,78,'cache · limits','var(--teal)')}${tm(265,94,'picks a server','var(--teal)')}
+  <path d="M344 40 H404 M344 66 H404 M344 92 H404" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+  ${box(408,22,150,34,'var(--violet)')}${t(483,44,'app 1',SANS)}
+  ${box(408,50,150,34,'var(--violet)')}${t(483,72,'app 2',SANS)}
+  ${box(408,78,150,34,'var(--violet)')}${t(483,100,'app 3',SANS)}
+  ${tm(265,130,'one program doing the work of four','var(--dim)')}`,
+ 'Everything from outside stops at NGINX first. It answers what it can on its own — files, cached pages, anything it is told to refuse — and only forwards the rest, spread across however many copies of your app are running.');
+
+/* event loop vs thread per connection */
+document.getElementById('nginxLoop').innerHTML=D('0 0 620 210',
+ 'Left: the old model with one thread per connection, memory growing with every visitor. Right: one NGINX worker handling many connections in a single loop.',
+ `${tm(10,18,'the old way — one worker per visitor','var(--red)','start')}
+  ${[0,1,2,3].map((i)=>`${box(14+i*70,28,60,30,'var(--red)')}${tm(44+i*70,48,'thread','var(--text)')}`).join('')}
+  ${[0,1,2,3].map((i)=>`${tm(44+i*70,74,'visitor','var(--dim)')}`).join('')}
+  ${tm(150,100,'1000 visitors = 1000 threads = memory gone','var(--red)')}
+  ${tm(330,18,'NGINX — one worker, a queue and a loop','var(--green)','start')}
+  ${box(334,28,120,46,'var(--green)')}${t(394,48,'worker',SANS)}${tm(394,64,'one thread','var(--green)')}
+  <path d="M458 51 H494" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+  ${box(498,28,110,46,'var(--teal)')}${tm(553,46,'event loop','var(--text)')}${tm(553,62,'who is ready?','var(--teal)')}
+  ${[0,1,2,3,4,5,6,7].map(i=>`<circle cx="${340+i*34}" cy="92" r="7" style="fill:var(--n-teal);stroke:var(--teal)"/>`).join('')}
+  ${tm(470,116,'1000 visitors = still one thread','var(--green)')}
+  ${tm(310,150,'A thread sitting still is not free — it holds memory whether or not it is doing anything.','var(--dim)')}
+  ${tm(310,168,'Most connections are waiting, not working, so one worker can watch thousands of them.','var(--dim)')}
+  ${tm(310,192,'workers usually = CPU cores · each can hold thousands of connections','var(--dim)')}`,
+ 'Old web servers gave every visitor their own worker, who then spent most of the time waiting. NGINX gives one worker a list and a loop: it asks who is ready, deals with them, and asks again. That is why its memory stays flat as traffic climbs — and why it barely notices slow clients.');
+
+/* one request, step by step */
+const NGX=[
+ {t:'A connection arrives', p:'Somebody knocks on port 443. NGINX accepts the connection itself — your application knows nothing about it yet.',
+  d:'The listen directive says which port and whether TLS applies. One NGINX can hold far more open connections than your app could.',
+  c:'server {\n    listen 443 ssl;\n    http2 on;\n}'},
+ {t:'The lock is opened (TLS)', p:'The padlock is undone here, at the front desk, not by your app. From this point inward the traffic is plain.',
+  d:'Terminating TLS at the edge means one place to renew certificates and one place to set the cipher policy — and your app stops spending CPU on encryption.',
+  c:'ssl_certificate     /etc/ssl/site.crt;\nssl_certificate_key /etc/ssl/site.key;\nssl_protocols       TLSv1.2 TLSv1.3;\nssl_session_cache   shared:SSL:10m;'},
+ {t:'Which site did they ask for?', p:'One machine can host many sites. NGINX reads the name the visitor typed and picks the matching server block.',
+  d:'Matching is on listen plus server_name, taken from the Host header. If nothing matches, the first block for that port answers — which is how requests end up at the wrong site.',
+  c:'server {\n    server_name shop.example.com;\n}\nserver {\n    server_name admin.example.com;\n}'},
+ {t:'Which part of the site?', p:'Now it matches the path. Images might come straight off disk while /api goes to your application.',
+  d:'Order is not top to bottom: an exact = match wins, then the longest literal prefix, then regexes in the order written. This surprises people constantly.',
+  c:'location = /health { return 200; }      # exact, checked first\nlocation ^~ /static/ { root /var/www; }  # prefix, skips regex\nlocation ~* \\.(jpg|png)$ { expires 30d; }\nlocation / { proxy_pass http://app; }'},
+ {t:'Do I already have the answer?', p:'If it handed out this same page a minute ago, it can give the copy from the drawer without troubling your app at all.',
+  d:'A cache hit costs a disk read instead of a request. proxy_cache_use_stale can even keep serving the old copy while your app is down — the difference between a slow site and no site.',
+  c:'proxy_cache_path /var/cache/nginx keys_zone=z:10m;\nlocation / {\n    proxy_cache z;\n    proxy_cache_valid 200 5m;\n    proxy_cache_use_stale error timeout updating;\n}'},
+ {t:'Which copy of the app gets it?', p:'If several copies of your app are running, it picks one — by turns, or by whoever is least busy.',
+  d:'Open source NGINX checks health passively: a server that fails often enough is set aside for a while. Active health checks are a paid feature.',
+  c:'upstream app {\n    least_conn;\n    server 10.0.1.10:8080 max_fails=3 fail_timeout=10s;\n    server 10.0.1.11:8080;\n    keepalive 32;   # reuse connections; easily forgotten\n}'},
+ {t:'Passing it on, honestly', p:'Your app would otherwise think every visitor is NGINX. These headers tell it who really knocked.',
+  d:'Without X-Forwarded-For every log line and rate limit sees one address. Only trust the header from proxies you actually control, or it can be forged.',
+  c:'proxy_set_header Host              $host;\nproxy_set_header X-Real-IP         $remote_addr;\nproxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_http_version 1.1;\nproxy_set_header Connection "";'},
+ {t:'The answer goes back', p:'NGINX collects the reply, squeezes it smaller if that helps, and feeds it to the visitor at whatever speed they can take.',
+  d:'Buffering is why a slow phone on a train cannot tie up your application: NGINX takes the response quickly and drip-feeds the client. The same feature breaks live streaming, so turn it off on those routes only.',
+  c:'gzip on;\ngzip_types text/css application/json;\n\nlocation /stream {\n    proxy_buffering off;   # required for SSE and token streaming\n}'},
+ {t:'Writing down what happened', p:'One line per request. Two numbers in it tell you whether a slow page was your fault or the network’s.',
+  d:'request_time is the whole thing including the client; upstream_response_time is just your app. A big gap between them means a slow client, not a slow backend — the single most useful comparison in the log.',
+  c:'log_format t \'$status $request_time $upstream_response_time "$request"\';\naccess_log /var/log/nginx/access.log t;'},
+];
+const ngxList=document.getElementById('ngxSteps'), ngxDet=document.getElementById('ngxDetail');
+ngxList.innerHTML=NGX.map((s,i)=>`<button class="jitem${i===0?' on':''}" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t}</span></button>`).join('');
+function ngxRender(i){
+  const s=NGX[i];
+  document.querySelectorAll('#ngxSteps .jitem').forEach((b,k)=>b.classList.toggle('on',k===i));
+  ngxDet.innerHTML=`<div class="role">step ${i+1} of ${NGX.length}</div><h3>${s.t}</h3>
+    <p class="say">${s.p}</p><p class="tech">${s.d}</p>
+    <div class="code"><pre><code>${hl(s.c)}</code></pre></div>`;
+}
+ngxList.addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) ngxRender(Number(b.dataset.i));});
+ngxRender(0);
+
+/* jobs */
+document.getElementById('ngxJobs').innerHTML=`<table class="osi"><thead><tr><th>Job</th><th>In plain English</th><th>The directive that does it</th></tr></thead><tbody>
+<tr><td><b>Serve files</b></td><td>Hand over images, CSS and JavaScript straight from disk, without waking your app</td><td>root · try_files · expires</td></tr>
+<tr><td><b>Reverse proxy</b></td><td>Take the request and pass it to your application, then bring the answer back</td><td>proxy_pass · proxy_set_header</td></tr>
+<tr><td><b>Load balance</b></td><td>Spread requests over several copies and stop sending to one that keeps failing</td><td>upstream · least_conn · max_fails</td></tr>
+<tr><td><b>End TLS</b></td><td>Deal with the padlock at the front door so your app does not have to</td><td>ssl_certificate · ssl_protocols</td></tr>
+<tr><td><b>Cache</b></td><td>Remember an answer and give the same one out again without asking your app</td><td>proxy_cache · proxy_cache_valid</td></tr>
+<tr><td><b>Rate limit</b></td><td>Let each visitor through at a steady pace, tolerate a short burst, refuse a flood</td><td>limit_req_zone · limit_req burst=</td></tr>
+<tr><td><b>Compress</b></td><td>Squeeze text before sending, so pages arrive faster on slow connections</td><td>gzip · gzip_types</td></tr>
+<tr><td><b>Redirect and rewrite</b></td><td>Send http to https, or move an old address to a new one</td><td>return 301 · rewrite</td></tr>
+<tr><td><b>Proxy plain TCP</b></td><td>Forward databases or game traffic, where there is no HTTP to read at all</td><td>stream { } block</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>Rate limiting, pictured:</b> a bucket with a hole in the bottom. Requests pour in, and drain at a fixed rate. <b>burst</b> is how full the bucket may get before it overflows — a queue for short spikes. Add <b>nodelay</b> and the burst is let through immediately rather than trickled, which is usually what a real user experience needs.</div>`;
+
+/* production gotchas */
+document.getElementById('ngxGotchas').innerHTML=`<table class="osi"><thead><tr><th>What you see</th><th>What it actually means</th><th>What to do</th></tr></thead><tbody>
+<tr><td><b>502 Bad Gateway</b></td><td>NGINX reached out to your app and got nothing back — crashed, not listening, or wrong port. NGINX is fine; your app is not</td><td>Check the app is up and the upstream address is right. A 502 is almost never an NGINX problem</td></tr>
+<tr><td><b>504 Gateway Timeout</b></td><td>Your app answered too slowly. The default patience is sixty seconds</td><td>Fix the slow endpoint first; raise proxy_read_timeout only when the work is genuinely long</td></tr>
+<tr><td><b>499 in the log</b></td><td>The visitor gave up and closed the tab before you answered. An NGINX-only code</td><td>Not an error to chase, but a lot of them means you are too slow to matter</td></tr>
+<tr><td><b>413 Request Entity Too Large</b></td><td>The default upload limit is one megabyte, and almost nobody knows that until a user tries to attach something</td><td>client_max_body_size 25m; on that route</td></tr>
+<tr><td><b>Streaming arrives all at once</b></td><td>Buffering. NGINX is holding the whole response to protect you from slow clients — helpful normally, fatal for live output</td><td>proxy_buffering off on that route, or send X-Accel-Buffering: no</td></tr>
+<tr><td><b>Every visitor has the same IP</b></td><td>You forgot the forwarded headers, so your app sees only NGINX. Logs, rate limits and geolocation all become meaningless</td><td>Set X-Forwarded-For, and set_real_ip_from for proxies you trust</td></tr>
+<tr><td><b>Too many open files</b></td><td>You hit the connection ceiling, which is worker_connections and the operating system limit, not traffic being too heavy</td><td>Raise worker_connections and worker_rlimit_nofile together</td></tr>
+<tr><td><b>Upstream ports exhausted</b></td><td>A brand new connection to your app for every single request, each left in TIME_WAIT afterwards</td><td>keepalive in the upstream block, with proxy_http_version 1.1 and an empty Connection header</td></tr>
+<tr><td><b>A config change took the site down</b></td><td>It was applied without being tested first</td><td>nginx -t, then nginx -s reload — a reload is graceful: old workers finish their requests before exiting, so nobody is dropped</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>The one to remember:</b> 502 means your app said nothing, 504 means it said it too late, 499 means the visitor left first. Three very different problems that all look like the site is broken.</div>
+
+<h4 style="margin-top:18px">NGINX or a managed load balancer?</h4>
+<div class="plain-line"><b>In plain English:</b> the cloud ones are a service you switch on and never patch. NGINX is a program you run, so you keep the upkeep — and in return you get to configure things the managed ones will not let you touch, at a fraction of the price, in any cloud or none.</div>
+<table class="osi"><thead><tr><th></th><th>NGINX you run</th><th>Managed by the cloud</th></tr></thead><tbody>
+<tr><td><b>Upkeep</b></td><td>Yours: patching, scaling, high availability</td><td>Theirs, priced in</td></tr>
+<tr><td><b>Control</b></td><td>Total — caching, rewrites, Lua, odd protocols</td><td>Whatever the console exposes</td></tr>
+<tr><td><b>Cost</b></td><td>Just the machines it runs on</td><td>Per hour plus per request or per processed gigabyte</td></tr>
+<tr><td><b>Portable</b></td><td>The same config in any cloud, or none</td><td>Rewritten for each cloud</td></tr>
+<tr><td><b>In practice</b></td><td>ALB / Cloud LB / Front Door at the edge, then <b>NGINX as the Kubernetes ingress controller</b> inside — which is how most teams end up running both without ever deciding to</td><td></td></tr>
+</tbody></table>`;
 
 </script>
 </body>
