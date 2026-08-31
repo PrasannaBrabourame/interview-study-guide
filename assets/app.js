@@ -85,7 +85,7 @@ function init(topics) {
 <section class="box layman"><h3>💡 In layman terms</h3><p>${t.layman}</p></section>
 <section class="box"><h3>🛠 Practical use cases</h3>${list(t.usecases)}</section>
 <div class="code"><button class="copy">Copy</button><pre><code>${hl(t.code)}</code></pre></div>
-<section class="box"><h3>🎯 Follow-up interview checks</h3>${list(t.followups)}</section>
+<section class="box"><h3>🎯 Follow-up checks</h3>${list(t.followups)}</section>
 <section class="box bad"><h3>⚠ Red flags</h3>${list(t.redflags)}</section>
 <section class="box full memo"><h3>📌 One-line memory aid</h3><p><b>${t.memory}</b></p></section>
 </div></div></div></article>`).join("");

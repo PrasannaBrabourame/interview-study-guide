@@ -1,12 +1,12 @@
-# Interview Study Guide
+# Learning Guide
 
-A static study guide for Technical Lead & AI Engineer interviews, covering 267 topics. No build step, no dependencies — just serve the folder.
+A static learning guide for Technical Lead & AI Engineer topics, covering 267 topics. No build step, no dependencies — just serve the folder.
 
 Each topic is broken down into:
 - 🧠 Technical answer
 - 💡 In layman's terms
 - 🛠 Practical use cases
-- 🎯 Follow-up interview checks
+- 🎯 Follow-up checks
 - ⚠ Red flags
 - 📌 One-line memory aid
 
