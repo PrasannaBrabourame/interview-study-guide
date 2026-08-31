@@ -7555,6 +7555,294 @@
     "memory": "One trace per request, standard generative-AI attributes, export to more than one backend, and redact before the span leaves."
   },
   {
+    "id": "openclaw-trust-boundary",
+    "title": "OpenClaw and the Single-Operator Trust Boundary",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Your team wants to run one OpenClaw instance for the whole department, wired into the shared Slack workspace. Why is that the wrong shape, and what is the right one?",
+    "technical": [
+      "OpenClaw is designed around one trusted operator per gateway. It is a personal assistant model, not a multi-tenant security boundary, so anyone allowed to message a shared instance can trigger tools that run with that instance's privileges and credentials. Separate trust boundaries mean separate gateways, ideally separate hosts or OS users.",
+      "Order the controls: identity, then scope, then the model. Decide who may talk to it using pairing or an allowlist, then constrain where it can act with tool policies, group mention requirements and sandboxing, and only then think about how well the model resists manipulation. Reversing that order is how people end up relying on a system prompt for access control.",
+      "Session scoping is a real leak path. Without per-peer session scope, several people messaging the same assistant can share context, so one person's conversation becomes visible in another's. In a shared workspace that is a data incident with no exploit required.",
+      "The dangerous defaults are the convenient ones. Open DM policy, no mention requirement in groups, and high-blast-radius tools such as shell execution, browser control and web fetch left enabled together turn an ordinary message into arbitrary action on the host.",
+      "For a team use case the correct answer is usually a different product: a service-shaped agent with real authentication, per-user authorisation and an audit trail. A personal assistant scaled to a department is not an enterprise deployment, it is a shared root account with a chat interface."
+    ],
+    "layman": "A house key you happily give to your own assistant is not something you photocopy for the whole floor. Everyone would be able to open your front door, and the log would just say the key was used.",
+    "usecases": [
+      "Evaluating a personal agent for team use",
+      "Security review of a self-hosted assistant",
+      "Choosing between personal and service-shaped agents",
+      "Setting policy for autonomous assistants at work"
+    ],
+    "code": "// per trust boundary: its own gateway, its own host, its own credentials\n{\n  gateway: {\n    mode: \"local\",\n    bind: \"loopback\",                      // not 0.0.0.0\n    auth: { mode: \"token\", token: \"<long random token>\" }\n  },\n  session: { dmScope: \"per-channel-peer\" },  // stop peers sharing context\n  tools: {\n    profile: \"messaging\",\n    deny: [\"group:automation\", \"exec\"]       // blast radius first, model last\n  },\n  channels: {\n    whatsapp: {\n      dmPolicy: \"pairing\",                   // unknown senders must be approved\n      groups: { \"*\": { requireMention: true } }\n    }\n  }\n}\n// one shared instance for a department = one shared privilege set for a department",
+    "followups": [
+      "Two colleagues message the same assistant. What stops one seeing the other's context?",
+      "What is the difference between a pairing policy and an allowlist?",
+      "Which tools would you deny by default, and why those?",
+      "When is a personal agent simply the wrong tool for the job?"
+    ],
+    "redflags": [
+      "One shared instance for many users",
+      "Access control expressed in the system prompt",
+      "Open DM policy with execution tools enabled",
+      "No per-peer session scoping",
+      "Assumes a personal assistant is a multi-tenant platform"
+    ],
+    "memory": "One operator, one gateway: identity first, scope second, model last, and a shared instance is a shared privilege set."
+  },
+  {
+    "id": "openclaw-exposure-hardening",
+    "title": "Hardening a Self-Hosted Agent Gateway",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Security researchers keep finding OpenClaw gateways exposed on the public internet, some over plain HTTP with no authentication. Walk me through hardening one properly.",
+    "technical": [
+      "The exposure itself is the incident. A gateway bound to all interfaces without authentication is a remote shell with a chat interface attached, and over plain HTTP the traffic and any bearer token travel in the clear. Bind to loopback, reach it through a VPN or an identity-aware proxy, and require a token or proxy-provided identity.",
+      "State on disk is the second prize. Configuration, channel credentials, OAuth tokens and full session transcripts live in the agent's state directory, so directory and file permissions matter, and those transcripts should be treated as confidential customer data with a retention policy rather than as logs.",
+      "Sandboxing is opt-in, which produces a specific and common failure: a container backend configured while sandbox mode is still off, so tools run on the host anyway. Audit for that drift rather than trusting that configuring something meant enabling it.",
+      "Use the built-in security audit as a control, not a curiosity. Run it in the deployment pipeline, fail the deploy on critical findings, and re-run it after upgrades, because a fast-moving project changes defaults between releases.",
+      "Then assume compromise anyway: separate the browser profile from personal accounts, keep secrets out of the filesystem the agent can read, give it scoped tokens rather than your own long-lived credentials, and put egress controls in front of the host so exfiltration is not a single HTTP call away."
+    ],
+    "layman": "Leaving the gateway open to the internet is not a weak lock on the front door. It is the front door removed, with a note explaining where the valuables are.",
+    "usecases": [
+      "Deploying a self-hosted agent on a VPS",
+      "Security review before allowing an agent on the network",
+      "Incident response after an exposed instance",
+      "Writing a hardening standard for autonomous assistants"
+    ],
+    "code": "# 1. never publicly bound; reach it over a private network\ngateway.bind = loopback          # or a Tailscale-style identity-aware proxy\ngateway.auth = token             # long random; rotate on staff change\n\n# 2. lock down the state directory: config, channel creds, OAuth tokens, transcripts\nchmod 700 ~/.openclaw\nchmod 600 ~/.openclaw/openclaw.json\n# ~/.openclaw/agents/<id>/sessions/*.jsonl  <- full transcripts: confidential + retention\n\n# 3. catch policy drift: sandbox backend configured but mode still off\nopenclaw security audit          # config checks\nopenclaw security audit --deep   # live probe of the running gateway\n#   run in CI, fail the deploy on critical findings, re-run after every upgrade\n\n# 4. assume compromise: scoped tokens, separate browser profile, egress allowlist",
+    "followups": [
+      "What is in the state directory, and which of it would hurt most if leaked?",
+      "How would you detect an exposed instance across the estate?",
+      "The sandbox is configured but disabled. How would you notice?",
+      "Which credentials should the agent never hold at all?"
+    ],
+    "redflags": [
+      "Gateway bound to all interfaces",
+      "Plain HTTP with a bearer token",
+      "World-readable state directory",
+      "Never runs the security audit",
+      "Uses the operator's personal long-lived credentials"
+    ],
+    "memory": "Loopback plus real authentication, locked-down state, sandbox actually enabled, audit in CI, and scoped credentials on the assumption of compromise."
+  },
+  {
+    "id": "agent-injection-blast-radius",
+    "title": "Injection Through the Things an Agent Reads",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "Complex",
+    "question": "An OpenClaw agent was told in a Discord message to repeat the last message from every channel, and it did, leaking private moderator conversations. Nobody had access to the host. How do you design so that this is survivable?",
+    "technical": [
+      "There are two doors, and the second is the dangerous one. Direct injection arrives in a message someone sends the agent; indirect injection arrives inside content the agent reads on your behalf, and there are documented cases of instructions planted in public posts aimed at agents, including ones written to drain crypto wallets. Anything the agent ingests is untrusted input.",
+      "Model robustness helps but is the last line, not the plan. Vendor-run injection arenas put frontier models at roughly one percent success across hundreds of thousands of attempts, which is low and is not zero at the volume of messages a live agent reads, and older or smaller models are markedly easier to steer.",
+      "Design for blast radius instead. Deny high-risk tools by default, especially shell execution, browser control and arbitrary web fetch in the same profile that reads untrusted content, and require an explicit mention before the agent acts on anything in a group.",
+      "Split the agent by trust level. A read-only profile with a restricted tool policy handles untrusted content and returns a summary; the acting agent, which holds credentials, never reads raw external text. That separation is what stops a sentence in a forum post from becoming a tool call.",
+      "Then instrument the boundary: log every tool call with the content that triggered it, alert on unusual sequences such as a read followed by a bulk send, and keep an approval step in front of anything irreversible or anything that leaves the organisation."
+    ],
+    "layman": "A shop assistant who follows any instruction shouted from the street. You do not fix that by hiring someone more sceptical; you make sure the till and the safe are not reachable from the pavement.",
+    "usecases": [
+      "Agents connected to chat platforms",
+      "Agents that browse or read email",
+      "Anything ingesting user-supplied documents",
+      "Threat modelling an autonomous assistant"
+    ],
+    "code": "# two profiles, two trust levels\n\nreader:                       # touches untrusted content, holds nothing\n  tools: [web_fetch, read_channel]\n  deny:  [exec, browser, send_message, group:automation]\n  credentials: none\n  output: summary_only        # returns text, never a tool request\n\nactor:                        # holds credentials, never reads raw external text\n  tools: [send_message, calendar_write]\n  input: reader.summary_only  # structured, length-capped, no raw markup\n  approval_required: [payments, mass_send, external_email]\n\n# detection: the shape of an exfiltration is a read fan-in then a send fan-out\nalert when tool_calls matches: read_* {3,} -> send_* within 60s",
+    "followups": [
+      "Which is more dangerous, a message sent to the agent or a document it reads? Why?",
+      "Where exactly does the untrusted text stop in your design?",
+      "How would you catch this in the logs after the fact?",
+      "The model resists injection ninety-nine percent of the time. Is that good enough here?"
+    ],
+    "redflags": [
+      "Relies on the model refusing",
+      "One profile that both reads untrusted content and holds credentials",
+      "Execution and browser tools enabled alongside reading",
+      "No alerting on read-then-send patterns",
+      "Treats prompt injection as a model problem rather than a design one"
+    ],
+    "memory": "Untrusted input reaches an agent through everything it reads: split reading from acting, deny the dangerous tools, and design the blast radius."
+  },
+  {
+    "id": "agent-skills-supply-chain",
+    "title": "Agent Skills Are a Supply Chain",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Your agent platform lets anyone install community skills, and one published scan found roughly a quarter of thirty thousand skills carried at least one vulnerability. How do you allow skills without importing that risk?",
+    "technical": [
+      "A skill is executable code plus instructions that run with the agent's privileges, which makes it a dependency in the strictest sense. It deserves the same treatment as a library: a known source, a pinned version, a review, and an owner who notices when it changes.",
+      "Portability standards make skills shareable between agents, which is genuinely useful and also means a bad skill travels. Curate an internal allowlist rather than enabling a public catalogue wholesale, and mirror what you approve so upstream cannot mutate under you.",
+      "The instruction half is as dangerous as the code half. A skill's prose runs inside the model's context, so it can quietly redirect behaviour without a single suspicious line of code, and a review that only reads the Python misses it entirely.",
+      "Scan and re-scan: static checks for network and filesystem calls, secret access and shell invocation, plus a diff review on every version bump. Automated skill scanners exist and do find real issues, but they are a filter rather than a substitute for an owner.",
+      "Contain what you cannot fully vet. Run skills in the sandbox rather than on the host, give each one only the tools and credentials it needs, and log skill invocations separately so an incident can be traced to the exact skill and version."
+    ],
+    "layman": "Installing a community skill is closer to hiring a contractor with keys than to downloading a wallpaper. You would at least ask who they are and what they intend to touch.",
+    "usecases": [
+      "Platforms with plugin or skill ecosystems",
+      "Standardising an internal skill library",
+      "Security review of agent extensions",
+      "Responding to a compromised upstream skill"
+    ],
+    "code": "Interview focus:\n- A skill is code plus prompt text running with the agent's privileges: treat it as\n  a dependency, with a source, pinned version, review and an owner.\n- Review both halves. The instruction text runs in the model's context and can\n  redirect behaviour with no suspicious code at all.\n- Curate an internal allowlist and mirror approved versions rather than enabling\n  a public catalogue; portability means a bad skill travels well.\n- Scan for network, filesystem, secret and shell access; diff every version bump.\n  Scanners are a filter, not an owner.\n- Contain the rest: run skills sandboxed, scope credentials per skill, and log\n  invocations with skill name and version so incidents are traceable.",
+    "followups": [
+      "What do you look for when reviewing a skill, beyond the code?",
+      "An approved skill publishes a new version overnight. What happens?",
+      "How do you scope credentials per skill rather than per agent?",
+      "How would you trace an incident back to a specific skill and version?"
+    ],
+    "redflags": [
+      "Installs community skills freely",
+      "Reviews only the code and not the instructions",
+      "No pinning or mirroring",
+      "Skills run on the host with the agent's full credentials",
+      "No per-skill logging"
+    ],
+    "memory": "Skills are dependencies that run with your privileges: allowlist, pin, review both code and prose, sandbox, and log by version."
+  },
+  {
+    "id": "hermes-self-improving-agent",
+    "title": "Hermes Agent: Operating Something That Rewrites Itself",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "Complex",
+    "question": "Hermes Agent curates its own memory and writes its own reusable skills, improving them as it goes. What does that closed loop break in your normal production practices?",
+    "technical": [
+      "Your deployed artefact is no longer the thing you reviewed. An agent that writes and refines its own skills is generating code that will run later with real privileges, so skill creation needs the same gate as any other code path reaching production: a diff, a reviewer, a version, and the ability to roll back to yesterday's behaviour.",
+      "Memory becomes persistent state that shapes every future run, which makes memory poisoning a durable attack rather than a single bad answer. Something false written into memory today is retrieved and acted on for weeks, so memory needs provenance, review of what gets promoted to long-term, and a way to expire or excise an entry.",
+      "Evaluation has to be continuous because the system changes without a deploy. Pin a golden dataset and re-run it on a schedule rather than only on release, because the thing that regressed may be a skill the agent wrote at 3am rather than a commit anyone made.",
+      "Debugging shifts from reading code to reading history. When behaviour changes you need to know which memory entries and which skill versions were in play for that run, which means capturing them per run rather than reconstructing later from a mutable store.",
+      "Decide deliberately how much autonomy the loop gets. Self-improvement is genuinely valuable for a single user's personal workflows and much harder to justify where the output touches customers or money, so the safe pattern is autonomous drafting with human promotion, not autonomous deployment."
+    ],
+    "layman": "An assistant who rewrites their own job description every night is wonderful until something goes wrong, because the job description you approved is not the one they are working to.",
+    "usecases": [
+      "Self-improving or memory-heavy agents",
+      "Personal productivity agents that persist across sessions",
+      "Assessing autonomy levels for a business process",
+      "Debugging behaviour that changed with no code change"
+    ],
+    "code": "Interview focus:\n- Self-written skills are code reaching production: require review, versioning\n  and rollback before a generated skill is allowed to run with real privileges.\n- Memory is durable state, so poisoning persists. Track provenance, gate what is\n  promoted to long-term, and support expiry and excision of entries.\n- Evaluate continuously, not per release: the regression may be a skill the agent\n  wrote overnight rather than a commit.\n- Capture memory entries and skill versions per run, or you cannot explain why\n  today's behaviour differs from yesterday's.\n- Prefer autonomous drafting with human promotion wherever output touches\n  customers or money; full self-deployment is a personal-use pattern.",
+    "followups": [
+      "A skill the agent wrote last week starts failing. How do you find and fix it?",
+      "How does false information get into memory, and how does it get out?",
+      "What would you refuse to let the agent self-improve?",
+      "How do you evaluate a system whose behaviour changes without a deploy?"
+    ],
+    "redflags": [
+      "Self-written skills run unreviewed",
+      "No provenance or expiry on memory",
+      "Evaluation only at release time",
+      "Cannot say which skill version produced a given run",
+      "Grants self-improvement over customer-facing behaviour"
+    ],
+    "memory": "If it writes its own skills and memory, then review, version and expiry apply to those too: draft autonomously, promote deliberately."
+  },
+  {
+    "id": "agent-unattended-automation",
+    "title": "Unattended Agent Runs and Scheduled Jobs",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "Your agent has a built-in scheduler and now runs jobs at three in the morning with nobody watching. What has to be true before you turn that on?",
+    "technical": [
+      "Unattended means the human control you were relying on is gone. Any step that would have paused for approval now either blocks forever or proceeds without one, so decide per action which it is, and make the blocked case visible in the morning rather than silently stuck.",
+      "Scheduled runs need the same discipline as any batch job: idempotency so a retry does not duplicate work, a lock so an overrun does not overlap the next run, a timeout, a bounded retry policy, and an alert when a run fails or produces nothing.",
+      "Cost has no natural ceiling overnight. A loop that would have annoyed a watching user simply bills until morning, so a per-run token and wall-clock budget with a hard stop is mandatory, along with a daily cap across all scheduled work.",
+      "Credentials are exposed for longer and used without a human present, which makes short-lived scoped tokens and a narrow tool profile more important, not less. Do not let the overnight job hold more permission than the interactive one.",
+      "Choose the isolation backend for the job rather than for convenience. Local execution is the fastest way to have an unattended agent modify the host it runs on; containerised or remote sandbox backends give a clean environment per run and make blast radius a configuration choice."
+    ],
+    "layman": "Giving someone a key to work overnight is fine. Giving them the key, the company card and no way to reach you when something looks odd is a different decision.",
+    "usecases": [
+      "Scheduled research, reporting or monitoring agents",
+      "Overnight data pipeline babysitting",
+      "Recurring outreach or triage",
+      "Any agent with a cron feature enabled"
+    ],
+    "code": "Interview focus:\n- Unattended removes the human in the loop: decide per action whether it blocks\n  and surfaces in the morning, or proceeds without approval. Never silent-stuck.\n- Batch discipline: idempotency key per run, a lock against overlap, a timeout,\n  bounded retries, and an alert on failure or empty output.\n- Budgets are mandatory overnight: per-run token and wall-clock ceiling plus a\n  daily cap across all scheduled work.\n- Credentials: short-lived and scoped; the overnight job gets no more permission\n  than the interactive one, and ideally less.\n- Isolation: pick a container or remote sandbox backend per run rather than local\n  execution on the host the agent can modify.",
+    "followups": [
+      "A scheduled run needs approval at 3am. What happens?",
+      "The job runs long and the next one starts. What did you put in place?",
+      "How do you cap spend across every scheduled agent?",
+      "Which backend would you run it on, and why?"
+    ],
+    "redflags": [
+      "Scheduled runs with no budget",
+      "No overlap protection or idempotency",
+      "Approvals that silently block forever",
+      "Overnight jobs holding broader credentials than interactive use",
+      "Local execution on the host for unattended work"
+    ],
+    "memory": "Unattended removes the human safeguard: budgets, locks, idempotency, scoped credentials and a clean sandbox per run replace it."
+  },
+  {
+    "id": "personal-agents-shadow-ai",
+    "title": "Employees Running Personal Agents on Work Data",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "High",
+    "question": "An open-source personal agent goes viral, reaching a quarter of a million GitHub stars in two months, and your engineers are running it on work laptops connected to their own messaging accounts. What do you do on Monday?",
+    "technical": [
+      "Understand the actual exposure before writing policy. This is software on a managed device holding channel credentials and reading corporate content, then routing it through an operator-controlled host and a personal messaging account, which is a data egress path that no existing control was designed to see.",
+      "Inventory first: detect installations and running gateways across the fleet, and look outward too, since exposed instances are discoverable from the internet and yours may already be indexed. You cannot govern what you have not found.",
+      "Then decide policy on the basis of risk rather than novelty. A blanket ban drives it underground on personal machines where you have no visibility at all, so the workable answer is usually a sanctioned path: approved deployment pattern, hardened configuration, no corporate credentials, no customer data, and clear red lines about what an agent may never touch.",
+      "Add runtime controls where they fit your estate: egress restrictions from developer machines, alerting on agent-shaped traffic, credential hygiene so no personal tool holds a long-lived corporate token, and behavioural monitoring for anomalous tool use rather than trusting the tool to police itself.",
+      "Treat it as a governance question with an owner and a review date, because this class of tool moves fast enough that a decision made this quarter will be out of date next quarter. Naming what is allowed and giving people a supported alternative beats a memo nobody can comply with."
+    ],
+    "layman": "Staff have started bringing in a very capable new intern from home who reads their work mail and does favours. Banning them outright just moves the arrangement off-site; the answer is to define what the intern may see and where they may sit.",
+    "usecases": [
+      "Shadow AI discovery and response",
+      "Acceptable-use policy for autonomous agents",
+      "Security review of developer tooling",
+      "Enabling AI productivity without uncontrolled egress"
+    ],
+    "code": "Interview focus:\n- Exposure: agent software on managed devices, holding channel credentials, reading\n  corporate content, routed through a personal account. A new egress path nothing\n  was designed to observe.\n- Inventory first, inside and out: fleet detection of installs and running gateways,\n  plus external scanning, because exposed instances are discoverable.\n- Policy on risk, not novelty. A blanket ban moves it to unmanaged machines; offer a\n  sanctioned pattern: hardened config, no corporate credentials, no customer data,\n  explicit red lines.\n- Runtime controls: egress restrictions, alerting on agent-shaped traffic, credential\n  hygiene, behavioural monitoring of tool use.\n- Governance with an owner and a review date; this class of tool changes quarterly.",
+    "followups": [
+      "How would you find every instance running in the company?",
+      "Would you ban it? Argue the case either way.",
+      "What is the sanctioned alternative you offer instead?",
+      "Which single control reduces the most risk here?"
+    ],
+    "redflags": [
+      "Bans it with no alternative and assumes compliance",
+      "No inventory or detection capability",
+      "Treats it as an IT annoyance rather than a data egress path",
+      "No red lines about credentials or customer data",
+      "Policy with no owner or review date"
+    ],
+    "memory": "Find it, then offer a hardened sanctioned path with hard red lines: a ban without an alternative just removes your visibility."
+  },
+  {
+    "id": "fast-moving-agent-ops",
+    "title": "Operating a Fast-Moving Open-Source Agent",
+    "category": "Agent Frameworks & Runtimes",
+    "difficulty": "Medium",
+    "question": "The agent project you have deployed ships breaking changes weekly and grew faster than any project in open-source history. How do you run it without either freezing on an old version or chasing every release?",
+    "technical": [
+      "Pin a version and upgrade on a cadence you choose. Track releases for security fixes specifically, and separate those from feature releases so an urgent patch is not entangled with a configuration overhaul you have not reviewed.",
+      "Re-run the security audit and your own configuration checks after every upgrade, because on a project moving this fast the defaults themselves change, and a setting you deliberately hardened can be replaced or renamed underneath you.",
+      "Back up the state that matters and know what restore looks like: configuration, channel pairings and credentials, memory or skill stores, and scheduled jobs. Losing the state directory usually means re-pairing every channel by hand, which is an outage nobody planned for.",
+      "Keep an exit and a rollback. Configuration and skills in version control, state backed up before every upgrade, and a tested downgrade path, since a fast-moving project will eventually ship a release that does not work for your setup.",
+      "Watch it like a service rather than a gadget: health of the gateway, failed and overdue scheduled runs, token spend per day, tool-call volume and error rates. Most incidents with these tools are noticed by someone's surprise rather than by monitoring, which is the real gap."
+    ],
+    "layman": "Living on the newest version of everything is exhausting, and never updating is how you end up with a system nobody can patch. You pick an upgrade day and you keep a way back.",
+    "usecases": [
+      "Self-hosted agents on fast-release projects",
+      "Setting an upgrade policy for AI tooling",
+      "Backup and restore planning",
+      "Monitoring an agent as a production service"
+    ],
+    "code": "Interview focus:\n- Pin the version; upgrade on your own cadence. Track security releases separately\n  from feature releases so an urgent fix is not bundled with a config overhaul.\n- Re-run the security audit after every upgrade: on fast projects the defaults move,\n  and hardened settings get renamed or replaced.\n- Back up what cannot be rebuilt: config, channel pairings and credentials, memory\n  and skill stores, scheduled jobs. Losing state means re-pairing every channel.\n- Keep config and skills in version control, snapshot state before upgrading, and\n  test the downgrade path before you need it.\n- Monitor as a service: gateway health, failed or overdue scheduled runs, daily token\n  spend, tool-call volume and error rate.",
+    "followups": [
+      "How do you tell a security release from a feature release quickly?",
+      "The state directory is lost. What is the recovery?",
+      "An upgrade breaks your configuration. What is the rollback?",
+      "What do you alert on for an agent like this?"
+    ],
+    "redflags": [
+      "Runs latest on every restart",
+      "No backup of the state directory",
+      "Never re-audits after upgrades",
+      "No monitoring of scheduled runs or spend",
+      "No tested rollback"
+    ],
+    "memory": "Pin, upgrade on a cadence, re-audit after every upgrade, back up the state that cannot be rebuilt, and monitor it like a service."
+  },
+  {
     "id": "llmops-lifecycle",
     "title": "LLMOps: Shipping and Operating LLM Systems",
     "category": "LLMOps",
