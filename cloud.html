@@ -491,8 +491,10 @@
       <div class="sim-layout">
         <div><div id="iamStage"></div><div class="term" id="iamTerm" role="log" aria-live="polite"></div></div>
         <div>
+          <div class="segmented" id="iamCloud"></div>
           <div class="toggles" id="iamControls"></div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px" id="iamActions"></div>
+          <p class="simnote" id="iamCloudNote"></p>
         </div>
       </div>
     </div>
@@ -515,6 +517,11 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Provisioning roles without creating a second job for yourself</h2>
       <div id="iamProvision"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">AWS, GCP and Azure — the same job, three models</h2>
+      <div id="iamCompare"></div>
     </div>
 
     <div class="card">
@@ -2253,13 +2260,30 @@ document.getElementById('iamEscalate').innerHTML=D('0 0 640 200',
  'This is the escalation path that audits miss, because no policy anywhere says administrator. If someone can attach a powerful identity to something they control, they have that power — so restrict which identities may be passed, not just who may deploy.');
 
 /* ================= IAM: will this be allowed? ================= */
-const IAMGATES=[
- {id:'deny',  n:'1 · explicit deny',      why:'An explicit deny anywhere wins immediately. Nothing later can undo it.'},
- {id:'guard', n:'2 · guardrail',          why:'SCP, org policy or Azure Policy. Checked without caring who is asking.'},
- {id:'grant', n:'3 · a grant that allows',why:'An IAM policy, binding or role assignment covering this action.'},
- {id:'bound', n:'4 · permission boundary',why:'A ceiling on an identity: it can never exceed this, however much is granted.'},
- {id:'cond',  n:'5 · conditions',         why:'MFA, source address, time, resource tag. All must hold.'},
-];
+const IAMCLOUDS={
+ aws:{name:'AWS', note:'AWS is the only one of the three with a <b>permissions boundary</b> — a ceiling you attach to an identity so it can never exceed it however much is granted. It is what lets you delegate administration safely. It is also the only model where a <b>resource</b> can grant access on its own, through a bucket or key policy.',
+  gates:[
+   {id:'deny',  n:'1 · explicit Deny',        why:'A Deny statement in any attached policy. Wins outright.'},
+   {id:'guard', n:'2 · service control policy',why:'The organisation caps what this account may do. Never grants.'},
+   {id:'grant', n:'3 · identity or resource policy',why:'Either the caller or the resource itself can allow it.'},
+   {id:'bound', n:'4 · permissions boundary',  why:'A ceiling on this identity. AWS only.'},
+   {id:'cond',  n:'5 · condition keys',        why:'MFA, source IP, tags, time. All must hold.'}]},
+ gcp:{name:'GCP', note:'GCP splits the guardrail in two. An <b>IAM deny policy</b> refuses a permission to a principal, which is the closest thing to an SCP. An <b>organisation policy</b> constrains how resources may be configured at all — allowed regions, no external IPs, no service account keys — and it applies to everybody, including the organisation admin. There is <b>no permissions boundary</b>.',
+  gates:[
+   {id:'deny',  n:'1 · IAM deny policy',       why:'Refuses a permission to a principal, whatever is granted.'},
+   {id:'guard', n:'2 · organisation policy',   why:'Constrains the resource itself. Applies to everyone.'},
+   {id:'grant', n:'3 · allow bindings',        why:'The union of every binding inherited from org, folder and project.'},
+   {id:'cond',  n:'4 · IAM conditions',        why:'Expressions on time, resource name or tags.'}]},
+ azure:{name:'Azure', note:'Azure keeps permissions and governance in separate systems. <b>RBAC</b> decides who may act; <b>Azure Policy</b> decides what may be deployed, and can audit or fix as well as refuse. <b>Deny assignments</b> exist but you rarely create them yourself — they come from managed applications and deployment stacks. There is <b>no permissions boundary</b>.',
+  gates:[
+   {id:'deny',  n:'1 · deny assignment',       why:'Rare, and usually created by the platform rather than you.'},
+   {id:'guard', n:'2 · Azure Policy',          why:'Checked when a resource is created or changed. Can also remediate.'},
+   {id:'grant', n:'3 · role assignments',      why:'The union of assignments at this scope and every scope above it.'},
+   {id:'cond',  n:'4 · ABAC conditions',       why:'Attribute conditions attached to the assignment.'}]},
+};
+let iamCloud='aws';
+const IAMGATES=()=>IAMCLOUDS[iamCloud].gates;
+
 const IAMOPTS=[
  {id:'admin',   label:'give the developer the admin role',        on:false},
  {id:'guardOn', label:'guardrail: resources only in eu-west-1',   on:true},
@@ -2274,16 +2298,27 @@ const IAMACTS=[
  {b:'Delete the production database',  act:'delete', region:'eu-west-1'},
  {b:'Grant themselves a new role',     act:'iam',    region:'eu-west-1'},
 ];
-document.getElementById('iamControls').innerHTML=IAMOPTS.map(o=>
-  `<label><input type="checkbox" id="iam-${o.id}" ${o.on?'checked':''}> ${o.label}</label>`).join('');
+function paintIamControls(){
+  const keep=new Map(IAMOPTS.map(o=>[o.id, document.getElementById('iam-'+o.id)?.checked ?? o.on]));
+  document.getElementById('iamControls').innerHTML=IAMOPTS
+    .filter(o=> o.id!=='boundOn' || iamCloud==='aws')
+    .map(o=>`<label><input type="checkbox" id="iam-${o.id}" ${keep.get(o.id)?'checked':''}> ${o.label}</label>`).join('')
+    + (iamCloud!=='aws'
+        ? `<label style="opacity:.5" title="No equivalent in this cloud"><input type="checkbox" disabled> permissions boundary — <b>no equivalent in ${IAMCLOUDS[iamCloud].name}</b></label>`
+        : '');
+}
+paintIamControls();
 document.getElementById('iamActions').innerHTML=IAMACTS.map((a,i)=>
   `<button class="btn" data-a="${i}" style="text-align:left">${a.b}</button>`).join('');
-document.getElementById('iamStage').innerHTML=`<div class="diagram"><svg viewBox="0 0 620 250" role="img" aria-label="Five checks in order; the request stops at whichever one refuses it.">
-  ${IAMGATES.map((g,i)=>{const y=14+i*44;return `<g id="iamg-${g.id}">
+function paintIamStage(){
+document.getElementById('iamStage').innerHTML=`<div class="diagram"><svg viewBox="0 0 620 ${14+IAMGATES().length*44+8}" role="img" aria-label="The checks this cloud applies, in order; the request stops at whichever one refuses it.">
+  ${IAMGATES().map((g,i)=>{const y=14+i*44;return `<g id="iamg-${g.id}">
     <rect x="14" y="${y}" width="592" height="34" rx="6" style="fill:var(--panel2);stroke:var(--wire)"/>
     ${tm(30,y+22,g.n,'var(--text)','start')}${tm(592,y+22,g.why,'var(--dim)','end')}</g>`}).join('')}
   <circle id="iamPkt" cx="0" cy="0" r="6" style="fill:var(--amber)" opacity="0"/>
-</svg><div class="diagcap"><b>How to read it:</b> checks run top to bottom and the first refusal ends it. Only a request that survives all five is allowed — everything else is denied by default, because nothing is permitted unless something says so.</div></div>`;
+</svg><div class="diagcap"><b>How to read it:</b> checks run top to bottom and the first refusal ends it. Only a request that survives every one is allowed — everything else is denied by default, because nothing is permitted unless something says so.</div></div>`;
+}
+paintIamStage();
 
 const iamTermEl=document.getElementById('iamTerm'), iamPkt=document.getElementById('iamPkt');
 let iamTimers=[];
@@ -2302,7 +2337,7 @@ function iamDecide(a){
   if(!granted)
     return {stop:'grant', steps, msg:'Nothing grants this action. Not a denial — an <b>absence</b>. Everything is refused unless some policy allows it, which is why a missing grant and a deliberate block look identical from outside.'};
   steps.push('grant');
-  if(iamOpt('boundOn') && a.act!=='read')
+  if(iamCloud==='aws' && iamOpt('boundOn') && a.act!=='read')
     return {stop:'bound', steps, msg:'The permission boundary caps this identity at read-only. The grant said yes, the ceiling said no, and <b>the ceiling wins</b>. This is how you delegate admin safely.'};
   steps.push('bound');
   if(a.act==='iam' && !iamOpt('mfa'))
@@ -2314,10 +2349,10 @@ function runIam(i){
   iamTimers.forEach(clearTimeout); iamTimers=[];
   const a=IAMACTS[i], r=iamDecide(a);
   iamTermEl.innerHTML=''; iamPkt.setAttribute('opacity','1');
-  IAMGATES.forEach(g=>{const el=document.getElementById('iamg-'+g.id).querySelector('rect');
+  IAMGATES().forEach(g=>{const el=document.getElementById('iamg-'+g.id).querySelector('rect');
     el.style.stroke='var(--wire)'; el.style.fill='var(--panel2)';});
   iamLog('i','<b>&gt;</b> '+a.b);
-  IAMGATES.forEach((g,k)=>{
+  IAMGATES().forEach((g,k)=>{
     const passed=r.steps.includes(g.id), stopped=r.stop===g.id;
     if(!passed && !stopped) return;
     iamTimers.push(setTimeout(()=>{
@@ -2329,15 +2364,29 @@ function runIam(i){
     }, 240*k));
   });
   iamTimers.push(setTimeout(()=>{
-    iamLog(r.stop?'no':'ok', r.stop ? '<b>DENIED</b> at ' + IAMGATES.find(g=>g.id===r.stop).n : '<b>ALLOWED</b>');
+    const g=IAMGATES().find(g=>g.id===r.stop);
+    iamLog(r.stop?'no':'ok', r.stop ? '<b>DENIED</b> at ' + (g?g.n:r.stop) : '<b>ALLOWED</b>');
     iamLog('i', r.msg);
     if(!r.stop) iamPkt.style.fill='var(--green)';
-  }, 240*IAMGATES.length));
+  }, 240*IAMGATES().length));
 }
 document.getElementById('iamActions').addEventListener('click',e=>{
   const b=e.target.closest('[data-a]'); if(b) runIam(Number(b.dataset.a));});
 document.getElementById('iamControls').addEventListener('change',()=>
   iamLog('i','policy changed — try the same request again'));
+
+document.getElementById('iamCloud').innerHTML=Object.entries(IAMCLOUDS).map(([k,v])=>
+  `<button class="seg${k==='aws'?' on':''}" data-c="${k}">${v.name}</button>`).join('');
+function paintCloudNote(){
+  document.getElementById('iamCloudNote').innerHTML=IAMCLOUDS[iamCloud].note;
+}
+document.getElementById('iamCloud').addEventListener('click',e=>{
+  const b=e.target.closest('[data-c]'); if(!b) return;
+  iamCloud=b.dataset.c;
+  document.querySelectorAll('#iamCloud .seg').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  paintIamStage(); paintIamControls(); paintCloudNote(); runIam(1);
+});
+paintCloudNote();
 runIam(1);
 
 /* ================= IAM: reference sections ================= */
@@ -2536,6 +2585,51 @@ document.getElementById('jFix').onclick=()=>{
 };
 document.getElementById('jBreak').addEventListener('change',paintBreaks);
 jvLog('i','Switch something off, then send a request.');
+
+/* ================= IAM: three-cloud comparison ================= */
+document.getElementById('iamCompare').innerHTML=`
+<div class="plain-line"><b>The one difference that matters most:</b> in <b>GCP and Azure a grant made high in the tree flows down</b> to everything beneath it. In <b>AWS it does not</b> — permissions live inside an account and nothing is inherited from the organisation unit above. AWS uses the hierarchy only to <em>restrict</em>, through service control policies. Read that sentence twice; almost every porting mistake comes from assuming one cloud's answer applies to another.</div>
+
+<h4>The same concept, three names</h4>
+<table class="osi"><thead><tr><th>What it is</th><th>AWS</th><th>GCP</th><th>Azure</th></tr></thead><tbody>
+<tr><td><b>The grant itself</b></td><td>A JSON policy attached to an identity or a resource</td><td>A binding: member, role, resource</td><td>A role assignment: principal, role, scope</td></tr>
+<tr><td><b>Bundle of permissions</b></td><td>Managed or inline policy</td><td>Role — basic, predefined or custom</td><td>Role definition — built-in or custom</td></tr>
+<tr><td><b>Person</b></td><td>IAM Identity Center user, federated</td><td>Cloud Identity or Google account</td><td>Entra ID user</td></tr>
+<tr><td><b>Workload</b></td><td>IAM role via instance profile or IRSA</td><td>Service account</td><td>Managed identity</td></tr>
+<tr><td><b>Containers</b></td><td>Organization → OU → account</td><td>Organisation → folder → project</td><td>Tenant → management group → subscription → resource group</td></tr>
+<tr><td><b>Permission guardrail</b></td><td>Service control policy</td><td>IAM deny policy</td><td>Deny assignment — rarely yours to create</td></tr>
+<tr><td><b>Configuration guardrail</b></td><td>— (SCPs cap actions, not shapes)</td><td>Organisation policy constraints</td><td>Azure Policy</td></tr>
+<tr><td><b>Ceiling for delegation</b></td><td><b>Permissions boundary</b></td><td>— no equivalent</td><td>— no equivalent</td></tr>
+<tr><td><b>Temporary elevation</b></td><td>Identity Center with temporary elevated access</td><td>Privileged Access Manager</td><td>PIM — eligible instead of assigned</td></tr>
+<tr><td><b>Fine-grained conditions</b></td><td>Condition keys in the policy</td><td>IAM conditions</td><td>ABAC conditions on the assignment</td></tr>
+<tr><td><b>The escalation permission</b></td><td>iam:PassRole</td><td>iam.serviceAccounts.actAs</td><td>assigning a managed identity</td></tr>
+<tr><td><b>Who can see it all</b></td><td>IAM Access Analyzer</td><td>Policy Analyzer and Recommender</td><td>Entra access reviews</td></tr>
+</tbody></table>
+
+<h4>Where the models genuinely differ</h4>
+<table class="osi"><thead><tr><th>Question</th><th>AWS</th><th>GCP</th><th>Azure</th></tr></thead><tbody>
+<tr><td><b>Do grants inherit down the hierarchy?</b></td><td><b>No.</b> Permissions are per account. The organisation only restricts</td><td><b>Yes.</b> Org and folder grants reach every project beneath</td><td><b>Yes.</b> Management group grants reach every subscription beneath</td></tr>
+<tr><td><b>Can a resource grant access by itself?</b></td><td><b>Yes</b> — bucket and key policies can allow a principal with no matching identity policy, including across accounts</td><td>Bindings can sit on a resource, but there is no separate resource-policy language</td><td>Assignments scope down to a resource; there is no separate resource-policy language</td></tr>
+<tr><td><b>How normal is an explicit deny?</b></td><td>Everyday. A Deny statement is the standard tool</td><td>A separate deny policy object, newer and used sparingly</td><td>Deny assignments exist but are mostly created by the platform</td></tr>
+<tr><td><b>Can you cap a delegated admin?</b></td><td>Yes, with a permissions boundary</td><td>Not directly — use a deny policy or a narrower role</td><td>Not directly — scope the assignment narrowly instead</td></tr>
+<tr><td><b>What stops a banned region?</b></td><td>An SCP denying the action</td><td>An organisation policy constraining locations</td><td>An Azure Policy with a deny effect</td></tr>
+<tr><td><b>The dangerous default</b></td><td>A wildcard action and resource in a hand-written policy</td><td>The basic roles — Owner, Editor and Viewer are enormous and still everywhere</td><td>Owner and User Access Administrator, which can grant themselves anything</td></tr>
+</tbody></table>
+
+<h4>Worked example — give a team read access to production</h4>
+<div class="vs2" style="grid-template-columns:repeat(3,1fr)">
+  <div class="col aws"><b>AWS</b>Create a permission set in Identity Center with the read policy, then assign it to the group <em>for each production account</em>. There is no grant that covers the whole OU, so onboarding a new account means assigning again — usually automated, never inherited.</div>
+  <div class="col gcp"><b>GCP</b>Bind the group to a viewer-style predefined role on the <em>production folder</em>. Every project inside it, including ones created next year, is covered by that single binding.</div>
+  <div class="col az"><b>AZURE</b>Assign the Reader role to the group at the <em>production management group</em>. Every subscription beneath inherits it, including future ones.</div>
+</div>
+<div class="plain-line" style="margin-top:12px"><b>Read that again:</b> the same request takes one grant on GCP and Azure and one grant <em>per account</em> on AWS. That is not a quirk of tooling — it is the hierarchy doing different jobs. On AWS the tree restricts, and on the other two it also grants.</div>
+
+<h4>What bites you, per cloud</h4>
+<div class="vs2" style="grid-template-columns:repeat(3,1fr)">
+  <div class="col aws"><b>AWS</b>Policy evaluation has the most moving parts of the three, so &ldquo;why can I not do this&rdquo; is a genuine investigation. An SCP <em>never grants</em>, so adding one cannot fix a missing permission. And a resource policy can quietly open access from another account entirely.</div>
+  <div class="col gcp"><b>GCP</b>Inheritance means a grant at the organisation is a grant on everything, forever. The basic roles are far wider than they look — Editor can delete almost anything. Service account keys are the usual root cause of a breach, so disable their creation by constraint.</div>
+  <div class="col az"><b>AZURE</b>Owner and User Access Administrator can hand themselves more, so they belong in PIM rather than in anyone's standing access. Deleting a resource group deletes everything in it. And RBAC and Azure Policy are separate systems, so the answer to &ldquo;why was that refused&rdquo; is in one of two places.</div>
+</div>`;
 
 </script>
 </body>
