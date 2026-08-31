@@ -458,8 +458,15 @@
     </div>
 
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Where permissions come from — and why they flow downhill</h2>
-      <div id="iamTree"></div>
+      <h2 class="sec">Where permissions come from — grant one, see what it reaches</h2>
+      <div class="plain-line"><b>Try this:</b> grant at the organisation and watch every resource light up. Then try to take one back by granting less further down — you cannot. Only a deny or a guardrail claws anything back, which is why a grant made high up is never really temporary.</div>
+      <div class="sim-layout">
+        <div><div class="stage" id="iamTreeStage" style="height:340px"></div></div>
+        <div>
+          <div class="toggles" id="iamTreeCtl"></div>
+          <div class="term" id="iamTreeTerm" role="log" aria-live="polite" style="height:150px"></div>
+        </div>
+      </div>
     </div>
 
     <div class="card" style="margin-bottom:16px">
@@ -645,11 +652,11 @@ PDIAG.storage=D('0 0 620 220','Three storage shapes side by side, then S3 tiers 
 /* --- databases: pick by shape of the data --- */
 PDIAG.db=D('0 0 620 200','A decision tree from the shape of the data to a database type.',
   `${box(210,8,200,44,'var(--blue)')}${t(310,28,'What shape is the data?',SANS)}${tm(310,44,'ask this first')}
-   <path d="M310 52 V70 M100 70 H520 M100 70 V96 M240 70 V96 M380 70 V96 M520 70 V96" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
-   ${box(20,96,160,64,'var(--violet)')}${t(100,120,'Rows + joins',SANS)}${tm(100,138,'RDS · Aurora','var(--violet)')}${tm(100,152,'Cloud SQL','var(--violet)')}
-   ${box(162,96,160,64,'var(--teal)')}${t(242,120,'Key lookups',SANS)}${tm(242,138,'DynamoDB','var(--teal)')}${tm(242,152,'Bigtable','var(--teal)')}
-   ${box(302,96,160,64,'var(--amber)')}${t(382,120,'Documents',SANS)}${tm(382,138,'DocumentDB','var(--amber)')}${tm(382,152,'Firestore','var(--amber)')}
-   ${box(442,96,160,64,'var(--green)')}${t(522,120,'Analytics',SANS)}${tm(522,138,'Redshift','var(--green)')}${tm(522,152,'BigQuery','var(--green)')}
+   <path d="M310 52 V70 M85 70 H535 M85 70 V96 M235 70 V96 M385 70 V96 M535 70 V96" style="stroke:var(--wire)" stroke-width="1.2" fill="none"/>
+   ${box(13,96,144,64,'var(--violet)')}${t(85,120,'Rows + joins',SANS)}${tm(85,138,'RDS · Aurora','var(--violet)')}${tm(85,152,'Cloud SQL','var(--violet)')}
+   ${box(163,96,144,64,'var(--teal)')}${t(235,120,'Key lookups',SANS)}${tm(235,138,'DynamoDB','var(--teal)')}${tm(235,152,'Bigtable','var(--teal)')}
+   ${box(313,96,144,64,'var(--amber)')}${t(385,120,'Documents',SANS)}${tm(385,138,'DocumentDB','var(--amber)')}${tm(385,152,'Firestore','var(--amber)')}
+   ${box(463,96,144,64,'var(--green)')}${t(535,120,'Analytics',SANS)}${tm(535,138,'Redshift','var(--green)')}${tm(535,152,'BigQuery','var(--green)')}
    ${tm(310,186,'wrong branch = a rewrite later, so this is the decision that matters','var(--dim)')}`,
   'Start from how the data is shaped and how it will be read, not from a favourite product. Each branch ends in a different answer, and picking the wrong branch is the expensive mistake.');
 
@@ -865,9 +872,129 @@ function simStorage(){
     row('Saving, this month', Math.round((1-t[2]/23)*100) + '%', 'var(--green)') +
     `<div class="r"><span>Next move</span><b>${(tiers.find(x=>x[0]>d)||[null,'stays here'])[0] ? 'day '+(tiers.find(x=>x[0]>d)[0])+' → '+tiers.find(x=>x[0]>d)[1] : 'stays here'}</b></div>`;
 }
+PSIM.security=`<div class="card" style="margin:0 0 14px;padding:14px">
+  <h4 style="margin-top:0">Playground — how far does the attacker get?</h4>
+  <div class="plain-line"><b>Try this:</b> turn everything off and run it. Then switch controls on one at a time and watch where the attack stops. No single control saves you; each one just has to hold long enough for the next.</div>
+  <div class="toggles" id="secCtl"></div>
+  <button class="btn" id="secRun" style="margin-top:10px">▶ run the attack</button>
+  <div class="term" id="secTerm" role="log" aria-live="polite" style="height:190px"></div></div>`;
+
+PSIM.integration=`<div class="card" style="margin:0 0 14px;padding:14px">
+  <h4 style="margin-top:0">Playground — the same outage, with and without a queue</h4>
+  <div class="plain-line"><b>Try this:</b> break the email service with the queue off, then again with it on. Same failure, two completely different customer experiences.</div>
+  <div class="toggles">
+    <label><input type="checkbox" id="intQ" checked> put a queue between checkout and email</label>
+    <label><input type="checkbox" id="intDown"> the email service is down</label>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <button class="btn" id="intSend">send 10 orders</button>
+    <button class="btn" id="intRecover">bring email back up</button>
+    <button class="btn" id="intReset">reset</button>
+  </div>
+  <div id="intOut" class="cidr-out" style="margin-top:12px"></div>
+  <div class="term" id="intTerm" role="log" aria-live="polite" style="height:130px"></div></div>`;
+
+PSIM.edge=`<div class="card" style="margin:0 0 14px;padding:14px">
+  <h4 style="margin-top:0">Playground — distance, caching and what the user feels</h4>
+  <div class="plain-line"><b>Try this:</b> put the user far from the origin, then raise the cache hit rate. You cannot make the distance shorter, but you can stop paying for it on most requests.</div>
+  <label style="font-size:12.5px;color:var(--muted)">Round trip to the origin <b id="edgeRttV" style="color:var(--amber)">250</b> ms</label>
+  <input type="range" id="edgeRtt" min="10" max="350" value="250">
+  <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Cache hit rate <b id="edgeHitV" style="color:var(--amber)">0</b>%</label>
+  <input type="range" id="edgeHit" min="0" max="99" value="0">
+  <div id="edgeOut" class="cidr-out" style="margin-top:12px"></div></div>`;
+
+const SECCTL=[
+ {id:'nopublic', label:'guardrail: buckets cannot be made public', stop:'the bucket could never have been exposed in the first place'},
+ {id:'mfa',      label:'MFA required for console sign-in',          stop:'the stolen password alone was not enough'},
+ {id:'leastpriv',label:'the compromised role is read-only',         stop:'they could look, but not create, delete or grant'},
+ {id:'nokeys',   label:'no long-lived keys exist to steal',         stop:'there was nothing in the repository worth finding'},
+ {id:'egress',   label:'egress restricted to known destinations',   stop:'the data had nowhere to go'},
+ {id:'alerts',   label:'alerting on unusual API calls',             stop:'somebody was woken up while it was still happening'},
+];
+const SECSTEPS=[
+ {k:'nokeys',   act:'A key from an old commit still works',            next:'signing in with it'},
+ {k:'mfa',      act:'Signing in from an unknown address',              next:'looking around'},
+ {k:'leastpriv',act:'Listing every bucket, then granting themselves more', next:'finding the data'},
+ {k:'nopublic', act:'Making the customer bucket public',               next:'taking a copy'},
+ {k:'egress',   act:'Copying 40GB to an outside address',              next:'leaving quietly'},
+ {k:'alerts',   act:'Deleting the trail and waiting',                  next:null},
+];
+
+function wireSecurity(){
+  document.getElementById('secCtl').innerHTML=SECCTL.map(c=>
+    `<label><input type="checkbox" id="sec-${c.id}"> ${c.label}</label>`).join('');
+  const term=document.getElementById('secTerm');
+  const log=(c,m)=>{const d=document.createElement('div');d.className=c;d.innerHTML=m;term.appendChild(d);term.scrollTop=term.scrollHeight;};
+  document.getElementById('secRun').onclick=()=>{
+    term.innerHTML=''; let stopped=null, t=0;
+    log('i','<b>&gt;</b> starting from a leaked credential');
+    for(const s of SECSTEPS){
+      const control=SECCTL.find(c=>c.id===s.k), on=document.getElementById('sec-'+s.k).checked;
+      t+=380;
+      if(on && !stopped){ stopped=s.k; setTimeout(()=>log('ok',`<b>STOPPED</b> — ${control.stop}`), t); break; }
+      if(!stopped) setTimeout(()=>log('no',`✗ ${s.act}`), t);
+    }
+    setTimeout(()=>{
+      if(!stopped) log('no','<b>Full compromise.</b> Every layer was off, so nothing had to be clever — each step simply followed from the last.');
+      else log('i','Everything after that point never happened. That is the whole argument for layers: any one of them ends it.');
+    }, t+400);
+  };
+}
+
+let intState={sent:0,ok:0,failed:0,queued:0};
+function wireIntegration(){
+  const term=document.getElementById('intTerm');
+  const log=(c,m)=>{const d=document.createElement('div');d.className=c;d.innerHTML=m;term.insertBefore(d,term.firstChild);
+    while(term.children.length>14) term.removeChild(term.lastChild);};
+  const paint=()=>{const s=intState;
+    document.getElementById('intOut').innerHTML=
+      `<div class="r"><span>Orders placed</span><b>${s.sent}</b></div>
+       <div class="r"><span>Checkouts that succeeded</span><b style="color:var(--green)">${s.ok}</b></div>
+       <div class="r"><span>Checkouts that failed</span><b style="color:${s.failed?'var(--red)':'var(--muted)'}">${s.failed}</b></div>
+       <div class="r"><span>Emails waiting in the queue</span><b style="color:var(--amber)">${s.queued}</b></div>`;};
+  document.getElementById('intSend').onclick=()=>{
+    const q=document.getElementById('intQ').checked, down=document.getElementById('intDown').checked;
+    for(let i=0;i<10;i++){ intState.sent++;
+      if(!down){ intState.ok++; }
+      else if(q){ intState.ok++; intState.queued++; }
+      else { intState.failed++; } }
+    log(down&&!q?'no':'ok', down
+      ? (q ? '10 orders taken. Emails are piling up in the queue, and the customer noticed nothing'
+           : '10 checkouts <b>failed</b> — the customer could not buy anything because the email service is down')
+      : '10 orders taken and confirmed');
+    paint();
+  };
+  document.getElementById('intRecover').onclick=()=>{
+    if(intState.queued){ log('ok',`email service is back — ${intState.queued} queued messages drained, nothing lost`); intState.queued=0; paint(); }
+    else log('i','nothing waiting');
+  };
+  document.getElementById('intReset').onclick=()=>{intState={sent:0,ok:0,failed:0,queued:0};term.innerHTML='';paint();};
+  paint();
+}
+
+function wireEdge(){
+  const rtt=document.getElementById('edgeRtt'), hit=document.getElementById('edgeHit');
+  const paint=()=>{
+    const R=Number(rtt.value), H=Number(hit.value);
+    document.getElementById('edgeRttV').textContent=R; document.getElementById('edgeHitV').textContent=H;
+    const edge=15, avg=(H/100)*edge + (1-H/100)*R;
+    const originShare=Math.round((1-H/100)*100);
+    document.getElementById('edgeOut').innerHTML=
+      `<div class="r"><span>A cache hit, served nearby</span><b style="color:var(--green)">${edge} ms</b></div>
+       <div class="r"><span>A miss, all the way to the origin</span><b style="color:var(--red)">${R} ms</b></div>
+       <div class="r"><span>What the average user feels</span><b>${Math.round(avg)} ms</b></div>
+       <div class="r"><span>Requests your servers still handle</span><b style="color:${originShare<30?'var(--green)':'var(--amber)'}">${originShare}%</b></div>
+       <div class="r"><span>Traffic removed from the origin</span><b style="color:var(--green)">${100-originShare}%</b></div>`;
+  };
+  rtt.addEventListener('input',paint); hit.addEventListener('input',paint); paint();
+}
+
 function wirePillarSim(id){
   if(id==='compute'){ ['cbase','cpeak'].forEach(k=>document.getElementById(k).addEventListener('input',simCompute)); simCompute(); }
   if(id==='storage'){ document.getElementById('sday').addEventListener('input',simStorage); simStorage(); }
+  if(id==='security') wireSecurity();
+  if(id==='integration') wireIntegration();
+  if(id==='edge') wireEdge();
 }
 
 /* ================= PILLARS ================= */
@@ -1741,10 +1868,10 @@ document.getElementById('nginxWhy').innerHTML=D('0 0 620 150',
  `${box(10,44,96,44,'var(--blue)')}${t(58,64,'Visitors',SANS)}${tm(58,80,'the internet')}
   <path d="M110 66 H186" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
   ${box(190,20,150,92,'var(--teal)')}${t(265,44,'NGINX',SANS)}${tm(265,62,'TLS ends here','var(--teal)')}${tm(265,78,'cache · limits','var(--teal)')}${tm(265,94,'picks a server','var(--teal)')}
-  <path d="M344 40 H404 M344 66 H404 M344 92 H404" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
-  ${box(408,22,150,34,'var(--violet)')}${t(483,44,'app 1',SANS)}
-  ${box(408,50,150,34,'var(--violet)')}${t(483,72,'app 2',SANS)}
-  ${box(408,78,150,34,'var(--violet)')}${t(483,100,'app 3',SANS)}
+  <path d="M344 37 H404 M344 67 H404 M344 97 H404" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+  ${box(408,24,150,26,'var(--violet)')}${t(483,41,'app 1',SANS)}
+  ${box(408,54,150,26,'var(--violet)')}${t(483,71,'app 2',SANS)}
+  ${box(408,84,150,26,'var(--violet)')}${t(483,101,'app 3',SANS)}
   ${tm(265,130,'one program doing the work of four','var(--dim)')}`,
  'Everything from outside stops at NGINX first. It answers what it can on its own — files, cached pages, anything it is told to refuse — and only forwards the rest, spread across however many copies of your app are running.');
 
@@ -2006,24 +2133,6 @@ document.getElementById('iamAnatomy').innerHTML=D('0 0 640 250',
   ${tm(28,236,'a role assignment: principal plus role definition plus scope, flowing down from that scope','var(--muted)','start')}`,
  'Every cloud writes the same four-part sentence. AWS writes it as a document you attach; GCP and Azure write it as a binding at a point in the tree. That single difference explains most of what follows.');
 
-document.getElementById('iamTree').innerHTML=D('0 0 640 250',
- 'A hierarchy from organisation down to a single resource, with permissions inherited downward and guardrails applied from the top.',
- `${box(230,10,180,34,'var(--blue)')}${t(320,32,'Organisation',SANS)}
-  <path d="M320 44 V60 M150 60 H490 M150 60 V76 M320 60 V76 M490 60 V76" style="stroke:var(--wire)" stroke-width="1.2" fill="none"/>
-  ${box(80,76,140,34,'var(--teal)')}${t(150,98,'Folder / OU / MG',SANS)}
-  ${box(250,76,140,34,'var(--teal)')}${t(320,98,'Folder / OU / MG',SANS)}
-  ${box(420,76,140,34,'var(--teal)')}${tm(490,98,'…','var(--text)')}
-  <path d="M150 110 V126 M320 110 V126" style="stroke:var(--wire)" stroke-width="1.2"/>
-  ${box(60,126,180,34,'var(--violet)')}${t(150,148,'Project / Account / Sub',SANS)}
-  ${box(230,126,180,34,'var(--violet)')}${t(320,148,'Project / Account / Sub',SANS)}
-  <path d="M150 160 V176" style="stroke:var(--wire)" stroke-width="1.2"/>
-  ${box(70,176,160,34,'var(--green)')}${t(150,198,'A bucket, a VM, a database',SANS)}
-  <path d="M596 22 V206" style="stroke:var(--red)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-  ${tm(586,60,'guardrails','var(--red)','end')}${tm(586,76,'apply downward','var(--red)','end')}
-  ${tm(586,150,'and cannot be','var(--red)','end')}${tm(586,166,'granted around','var(--red)','end')}
-  ${tm(320,232,'a grant made high up is a grant on everything underneath it, forever, silently','var(--dim)')}`,
- 'Permissions are inherited downward and are additive: granting at the organisation grants on every resource beneath. There is no way to subtract with another grant lower down — only a deny rule or a guardrail can take something back. That is why a temporary grant at the top is never temporary.');
-
 document.getElementById('iamGates').innerHTML=D('0 0 640 190',
  'A request passing through two gates in series: first the guardrail, then the permission check.',
  `${box(10,66,110,44,'var(--blue)')}${t(65,88,'A request',SANS)}${tm(65,104,'create a VM')}
@@ -2196,6 +2305,81 @@ document.getElementById('iamChecklist').innerHTML=`
 <tr><td><b>Reviews</b></td><td>When did someone last remove access, rather than grant it?</td></tr>
 </tbody></table>
 <div class="plain-line" style="margin-top:12px"><b>The one to remember:</b> permissions only ever accumulate unless something deliberately removes them. Every design decision here is really about making removal automatic — expiry, group membership, a resource dying and taking its identity with it — because nothing that relies on a human remembering will survive the year.</div>`;
+
+/* ================= IAM: inheritance explorer ================= */
+/* DOM rather than SVG: the browser wraps and measures the text, so labels cannot overflow their box */
+const TREE=[
+ {id:'org',  t:'Organisation',           s:'everything you own',        x:50, y:10, parent:null},
+ {id:'f1',   t:'Folder · Production',    s:'regulated workloads',       x:26, y:34, parent:'org'},
+ {id:'f2',   t:'Folder · Sandbox',       s:'experiments',               x:74, y:34, parent:'org'},
+ {id:'p1',   t:'Project · payments',     s:'account / subscription',    x:14, y:62, parent:'f1'},
+ {id:'p2',   t:'Project · reporting',    s:'account / subscription',    x:40, y:62, parent:'f1'},
+ {id:'p3',   t:'Project · scratch',      s:'account / subscription',    x:74, y:62, parent:'f2'},
+ {id:'r1',   t:'Card database',          s:'the crown jewels',          x:14, y:88, parent:'p1'},
+ {id:'r2',   t:'Reporting bucket',       s:'exported data',             x:40, y:88, parent:'p2'},
+ {id:'r3',   t:'Test VM',                s:'nothing valuable',          x:74, y:88, parent:'p3'},
+];
+const kids=id=>TREE.filter(n=>n.parent===id);
+function descendants(id){ const out=[]; (function walk(i){ for(const k of kids(i)){ out.push(k.id); walk(k.id);} })(id); return out; }
+
+const treeStage=document.getElementById('iamTreeStage'), treeCtl=document.getElementById('iamTreeCtl'), treeTerm=document.getElementById('iamTreeTerm');
+treeStage.innerHTML = TREE.map(n=>{
+    const p=n.parent?TREE.find(x=>x.id===n.parent):null;
+    const line = p ? `<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" aria-hidden="true">
+        <line x1="${p.x}%" y1="${p.y}%" x2="${n.x}%" y2="${n.y}%" style="stroke:var(--wire)" stroke-width="1.2"/></svg>` : '';
+    return line;
+  }).join('') + TREE.map(n=>
+    `<button class="nd" id="tn-${n.id}" data-n="${n.id}" style="left:${n.x}%;top:${n.y}%;cursor:pointer;font-family:inherit">
+       ${n.t}<small>${n.s}</small></button>`).join('');
+
+let grantAt='p1', denyAt='none';
+treeCtl.innerHTML=`<label style="color:var(--text);font-weight:500">Grant the storage-admin role at…</label>`
+ + TREE.filter(n=>['org','f1','p1'].includes(n.id)).map(n=>
+    `<label><input type="radio" name="ig" value="${n.id}" ${n.id===grantAt?'checked':''}> ${n.t}</label>`).join('')
+ + `<label style="color:var(--text);font-weight:500;margin-top:8px">…then try to claw it back</label>`
+ + `<label><input type="radio" name="id" value="none" checked> nothing</label>`
+ + `<label><input type="radio" name="id" value="lessgrant"> grant a smaller role on the card database</label>`
+ + `<label><input type="radio" name="id" value="deny"> an explicit deny on the card database</label>`
+ + `<label><input type="radio" name="id" value="guard"> a guardrail on the Production folder</label>`;
+
+function treeLog(c,m){const d=document.createElement('div');d.className=c;d.innerHTML=m;treeTerm.insertBefore(d,treeTerm.firstChild);
+  while(treeTerm.children.length>18) treeTerm.removeChild(treeTerm.lastChild);}
+function paintTree(){
+  const reached=new Set([grantAt,...descendants(grantAt)]);
+  let blocked=new Set();
+  if(denyAt==='deny')  blocked=new Set(['r1']);
+  if(denyAt==='guard') blocked=new Set(['f1',...descendants('f1')]);
+  TREE.forEach(n=>{
+    const el=document.getElementById('tn-'+n.id);
+    const has=reached.has(n.id), stop=blocked.has(n.id);
+    el.style.borderColor = stop ? 'var(--red)' : has ? 'var(--green)' : 'var(--line2)';
+    el.style.background  = stop ? 'rgba(248,113,113,.12)' : has ? 'rgba(52,211,153,.10)' : 'var(--panel)';
+    el.style.opacity     = (has||stop) ? '1' : '.45';
+  });
+  const n=TREE.find(x=>x.id===grantAt);
+  treeTerm.innerHTML='';
+  treeLog('i',`granted <b>storage admin</b> at <b>${n.t}</b>`);
+  treeLog('ok',`reaches <b>${reached.size-1}</b> resources beneath it, automatically and silently`);
+  if(denyAt==='lessgrant')
+    treeLog('no','a smaller grant lower down changes <b>nothing</b> — grants only ever add. This is the single most misunderstood rule in cloud IAM');
+  if(denyAt==='deny')
+    treeLog('ok','the explicit deny wins on that one resource. Everything else beneath the grant is still reachable');
+  if(denyAt==='guard')
+    treeLog('ok','the guardrail cuts the whole Production folder off — it never asked who was asking, so even an organisation admin is refused');
+  if(denyAt==='none' && grantAt==='org')
+    treeLog('no','one grant at the top just handed out every resource in the estate. Nobody will remember this next quarter');
+}
+treeCtl.addEventListener('change',e=>{
+  if(e.target.name==='ig') grantAt=e.target.value;
+  if(e.target.name==='id') denyAt=e.target.value;
+  paintTree();
+});
+treeStage.addEventListener('click',e=>{
+  const b=e.target.closest('[data-n]'); if(!b) return;
+  const n=TREE.find(x=>x.id===b.dataset.n);
+  treeLog('i',`<b>${n.t}</b> — ${descendants(n.id).length} resources sit beneath this point`);
+});
+paintTree();
 
 </script>
 </body>
