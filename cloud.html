@@ -318,6 +318,16 @@
           <button class="btn" id="jnext">next ›</button>
         </div>
         <div class="prog"><i id="jprog" style="width:0%"></i></div>
+        <div style="margin-top:16px;border-top:1px dashed var(--line2);padding-top:14px">
+          <h2 class="sec">Now break something</h2>
+          <div class="plain-line"><b>Try this:</b> switch pieces off and send a request. Some failures nobody notices, some make the site slower, and one takes it down completely. That difference is the entire reason the diagram has this many boxes.</div>
+          <div class="toggles" id="jBreak"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn" id="jTry">▶ send a request</button>
+            <button class="btn" id="jFix">↻ fix everything</button>
+          </div>
+          <div class="term" id="jVerdict" role="log" aria-live="polite" style="height:150px"></div>
+        </div>
       </div>
       <div>
         <div class="card jstep" id="jstep"></div>
@@ -989,12 +999,95 @@ function wireEdge(){
   rtt.addEventListener('input',paint); hit.addEventListener('input',paint); paint();
 }
 
+PSIM.resilience=`<div class="card" style="margin:0 0 14px;padding:14px">
+  <h4 style="margin-top:0">Playground — the arithmetic of nines</h4>
+  <div class="plain-line"><b>Try this:</b> set six services at 99.9% each. Every one of them is doing well, and the thing they add up to is not. Then give the weakest one a second copy and watch what redundancy actually buys.</div>
+  <label style="font-size:12.5px;color:var(--muted)">Services the request passes through <b id="avNV" style="color:var(--amber)">4</b></label>
+  <input type="range" id="avN" min="1" max="10" value="4">
+  <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Each one is up <b id="avAV" style="color:var(--amber)">99.9</b>% of the time</label>
+  <input type="range" id="avA" min="0" max="4" value="2">
+  <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Copies of each, running in parallel <b id="avRV" style="color:var(--amber)">1</b></label>
+  <input type="range" id="avR" min="1" max="3" value="1">
+  <div id="avOut" class="cidr-out" style="margin-top:12px"></div></div>`;
+
+PSIM.db=`<div class="card" style="margin:0 0 14px;padding:14px">
+  <h4 style="margin-top:0">Playground — answer three questions, get the shortlist</h4>
+  <div class="plain-line"><b>Try this:</b> the questions are the ones that actually decide it. Notice how rarely the answer is "whatever we used last time", and how one requirement — multi-region writes — collapses the options in every cloud.</div>
+  <div class="toggles" id="dbQ"></div>
+  <div id="dbOut" class="cidr-out" style="margin-top:12px"></div></div>`;
+
+function wireResilience(){
+  const N=document.getElementById('avN'), A=document.getElementById('avA'), R=document.getElementById('avR');
+  const LEVELS=[99,99.5,99.9,99.95,99.99];
+  const fmt=mins=> mins>=1440 ? (mins/1440).toFixed(1)+' days' : mins>=60 ? (mins/60).toFixed(1)+' hours' : Math.round(mins)+' min';
+  const paint=()=>{
+    const n=Number(N.value), a=LEVELS[Number(A.value)]/100, r=Number(R.value);
+    document.getElementById('avNV').textContent=n;
+    document.getElementById('avAV').textContent=LEVELS[Number(A.value)];
+    document.getElementById('avRV').textContent=r;
+    const each = 1-Math.pow(1-a, r);          // parallel copies of one service
+    const total = Math.pow(each, n);          // then all of them in series
+    const perMonth=(1-total)*43200, single=(1-Math.pow(a,n))*43200;
+    const nines=(-Math.log10(1-total));
+    document.getElementById('avOut').innerHTML=
+      `<div class="r"><span>One service, with its copies</span><b>${(each*100).toFixed(4)}%</b></div>
+       <div class="r"><span>All ${n} in a row</span><b style="color:${total>0.999?'var(--green)':total>0.99?'var(--amber)':'var(--red)'}">${(total*100).toFixed(4)}%</b></div>
+       <div class="r"><span>Roughly how many nines</span><b>${nines.toFixed(1)}</b></div>
+       <div class="r"><span>Downtime a month</span><b style="color:${perMonth>60?'var(--red)':'var(--green)'}">${fmt(perMonth)}</b></div>
+       <div class="r"><span>Downtime a year</span><b>${fmt(perMonth*12)}</b></div>
+       ${r>1?`<div class="r"><span>Saved by the extra copies</span><b style="color:var(--green)">${fmt(single-perMonth)} a month</b></div>`:''}
+       <div class="r"><span>The lesson</span><b style="color:var(--teal)">${n>1?'a chain is always worse than its weakest link':'nothing to multiply yet'}</b></div>`;
+  };
+  [N,A,R].forEach(el=>el.addEventListener('input',paint)); paint();
+}
+
+const DBQ=[
+ {id:'shape', q:'What does one record look like?', opts:[['rows','rows with relationships between them'],['kv','one key, one blob, looked up by id'],['doc','a nested document that changes shape'],['events','events you will ask questions about later']]},
+ {id:'scale', q:'How much of it?', opts:[['small','gigabytes, thousands of users'],['big','terabytes and up, or unpredictable spikes']]},
+ {id:'writes',q:'Where is it written?', opts:[['one','one region writes, others read'],['many','several regions write at the same time']]},
+];
+const DBANS={
+ 'rows|small|one':  ['RDS or Aurora','Cloud SQL','Azure Database for PostgreSQL','The boring answer, and almost always the right one. Reach for something exotic only when this genuinely stops working.'],
+ 'rows|big|one':    ['Aurora','AlloyDB or Spanner','Azure SQL Hyperscale','Relational that scales reads a long way. One writer still, so the write path is the ceiling you will eventually hit.'],
+ 'rows|small|many': ['— nothing fits well','Spanner','Cosmos DB, giving up SQL semantics','This is the requirement that collapses the field. Only Spanner offers relational with multi-region writes; everywhere else you trade something away.'],
+ 'rows|big|many':   ['— nothing fits well','Spanner','Cosmos DB, giving up SQL semantics','Spanner exists for exactly this and prices accordingly. If the budget says no, the honest answer is to re-examine whether you truly need writes in several regions.'],
+ 'kv|small|one':    ['DynamoDB','Firestore','Cosmos DB','Key-value at any size. At this scale the choice barely matters, so pick the one your team already knows.'],
+ 'kv|big|one':      ['DynamoDB','Bigtable','Cosmos DB','Predictable single-digit latency at scale, as long as the access pattern is known in advance. Design the key first; queries you did not plan for are painful later.'],
+ 'kv|small|many':   ['DynamoDB global tables','Firestore multi-region','Cosmos DB multi-region','All three do this well. Decide how conflicts resolve before you turn it on, not after.'],
+ 'kv|big|many':     ['DynamoDB global tables','Bigtable or Spanner','Cosmos DB','The comfortable case for NoSQL, which is what these were built for.'],
+ 'doc|small|one':   ['DocumentDB','Firestore','Cosmos DB Mongo API','Flexible shape is a real advantage early and a real liability later. Decide when the schema stops being optional.'],
+ 'doc|big|one':     ['DocumentDB','Firestore','Cosmos DB Mongo API','Watch the query patterns. Document stores punish joins you did not plan for.'],
+ 'doc|small|many':  ['DocumentDB global','Firestore multi-region','Cosmos DB','Cosmos is the most complete of the three here, with tunable consistency rather than one fixed choice.'],
+ 'doc|big|many':    ['DocumentDB global','Firestore multi-region','Cosmos DB','Same again — and this is where Cosmos earns its price.'],
+ 'events|small|one':['Athena over S3','BigQuery','Synapse serverless','Do not put analytics in your transactional database. Land the events in storage and query them where scanning is cheap.'],
+ 'events|big|one':  ['Redshift or Athena','BigQuery','Synapse or Fabric','BigQuery is why a lot of data teams end up on GCP. Pay per byte read rather than for a cluster idling.'],
+ 'events|small|many':['Athena over S3','BigQuery','Synapse serverless','Analytics rarely needs multi-region writes — you are usually collecting, not competing to write.'],
+ 'events|big|many': ['Redshift','BigQuery omni','Fabric','Check where the data is allowed to live before choosing. Residency decides this more often than performance does.'],
+};
+function wireDb(){
+  const box=document.getElementById('dbQ');
+  box.innerHTML=DBQ.map(q=>`<label style="color:var(--text);font-weight:500;margin-top:6px">${q.q}</label>`
+    + q.opts.map((o,i)=>`<label><input type="radio" name="dbq-${q.id}" value="${o[0]}" ${i===0?'checked':''}> ${o[1]}</label>`).join('')).join('');
+  const paint=()=>{
+    const key=DBQ.map(q=>box.querySelector(`input[name="dbq-${q.id}"]:checked`).value).join('|');
+    const a=DBANS[key]||['—','—','—','No guidance for that combination yet.'];
+    document.getElementById('dbOut').innerHTML=
+      `<div class="r"><span style="color:var(--awsorange)">AWS</span><b>${a[0]}</b></div>
+       <div class="r"><span style="color:var(--gcpblue)">GCP</span><b>${a[1]}</b></div>
+       <div class="r"><span style="color:var(--azblue)">Azure</span><b>${a[2]}</b></div>
+       <div class="r" style="display:block"><span style="color:var(--teal)">Why</span><div style="margin-top:6px;color:var(--muted);line-height:1.6">${a[3]}</div></div>`;
+  };
+  box.addEventListener('change',paint); paint();
+}
+
 function wirePillarSim(id){
   if(id==='compute'){ ['cbase','cpeak'].forEach(k=>document.getElementById(k).addEventListener('input',simCompute)); simCompute(); }
   if(id==='storage'){ document.getElementById('sday').addEventListener('input',simStorage); simStorage(); }
   if(id==='security') wireSecurity();
   if(id==='integration') wireIntegration();
   if(id==='edge') wireEdge();
+  if(id==='resilience') wireResilience();
+  if(id==='db') wireDb();
 }
 
 /* ================= PILLARS ================= */
@@ -2380,6 +2473,69 @@ treeStage.addEventListener('click',e=>{
   treeLog('i',`<b>${n.t}</b> — ${descendants(n.id).length} resources sit beneath this point`);
 });
 paintTree();
+
+/* ================= JOURNEY: break something ================= */
+const JBREAK=[
+ {id:'cdn',   node:'n-cdn',   label:'the CDN edge is down'},
+ {id:'cache', node:'n-cache', label:'the cache is down'},
+ {id:'app',   node:'n-app',   label:'two of the three app servers are down'},
+ {id:'db',    node:'n-db',    label:'the database is down'},
+ {id:'queue', node:'n-queue', label:'the queue and its worker are down'},
+];
+document.getElementById('jBreak').innerHTML=JBREAK.map(b=>
+  `<label><input type="checkbox" id="jb-${b.id}"> ${b.label}</label>`).join('');
+const jVerdict=document.getElementById('jVerdict');
+const jbOn=id=>document.getElementById('jb-'+id).checked;
+function jvLog(c,m){const d=document.createElement('div');d.className=c;d.innerHTML=m;jVerdict.appendChild(d);jVerdict.scrollTop=jVerdict.scrollHeight;}
+function paintBreaks(){
+  JBREAK.forEach(b=>{
+    const g=document.getElementById(b.node); if(!g) return;
+    const r=g.querySelector('rect'); if(!r) return;
+    const off=jbOn(b.id);
+    r.style.stroke = off ? 'var(--red)' : '';
+    g.style.opacity = off ? '.45' : '1';
+  });
+}
+function jTryRequest(){
+  jVerdict.innerHTML=''; paintBreaks();
+  let ms=0, notes=[];
+  jvLog('i','<b>&gt;</b> a customer opens the app');
+  if(jbOn('db')){
+    jvLog('no','the database is gone, so there is no answer to give');
+    jvLog('no','<b>The site is down.</b> This is the one component nothing else can cover for — everything else in the diagram exists to protect it or to avoid asking it.');
+    return;
+  }
+  if(jbOn('app')){
+    jvLog('i','the load balancer stops sending traffic to the two failed servers');
+    jvLog('ok','the survivor takes every request — slower under load, but nobody sees an error');
+    ms+=120; notes.push('one server doing the work of three');
+  }
+  if(jbOn('cdn')){
+    jvLog('no','no edge copy, so every image and script travels from the origin');
+    ms+=230; notes.push('the CDN was absorbing most of the traffic, and now your servers are');
+  } else jvLog('ok','the edge answers most of the page from a copy near the customer');
+  if(jbOn('cache')){
+    jvLog('no','every read now goes to the database instead of the sticky note');
+    ms+=180; notes.push('the database is taking load it normally never sees');
+  } else jvLog('ok','the cache answers the repeated reads');
+  if(jbOn('queue')){
+    jvLog('i','the order is saved, but the confirmation email has nowhere to wait');
+    notes.push('emails are being lost rather than delayed — the queue was what made this survivable');
+  } else jvLog('ok','slow work goes to the queue, so the customer does not wait for it');
+  const total=90+ms;
+  jvLog(total>400?'no':'ok', `<b>The customer gets an answer in about ${total} ms.</b>`);
+  if(notes.length) jvLog('i','What it cost: '+notes.join('; ')+'.');
+  else jvLog('i','Everything healthy. This is what the diagram looks like on a normal day.');
+  if(!jbOn('db') && (jbOn('cdn')||jbOn('cache')||jbOn('app')))
+    jvLog('i','Notice that none of these took the site down. They made it slower and more expensive, which is what redundancy actually buys you — not immunity, but degradation instead of failure.');
+}
+document.getElementById('jTry').onclick=jTryRequest;
+document.getElementById('jFix').onclick=()=>{
+  JBREAK.forEach(b=>document.getElementById('jb-'+b.id).checked=false);
+  paintBreaks(); jVerdict.innerHTML=''; jvLog('ok','everything is healthy again');
+};
+document.getElementById('jBreak').addEventListener('change',paintBreaks);
+jvLog('i','Switch something off, then send a request.');
 
 </script>
 </body>
