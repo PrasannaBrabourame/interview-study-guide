@@ -1,6 +1,6 @@
 # Learning Guide
 
-A static learning guide for Technical Lead & AI Engineer topics, covering 267 topics. No build step, no dependencies — just serve the folder.
+A static learning guide for Technical Lead & AI Engineer topics, covering 267 topics. No build step, no dependencies, no external requests — just serve the folder.
 
 Each topic is broken down into:
 - 🧠 Technical answer
@@ -30,6 +30,9 @@ colour then carries meaning. Tiles remain sorted alphabetically.
 ```
 index.html        Page shell — topbar, dashboard, and browse-view markup
 assets/styles.css Styling (light/dark theme, aurora backdrop, tiles, print)
+assets/fonts/     Self-hosted Inter and Newsreader subsets (woff2, 352 KB)
+cloud.html        Cloud lab — request journey, OSI, network simulator, NGINX,
+                  IAM, pillars, DR simulator, three-cloud translator
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
