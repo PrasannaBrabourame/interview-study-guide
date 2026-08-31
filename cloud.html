@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud study hub — request journey, pillars, DR simulator, AWS ↔ GCP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220; --panel:#101A2E; --panel2:#0E1626; --line:#1C2C48; --line2:#27395C;
+    --text:#E6EDF7; --muted:#8FA3C0; --dim:#5A6E8F;
+    --blue:#60A5FA; --teal:#2DD4BF; --violet:#A78BFA; --amber:#FBBF24;
+    --green:#34D399; --red:#F87171; --orange:#FB923C;
+    --gcpblue:#7CACF8; --awsorange:#FBBF24;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font-family:'Space Grotesk',system-ui,sans-serif}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, #16233C 1px, transparent 0); background-size:26px 26px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-size:clamp(22px,3.2vw,31px); font-weight:600; letter-spacing:-.01em}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:#1A2440}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:'IBM Plex Mono',monospace; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:#1A2440}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-size:18px; font-weight:600; margin-bottom:4px}
+  .detail .cat{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:'IBM Plex Mono',monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#EAD9B0; line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:#C9E9E2; line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:#C9E9E2}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:#1A2440}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:'IBM Plex Mono',monospace; font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-size:14.5px; font-weight:600; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:#FBBF24; stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:#FBBF24; opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-size:17px; font-weight:600; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:#C9E9E2; line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:#F3C9C9; line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:#1A2440}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" fill="#39507C"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">solutions architect · study hub</div>
+    <h1>How the cloud actually works <span class="thin">— one request, every pillar, plus AWS ↔ GCP</span></h1>
+    <p class="sub">Companion to the network visualizer. Five sections: a step-by-step walk of one request from phone to database (start here if any of this is new), the non-networking exam domains as decision-oriented cards with a diagram each, an animated disaster-recovery failover simulator, a searchable AWS ↔ GCP service translator, and the deep conceptual differences between the two clouds that actually change your architecture. Every diagram has a plain-English caption — no cloud background assumed.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="journey" role="tab">How it works</button>
+    <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
+    <button class="tab" data-pane="dr" role="tab">DR simulator</button>
+    <button class="tab" data-pane="map" role="tab">AWS ↔ GCP translator</button>
+    <button class="tab" data-pane="diffs" role="tab">Cloud differences</button>
+  </div>
+
+  <!-- ================= JOURNEY ================= -->
+  <section class="pane on" id="pane-journey">
+    <div class="jour-layout">
+      <div class="card">
+        <h2 class="sec">Follow one tap — what happens between the phone and the answer</h2>
+        <svg id="jsvg" viewBox="0 0 900 400" role="img" aria-label="A request travelling from a phone through DNS, a CDN edge, a load balancer, application servers, a cache and a database, with object storage and a background queue. Each stop can be selected to read what it does.">
+          <!-- wires -->
+          <path class="jwire" id="w-dns"   d="M172 79 H228"  stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-cdn"   d="M382 79 H438"  stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-s3"    d="M515 104 V138" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-lb"    d="M592 79 H648"  stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-app"   d="M725 104 V228" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-cache" d="M648 253 H592" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-db"    d="M438 253 H382" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-queue" d="M725 278 V328" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-worker" d="M648 353 H592" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+
+          <g class="jnode" id="n-user" data-i="0"><rect x="30" y="56" width="142" height="46" rx="9" fill="#0F1B33" stroke="#60A5FA"/><text x="101" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Your phone</text><text x="101" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">taps &quot;open&quot;</text></g>
+          <g class="jnode" id="n-dns" data-i="1"><rect x="228" y="56" width="154" height="46" rx="9" fill="#0F1B33" stroke="#60A5FA"/><text x="305" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">DNS</text><text x="305" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">Route 53 / Cloud DNS</text></g>
+          <g class="jnode" id="n-cdn" data-i="2"><rect x="438" y="56" width="154" height="46" rx="9" fill="#10202E" stroke="#2DD4BF"/><text x="515" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">CDN edge</text><text x="515" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">CloudFront / Cloud CDN</text></g>
+          <g class="jnode" id="n-lb" data-i="4"><rect x="648" y="56" width="154" height="46" rx="9" fill="#10202E" stroke="#2DD4BF"/><text x="725" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Load balancer</text><text x="725" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">ALB / Cloud LB</text></g>
+          <g class="jnode" id="n-s3" data-i="3"><rect x="438" y="138" width="154" height="44" rx="9" fill="#1B1B33" stroke="#A78BFA"/><text x="515" y="157" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:#E6EDF7">Object storage</text><text x="515" y="172" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">S3 / Cloud Storage</text></g>
+          <g class="jnode" id="n-app" data-i="5"><rect x="648" y="228" width="154" height="50" rx="9" fill="#171331" stroke="#A78BFA"/><text x="725" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">App servers</text><text x="725" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0" id="n-app-t">3 running</text></g>
+          <g class="jnode" id="n-cache" data-i="6"><rect x="438" y="228" width="154" height="50" rx="9" fill="#2A2013" stroke="#FBBF24"/><text x="515" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Cache</text><text x="515" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">Redis / Memorystore</text></g>
+          <g class="jnode" id="n-db" data-i="7"><rect x="228" y="228" width="154" height="50" rx="9" fill="#171331" stroke="#A78BFA"/><text x="305" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Database</text><text x="305" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">RDS / Cloud SQL</text></g>
+          <g class="jnode" id="n-queue" data-i="8"><rect x="648" y="328" width="154" height="46" rx="9" fill="#0F2431" stroke="#2DD4BF"/><text x="725" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:#E6EDF7">Queue</text><text x="725" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">SQS / Pub-Sub</text></g>
+          <g class="jnode" id="n-worker" data-i="9"><rect x="438" y="328" width="154" height="46" rx="9" fill="#0F2431" stroke="#2DD4BF"/><text x="515" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:#E6EDF7">Worker</text><text x="515" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">sends the email</text></g>
+
+          <circle id="packet" cx="0" cy="0" r="7" fill="#FBBF24" style="transform:translate(101px,79px)"/>
+        </svg>
+        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
+          <button class="btn" id="jplay">▶ play the journey</button>
+          <button class="btn" id="jprev">‹ back</button>
+          <button class="btn" id="jnext">next ›</button>
+        </div>
+        <div class="prog"><i id="jprog" style="width:0%"></i></div>
+      </div>
+      <div>
+        <div class="card jstep" id="jstep"></div>
+        <div class="card" style="margin-top:14px">
+          <h2 class="sec">Every stop</h2>
+          <div class="jlist" id="jlist"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PILLARS ================= -->
+  <section class="pane" id="pane-pillars">
+    <div class="pillars-layout">
+      <div class="pillar-list" id="pillarList"></div>
+      <div class="card detail" id="pillarDetail"></div>
+    </div>
+  </section>
+
+  <!-- ================= DR ================= -->
+  <section class="pane" id="pane-dr">
+    <div class="dr-layout">
+      <div class="card">
+        <h2 class="sec">Failover simulator — pick a strategy, then break us-east-1</h2>
+        <svg viewBox="0 0 900 470" role="img" aria-label="Two AWS regions with load balancer, application fleet and database each, plus Route 53 on top. Selecting a DR strategy changes how much of the standby region is running; simulating failure animates traffic switching to the recovery region.">
+          <!-- users + route53 -->
+          <g>
+            <rect x="375" y="14" width="150" height="42" rx="9" fill="#0F1B33" stroke="#60A5FA"/>
+            <text x="450" y="32" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Users</text>
+            <text x="450" y="48" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--muted)">global</text>
+          </g>
+          <g>
+            <rect x="360" y="88" width="180" height="46" rx="9" fill="#0F1B33" stroke="#60A5FA"/>
+            <text x="450" y="107" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Route 53</text>
+            <text id="r53mode" x="450" y="124" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--muted)">failover routing · health checks</text>
+          </g>
+          <line x1="450" y1="56" x2="450" y2="88" stroke="#39507C" stroke-width="1.2"/>
+          <!-- traffic paths -->
+          <path id="pathA" d="M400 134 C 300 170, 230 190, 230 220" fill="none" stroke="#34D399" stroke-width="2" class="flow"/>
+          <path id="pathB" d="M500 134 C 600 170, 670 190, 670 220" fill="none" stroke="#34D399" stroke-width="2" class="flow" opacity="0.12"/>
+          <!-- Region A -->
+          <rect x="70" y="220" width="320" height="220" rx="14" fill="rgba(52,211,153,0.04)" stroke="#2C5E4F" stroke-width="1.2" id="regAbox"/>
+          <text x="90" y="248" style="font:500 12px 'IBM Plex Mono';fill:#34D399" id="regAlbl">PRIMARY · us-east-1</text>
+          <g class="rnode" id="A-lb"><rect x="100" y="266" width="260" height="42" rx="8" fill="#0F2431" stroke="#2DD4BF"/><text x="230" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
+          <g class="rnode" id="A-app"><rect x="100" y="320" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="230" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-app-t">App fleet · 6 instances</text></g>
+          <g class="rnode" id="A-db"><rect x="100" y="374" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="230" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-db-t">Aurora (writer)</text></g>
+          <!-- Region B -->
+          <rect x="510" y="220" width="320" height="220" rx="14" fill="rgba(96,165,250,0.04)" stroke="#2A4470" stroke-width="1.2" id="regBbox"/>
+          <text x="530" y="248" style="font:500 12px 'IBM Plex Mono';fill:#60A5FA" id="regBlbl">RECOVERY · eu-west-1</text>
+          <g class="rnode" id="B-lb"><rect x="540" y="266" width="260" height="42" rx="8" fill="#0F2431" stroke="#2DD4BF"/><text x="670" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
+          <g class="rnode" id="B-app"><rect x="540" y="320" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="670" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-app-t">App fleet</text></g>
+          <g class="rnode" id="B-db"><rect x="540" y="374" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="670" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-db-t">Database</text></g>
+          <!-- replication -->
+          <path id="repl" d="M360 395 H540" fill="none" stroke="#A78BFA" stroke-width="1.4" stroke-dasharray="5 5" class="flow"/>
+          <text id="repl-t" x="450" y="386" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--violet)">replication</text>
+        </svg>
+        <div style="display:flex; gap:10px; margin-top:6px; flex-wrap:wrap">
+          <button class="btn primary" id="breakBtn">⚡ simulate region failure</button>
+          <button class="btn" id="resetBtn">↻ reset</button>
+        </div>
+        <div class="drlog" id="drlog"></div>
+      </div>
+      <div>
+        <div class="card">
+          <h2 class="sec">Strategy</h2>
+          <div class="strats" id="strats"></div>
+          <div class="gauges">
+            <div class="gauge"><label>RTO — time to recover <b id="rtoV"></b></label><div class="bar"><i id="rtoBar"></i></div></div>
+            <div class="gauge"><label>RPO — data you can lose <b id="rpoV"></b></label><div class="bar"><i id="rpoBar"></i></div></div>
+            <div class="gauge"><label>Standby cost <b id="costV"></b></label><div class="bar"><i id="costBar"></i></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h2 class="sec">Strategy notes</h2>
+          <p id="stratNote" style="font-size:13px;color:var(--muted);line-height:1.65"></p>
+          <div class="exam-line" id="stratExam" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TRANSLATOR ================= -->
+  <section class="pane" id="pane-map">
+    <div class="card">
+      <h2 class="sec">Service translator — search either cloud's name</h2>
+      <input class="search" id="q" placeholder="try: lambda, bigquery, pub/sub, transit, spanner…" aria-label="Search services">
+      <div class="cats" id="catFilters"></div>
+      <div style="overflow-x:auto">
+        <table class="map">
+          <thead><tr><th class="catcell">Domain</th><th>AWS</th><th>GCP</th><th>The difference that matters</th></tr></thead>
+          <tbody id="mapBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DIFFS ================= -->
+  <section class="pane" id="pane-diffs">
+    <div class="diff-grid" id="diffGrid"></div>
+  </section>
+</div>
+
+<script>
+/* ================= tabs ================= */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+}));
+
+/* ================= PILLARS ================= */
+const PILLARS = [
+{id:'compute', tag:'D2', title:'Compute', sub:'EC2 · Lambda · containers · pricing',
+ lead:'The pro-level question is rarely \u201cwhat is EC2\u201d — it\u2019s picking the right compute abstraction and the right purchasing model for a workload profile.',
+ plain:'Think of renting kitchens. EC2 = renting a whole kitchen — total freedom, but you clean and maintain it. Fargate = a food truck someone else maintains; you just cook. Lambda = paying a chef per dish, only when a customer actually orders — zero cost when nobody\u2019s hungry. Example: in a food-delivery app, the \u201csend order confirmation email\u201d job is Lambda (runs 2 seconds, thousands of times a day), the always-busy main website is Fargate/EC2 with a Savings Plan (like an annual gym membership instead of day passes), and the overnight \u201ccrunch yesterday\u2019s stats\u201d job runs on Spot — standby airline seats: 90% cheaper, but you might get bumped.',
+ rows:[
+  ['Ladder of abstraction','<b>EC2</b> (full control) → <b>ECS/EKS on EC2</b> (you manage nodes) → <b>Fargate</b> (serverless containers) → <b>Lambda</b> (functions, 15-min max, scale-to-zero). Pick the highest rung the constraints allow.'],
+  ['Lambda vs Fargate','Spiky/event-driven/short → <b>Lambda</b>. Long-running, large images, WebSockets, predictable load → <b>Fargate</b>. Need GPUs, specific kernels, licensing → EC2.'],
+  ['Purchasing','<b>Savings Plans</b> (flexible $ commit) mostly replace RIs. <b>Spot</b> = up to 90% off, can vanish in 2 min → only for interruption-tolerant work (batch, CI, stateless fleets behind ASG).'],
+  ['Scaling','ASG with target tracking is the default answer. Predictable daily cycles → scheduled scaling. Sudden spikes Lambda absorbs natively.'],
+  ['Placement','Placement groups: <b>cluster</b> (low latency, HPC), <b>spread</b> (max isolation, critical small fleets), <b>partition</b> (Hadoop/Kafka style).'],
+ ],
+ exam:'EXAM · \u201cUnpredictable, infrequent, must scale to zero\u201d → Lambda. \u201cSteady 24/7\u201d → Savings Plan. \u201cFault-tolerant batch at lowest cost\u201d → Spot. \u201cRefactor is not allowed\u201d → lift-and-shift to EC2, optimize later.'},
+{id:'storage', tag:'D2', title:'Storage', sub:'S3 · EBS · EFS · FSx · transfer',
+ lead:'Storage questions are matching access patterns to the cheapest tier that still meets latency and durability needs.',
+ plain:'Three kinds of \u201cwhere do I keep stuff\u201d. S3 = an infinite self-storage warehouse: cheap, anything fits, and boxes you rarely open move to even cheaper back shelves (Glacier) automatically. EBS = the hard drive bolted inside ONE computer — fast, but only that machine can use it. EFS = the shared network drive the whole office opens at once. Example: a photo app stores originals in S3; photos untouched for 90 days slide to the cheap archive shelf via a lifecycle rule; the video-editing servers share one EFS drive so they all see the same project files.',
+ rows:[
+  ['Object — S3','Standard → Intelligent-Tiering (unknown patterns, the safe default) → Standard-IA → Glacier Instant/Flexible/Deep Archive. Lifecycle policies automate the descent. 11 nines durability everywhere.'],
+  ['Block — EBS','One instance at a time (io2 has multi-attach caveats). gp3 default; io2 for high-IOPS databases. Snapshots are incremental to S3.'],
+  ['File — EFS vs FSx','<b>EFS</b>: Linux NFS, elastic, multi-AZ. <b>FSx for Windows</b>: SMB + AD. <b>FSx for Lustre</b>: HPC scratch, S3-linked. <b>FSx for NetApp ONTAP</b>: the \u201cmigrating NetApp/multiprotocol\u201d answer.'],
+  ['Hybrid & moving data','<b>Storage Gateway</b> (keep on-prem apps, back with S3), <b>DataSync</b> (online bulk transfer), <b>Snow family</b> (offline, when bandwidth math says weeks), <b>Transfer Family</b> (SFTP → S3).'],
+ ],
+ exam:'EXAM · \u201cUnknown access pattern\u201d → Intelligent-Tiering. \u201cWindows + AD file share\u201d → FsX for Windows. \u201cMillisecond restore from archive\u201d → Glacier Instant Retrieval. \u201c500 TB, 100 Mbps link, 2 weeks\u201d → Snowball (do the bandwidth arithmetic).'},
+{id:'db', tag:'D2', title:'Databases', sub:'RDS · Aurora · DynamoDB · purpose-built',
+ lead:'\u201cPick the database\u201d is a keyword-matching exercise once you know each engine\u2019s one-line identity.',
+ plain:'Different filing systems for different jobs. A relational DB (RDS/Aurora) = a strict spreadsheet with rules — perfect for orders and payments where every row must be correct. DynamoDB = a wall of instant lockers: give a key, get the item in a millisecond, works for millions of lockers — great for shopping carts and game scores. Redshift/BigQuery = the analyst\u2019s archive room, built for questions like \u201chow did monthly sales trend over 3 years\u201d, not for serving customers. Example: an e-commerce site keeps orders in Aurora, live carts in DynamoDB, caches hot products in ElastiCache (a whiteboard next to the counter), and management dashboards read from Redshift.',
+ rows:[
+  ['Relational','<b>RDS</b> = managed engines. <b>Aurora</b> = AWS-native MySQL/Postgres: 6-way storage replication, up to 15 read replicas, <b>Global Database</b> (~1s cross-region lag, <1 min promote). Aurora Serverless v2 for spiky relational.'],
+  ['DynamoDB','Serverless key-value at any scale, single-digit ms. <b>DAX</b> = microsecond caching. <b>Global tables</b> = multi-region active-active writes. Streams → Lambda for event-driven patterns.'],
+  ['Caching','ElastiCache Redis (rich structures, persistence, pub/sub) vs Memcached (simple, multithreaded). \u201cReduce read pressure\u201d → cache or read replicas — replicas for freshness, cache for speed.'],
+  ['Purpose-built','Redshift (warehouse/OLAP), Neptune (graph), Timestream (time series), QLDB (immutable ledger), OpenSearch (search/logs), DocumentDB (Mongo API).'],
+ ],
+ exam:'EXAM · \u201cGlobal app, local low-latency writes\u201d → DynamoDB global tables. \u201cRelational + RPO ~1s cross-region\u201d → Aurora Global. \u201cComplex relationships / social graph\u201d → Neptune. \u201cSQL analytics on S3 without loading\u201d → Athena or Redshift Spectrum.'},
+{id:'security', tag:'D1/D3', title:'Security & identity', sub:'Organizations · IAM · KMS · detection',
+ lead:'Multi-account is the default assumption at pro level: the org structure IS the security architecture.',
+ plain:'Picture an office building. Organizations = the whole company; each AWS account is a locked floor. An SCP is a building rule NOBODY can break, not even floor managers (\u201cno documents leave the building\u201d). An IAM role = a visitor badge that expires after a few hours — you never hand out permanent master keys. KMS = the safe where master keys live. GuardDuty = security cameras with a guard actually watching; CloudTrail = the CCTV recording of who touched what. Example: an intern gets a read-only badge for one floor for one day; even if they lose it, it expires — and the SCP means they could never have shredded documents anyway.',
+ rows:[
+  ['Organizations & SCPs','Accounts grouped in OUs; <b>SCPs</b> set the permission ceiling (guardrails) — they never GRANT, only limit. \u201cPrevent any user in any account, even admins, from X\u201d → SCP.'],
+  ['IAM at scale','Cross-account access = assume roles (never share keys). Humans → <b>Identity Center</b> (SSO) federated to your IdP. Workloads → roles; on-prem workloads → IAM Roles Anywhere.'],
+  ['Encryption','<b>KMS</b> keys, envelope encryption; cross-account key policies trip people up. CloudHSM only when FIPS 140-2 L3 / single-tenant is demanded. Secrets Manager (rotation) vs Parameter Store (cheap config).'],
+  ['Detection stack','<b>GuardDuty</b> threat detection · <b>Inspector</b> vulnerability scans · <b>Macie</b> PII in S3 · <b>Config</b> compliance-as-code · <b>Security Hub</b> aggregates all · <b>CloudTrail</b> API audit (org trail).'],
+  ['Edge protection','WAF (L7 rules on ALB/CloudFront/APIGW), Shield Advanced (DDoS + response team + cost protection).'],
+ ],
+ exam:'EXAM · \u201cCentrally prevent action across all accounts\u201d → SCP. \u201cFind PII in S3\u201d → Macie. \u201cAudit who called an API\u201d → CloudTrail. \u201cAuto-remediate drift\u201d → Config rules + SSM automation.'},
+{id:'resilience', tag:'D1', title:'Resilience & DR', sub:'multi-AZ vs multi-region · RTO/RPO',
+ lead:'Availability inside a region is multi-AZ and mostly free architecture; DR across regions is a cost/RTO/RPO business decision — that\u2019s what the simulator tab animates.',
+ plain:'Multi-AZ = running your shop in 3 different malls of the SAME city — if one mall loses power, customers just go to another, automatically, no drama. Multi-region DR = also keeping a branch in ANOTHER city in case the whole city floods. Two numbers decide everything: RTO = \u201chow long can we be closed?\u201d and RPO = \u201chow much of today\u2019s sales records can we afford to lose?\u201d. Example: a bank says \u201cclosed max 5 minutes, lose zero transactions\u201d → expensive always-on second city. A blog says \u201cback within a day is fine\u201d → just keep backups and rebuild.',
+ rows:[
+  ['Multi-AZ first','ALB + ASG across 3 AZs, Aurora/RDS multi-AZ, stateless app tier. This absorbs AZ failure with zero manual action and answers most \u201chighly available\u201d questions.'],
+  ['The four DR strategies','Backup & restore → Pilot light → Warm standby → Multi-site active/active. Cost rises, RTO/RPO shrink. Match the stated RTO/RPO numbers, never over-provision past them.'],
+  ['Data layer options','Aurora Global (storage-level, ~1s RPO), DynamoDB global tables (active-active), S3 CRR, cross-region snapshot copy (worst RPO).'],
+  ['Traffic layer','Route 53 failover + health checks, or Global Accelerator for instant anycast rerouting. Test with route-shifting game days.'],
+ ],
+ exam:'EXAM · Extract the RTO/RPO numbers from the question FIRST, then pick the cheapest strategy that satisfies them. \u201cRTO 5 min, RPO seconds, cost-sensitive\u201d → warm standby, not active/active.'},
+{id:'migration', tag:'D3/D4', title:'Migration & modernization', sub:'7 Rs · MGN · DMS · at scale',
+ lead:'SAP-C02 has a whole domain for this: moving hundreds of servers and databases with minimal downtime, then modernizing.',
+ plain:'It\u2019s moving house. Rehost = pack everything as-is into the truck (fastest, changes nothing). Replatform = same house, but swap your old fridge for the building\u2019s built-in one (your database becomes managed RDS). Refactor = redesign the house entirely while living in it (slowest, biggest payoff). DMS is the clever movers trick: they photocopy your filing cabinet WHILE you keep working, keep copying every new page you add (that\u2019s CDC), then one quiet night you switch to the new cabinet — customers never notice. Example: 500 old servers with a 3-month deadline → rehost with MGN now, modernize the top 10 apps later.',
+ rows:[
+  ['The 7 Rs','Rehost (lift-shift, MGN) · Replatform (e.g. → RDS) · Refactor (→ serverless/containers) · Repurchase (→ SaaS) · Relocate (VMware) · Retain · Retire. Questions give business constraints that select the R.'],
+  ['Servers','<b>MGN</b> (Application Migration Service): block-level replication, minutes of cutover downtime. Discovery first with Application Discovery Service → Migration Hub tracks it all.'],
+  ['Databases','<b>DMS</b> replicates (full load + CDC = near-zero downtime); <b>SCT</b> converts schemas for heterogeneous moves (Oracle → Aurora). Ongoing replication also serves DR and cross-cloud.'],
+  ['Modernize','App2Container, Lambda for glue, Step Functions to replace cron+scripts, EventBridge to decouple. \u201cStrangler fig\u201d = route slices of traffic to new services behind the same API.'],
+ ],
+ exam:'EXAM · \u201cMinimal downtime DB migration + engine change\u201d → SCT + DMS with CDC. \u201c500 VMs, no refactor time\u201d → MGN rehost. \u201cLeast operational overhead going forward\u201d usually implies replatform/refactor answers.'},
+{id:'cost', tag:'D4', title:'Cost optimization', sub:'pricing models · data transfer · waste',
+ lead:'Cost questions hide in every domain. The recurring traps: data transfer, idle capacity, and wrong storage tier.',
+ plain:'Cloud billing works like postage and memberships. Data coming IN is free; data going OUT costs money per GB — like a post office that receives parcels free but charges you to send. That\u2019s why a VPC endpoint for S3 matters: it\u2019s an internal mailroom chute, no postage. Savings Plan = annual gym membership (cheap per visit IF you actually go daily); Spot = standby seats (super cheap, can be bumped); on-demand = full-price walk-in. Example: a team wondered why the bill exploded — their servers were pushing terabytes to S3 through a NAT gateway, paying \u201cpostage\u201d per GB for what a free gateway endpoint would have carried.',
+ rows:[
+  ['Compute spend','Savings Plans for baseline, Spot for burst/batch, right-size with Compute Optimizer, scale to zero where possible (Lambda/Fargate/Aurora Serverless).'],
+  ['Data transfer','IN is free; OUT costs. Cross-AZ costs both ways; cross-region more. NAT charges per GB (→ gateway endpoints for S3!). CloudFront egress is cheaper than raw EC2 egress — CDN as cost tool.'],
+  ['Storage spend','Lifecycle to IA/Glacier, Intelligent-Tiering when unsure, delete incomplete multipart uploads, EBS snapshots archive tier.'],
+  ['Governance','Budgets + alerts, Cost Explorer, CUR to Athena for chargeback, tagging strategy enforced by SCP/Config. Anomaly Detection for surprises.'],
+ ],
+ exam:'EXAM · \u201cReduce NAT costs\u201d → VPC endpoints. \u201cReduce cross-AZ traffic\u201d → same-AZ awareness or caching. \u201cSteady predictable compute\u201d → Savings Plans. Any cost question: check data-transfer paths before compute.'},
+{id:'observability', tag:'D1/D3', title:'Observability & operations', sub:'CloudWatch · X-Ray · SSM · IaC',
+ lead:'Continuous improvement domain: seeing what\u2019s happening and automating the response.',
+ plain:'Your system is a car. CloudWatch = the dashboard: speed, fuel, warning lights (metrics + alarms). CloudTrail = the CCTV recording of who opened which door and when (\u201cwho deleted that bucket at 2am?\u201d). Config = the maintenance logbook: what the car looked like at every point (\u201cwas that door ever left unlocked?\u201d). X-Ray = the parcel tracking number for a request: it shows the exact stop where your \u201corder\u201d got stuck. Example: users say \u201ccheckout is slow\u201d — X-Ray shows the payment microservice adds 3 seconds; CloudWatch alarm then auto-scales it before anyone complains next time.',
+ rows:[
+  ['Telemetry','CloudWatch metrics/logs/alarms; Logs Insights for queries; <b>X-Ray</b> for distributed tracing (\u201cwhich microservice is slow\u201d); ServiceLens/Application Signals tie them together.'],
+  ['Audit vs config','<b>CloudTrail</b> = who did what (API calls). <b>Config</b> = what does the resource look like now + history + compliance. They answer different questions — classic exam distinction.'],
+  ['Automation','Systems Manager: Session Manager (no SSH keys/bastions!), Patch Manager, Run Command, Automation runbooks. EventBridge rules → Lambda for self-healing.'],
+  ['IaC & deploys','CloudFormation/CDK, StackSets for org-wide rollout. Deployment styles: blue/green (CodeDeploy, instant rollback) vs rolling vs canary (weighted Route 53 / ALB / Lambda aliases).'],
+ ],
+ exam:'EXAM · \u201cWho deleted the bucket\u201d → CloudTrail. \u201cWas SSH ever open\u201d → Config timeline. \u201cShell access without opening port 22\u201d → Session Manager. \u201cDeploy to 50 accounts\u201d → StackSets.'},
+{id:'integration', tag:'D1', title:'Integration & decoupling', sub:'SQS · SNS · EventBridge · Kinesis · Step Functions',
+ lead:'Decoupling is the pro exam\u2019s favorite architecture move: almost every \u201cimprove resilience/scalability\u201d answer inserts a queue, topic, bus, or stream.',
+ plain:'Think of a busy restaurant. SQS = the order-ticket rail: waiters clip tickets on, cooks pull them one at a time — during a rush, tickets pile up but NONE are lost, and the kitchen works at its own pace. SNS = the loudspeaker: one announcement (\u201corder placed!\u201d), and the kitchen, the billing desk AND the loyalty-points system all hear it at once. Kinesis = a conveyor belt with a camera — you can rewind and re-watch everything that passed. Step Functions = the laminated recipe card: step 1, step 2, and what to do if a step burns (retry, or call the manager for approval). Example: on Black Friday, orders spike 50×; the DB doesn\u2019t die because SQS absorbs the pile-up like the ticket rail.',
+ rows:[
+  ['Queue vs topic vs bus','<b>SQS</b> = 1 consumer pulls, buffering & retry (+DLQ). <b>SNS</b> = fan-out push to many. <b>EventBridge</b> = rule-based routing, SaaS + cross-account event buses, scheduling. Fan-out pattern: SNS/EventBridge → multiple SQS.'],
+  ['Streams','<b>Kinesis Data Streams</b> = ordered, replayable, multiple consumers (real-time analytics, clickstreams). <b>Firehose</b> = zero-code delivery to S3/Redshift/OpenSearch. Kafka shops → MSK.'],
+  ['Orchestration','<b>Step Functions</b> for long-running workflows, retries, human approval steps, saga patterns — replaces fragile Lambda chains and cron scripts.'],
+  ['APIs','API Gateway (throttling, keys, WebSocket, Lambda-native) vs ALB (cheaper at high steady volume). AppSync for GraphQL. Ordering + exactly-once needs → FIFO queues/topics.'],
+ ],
+ exam:'EXAM · \u201cSpiky writes overwhelm the DB\u201d → SQS buffer. \u201cOne event, many independent processors\u201d → SNS/EventBridge fan-out to SQS. \u201cReplay events / multiple real-time consumers\u201d → Kinesis. \u201cCoordinate multi-step with retries\u201d → Step Functions.'},
+{id:'edge', tag:'D1', title:'Edge & content delivery', sub:'CloudFront · Global Accelerator · Route 53',
+ lead:'Latency and global-traffic questions resolve to three services, and the exam tests that you know which.',
+ plain:'You sell worldwide from one warehouse — how do customers get things fast? CloudFront = keeping copies of your bestsellers in small local warehouses everywhere, so most orders ship same-day from nearby (caching). Global Accelerator = a private express highway straight to your main warehouse — nothing is copied, the trip itself is just faster, and your address never changes (2 fixed IPs). Route 53 = the smart receptionist who answers every call and routes it: nearest branch (latency), the branch required by law for EU callers (geolocation), or the backup branch when the main one\u2019s phone is dead (failover). Example: a game studio uses Global Accelerator because game traffic isn\u2019t web pages — there\u2019s nothing to cache, it just needs the fast road.',
+ rows:[
+  ['CloudFront','HTTP(S) caching at edge, OAC to lock S3 origins, signed URLs/cookies for private content, Functions/Lambda@Edge for request manipulation. Also a security layer (WAF/Shield attach point).'],
+  ['Global Accelerator','2 static anycast IPs, accelerates ANY TCP/UDP onto the AWS backbone, instant health-based regional failover, no caching. Gaming/VoIP/non-HTTP → GA.'],
+  ['Route 53 policies','Simple, weighted (canary!), latency, geolocation (compliance: EU users → EU region), geoproximity, failover, multivalue. Know the one-line purpose of each.'],
+ ],
+ exam:'EXAM · \u201cStatic IPs required by client firewall\u201d → Global Accelerator. \u201cCache + cheap egress\u201d → CloudFront. \u201cRoute EU users to EU for GDPR\u201d → geolocation routing. \u201cGradual traffic shift\u201d → weighted records.'},
+];
+
+const pillarList=document.getElementById('pillarList'), pillarDetail=document.getElementById('pillarDetail');
+PILLARS.forEach((p,i)=>{
+  const b=document.createElement('button'); b.className='pillar'+(i===0?' on':'');
+  b.innerHTML=`<span>${p.title}<small>${p.sub}</small></span><span class="tag">${p.tag}</span>`;
+  b.onclick=()=>{document.querySelectorAll('.pillar').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderPillar(p);};
+  pillarList.appendChild(b);
+});
+function renderPillar(p){
+  pillarDetail.innerHTML = `<div class="cat">SAP-C02 domain ${p.tag}</div><h3>${p.title}</h3>
+    <p class="lead">${p.lead}</p>
+    ${PDIAG[p.id]||''}
+    <div class="plain-line"><b>In plain English:</b> ${p.plain}</div><h4>Decisions</h4>
+    <div class="kv">${p.rows.map(r=>`<div class="row"><div class="k">${r[0]}</div><div class="v">${r[1]}</div></div>`).join('')}</div>
+    <div class="exam-line">★ ${p.exam.replace('EXAM ·','<b>EXAM</b> ·')}</div>`;
+}
+renderPillar(PILLARS[0]);
+
+/* ================= DR SIM ================= */
+const STRATS=[
+ {id:'backup', name:'Backup & restore', small:'cheapest · slowest', rto:[95,'hours (4–24h)'], rpo:[85,'hours (last backup)'], cost:[12,'very low'],
+  plain:'Like house insurance plus blueprints: if the house burns down, you have the money and the plans to rebuild — but rebuilding takes days, and anything you bought since the last photo inventory is gone.',
+  note:'Nothing runs in the recovery region — only backups (S3 CRR, snapshot copies, AMIs). On disaster you provision everything from IaC and restore data. Automate the restore with CloudFormation or it becomes days, not hours.',
+  exam:'★ <b>EXAM</b> · Chosen when RTO/RPO are measured in hours and cost dominates. \u201cIaC templates + copied snapshots\u201d in the answer text = backup & restore.',
+  B:{lb:'off', app:'off', db:'off', dbt:'snapshots only', appt:'not provisioned', repl:'S3 CRR / snapshot copy', failSecs:6}},
+ {id:'pilot', name:'Pilot light', small:'data live · compute off', rto:[55,'10s of minutes'], rpo:[25,'minutes'], cost:[28,'low'],
+  plain:'Like a gas heater\u2019s pilot flame: the small flame (your database, always replicating) never goes out, but the rooms are cold and empty (no app servers) until disaster strikes and you turn everything up.',
+  note:'The \u201ccore\u201d is always on: the database replicates continuously (Aurora Global / DMS / read replica), but app servers exist only as AMIs/ASGs set to zero. Failover = promote DB + scale ASG from 0 + flip DNS.',
+  exam:'★ <b>EXAM</b> · The keyword is \u201cdata is continuously replicated but no compute is running\u201d. Promote-then-scale is the sequence they test.',
+  B:{lb:'off', app:'off', db:'dim', dbt:'Aurora replica (reader)', appt:'ASG desired = 0', repl:'continuous replication', failSecs:4}},
+ {id:'warm', name:'Warm standby', small:'scaled-down copy', rto:[22,'minutes'], rpo:[12,'seconds–minutes'], cost:[55,'medium'],
+  plain:'Like renting a small, fully furnished backup apartment in another city: you can move in the moment your house floods and live immediately — just a bit cramped until you upgrade to a bigger place (scale up).',
+  note:'A full but shrunken copy of production runs at all times — e.g. 2 small instances instead of 6 large. Failover = scale up + shift traffic. Can even take a trickle of live traffic to prove it works.',
+  exam:'★ <b>EXAM</b> · \u201cBusiness-critical, RTO of minutes, cannot pay for full duplicate\u201d → warm standby. Distinguish from pilot light: here compute IS running.',
+  B:{lb:'dim', app:'dim', db:'dim', dbt:'Aurora replica (reader)', appt:'App fleet · 2 instances', repl:'continuous replication', failSecs:2.5}},
+ {id:'active', name:'Multi-site active/active', small:'zero-ish RTO/RPO', rto:[5,'seconds'], rpo:[4,'~zero'], cost:[95,'highest'],
+  plain:'You already live in both houses at the same time, splitting your week between them. If one floods, you simply\u2026 stop going there. Nothing to set up, nothing lost — but you\u2019re paying two full rents forever.',
+  note:'Both regions serve production simultaneously (latency or weighted routing). Data layer must support multi-region writes: DynamoDB global tables, or Aurora Global with write forwarding. Failover is just \u201cstop sending traffic there\u201d.',
+  exam:'★ <b>EXAM</b> · Any \u201cRTO/RPO near zero\u201d or \u201cno user impact during regional failure\u201d requirement → active/active, and the data answer is usually DynamoDB global tables.',
+  B:{lb:'on', app:'on', db:'on', dbt:'Global tables (writer)', appt:'App fleet · 6 instances', failSecs:1, repl:'bi-directional (global tables)'}},
+];
+let curStrat=STRATS[1], broken=false;
+const stratsEl=document.getElementById('strats');
+STRATS.forEach((s,i)=>{
+  const b=document.createElement('button'); b.className='strat'+(s===curStrat?' on':'');
+  b.innerHTML=`${s.name}<small>${s.small}</small>`;
+  b.onclick=()=>{document.querySelectorAll('.strat').forEach(x=>x.classList.remove('on')); b.classList.add('on'); setStrat(s);};
+  stratsEl.appendChild(b);
+});
+const el=id=>document.getElementById(id);
+function setGauge(bar,val,color,txt,vEl){ el(bar).style.width=val+'%'; el(bar).style.background=color; el(vEl).textContent=txt; }
+function stateNode(prefix,key,state){
+  const g=el(prefix+'-'+key);
+  g.classList.remove('dimmed','halfdim');
+  if(state==='off') g.classList.add('dimmed');
+  if(state==='dim') g.classList.add('halfdim');
+}
+function setStrat(s){
+  curStrat=s; resetSim(true);
+  stateNode('B','lb',s.B.lb); stateNode('B','app',s.B.app); stateNode('B','db',s.B.db);
+  el('B-db-t').textContent=s.B.dbt; el('B-app-t').textContent=s.B.appt;
+  el('repl-t').textContent=s.B.repl;
+  el('repl').style.opacity = s.id==='backup' ? .35 : 1;
+  setGauge('rtoBar',s.rto[0], s.rto[0]>60?'#F87171':s.rto[0]>30?'#FBBF24':'#34D399', s.rto[1],'rtoV');
+  setGauge('rpoBar',s.rpo[0], s.rpo[0]>60?'#F87171':s.rpo[0]>15?'#FBBF24':'#34D399', s.rpo[1],'rpoV');
+  setGauge('costBar',s.cost[0], s.cost[0]>70?'#F87171':s.cost[0]>40?'#FBBF24':'#34D399', s.cost[1],'costV');
+  el('stratNote').innerHTML='<span class="plain-inline">💡 '+s.plain+'</span>'+s.note;
+  el('stratExam').innerHTML=s.exam;
+}
+function drlog(msg,cls){ const d=document.createElement('div'); if(cls)d.className=cls; d.innerHTML=msg; el('drlog').appendChild(d); el('drlog').scrollTop=1e6; }
+const sleepDR = ms=>new Promise(r=>setTimeout(r,ms));
+async function breakRegion(){
+  if(broken) return; broken=true;
+  el('drlog').innerHTML='';
+  el('regAbox').setAttribute('stroke','#F87171'); el('regAlbl').setAttribute('fill','#F87171');
+  ['A-lb','A-app','A-db'].forEach(k=>el(k).classList.add('dimmed'));
+  el('pathA').style.opacity=.1;
+  drlog('<b>us-east-1 impaired.</b> Route 53 health checks failing…','bad');
+  await sleepDR(1200);
+  drlog('Route 53 failover record flips to eu-west-1 (TTL matters — keep it low).');
+  const s=curStrat;
+  if(s.id==='backup'){ drlog('Provisioning entire stack from CloudFormation…'); await sleepDR(1600);
+    drlog('Restoring database from last copied snapshot… <b>data since that snapshot is lost (RPO)</b>','bad'); await sleepDR(1600); }
+  if(s.id==='pilot'){ drlog('Promoting Aurora replica to writer…'); await sleepDR(1100);
+    drlog('ASG desired capacity 0 → 6, instances launching…'); await sleepDR(1300); }
+  if(s.id==='warm'){ drlog('Promoting replica… scaling fleet 2 → 6…'); await sleepDR(1000); }
+  if(s.id==='active'){ drlog('Nothing to promote or launch — the region was already serving traffic.','ok'); await sleepDR(500); }
+  ['B-lb','B-app','B-db'].forEach(k=>{el(k).classList.remove('dimmed','halfdim');});
+  el('B-app-t').textContent='App fleet · 6 instances';
+  el('B-db-t').textContent = s.id==='active' ? 'Global tables (writer)' : 'Database (promoted writer)';
+  el('pathB').style.opacity=1;
+  el('r53mode').textContent='serving from eu-west-1';
+  drlog(`<b>Recovered.</b> Simulated RTO ≈ ${curStrat.rto[1]} · RPO ≈ ${curStrat.rpo[1]}`,'ok');
+  drlog('Don\u2019t forget the boring part: failback plan, and game-day test this quarterly.','');
+}
+function resetSim(silent){
+  broken=false;
+  el('regAbox').setAttribute('stroke','#2C5E4F'); el('regAlbl').setAttribute('fill','#34D399');
+  ['A-lb','A-app','A-db'].forEach(k=>el(k).classList.remove('dimmed'));
+  el('pathA').style.opacity=1; el('pathB').style.opacity=.12;
+  el('r53mode').textContent='failover routing · health checks';
+  if(!silent) el('drlog').innerHTML='';
+  if(curStrat){ stateNode('B','lb',curStrat.B.lb); stateNode('B','app',curStrat.B.app); stateNode('B','db',curStrat.B.db);
+    el('B-db-t').textContent=curStrat.B.dbt; el('B-app-t').textContent=curStrat.B.appt; }
+}
+el('breakBtn').onclick=breakRegion; el('resetBtn').onclick=()=>resetSim(false);
+setStrat(STRATS[1]);
+
+/* ================= TRANSLATOR ================= */
+const MAP=[
+['compute','EC2','Compute Engine','GCP bills per second with automatic sustained-use discounts; live-migrates VMs during host maintenance (no reboot). AWS relies on Savings Plans/RIs you must commit to.'],
+['compute','Auto Scaling groups','Managed instance groups (MIGs)','Same idea; GCP MIGs integrate with global load balancing natively.'],
+['compute','Lambda','Cloud Functions / Cloud Run','Cloud Run (containers, scale-to-zero, up to 60-min requests) covers many cases where AWS needs Lambda + Fargate together.'],
+['compute','Fargate','Cloud Run','Cloud Run is GCP\u2019s serverless container answer and is generally simpler to adopt.'],
+['containers','EKS','GKE','GKE is widely considered the most mature managed K8s (Google wrote Kubernetes); Autopilot mode manages nodes entirely. EKS gives more AWS-ecosystem control.'],
+['containers','ECS','— (no direct equivalent)','GCP has no proprietary orchestrator; everything container-shaped goes to Cloud Run or GKE.'],
+['containers','ECR','Artifact Registry','Artifact Registry also handles language packages (npm, Maven), not just images.'],
+['storage','S3','Cloud Storage','One GCS bucket can be multi-region natively; storage classes (Standard/Nearline/Coldline/Archive) all keep millisecond access — no \u201cthaw\u201d like Glacier Flexible/Deep.'],
+['storage','EBS','Persistent Disk','PD can be regional (synchronously replicated across two zones) — AWS EBS is single-AZ, full stop.'],
+['storage','EFS','Filestore','Similar managed NFS; Filestore tiers by performance.'],
+['storage','Glacier','Cloud Storage Archive class','Archive class still has ms latency; you pay retrieval fees but never wait hours. Changes DR design.'],
+['db','RDS','Cloud SQL','Same concept. GCP\u2019s AlloyDB is the Aurora-Postgres competitor.'],
+['db','Aurora','AlloyDB / Cloud Spanner','Spanner is the headline difference: horizontally scalable, strongly consistent, GLOBAL relational SQL — AWS has no true equivalent (Aurora Global is read-replicas + promote).'],
+['db','DynamoDB','Firestore / Bigtable','Firestore = document DB with live sync to mobile clients; Bigtable = wide-column for huge analytical/time-series workloads (HBase API).'],
+['db','ElastiCache','Memorystore','Managed Redis/Memcached on both.'],
+['db','Redshift','BigQuery','Philosophical split: Redshift = provisioned clusters you size; BigQuery = fully serverless, pay-per-query-scanned. BigQuery is often the reason companies pick GCP.'],
+['networking','VPC (regional)','VPC (GLOBAL)','The single biggest difference: a GCP VPC spans all regions with regional subnets — instances in different continents talk privately with zero peering/TGW. AWS needs TGW/peering per region.'],
+['networking','Transit Gateway','Network Connectivity Center / VPC peering','Because GCP VPCs are global, much of what TGW solves doesn\u2019t exist; NCC handles hybrid hub-and-spoke.'],
+['networking','ALB/NLB','Cloud Load Balancing','GCP\u2019s external LB is GLOBAL with one anycast IP out of the box — AWS approximates that only by adding Global Accelerator or CloudFront in front of regional LBs.'],
+['networking','Route 53','Cloud DNS','Comparable; Route 53\u2019s routing-policy set (geoproximity etc.) is richer.'],
+['networking','Direct Connect','Cloud Interconnect','Dedicated/Partner Interconnect mirror DX tiers; both pair with VPN for encryption.'],
+['networking','CloudFront','Cloud CDN','Cloud CDN attaches to the global LB; Lambda@Edge-style compute is a separate service (Cloud Run + CDN patterns).'],
+['networking','Global Accelerator','(built into global LB)','GCP\u2019s LB is already anycast-global, so a separate accelerator product isn\u2019t needed.'],
+['networking','PrivateLink','Private Service Connect','Same pattern: consumer-side endpoint fronting a producer service, no route exchange.'],
+['identity','IAM (policies/roles)','Cloud IAM (bindings)','AWS: JSON policies attached to identities/resources; roles are assumed temporarily. GCP: you bind members → roles on a resource hierarchy; service accounts are first-class identities attached to workloads.'],
+['identity','AWS Organizations','Resource hierarchy (Org → Folders → Projects)','GCP\u2019s PROJECT is the isolation + billing boundary (lightweight, you make many). AWS\u2019s equivalent boundary is a whole ACCOUNT — heavier, hence Control Tower/landing zones.'],
+['identity','SCPs','Organization Policy','Same guardrail idea; GCP\u2019s constraints are predefined (e.g. \u201cdisable external IPs\u201d), AWS SCPs are free-form policy JSON.'],
+['identity','KMS','Cloud KMS','Comparable, including HSM tiers and customer-managed keys.'],
+['analytics','Athena','BigQuery','BigQuery natively queries its own storage AND external data; Athena is S3-only Presto.'],
+['analytics','Kinesis','Pub/Sub + Dataflow','Pub/Sub is global by default (no shards to size!); Dataflow (Apache Beam) does the stream processing. Kinesis makes you manage shard capacity.'],
+['analytics','EMR','Dataproc','Managed Spark/Hadoop on both; Dataproc spins clusters in ~90s, encouraging ephemeral clusters.'],
+['analytics','Glue','Dataflow / Data Fusion / Dataform','GCP splits ETL across several tools; Glue bundles catalog + ETL.'],
+['analytics','QuickSight','Looker / Looker Studio','Looker is a full BI platform (owned by Google).'],
+['integration','SQS','Pub/Sub (pull)','Pub/Sub merges SQS+SNS into one global service with pull and push subscriptions.'],
+['integration','SNS','Pub/Sub (push)','Same service on GCP — one fewer distinction to manage.'],
+['integration','EventBridge','Eventarc','Eventarc routes GCP/SaaS events, typically into Cloud Run.'],
+['integration','Step Functions','Workflows','Comparable serverless orchestration; Step Functions\u2019 ecosystem integrations are broader.'],
+['integration','API Gateway','API Gateway / Apigee','Apigee is a much heavier enterprise API-management suite (monetization, analytics).'],
+['ops','CloudWatch','Cloud Monitoring & Logging','Both born from ops suites; GCP\u2019s Logging has strong ad-hoc query UX; CloudWatch alarms integrate tighter with ASG.'],
+['ops','CloudTrail','Cloud Audit Logs','Same purpose: admin/data access audit.'],
+['ops','CloudFormation','Deployment Manager (legacy) — use Terraform','GCP\u2019s native IaC is weak; Terraform is the de-facto standard there (and increasingly on AWS too, alongside CDK).'],
+['ops','Systems Manager','OS Config / IAP','GCP\u2019s Identity-Aware Proxy ≈ Session Manager\u2019s \u201cno open ports\u201d SSH story.'],
+['migration','DMS','Database Migration Service','Same name, same job on both clouds.'],
+['migration','MGN','Migrate to Virtual Machines','Both do block-level lift-and-shift.'],
+['migration','Snowball','Transfer Appliance','Physical data shipping exists on both.'],
+['ml','SageMaker','Vertex AI','Vertex AI is tightly unified (AutoML + custom + pipelines + model garden); SageMaker is broader but more assembled-from-parts.'],
+];
+const CATS=['all','compute','containers','storage','db','networking','identity','analytics','integration','ops','migration','ml'];
+let activeCat='all';
+const catEl=document.getElementById('catFilters');
+CATS.forEach(c=>{
+  const b=document.createElement('button'); b.className='catf'+(c==='all'?' on':''); b.textContent=c;
+  b.onclick=()=>{activeCat=c; document.querySelectorAll('.catf').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderMap();};
+  catEl.appendChild(b);
+});
+const q=document.getElementById('q'), body=document.getElementById('mapBody');
+q.addEventListener('input',renderMap);
+function renderMap(){
+  const term=q.value.trim().toLowerCase();
+  body.innerHTML = MAP
+    .filter(r=>(activeCat==='all'||r[0]===activeCat) && (!term || r.join(' ').toLowerCase().includes(term)))
+    .map(r=>`<tr><td class="catcell">${r[0]}</td><td class="aws">${r[1]}</td><td class="gcp">${r[2]}</td><td class="note">${r[3]}</td></tr>`)
+    .join('') || '<tr><td colspan="4" class="note">no matches — try another term</td></tr>';
+}
+renderMap();
+
+/* ================= DIFFS ================= */
+const DIFFS=[
+{t:'Network model — the biggest one', aws:'VPC is <b>regional</b>; subnets are zonal. Multi-region = TGW peering, cross-region routing, DNS work. You build the global network yourself.', gcp:'VPC is <b>global</b>; subnets are regional. A VM in Tokyo and one in Frankfurt share one VPC and one firewall policy with zero extra plumbing.', plain:'AWS gives you a separate office per city — you must install the phone lines between them yourself (peering, Transit Gateway). GCP gives you one worldwide office with a single corridor: a colleague in Tokyo and one in Frankfurt are already on the same network.', why:'This reshapes everything: on GCP, half of the SAP-C02 networking exam (TGW meshes, inter-region peering) simply isn\u2019t needed. On AWS you get finer blast-radius isolation by default. Know this cold if you ever interview across clouds.'},
+{t:'Isolation & org boundary', aws:'The <b>account</b> is the boundary — heavyweight, so multi-account needs Organizations, SCPs, Control Tower, cross-account roles.', gcp:'The <b>project</b> is the boundary — lightweight, created in seconds, natural per-app/per-env granularity under folders.', plain:'An AWS account is like registering a separate legal company for each team — real isolation, real paperwork. A GCP project is like creating a new folder: two clicks, done, and it still keeps teams\u2019 stuff cleanly apart.', why:'Same goal (blast radius, billing, least privilege) achieved at different weights. AWS multi-account design is a whole exam domain; GCP gets similar isolation almost for free with projects.'},
+{t:'IAM philosophy', aws:'Identity-based + resource-based <b>JSON policies</b>; temporary credentials via STS role assumption; permission boundary = SCPs + boundaries.', gcp:'<b>Bindings</b>: member → role → resource, inherited down Org→Folder→Project. Service accounts ARE the workload identity, attached directly to VMs/functions.', plain:'AWS permissions are detailed legal contracts written in JSON — you can express almost anything, and also misplace a comma that opens a vault. GCP is a guest list on each room\u2019s door: \u201cAlice can view, Bob can edit\u201d — simpler to read, fewer knobs.', why:'AWS is more expressive (conditions, resource policies) but easier to get wrong; GCP is simpler to reason about but coarser. Both converge on: never long-lived keys, always workload identity.'},
+{t:'Load balancing & global traffic', aws:'Regional ALB/NLB. Global = add CloudFront and/or Global Accelerator on top, plus Route 53 policies.', gcp:'One <b>global anycast LB</b> with a single IP, cross-region backends, and CDN as a checkbox.', plain:'GCP hands you one phone number that works worldwide and always connects callers to the nearest open branch. AWS gives you a phone number per country plus a separate call-forwarding service (Global Accelerator/CloudFront) to glue them together.', why:'A \u201cserve users worldwide from the nearest healthy region\u201d design is 3–4 AWS services or 1 GCP service. Conversely AWS gives more per-region control and more LB flavors.'},
+{t:'Pricing philosophy', aws:'You commit: <b>Savings Plans / RIs</b> (1–3 yr) for discounts; Spot for scraps. Discounts are a planning exercise.', gcp:'<b>Sustained-use discounts apply automatically</b>; committed-use available; per-second billing everywhere; preemptible/Spot VMs similar.', plain:'GCP is the shop that automatically applies a loyalty discount at checkout because you visited a lot this month. AWS has better deals — but only if you commit upfront to the 1-year membership, and it\u2019s on you to remember to buy it.', why:'On AWS, cost optimization is an active skill (and exam domain). GCP\u2019s defaults are more forgiving for steady workloads without planning. Egress out of both clouds costs real money — architect to keep data inside.'},
+{t:'Analytics stance', aws:'<b>Redshift</b>: provisioned (or serverless-ish) warehouse you size and manage; Athena for ad-hoc S3 SQL; Kinesis shards you capacity-plan.', gcp:'<b>BigQuery</b>: no clusters, pay per TB scanned, scales to petabytes invisibly; Pub/Sub has no shards to manage.', plain:'Redshift = owning a library building: you decide how many shelves and staff, and pay for them even on quiet days. BigQuery = an infinite public library where you pay only per book you actually read — no building to run at all.', why:'Data teams often choose GCP because of BigQuery alone. If a workload is analytics-first, evaluate BigQuery before defaulting to the AWS stack.'},
+{t:'Relational at global scale', aws:'<b>Aurora Global Database</b>: one writer region, replicas elsewhere (~1s lag), promote on failure. DynamoDB covers active-active but is NoSQL.', gcp:'<b>Cloud Spanner</b>: strongly consistent, horizontally scaling SQL across regions — genuine multi-region writes with SQL semantics.', plain:'Aurora Global = one master ledger in the head office, with photocopies mailed to branches every second; if head office burns, a branch\u2019s copy gets promoted. Spanner = one magical shared ledger every office writes into simultaneously without ever conflicting.', why:'If a requirement says \u201crelational + strong consistency + multi-region writes\u201d, AWS answers involve trade-offs; Spanner is built for exactly that (at a price).'},
+{t:'Kubernetes & containers', aws:'<b>EKS</b> is solid but you feel the assembly: node groups, add-ons, IRSA for pod IAM. ECS exists as the simpler proprietary path.', gcp:'<b>GKE</b> is the reference managed K8s; Autopilot removes node management entirely. Cloud Run handles the \u201cI just have a container\u201d case beautifully.', plain:'Kubernetes is a recipe Google wrote — GKE is the kitchen designed by the original chef, and Autopilot even does the dishes (manages the servers). EKS cooks the same recipe well but hands you more of the cleanup.', why:'Container-native startups often find GCP smoother; AWS wins when the container platform must integrate with a large existing AWS estate.'},
+{t:'Maintenance & VMs', aws:'Scheduled maintenance can mean instance reboots/retirements you must plan around (though rare).', gcp:'<b>Live migration</b> moves running VMs between hosts during maintenance — your instance doesn\u2019t notice.', plain:'When GCP needs to fix the physical machine under your VM, it carries your running VM to another machine like moving a sleeping baby to another room — it never wakes up. On AWS, maintenance can occasionally mean a scheduled reboot you plan around.', why:'Small but telling: it changes how you think about single-instance workloads and maintenance windows.'},
+{t:'Learning strategy', aws:'Deepest ecosystem, most jobs, most mature certs — your SAP-C02 plan is the right call.', gcp:'Learn the DELTAS after AWS: global VPC, projects, BigQuery, Spanner, Cloud Run, IAM bindings. That\u2019s ~80% of the mental remapping.', plain:'Learning a second cloud is like learning American English after British English — same language, you just need the small dictionary of words that differ (lift/elevator = TGW/global VPC). Don\u2019t study both from scratch.', why:'Concepts transfer almost 1:1 (regions/zones, LB, IAM, queues, IaC). Master one cloud deeply — the second takes weeks, not years. The translator tab is exactly that delta list.'},
+];
+document.getElementById('diffGrid').innerHTML = DIFFS.map(d=>`
+  <div class="diff"><h3>${d.t}</h3>
+    <div class="vs">
+      <div class="side aws"><b>AWS</b>${d.aws}</div>
+      <div class="side gcp"><b>GCP</b>${d.gcp}</div>
+    </div>
+    ${DDIAG[d.t]||''}
+    <div class="plain-line" style="margin:0 0 10px"><b>In plain English:</b> ${d.plain}</div>
+    <p class="why"><b>Why it matters:</b> ${d.why}</p>
+  </div>`).join('');
+/* ================= JOURNEY ================= */
+const JOURNEY=[
+ {n:'n-user', at:[101,79], role:'the customer', title:'You tap the app',
+  say:'Nothing has left your phone yet except a name: "shop.example.com". Your phone has no idea which machine that is, or where in the world it lives.',
+  tech:'The browser or app opens a connection to a hostname. Everything after this is the cloud turning that name into a specific machine that can answer.',
+  without:'Nothing to break yet. This is the only step you can see.'},
+ {n:'n-dns', at:[305,79], role:'the phone book', title:'DNS finds the address',
+  say:'Like looking up a shop in the phone book. You know the name; the phone book gives you the number to actually call. It can also give different people different numbers, so a caller in Tokyo gets the Tokyo branch.',
+  tech:'<b>Route 53</b> / <b>Cloud DNS</b> answers with an IP address. Health checks let it stop handing out the address of a region that is down, which is what makes DNS failover work.',
+  without:'Everyone would have to memorise IP addresses, and you could never move a service to a new machine without telling every customer.'},
+ {n:'n-cdn', at:[515,79], role:'the corner shop', title:'The CDN edge answers if it can',
+  say:'A copy of the shop stocked in your own neighbourhood. If what you want is on that local shelf, you get it in milliseconds and the head office never even hears about your visit.',
+  tech:'<b>CloudFront</b> / <b>Cloud CDN</b> caches images, video, CSS and JavaScript at hundreds of locations worldwide. A cache hit never reaches your servers, which is why a CDN cuts both latency and bill at the same time.',
+  without:'Every image would travel from one region to every user on earth. A viral post would flatten your servers with traffic that is identical for everyone.'},
+ {n:'n-s3', at:[515,160], role:'the warehouse', title:'Files live in object storage',
+  say:'The actual photos, videos and documents are kept in an enormous warehouse that never fills up. The corner shop restocks from here the first time somebody asks for something.',
+  tech:'<b>S3</b> / <b>Cloud Storage</b>. Cheap, effectively unlimited, extremely durable, and priced by what you store and move rather than by machine. Files that nobody has opened in months slide automatically to a cheaper shelf.',
+  without:'You would keep files on the servers themselves, so a server dying would lose them and adding a server would mean copying everything again.'},
+ {n:'n-lb', at:[725,79], role:'the receptionist', title:'The load balancer picks a free desk',
+  say:'A receptionist who knows which staff are free, which are swamped, and which went home sick. Every visitor is sent to somebody who can actually help, and nobody is queued behind a broken desk.',
+  tech:'<b>ALB</b> / <b>Cloud Load Balancing</b> spreads requests across healthy instances, checks health continuously, and stops sending traffic to anything that fails. It is also where TLS usually terminates.',
+  without:'One server address published to the world: it becomes the bottleneck, and the moment it dies the whole product is offline.'},
+ {n:'n-app', at:[725,253], role:'the staff', title:'App servers do the actual work',
+  say:'The staff who read your request and decide what to do. When the shop gets busy, more staff appear; when it goes quiet at 3am, most go home and you stop paying them.',
+  tech:'Instances, containers or functions behind an autoscaling group. Because any one of them can be replaced at any moment, they must hold no important state locally, which is exactly why the cache, database and storage in this diagram exist.',
+  without:'Fixed capacity: you either pay for the Christmas peak all year, or fall over on the first busy day.'},
+ {n:'n-cache', at:[515,253], role:'the sticky note', title:'The cache remembers recent answers',
+  say:'A sticky note on the desk with answers somebody looked up a minute ago. Checking the note takes a second; walking to the archive takes ten minutes. Most questions are the same handful of questions.',
+  tech:'<b>ElastiCache</b> / <b>Memorystore</b>, usually Redis. Sits in front of the database and absorbs the repeated reads. The hard part is not adding it, it is deciding when an entry is stale.',
+  without:'Every single request would hit the database, so the database becomes the bottleneck long before your servers do.'},
+ {n:'n-db', at:[305,253], role:'the ledger', title:'The database holds the truth',
+  say:'The official ledger. If the sticky note and the ledger disagree, the ledger wins. It is the slowest, most careful and most valuable thing in the building, which is why it gets replicated and backed up.',
+  tech:'<b>RDS/Aurora</b> / <b>Cloud SQL/Spanner</b>. Usually one writer with read replicas, automated backups and a standby in another zone. Almost every scaling conversation eventually becomes a database conversation.',
+  without:'Nothing would survive a restart. This is the one component you cannot make stateless.'},
+ {n:'n-queue', at:[725,351], role:'the out-tray', title:'Slow work goes in a queue',
+  say:'The receipt email does not need to be sent before you see your order confirmed. It goes in an out-tray, and you get your answer immediately.',
+  tech:'<b>SQS</b> / <b>Pub-Sub</b>. The queue also absorbs spikes and survives the worker being down, which turns "the email service is broken" into "emails are a bit late" instead of "checkout is broken".',
+  without:'Your click would wait for the email to send, the invoice to render and the analytics to update, so one slow third party makes the whole app slow.'},
+ {n:'n-worker', at:[515,351], role:'the back office', title:'A worker empties the tray',
+  say:'Someone in the back office works through the out-tray at their own pace. If they go home sick, the tray simply gets fuller and is cleared when they return; nothing is lost.',
+  tech:'A separate scaled process consuming the queue. It must be safe to run the same message twice, because queues deliver at least once, and a retry after a partial failure is normal rather than exceptional.',
+  without:'Work that fails once would be lost forever, and a burst of orders would have nowhere to wait.'},
+];
+
+const jsvg=document.getElementById('jsvg'), packet=document.getElementById('packet');
+const jstep=document.getElementById('jstep'), jlist=document.getElementById('jlist'), jprog=document.getElementById('jprog');
+let jI=0, jTimer=null;
+
+jlist.innerHTML=JOURNEY.map((s,i)=>
+  `<button class="jitem" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.title}</span></button>`).join('');
+
+function jRender(i){
+  jI=(i+JOURNEY.length)%JOURNEY.length;
+  const s=JOURNEY[jI];
+  packet.style.transform=`translate(${s.at[0]}px,${s.at[1]}px)`;
+  document.querySelectorAll('.jnode').forEach(g=>{
+    const active = g.id===s.n;
+    g.classList.toggle('on', active);
+    g.classList.toggle('dim', Number(g.dataset.i) > jI);
+  });
+  document.querySelectorAll('.jwire').forEach((w,k)=>w.classList.toggle('lit', k<jI));
+  document.querySelectorAll('.jitem').forEach((b,k)=>b.classList.toggle('on',k===jI));
+  jprog.style.width=((jI+1)/JOURNEY.length*100)+'%';
+  jstep.innerHTML=`<div class="role">stop ${jI+1} of ${JOURNEY.length} · ${s.role}</div>
+    <h3>${s.title}</h3>
+    <p class="say">${s.say}</p>
+    <p class="tech">${s.tech}</p>
+    <div class="without"><b>Take it away:</b> ${s.without}</div>`;
+  document.getElementById('n-app-t').textContent = jI>=5 ? '6 running · scaled up' : '3 running';
+}
+function jStop(){ if(jTimer){clearInterval(jTimer); jTimer=null; document.getElementById('jplay').textContent='▶ play the journey';} }
+document.getElementById('jplay').onclick=()=>{
+  if(jTimer){ jStop(); return; }
+  document.getElementById('jplay').textContent='❚❚ pause';
+  jRender(0);
+  jTimer=setInterval(()=>{ if(jI>=JOURNEY.length-1){ jStop(); return; } jRender(jI+1); }, 3200);
+};
+document.getElementById('jnext').onclick=()=>{jStop(); jRender(jI+1);};
+document.getElementById('jprev').onclick=()=>{jStop(); jRender(jI-1);};
+jlist.addEventListener('click',e=>{const b=e.target.closest('.jitem'); if(b){jStop(); jRender(Number(b.dataset.i));}});
+jsvg.addEventListener('click',e=>{const g=e.target.closest('.jnode'); if(g){jStop(); jRender(Number(g.dataset.i));}});
+jRender(0);
+
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px 'IBM Plex Mono'", SANS="font:500 12px 'Space Grotesk'";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" fill="${fill||'#0E1626'}" stroke="${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:#E6EDF7">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'#8FA3C0'}">${s}</text>`;
+
+const PDIAG={};
+
+/* --- compute: ladder of abstraction --- */
+PDIAG.compute=(()=>{
+  const rows=[['EC2',.86,'patch, scale, secure the box'],['ECS / EKS on EC2',.62,'you still own the nodes'],
+              ['Fargate',.30,'containers, no servers'],['Lambda',.10,'just your function']];
+  const body=rows.map((r,i)=>{const y=26+i*40, w=Math.round(400*r[1]);
+    return `${t(150,y+19,r[0],SANS,'end')}
+      <rect x="162" y="${y}" width="${w}" height="26" rx="5" fill="rgba(251,191,36,.22)" stroke="#FBBF24"/>
+      <rect x="${162+w}" y="${y}" width="${400-w}" height="26" rx="5" fill="rgba(45,212,191,.16)" stroke="#2DD4BF"/>
+      ${tm(576,y+17,r[2],'#5A6E8F','end')}`;}).join('');
+  return D('0 0 620 210','Four compute options as bars: the amber part is what you operate, the teal part is what the cloud operates. EC2 is mostly amber, Lambda is almost entirely teal.',
+    body+`${tm(162,200,'amber = your job','#FBBF24','start')}${tm(562,200,'teal = the cloud does it','#2DD4BF','end')}`,
+    'Every rung down hands more of the work to the cloud and takes away more control. Pick the lowest bar your constraints allow, because everything amber is work your team does forever.');
+})();
+
+/* --- storage: three shapes, then the cost ladder --- */
+PDIAG.storage=D('0 0 620 220','Three storage shapes side by side, then S3 tiers getting cheaper and slower to retrieve.',
+  `${box(10,10,190,62,'#A78BFA')}${t(105,34,'Object — S3',SANS)}${tm(105,54,'any file, endless shelf')}
+   ${box(215,10,190,62,'#2DD4BF')}${t(310,34,'Block — EBS',SANS)}${tm(310,54,'one machine&#39;s hard disk')}
+   ${box(420,10,190,62,'#60A5FA')}${t(515,34,'File — EFS',SANS)}${tm(515,54,'shared office drive')}
+   ${tm(10,105,'the same file gets cheaper as it goes cold:','#5A6E8F','start')}
+   ${box(10,120,190,58,'#34D399')}${t(105,143,'Standard',SANS)}${tm(105,163,'instant · dearest','#34D399')}
+   ${box(215,120,190,58,'#FBBF24')}${t(310,143,'Infrequent access',SANS)}${tm(310,163,'instant · cheaper','#FBBF24')}
+   ${box(420,120,190,58,'#F87171')}${t(515,143,'Glacier',SANS)}${tm(515,163,'minutes to hours · cheapest','#F87171')}
+   <path d="M10 196 H610" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>
+   ${tm(10,212,'files nobody opens slide right automatically, by lifecycle rule','#5A6E8F','start')}`,
+  'Left to right is the same data getting cheaper to keep and slower to get back. A lifecycle rule moves it for you, so the saving needs no one to remember it.');
+
+/* --- databases: pick by shape of the data --- */
+PDIAG.db=D('0 0 620 200','A decision tree from the shape of the data to a database type.',
+  `${box(210,8,200,44,'#60A5FA')}${t(310,28,'What shape is the data?',SANS)}${tm(310,44,'ask this first')}
+   <path d="M310 52 V70 M100 70 H520 M100 70 V96 M240 70 V96 M380 70 V96 M520 70 V96" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(20,96,160,64,'#A78BFA')}${t(100,120,'Rows + joins',SANS)}${tm(100,138,'RDS · Aurora','#A78BFA')}${tm(100,152,'Cloud SQL','#A78BFA')}
+   ${box(162,96,160,64,'#2DD4BF')}${t(242,120,'Key lookups, huge',SANS)}${tm(242,138,'DynamoDB','#2DD4BF')}${tm(242,152,'Bigtable','#2DD4BF')}
+   ${box(302,96,160,64,'#FBBF24')}${t(382,120,'Flexible documents',SANS)}${tm(382,138,'DocumentDB','#FBBF24')}${tm(382,152,'Firestore','#FBBF24')}
+   ${box(442,96,160,64,'#34D399')}${t(522,120,'Questions over history',SANS)}${tm(522,138,'Redshift','#34D399')}${tm(522,152,'BigQuery','#34D399')}
+   ${tm(310,186,'wrong branch = a rewrite later, so this is the decision that matters','#5A6E8F')}`,
+  'Start from how the data is shaped and how it will be read, not from a favourite product. Each branch ends in a different answer, and picking the wrong branch is the expensive mistake.');
+
+/* --- security: defence in depth --- */
+PDIAG.security=D('0 0 620 210','Five nested boxes: organisation, account, network, identity, and data at the centre.',
+  `${box(10,10,600,190,'#60A5FA','rgba(96,165,250,.05)')}${tm(24,30,'ORGANISATION · SCPs set what is even possible','#60A5FA','start')}
+   ${box(40,42,540,148,'#2DD4BF','rgba(45,212,191,.05)')}${tm(54,62,'ACCOUNT / PROJECT · blast-radius boundary','#2DD4BF','start')}
+   ${box(70,74,480,106,'#A78BFA','rgba(167,139,250,.05)')}${tm(84,94,'NETWORK · VPC, subnets, security groups','#A78BFA','start')}
+   ${box(100,106,420,64,'#FBBF24','rgba(251,191,36,.05)')}${tm(114,126,'IDENTITY · IAM roles, short-lived credentials','#FBBF24','start')}
+   ${box(150,134,320,28,'#F87171','rgba(248,113,113,.08)')}${tm(310,152,'DATA · encrypted with KMS, the last line','#F87171')}`,
+  'An attacker has to get through every ring, not one. Each layer assumes the one outside it has already failed, which is why a single misconfigured rule is survivable.');
+
+/* --- resilience: the RPO / RTO timeline --- */
+PDIAG.resilience=D('0 0 620 190','A timeline showing the last backup, the disaster, and service being restored, with RPO measured before the disaster and RTO after it.',
+  `<path d="M20 96 H600" stroke="#39507C" stroke-width="1.6"/>
+   <line x1="170" y1="80" x2="170" y2="112" stroke="#34D399" stroke-width="2"/>${tm(170,72,'last backup','#34D399')}
+   <line x1="340" y1="66" x2="340" y2="126" stroke="#F87171" stroke-width="2.4"/>${t(340,58,'⚡ disaster',SANS)}
+   <line x1="520" y1="80" x2="520" y2="112" stroke="#60A5FA" stroke-width="2"/>${tm(520,72,'back online','#60A5FA')}
+   <path d="M170 140 H340" stroke="#FBBF24" stroke-width="1.6"/><path d="M170 136 V144 M340 136 V144" stroke="#FBBF24" stroke-width="1.6"/>
+   ${tm(255,158,'RPO — work you lose','#FBBF24')}${tm(255,172,'(everything since the backup)','#5A6E8F')}
+   <path d="M340 140 H520" stroke="#2DD4BF" stroke-width="1.6"/><path d="M340 136 V144 M520 136 V144" stroke="#2DD4BF" stroke-width="1.6"/>
+   ${tm(430,158,'RTO — time you are down','#2DD4BF')}${tm(430,172,'(customers waiting)','#5A6E8F')}
+   ${tm(20,116,'time','#5A6E8F','start')}`,
+  'RPO is measured backwards from the disaster and is about lost data. RTO is measured forwards and is about lost time. Backing up more often shrinks the amber bar; a warmer standby shrinks the teal one.');
+
+/* --- migration: the 7 Rs by effort --- */
+PDIAG.migration=(()=>{
+  const rs=[['Retire','switch it off',0],['Retain','leave it where it is',1],['Relocate','move the VMs wholesale',2],
+            ['Rehost','lift and shift',3],['Replatform','small tweaks on the way',4],['Repurchase','buy the SaaS instead',5],
+            ['Refactor','rewrite it cloud-native',6]];
+  const body=rs.map((r,i)=>{const x=12+i*86;const hgt=18+i*13;
+    return `<rect x="${x}" y="${130-hgt}" width="76" height="${hgt}" rx="5" fill="rgba(167,139,250,.16)" stroke="#A78BFA"/>
+      ${tm(x+38,148,r[0],'#E6EDF7')}${tm(x+38,163,r[1],'#5A6E8F')}`;}).join('');
+  return D('0 0 620 185','Seven migration options as bars of increasing height, from retire to refactor.',
+    body+`<path d="M12 176 H602" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>${tm(12,124,'effort and cost','#5A6E8F','start')}`,
+    'Bar height is how much work it is. Most estates are a mix, and the winning answer usually starts at the cheap left end: the fastest migration is the servers you turn off instead of moving.');
+})();
+
+/* --- cost: what you actually pay for --- */
+PDIAG.cost=D('0 0 620 195','A daily traffic curve under a flat on-demand capacity line, showing paid-for but unused capacity, with a committed baseline and a spot spike.',
+  `<path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146" fill="none" stroke="#60A5FA" stroke-width="2"/>
+   <path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146 L 590 40 L 40 40 Z" fill="rgba(248,113,113,.07)"/>
+   <line x1="40" y1="40" x2="590" y2="40" stroke="#F87171" stroke-width="1.4" stroke-dasharray="5 4"/>
+   ${tm(590,32,'capacity you bought for the peak','#F87171','end')}
+   ${tm(300,66,'paid for, nobody using it','#F87171')}
+   <line x1="40" y1="128" x2="590" y2="128" stroke="#34D399" stroke-width="1.4"/>
+   ${tm(44,122,'always-on baseline → commit and save (Savings Plan / CUD)','#34D399','start')}
+   <rect x="392" y="152" width="120" height="22" rx="5" fill="rgba(251,191,36,.16)" stroke="#FBBF24"/>${tm(452,167,'batch on Spot','#FBBF24')}
+   <path d="M40 150 H590" stroke="#39507C" stroke-width="1.2"/>${tm(40,188,'midnight','#5A6E8F','start')}${tm(590,188,'midnight','#5A6E8F','end')}
+   ${tm(315,188,'one day of real traffic','#5A6E8F')}`,
+  'The blue line is demand; the red band above it is money burned on idle capacity. Commit to the flat green part, autoscale the bump, and run interruptible work on Spot.');
+
+/* --- observability: three questions --- */
+PDIAG.observability=D('0 0 620 165','Three panels for metrics, logs and traces, each with the question it answers, feeding an alert.',
+  `${box(10,14,190,86,'#34D399')}${t(105,42,'Metrics',SANS)}${tm(105,62,'is something wrong?','#34D399')}${tm(105,80,'numbers over time')}
+   ${box(215,14,190,86,'#FBBF24')}${t(310,42,'Logs',SANS)}${tm(310,62,'what exactly happened?','#FBBF24')}${tm(310,80,'the event, in words')}
+   ${box(420,14,190,86,'#A78BFA')}${t(515,42,'Traces',SANS)}${tm(515,62,'where did the time go?','#A78BFA')}${tm(515,80,'one request, every hop')}
+   <path d="M105 100 V118 H515 V100 M310 100 V118" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(210,124,200,32,'#F87171')}${t(310,145,'an alert worth waking up for',SANS)}`,
+  'Metrics tell you there is a problem, logs tell you what happened, traces tell you where it happened. Alerting on metrics alone leaves you awake with no idea why.');
+
+/* --- integration: what a queue buys you --- */
+PDIAG.integration=D('0 0 620 195','Top row: three services chained directly, the last one failing and turning the whole chain red. Bottom row: a queue between them, so the failure is contained.',
+  `${tm(10,20,'directly chained — everyone fails together','#F87171','start')}
+   ${box(10,30,150,44,'#60A5FA')}${t(85,57,'Checkout',SANS)}
+   <path d="M162 52 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
+   ${box(210,30,150,44,'#60A5FA')}${t(285,57,'Order service',SANS)}
+   <path d="M362 52 H406" stroke="#F87171" stroke-width="1.4" marker-end="url(#ah)"/>
+   ${box(410,30,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,52,'Email service',SANS)}${tm(485,68,'down','#F87171')}
+   ${tm(575,57,'✕','#F87171','start')}
+   ${tm(10,110,'queue in the middle — the failure is contained','#34D399','start')}
+   ${box(10,120,150,44,'#60A5FA')}${t(85,147,'Checkout',SANS)}
+   <path d="M162 142 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
+   ${box(210,120,150,44,'#2DD4BF','rgba(45,212,191,.08)')}${t(285,142,'Queue',SANS)}${tm(285,158,'holding 412 messages','#2DD4BF')}
+   <path d="M362 142 H406" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+   ${box(410,120,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,142,'Email service',SANS)}${tm(485,158,'still down','#F87171')}
+   ${tm(575,147,'✓','#34D399','start')}`,
+  'Same outage, two outcomes. Chained directly, a broken email service breaks checkout. With a queue, checkout still works and the emails simply go out late.');
+
+/* --- edge: why distance is latency --- */
+PDIAG.edge=D('0 0 620 170','A user far from a single origin region compared with the same user reaching a nearby edge location.',
+  `${box(10,20,110,44,'#60A5FA')}${t(65,47,'User in Sydney',SANS)}
+   <path d="M122 42 H466" stroke="#F87171" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#ah)"/>
+   ${tm(300,32,'~250 ms each way, every single request','#F87171')}
+   ${box(470,20,140,44,'#A78BFA')}${t(540,47,'Origin · Ireland',SANS)}
+   ${box(10,104,110,44,'#60A5FA')}${t(65,131,'User in Sydney',SANS)}
+   <path d="M122 126 H196" stroke="#34D399" stroke-width="1.6" marker-end="url(#ah)"/>
+   ${tm(240,116,'~20 ms','#34D399')}
+   ${box(200,104,150,44,'#2DD4BF')}${t(275,126,'Edge · Sydney',SANS)}${tm(275,142,'cached copy','#2DD4BF')}
+   <path d="M352 126 H466" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+   ${tm(410,116,'only on a miss','#5A6E8F')}
+   ${box(470,104,140,44,'#A78BFA')}${t(540,131,'Origin · Ireland',SANS)}`,
+  'Distance is latency, and no amount of server tuning beats physics. Putting a copy near the user turns a quarter-second wait into an instant one, and quietly removes most of the traffic from your servers.');
+
+/* --- cloud-difference diagrams --- */
+const DDIAG={};
+DDIAG['Network model — the biggest one']=D('0 0 620 150','Left: three separate AWS VPCs joined by manual peering links. Right: one global GCP VPC containing three regions.',
+  `${tm(10,16,'AWS — one VPC per region, you build the links','#FBBF24','start')}
+   ${box(14,26,80,50,'#FBBF24')}${tm(54,56,'Tokyo','#E6EDF7')}
+   ${box(114,26,80,50,'#FBBF24')}${tm(154,56,'Dublin','#E6EDF7')}
+   ${box(214,26,80,50,'#FBBF24')}${tm(254,56,'Ohio','#E6EDF7')}
+   <path d="M94 51 H114 M194 51 H214" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3"/>
+   <path d="M54 76 C 54 106, 254 106, 254 76" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3" fill="none"/>
+   ${tm(154,122,'peering / Transit Gateway you configure','#F87171')}
+   ${tm(330,16,'GCP — one VPC, regions inside it','#7CACF8','start')}
+   ${box(324,26,286,76,'#7CACF8','rgba(124,172,248,.06)')}
+   ${box(338,44,80,44,'#7CACF8')}${tm(378,71,'Tokyo','#E6EDF7')}
+   ${box(428,44,80,44,'#7CACF8')}${tm(468,71,'Dublin','#E6EDF7')}
+   ${box(518,44,80,44,'#7CACF8')}${tm(558,71,'Ohio','#E6EDF7')}
+   ${tm(467,122,'already one network, one firewall policy','#7CACF8')}`,
+  'The red dashed lines on the left are work you do and keep maintaining. On the right they do not exist, because the network is global to begin with.');
+
+DDIAG['Isolation & org boundary']=D('0 0 620 150','Left: three heavy separate AWS accounts. Right: a light GCP org, folder and project tree.',
+  `${tm(10,16,'AWS — the account is the wall','#FBBF24','start')}
+   ${box(14,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(57,58,'Account','#E6EDF7')}${tm(57,74,'prod','#8FA3C0')}
+   ${box(112,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(155,58,'Account','#E6EDF7')}${tm(155,74,'staging','#8FA3C0')}
+   ${box(210,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(253,58,'Account','#E6EDF7')}${tm(253,74,'data','#8FA3C0')}
+   ${tm(155,122,'heavyweight: Organizations, SCPs, cross-account roles','#F87171')}
+   ${tm(330,16,'GCP — the project is the wall','#7CACF8','start')}
+   ${box(392,26,150,26,'#7CACF8')}${tm(467,44,'Organisation','#E6EDF7')}
+   <path d="M467 52 V62 M370 62 H564 M370 62 V72 M467 62 V72 M564 62 V72" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(330,72,80,30,'#7CACF8')}${tm(370,92,'prod','#E6EDF7')}
+   ${box(427,72,80,30,'#7CACF8')}${tm(467,92,'staging','#E6EDF7')}
+   ${box(524,72,80,30,'#7CACF8')}${tm(564,92,'data','#E6EDF7')}
+   ${tm(467,122,'lightweight: a project takes seconds','#7CACF8')}`,
+  'Both give you the same isolation. The difference is what it costs to create one, which is why AWS estates plan accounts carefully and GCP estates hand them out freely.');
+
+DDIAG['Load balancing & global traffic']=D('0 0 620 150','Left: AWS user reaching CloudFront then three regional load balancers. Right: GCP user reaching one global IP then regions.',
+  `${tm(10,16,'AWS — layers you assemble','#FBBF24','start')}
+   ${box(14,28,70,32,'#60A5FA')}${tm(49,48,'Users','#E6EDF7')}
+   <path d="M86 44 H116" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
+   ${box(120,28,110,32,'#FBBF24')}${tm(175,48,'CloudFront','#E6EDF7')}
+   <path d="M175 60 V72 M60 72 H290 M60 72 V84 M175 72 V84 M290 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(22,84,76,28,'#FBBF24')}${tm(60,102,'ALB · eu','#E6EDF7')}
+   ${box(137,84,76,28,'#FBBF24')}${tm(175,102,'ALB · us','#E6EDF7')}
+   ${box(252,84,76,28,'#FBBF24')}${tm(290,102,'ALB · ap','#E6EDF7')}
+   ${tm(175,134,'plus Route 53 policies and health checks','#F87171')}
+   ${tm(340,16,'GCP — one address, worldwide','#7CACF8','start')}
+   ${box(344,28,70,32,'#60A5FA')}${tm(379,48,'Users','#E6EDF7')}
+   <path d="M416 44 H446" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
+   ${box(450,28,150,32,'#7CACF8')}${tm(525,48,'one anycast IP','#E6EDF7')}
+   <path d="M525 60 V72 M400 72 H600 M400 72 V84 M500 72 V84 M600 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
+   ${box(366,84,68,28,'#7CACF8')}${tm(400,102,'eu','#E6EDF7')}
+   ${box(466,84,68,28,'#7CACF8')}${tm(500,102,'us','#E6EDF7')}
+   ${box(566,84,50,28,'#7CACF8')}${tm(591,102,'ap','#E6EDF7')}
+   ${tm(500,134,'CDN is a checkbox on the same thing','#7CACF8')}`,
+  'The same requirement — serve everyone from their nearest healthy region — is three or four moving parts on one side and one on the other.');
+
+DDIAG['Analytics stance']=D('0 0 620 150','Left: a fixed Redshift cluster with idle capacity shaded. Right: BigQuery charging only for the slice of data a query reads.',
+  `${tm(10,16,'Redshift — a building you size and keep','#FBBF24','start')}
+   ${box(14,28,280,74,'#FBBF24','rgba(251,191,36,.05)')}
+   <rect x="26" y="40" width="120" height="50" rx="5" fill="rgba(251,191,36,.3)" stroke="#FBBF24"/>${tm(86,70,'used','#E6EDF7')}
+   <rect x="152" y="40" width="130" height="50" rx="5" fill="rgba(248,113,113,.08)" stroke="#F87171" stroke-dasharray="4 3"/>${tm(217,64,'idle','#F87171')}${tm(217,80,'still paid for','#F87171')}
+   ${tm(154,124,'you pick the size, quiet days cost the same','#F87171')}
+   ${tm(330,16,'BigQuery — pay per byte read','#7CACF8','start')}
+   ${box(324,28,286,74,'#7CACF8','rgba(124,172,248,.05)')}
+   ${tm(467,46,'a petabyte sitting still costs storage only','#8FA3C0')}
+   <rect x="344" y="56" width="46" height="34" rx="5" fill="rgba(124,172,248,.35)" stroke="#7CACF8"/>${tm(367,78,'query','#E6EDF7')}
+   ${tm(500,78,'only this slice is billed','#7CACF8')}
+   ${tm(467,124,'no cluster to run, quiet days cost nothing','#7CACF8')}`,
+  'One charges for the machine whether you use it or not; the other charges for the data each question actually reads. That single difference decides a lot of platform choices.');
+
+</script>
+</body>
+</html>
