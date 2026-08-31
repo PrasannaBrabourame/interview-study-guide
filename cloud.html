@@ -8,16 +8,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
+    /* dark — the page's original palette */
     --bg:#0B1220; --panel:#101A2E; --panel2:#0E1626; --line:#1C2C48; --line2:#27395C;
-    --text:#E6EDF7; --muted:#8FA3C0; --dim:#5A6E8F;
+    --text:#E6EDF7; --muted:#8FA3C0; --dim:#6E82A4;
     --blue:#60A5FA; --teal:#2DD4BF; --violet:#A78BFA; --amber:#FBBF24;
     --green:#34D399; --red:#F87171; --orange:#FB923C;
     --gcpblue:#7CACF8; --awsorange:#FBBF24;
+    /* structural tokens used inside the diagrams */
+    --wire:#39507C; --dot:#16233C; --sel:#1A2440;
+    --n-blue:#0F1B33; --n-violet:#171331; --n-teal:#0F2431; --n-amber:#2A2013;
+    --regA:#2C5E4F; --regB:#2A4470;
+    --exam-text:#EAD9B0; --plain-text:#C9E9E2; --alert-text:#F3C9C9;
+  }
+  /* light — same structure, contrast-safe accents on a pale ground */
+  :root[data-theme="light"]{
+    --bg:#F4F7FB; --panel:#FFFFFF; --panel2:#F7FAFF; --line:#DCE5F0; --line2:#C3D2E6;
+    --text:#172033; --muted:#4A5B75; --dim:#5F708A;
+    --blue:#2563EB; --teal:#0E7C70; --violet:#6D3FD4; --amber:#8A5A00;
+    --green:#087A61; --red:#B73549; --orange:#B45309;
+    --gcpblue:#2563EB; --awsorange:#8A5A00;
+    --wire:#94A8C4; --dot:#DEE7F4; --sel:#EDF2FF;
+    --n-blue:#EAF1FE; --n-violet:#F2EDFE; --n-teal:#E4F6F3; --n-amber:#FDF3E0;
+    --regA:#5FA98F; --regB:#7FA8E4;
+    --exam-text:#7A4E06; --plain-text:#0B5C53; --alert-text:#9B2033;
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{background:var(--bg); color:var(--text); font-family:'Space Grotesk',system-ui,sans-serif}
   body{min-height:100vh; padding:28px 20px 60px;
-    background-image:radial-gradient(circle at 1px 1px, #16233C 1px, transparent 0); background-size:26px 26px}
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:26px 26px}
   .wrap{max-width:1280px; margin:0 auto}
   .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
   h1{font-size:clamp(22px,3.2vw,31px); font-weight:600; letter-spacing:-.01em}
@@ -28,7 +46,7 @@
   .tab{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
     background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
   .tab:hover{color:var(--text); border-color:var(--muted)}
-  .tab.on{color:var(--amber); border-color:var(--amber); background:#1A2440}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
   .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
   .pane{display:none}
   .pane.on{display:block; animation:fade .25s ease}
@@ -47,7 +65,7 @@
   .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
   .pillar .tag{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
   .pillar:hover{border-color:var(--teal)}
-  .pillar.on{border-color:var(--amber); background:#1A2440}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
   .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
   .detail h3{font-size:18px; font-weight:600; margin-bottom:4px}
   .detail .cat{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
@@ -59,11 +77,11 @@
   .kv .v{color:var(--muted)}
   .kv .v b{color:var(--text); font-weight:500}
   @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
-  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#EAD9B0; line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
   .exam-line b{color:var(--orange); font-weight:500}
-  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:#C9E9E2; line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
   .plain-line b{color:var(--teal); font-weight:500}
-  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:#C9E9E2}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
 
   /* ---- DR ---- */
   .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
@@ -73,7 +91,7 @@
     border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
   .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
   .strat:hover{border-color:var(--teal)}
-  .strat.on{border-color:var(--amber); background:#1A2440}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
   .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
   .gauge label{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
   .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
@@ -136,24 +154,24 @@
   .jnode{cursor:pointer}
   .jnode rect{transition:opacity .35s, stroke .35s}
   .jnode.dim{opacity:.3}
-  .jnode.on rect{stroke:#FBBF24; stroke-width:2.2}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
   .jwire{transition:opacity .35s, stroke .35s}
-  .jwire.lit{stroke:#FBBF24; opacity:1}
+  .jwire.lit{stroke:var(--amber); opacity:1}
   #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
   @media (prefers-reduced-motion: reduce){#packet{transition:none}}
   .jstep .role{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
   .jstep h3{font-size:17px; font-weight:600; margin-bottom:8px}
-  .jstep p.say{font-size:13.5px; color:#C9E9E2; line-height:1.7; margin-bottom:11px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
   .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
   .jstep p.tech b{color:var(--text); font-weight:500}
   .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
-    border-radius:0 7px 7px 0; font-size:12.5px; color:#F3C9C9; line-height:1.6}
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
   .jstep .without b{color:var(--red); font-weight:500}
   .jlist{display:flex; flex-direction:column; gap:6px}
   .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
     border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
   .jitem .n{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); flex:0 0 auto}
-  .jitem.on{border-color:var(--amber); color:var(--text); background:#1A2440}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
   .jitem:hover{border-color:var(--teal)}
   .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
   .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
@@ -163,11 +181,12 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-    <path d="M0 0 L10 5 L0 10 z" fill="#39507C"/></marker>
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
 </defs></svg>
 <div class="wrap">
   <header>
-    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8FA3C0;text-decoration:none;border:1px solid #27395C;border-radius:7px;padding:6px 12px">← back to the interview study guide</a>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← back to the interview study guide</a>
     <div class="eyebrow">solutions architect · study hub</div>
     <h1>How the cloud actually works <span class="thin">— one request, every pillar, plus AWS ↔ GCP</span></h1>
     <p class="sub">Companion to the network visualizer. Five sections: a step-by-step walk of one request from phone to database (start here if any of this is new), the non-networking exam domains as decision-oriented cards with a diagram each, an animated disaster-recovery failover simulator, a searchable AWS ↔ GCP service translator, and the deep conceptual differences between the two clouds that actually change your architecture. Every diagram has a plain-English caption — no cloud background assumed.</p>
@@ -188,28 +207,28 @@
         <h2 class="sec">Follow one tap — what happens between the phone and the answer</h2>
         <svg id="jsvg" viewBox="0 0 900 400" role="img" aria-label="A request travelling from a phone through DNS, a CDN edge, a load balancer, application servers, a cache and a database, with object storage and a background queue. Each stop can be selected to read what it does.">
           <!-- wires -->
-          <path class="jwire" id="w-dns"   d="M172 79 H228"  stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-cdn"   d="M382 79 H438"  stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-s3"    d="M515 104 V138" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-lb"    d="M592 79 H648"  stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-app"   d="M725 104 V228" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-cache" d="M648 253 H592" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-db"    d="M438 253 H382" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-queue" d="M725 278 V328" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
-          <path class="jwire" id="w-worker" d="M648 353 H592" stroke="#39507C" stroke-width="1.6" fill="none" marker-end="url(#ah)"/>
+          <path class="jwire" id="w-dns"   d="M172 79 H228"  stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-cdn"   d="M382 79 H438"  stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-s3"    d="M515 104 V138" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-lb"    d="M592 79 H648"  stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-app"   d="M725 104 V228" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-cache" d="M648 253 H592" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-db"    d="M438 253 H382" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-queue" d="M725 278 V328" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+          <path class="jwire" id="w-worker" d="M648 353 H592" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
 
-          <g class="jnode" id="n-user" data-i="0"><rect x="30" y="56" width="142" height="46" rx="9" fill="#0F1B33" stroke="#60A5FA"/><text x="101" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Your phone</text><text x="101" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">taps &quot;open&quot;</text></g>
-          <g class="jnode" id="n-dns" data-i="1"><rect x="228" y="56" width="154" height="46" rx="9" fill="#0F1B33" stroke="#60A5FA"/><text x="305" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">DNS</text><text x="305" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">Route 53 / Cloud DNS</text></g>
-          <g class="jnode" id="n-cdn" data-i="2"><rect x="438" y="56" width="154" height="46" rx="9" fill="#10202E" stroke="#2DD4BF"/><text x="515" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">CDN edge</text><text x="515" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">CloudFront / Cloud CDN</text></g>
-          <g class="jnode" id="n-lb" data-i="4"><rect x="648" y="56" width="154" height="46" rx="9" fill="#10202E" stroke="#2DD4BF"/><text x="725" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Load balancer</text><text x="725" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">ALB / Cloud LB</text></g>
-          <g class="jnode" id="n-s3" data-i="3"><rect x="438" y="138" width="154" height="44" rx="9" fill="#1B1B33" stroke="#A78BFA"/><text x="515" y="157" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:#E6EDF7">Object storage</text><text x="515" y="172" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">S3 / Cloud Storage</text></g>
-          <g class="jnode" id="n-app" data-i="5"><rect x="648" y="228" width="154" height="50" rx="9" fill="#171331" stroke="#A78BFA"/><text x="725" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">App servers</text><text x="725" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0" id="n-app-t">3 running</text></g>
-          <g class="jnode" id="n-cache" data-i="6"><rect x="438" y="228" width="154" height="50" rx="9" fill="#2A2013" stroke="#FBBF24"/><text x="515" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Cache</text><text x="515" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">Redis / Memorystore</text></g>
-          <g class="jnode" id="n-db" data-i="7"><rect x="228" y="228" width="154" height="50" rx="9" fill="#171331" stroke="#A78BFA"/><text x="305" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:#E6EDF7">Database</text><text x="305" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">RDS / Cloud SQL</text></g>
-          <g class="jnode" id="n-queue" data-i="8"><rect x="648" y="328" width="154" height="46" rx="9" fill="#0F2431" stroke="#2DD4BF"/><text x="725" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:#E6EDF7">Queue</text><text x="725" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">SQS / Pub-Sub</text></g>
-          <g class="jnode" id="n-worker" data-i="9"><rect x="438" y="328" width="154" height="46" rx="9" fill="#0F2431" stroke="#2DD4BF"/><text x="515" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:#E6EDF7">Worker</text><text x="515" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:#8FA3C0">sends the email</text></g>
+          <g class="jnode" id="n-user" data-i="0"><rect x="30" y="56" width="142" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/><text x="101" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Your phone</text><text x="101" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">taps &quot;open&quot;</text></g>
+          <g class="jnode" id="n-dns" data-i="1"><rect x="228" y="56" width="154" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/><text x="305" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">DNS</text><text x="305" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">Route 53 / Cloud DNS</text></g>
+          <g class="jnode" id="n-cdn" data-i="2"><rect x="438" y="56" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="515" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">CDN edge</text><text x="515" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">CloudFront / Cloud CDN</text></g>
+          <g class="jnode" id="n-lb" data-i="4"><rect x="648" y="56" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="725" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text><text x="725" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">ALB / Cloud LB</text></g>
+          <g class="jnode" id="n-s3" data-i="3"><rect x="438" y="138" width="154" height="44" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="515" y="157" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:var(--text)">Object storage</text><text x="515" y="172" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">S3 / Cloud Storage</text></g>
+          <g class="jnode" id="n-app" data-i="5"><rect x="648" y="228" width="154" height="50" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="725" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">App servers</text><text x="725" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)" id="n-app-t">3 running</text></g>
+          <g class="jnode" id="n-cache" data-i="6"><rect x="438" y="228" width="154" height="50" rx="9" style="fill:var(--n-amber);stroke:var(--amber)"/><text x="515" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Cache</text><text x="515" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">Redis / Memorystore</text></g>
+          <g class="jnode" id="n-db" data-i="7"><rect x="228" y="228" width="154" height="50" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="305" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Database</text><text x="305" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">RDS / Cloud SQL</text></g>
+          <g class="jnode" id="n-queue" data-i="8"><rect x="648" y="328" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="725" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:var(--text)">Queue</text><text x="725" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">SQS / Pub-Sub</text></g>
+          <g class="jnode" id="n-worker" data-i="9"><rect x="438" y="328" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="515" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:var(--text)">Worker</text><text x="515" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">sends the email</text></g>
 
-          <circle id="packet" cx="0" cy="0" r="7" fill="#FBBF24" style="transform:translate(101px,79px)"/>
+          <circle id="packet" cx="0" cy="0" r="7" style="fill:var(--amber);transform:translate(101px,79px)"/>
         </svg>
         <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap">
           <button class="btn" id="jplay">▶ play the journey</button>
@@ -244,33 +263,33 @@
         <svg viewBox="0 0 900 470" role="img" aria-label="Two AWS regions with load balancer, application fleet and database each, plus Route 53 on top. Selecting a DR strategy changes how much of the standby region is running; simulating failure animates traffic switching to the recovery region.">
           <!-- users + route53 -->
           <g>
-            <rect x="375" y="14" width="150" height="42" rx="9" fill="#0F1B33" stroke="#60A5FA"/>
+            <rect x="375" y="14" width="150" height="42" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/>
             <text x="450" y="32" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Users</text>
             <text x="450" y="48" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--muted)">global</text>
           </g>
           <g>
-            <rect x="360" y="88" width="180" height="46" rx="9" fill="#0F1B33" stroke="#60A5FA"/>
+            <rect x="360" y="88" width="180" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/>
             <text x="450" y="107" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Route 53</text>
             <text id="r53mode" x="450" y="124" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--muted)">failover routing · health checks</text>
           </g>
-          <line x1="450" y1="56" x2="450" y2="88" stroke="#39507C" stroke-width="1.2"/>
+          <line x1="450" y1="56" x2="450" y2="88" stroke-width="1.2" style="stroke:var(--wire)"/>
           <!-- traffic paths -->
-          <path id="pathA" d="M400 134 C 300 170, 230 190, 230 220" fill="none" stroke="#34D399" stroke-width="2" class="flow"/>
-          <path id="pathB" d="M500 134 C 600 170, 670 190, 670 220" fill="none" stroke="#34D399" stroke-width="2" class="flow" opacity="0.12"/>
+          <path id="pathA" d="M400 134 C 300 170, 230 190, 230 220" fill="none" stroke-width="2" class="flow" style="stroke:var(--green)"/>
+          <path id="pathB" d="M500 134 C 600 170, 670 190, 670 220" fill="none" stroke-width="2" class="flow" opacity="0.12" style="stroke:var(--green)"/>
           <!-- Region A -->
-          <rect x="70" y="220" width="320" height="220" rx="14" fill="rgba(52,211,153,0.04)" stroke="#2C5E4F" stroke-width="1.2" id="regAbox"/>
-          <text x="90" y="248" style="font:500 12px 'IBM Plex Mono';fill:#34D399" id="regAlbl">PRIMARY · us-east-1</text>
-          <g class="rnode" id="A-lb"><rect x="100" y="266" width="260" height="42" rx="8" fill="#0F2431" stroke="#2DD4BF"/><text x="230" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
-          <g class="rnode" id="A-app"><rect x="100" y="320" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="230" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-app-t">App fleet · 6 instances</text></g>
-          <g class="rnode" id="A-db"><rect x="100" y="374" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="230" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-db-t">Aurora (writer)</text></g>
+          <rect x="70" y="220" width="320" height="220" rx="14" fill="rgba(52,211,153,0.04)" stroke-width="1.2" id="regAbox" style="stroke:var(--regA)"/>
+          <text x="90" y="248" style="font:500 12px 'IBM Plex Mono';fill:var(--green)" id="regAlbl">PRIMARY · us-east-1</text>
+          <g class="rnode" id="A-lb"><rect x="100" y="266" width="260" height="42" rx="8" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="230" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
+          <g class="rnode" id="A-app"><rect x="100" y="320" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="230" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-app-t">App fleet · 6 instances</text></g>
+          <g class="rnode" id="A-db"><rect x="100" y="374" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="230" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-db-t">Aurora (writer)</text></g>
           <!-- Region B -->
-          <rect x="510" y="220" width="320" height="220" rx="14" fill="rgba(96,165,250,0.04)" stroke="#2A4470" stroke-width="1.2" id="regBbox"/>
-          <text x="530" y="248" style="font:500 12px 'IBM Plex Mono';fill:#60A5FA" id="regBlbl">RECOVERY · eu-west-1</text>
-          <g class="rnode" id="B-lb"><rect x="540" y="266" width="260" height="42" rx="8" fill="#0F2431" stroke="#2DD4BF"/><text x="670" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
-          <g class="rnode" id="B-app"><rect x="540" y="320" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="670" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-app-t">App fleet</text></g>
-          <g class="rnode" id="B-db"><rect x="540" y="374" width="260" height="42" rx="8" fill="#171331" stroke="#A78BFA"/><text x="670" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-db-t">Database</text></g>
+          <rect x="510" y="220" width="320" height="220" rx="14" fill="rgba(96,165,250,0.04)" stroke-width="1.2" id="regBbox" style="stroke:var(--regB)"/>
+          <text x="530" y="248" style="font:500 12px 'IBM Plex Mono';fill:var(--blue)" id="regBlbl">RECOVERY · eu-west-1</text>
+          <g class="rnode" id="B-lb"><rect x="540" y="266" width="260" height="42" rx="8" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="670" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
+          <g class="rnode" id="B-app"><rect x="540" y="320" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="670" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-app-t">App fleet</text></g>
+          <g class="rnode" id="B-db"><rect x="540" y="374" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="670" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-db-t">Database</text></g>
           <!-- replication -->
-          <path id="repl" d="M360 395 H540" fill="none" stroke="#A78BFA" stroke-width="1.4" stroke-dasharray="5 5" class="flow"/>
+          <path id="repl" d="M360 395 H540" fill="none" stroke-width="1.4" stroke-dasharray="5 5" class="flow" style="stroke:var(--violet)"/>
           <text id="repl-t" x="450" y="386" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--violet)">replication</text>
         </svg>
         <div style="display:flex; gap:10px; margin-top:6px; flex-wrap:wrap">
@@ -331,9 +350,9 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
 /* ================= DIAGRAMS ================= */
 const MONO="font:10.5px 'IBM Plex Mono'", SANS="font:500 12px 'Space Grotesk'";
 const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
-const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" fill="${fill||'#0E1626'}" stroke="${stroke}"/>`;
-const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:#E6EDF7">${s}</text>`;
-const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'#8FA3C0'}">${s}</text>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
 
 const PDIAG={};
 
@@ -343,58 +362,58 @@ PDIAG.compute=(()=>{
               ['Fargate',.30,'containers, no servers'],['Lambda',.10,'just your function']];
   const body=rows.map((r,i)=>{const y=26+i*40, w=Math.round(400*r[1]);
     return `${t(150,y+19,r[0],SANS,'end')}
-      <rect x="162" y="${y}" width="${w}" height="26" rx="5" fill="rgba(251,191,36,.22)" stroke="#FBBF24"/>
-      <rect x="${162+w}" y="${y}" width="${400-w}" height="26" rx="5" fill="rgba(45,212,191,.16)" stroke="#2DD4BF"/>
-      ${tm(576,y+17,r[2],'#5A6E8F','end')}`;}).join('');
+      <rect x="162" y="${y}" width="${w}" height="26" rx="5" fill="rgba(251,191,36,.22)" style="stroke:var(--amber)"/>
+      <rect x="${162+w}" y="${y}" width="${400-w}" height="26" rx="5" fill="rgba(45,212,191,.16)" style="stroke:var(--teal)"/>
+      ${tm(576,y+17,r[2],'var(--dim)','end')}`;}).join('');
   return D('0 0 620 210','Four compute options as bars: the amber part is what you operate, the teal part is what the cloud operates. EC2 is mostly amber, Lambda is almost entirely teal.',
-    body+`${tm(162,200,'amber = your job','#FBBF24','start')}${tm(562,200,'teal = the cloud does it','#2DD4BF','end')}`,
+    body+`${tm(162,200,'amber = your job','var(--amber)','start')}${tm(562,200,'teal = the cloud does it','var(--teal)','end')}`,
     'Every rung down hands more of the work to the cloud and takes away more control. Pick the lowest bar your constraints allow, because everything amber is work your team does forever.');
 })();
 
 /* --- storage: three shapes, then the cost ladder --- */
 PDIAG.storage=D('0 0 620 220','Three storage shapes side by side, then S3 tiers getting cheaper and slower to retrieve.',
-  `${box(10,10,190,62,'#A78BFA')}${t(105,34,'Object — S3',SANS)}${tm(105,54,'any file, endless shelf')}
-   ${box(215,10,190,62,'#2DD4BF')}${t(310,34,'Block — EBS',SANS)}${tm(310,54,'one machine&#39;s hard disk')}
-   ${box(420,10,190,62,'#60A5FA')}${t(515,34,'File — EFS',SANS)}${tm(515,54,'shared office drive')}
-   ${tm(10,105,'the same file gets cheaper as it goes cold:','#5A6E8F','start')}
-   ${box(10,120,190,58,'#34D399')}${t(105,143,'Standard',SANS)}${tm(105,163,'instant · dearest','#34D399')}
-   ${box(215,120,190,58,'#FBBF24')}${t(310,143,'Infrequent access',SANS)}${tm(310,163,'instant · cheaper','#FBBF24')}
-   ${box(420,120,190,58,'#F87171')}${t(515,143,'Glacier',SANS)}${tm(515,163,'minutes to hours · cheapest','#F87171')}
-   <path d="M10 196 H610" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>
-   ${tm(10,212,'files nobody opens slide right automatically, by lifecycle rule','#5A6E8F','start')}`,
+  `${box(10,10,190,62,'var(--violet)')}${t(105,34,'Object — S3',SANS)}${tm(105,54,'any file, endless shelf')}
+   ${box(215,10,190,62,'var(--teal)')}${t(310,34,'Block — EBS',SANS)}${tm(310,54,'one machine&#39;s hard disk')}
+   ${box(420,10,190,62,'var(--blue)')}${t(515,34,'File — EFS',SANS)}${tm(515,54,'shared office drive')}
+   ${tm(10,105,'the same file gets cheaper as it goes cold:','var(--dim)','start')}
+   ${box(10,120,190,58,'var(--green)')}${t(105,143,'Standard',SANS)}${tm(105,163,'instant · dearest','var(--green)')}
+   ${box(215,120,190,58,'var(--amber)')}${t(310,143,'Infrequent access',SANS)}${tm(310,163,'instant · cheaper','var(--amber)')}
+   ${box(420,120,190,58,'var(--red)')}${t(515,143,'Glacier',SANS)}${tm(515,163,'minutes to hours · cheapest','var(--red)')}
+   <path d="M10 196 H610" stroke-width="1.2" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+   ${tm(10,212,'files nobody opens slide right automatically, by lifecycle rule','var(--dim)','start')}`,
   'Left to right is the same data getting cheaper to keep and slower to get back. A lifecycle rule moves it for you, so the saving needs no one to remember it.');
 
 /* --- databases: pick by shape of the data --- */
 PDIAG.db=D('0 0 620 200','A decision tree from the shape of the data to a database type.',
-  `${box(210,8,200,44,'#60A5FA')}${t(310,28,'What shape is the data?',SANS)}${tm(310,44,'ask this first')}
-   <path d="M310 52 V70 M100 70 H520 M100 70 V96 M240 70 V96 M380 70 V96 M520 70 V96" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(20,96,160,64,'#A78BFA')}${t(100,120,'Rows + joins',SANS)}${tm(100,138,'RDS · Aurora','#A78BFA')}${tm(100,152,'Cloud SQL','#A78BFA')}
-   ${box(162,96,160,64,'#2DD4BF')}${t(242,120,'Key lookups, huge',SANS)}${tm(242,138,'DynamoDB','#2DD4BF')}${tm(242,152,'Bigtable','#2DD4BF')}
-   ${box(302,96,160,64,'#FBBF24')}${t(382,120,'Flexible documents',SANS)}${tm(382,138,'DocumentDB','#FBBF24')}${tm(382,152,'Firestore','#FBBF24')}
-   ${box(442,96,160,64,'#34D399')}${t(522,120,'Questions over history',SANS)}${tm(522,138,'Redshift','#34D399')}${tm(522,152,'BigQuery','#34D399')}
-   ${tm(310,186,'wrong branch = a rewrite later, so this is the decision that matters','#5A6E8F')}`,
+  `${box(210,8,200,44,'var(--blue)')}${t(310,28,'What shape is the data?',SANS)}${tm(310,44,'ask this first')}
+   <path d="M310 52 V70 M100 70 H520 M100 70 V96 M240 70 V96 M380 70 V96 M520 70 V96" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
+   ${box(20,96,160,64,'var(--violet)')}${t(100,120,'Rows + joins',SANS)}${tm(100,138,'RDS · Aurora','var(--violet)')}${tm(100,152,'Cloud SQL','var(--violet)')}
+   ${box(162,96,160,64,'var(--teal)')}${t(242,120,'Key lookups, huge',SANS)}${tm(242,138,'DynamoDB','var(--teal)')}${tm(242,152,'Bigtable','var(--teal)')}
+   ${box(302,96,160,64,'var(--amber)')}${t(382,120,'Flexible documents',SANS)}${tm(382,138,'DocumentDB','var(--amber)')}${tm(382,152,'Firestore','var(--amber)')}
+   ${box(442,96,160,64,'var(--green)')}${t(522,120,'Questions over history',SANS)}${tm(522,138,'Redshift','var(--green)')}${tm(522,152,'BigQuery','var(--green)')}
+   ${tm(310,186,'wrong branch = a rewrite later, so this is the decision that matters','var(--dim)')}`,
   'Start from how the data is shaped and how it will be read, not from a favourite product. Each branch ends in a different answer, and picking the wrong branch is the expensive mistake.');
 
 /* --- security: defence in depth --- */
 PDIAG.security=D('0 0 620 210','Five nested boxes: organisation, account, network, identity, and data at the centre.',
-  `${box(10,10,600,190,'#60A5FA','rgba(96,165,250,.05)')}${tm(24,30,'ORGANISATION · SCPs set what is even possible','#60A5FA','start')}
-   ${box(40,42,540,148,'#2DD4BF','rgba(45,212,191,.05)')}${tm(54,62,'ACCOUNT / PROJECT · blast-radius boundary','#2DD4BF','start')}
-   ${box(70,74,480,106,'#A78BFA','rgba(167,139,250,.05)')}${tm(84,94,'NETWORK · VPC, subnets, security groups','#A78BFA','start')}
-   ${box(100,106,420,64,'#FBBF24','rgba(251,191,36,.05)')}${tm(114,126,'IDENTITY · IAM roles, short-lived credentials','#FBBF24','start')}
-   ${box(150,134,320,28,'#F87171','rgba(248,113,113,.08)')}${tm(310,152,'DATA · encrypted with KMS, the last line','#F87171')}`,
+  `${box(10,10,600,190,'var(--blue)','rgba(96,165,250,.05)')}${tm(24,30,'ORGANISATION · SCPs set what is even possible','var(--blue)','start')}
+   ${box(40,42,540,148,'var(--teal)','rgba(45,212,191,.05)')}${tm(54,62,'ACCOUNT / PROJECT · blast-radius boundary','var(--teal)','start')}
+   ${box(70,74,480,106,'var(--violet)','rgba(167,139,250,.05)')}${tm(84,94,'NETWORK · VPC, subnets, security groups','var(--violet)','start')}
+   ${box(100,106,420,64,'var(--amber)','rgba(251,191,36,.05)')}${tm(114,126,'IDENTITY · IAM roles, short-lived credentials','var(--amber)','start')}
+   ${box(150,134,320,28,'var(--red)','rgba(248,113,113,.08)')}${tm(310,152,'DATA · encrypted with KMS, the last line','var(--red)')}`,
   'An attacker has to get through every ring, not one. Each layer assumes the one outside it has already failed, which is why a single misconfigured rule is survivable.');
 
 /* --- resilience: the RPO / RTO timeline --- */
 PDIAG.resilience=D('0 0 620 190','A timeline showing the last backup, the disaster, and service being restored, with RPO measured before the disaster and RTO after it.',
-  `<path d="M20 96 H600" stroke="#39507C" stroke-width="1.6"/>
-   <line x1="170" y1="80" x2="170" y2="112" stroke="#34D399" stroke-width="2"/>${tm(170,72,'last backup','#34D399')}
-   <line x1="340" y1="66" x2="340" y2="126" stroke="#F87171" stroke-width="2.4"/>${t(340,58,'⚡ disaster',SANS)}
-   <line x1="520" y1="80" x2="520" y2="112" stroke="#60A5FA" stroke-width="2"/>${tm(520,72,'back online','#60A5FA')}
-   <path d="M170 140 H340" stroke="#FBBF24" stroke-width="1.6"/><path d="M170 136 V144 M340 136 V144" stroke="#FBBF24" stroke-width="1.6"/>
-   ${tm(255,158,'RPO — work you lose','#FBBF24')}${tm(255,172,'(everything since the backup)','#5A6E8F')}
-   <path d="M340 140 H520" stroke="#2DD4BF" stroke-width="1.6"/><path d="M340 136 V144 M520 136 V144" stroke="#2DD4BF" stroke-width="1.6"/>
-   ${tm(430,158,'RTO — time you are down','#2DD4BF')}${tm(430,172,'(customers waiting)','#5A6E8F')}
-   ${tm(20,116,'time','#5A6E8F','start')}`,
+  `<path d="M20 96 H600" stroke-width="1.6" style="stroke:var(--wire)"/>
+   <line x1="170" y1="80" x2="170" y2="112" stroke-width="2" style="stroke:var(--green)"/>${tm(170,72,'last backup','var(--green)')}
+   <line x1="340" y1="66" x2="340" y2="126" stroke-width="2.4" style="stroke:var(--red)"/>${t(340,58,'⚡ disaster',SANS)}
+   <line x1="520" y1="80" x2="520" y2="112" stroke-width="2" style="stroke:var(--blue)"/>${tm(520,72,'back online','var(--blue)')}
+   <path d="M170 140 H340" stroke-width="1.6" style="stroke:var(--amber)"/><path d="M170 136 V144 M340 136 V144" stroke-width="1.6" style="stroke:var(--amber)"/>
+   ${tm(255,158,'RPO — work you lose','var(--amber)')}${tm(255,172,'(everything since the backup)','var(--dim)')}
+   <path d="M340 140 H520" stroke-width="1.6" style="stroke:var(--teal)"/><path d="M340 136 V144 M520 136 V144" stroke-width="1.6" style="stroke:var(--teal)"/>
+   ${tm(430,158,'RTO — time you are down','var(--teal)')}${tm(430,172,'(customers waiting)','var(--dim)')}
+   ${tm(20,116,'time','var(--dim)','start')}`,
   'RPO is measured backwards from the disaster and is about lost data. RTO is measured forwards and is about lost time. Backing up more often shrinks the amber bar; a warmer standby shrinks the teal one.');
 
 /* --- migration: the 7 Rs by effort --- */
@@ -403,135 +422,135 @@ PDIAG.migration=(()=>{
             ['Rehost','lift and shift',3],['Replatform','small tweaks on the way',4],['Repurchase','buy the SaaS instead',5],
             ['Refactor','rewrite it cloud-native',6]];
   const body=rs.map((r,i)=>{const x=12+i*86;const hgt=18+i*13;
-    return `<rect x="${x}" y="${130-hgt}" width="76" height="${hgt}" rx="5" fill="rgba(167,139,250,.16)" stroke="#A78BFA"/>
-      ${tm(x+38,148,r[0],'#E6EDF7')}${tm(x+38,163,r[1],'#5A6E8F')}`;}).join('');
+    return `<rect x="${x}" y="${130-hgt}" width="76" height="${hgt}" rx="5" fill="rgba(167,139,250,.16)" style="stroke:var(--violet)"/>
+      ${tm(x+38,148,r[0],'var(--text)')}${tm(x+38,163,r[1],'var(--dim)')}`;}).join('');
   return D('0 0 620 185','Seven migration options as bars of increasing height, from retire to refactor.',
-    body+`<path d="M12 176 H602" stroke="#39507C" stroke-width="1.2" marker-end="url(#ah)"/>${tm(12,124,'effort and cost','#5A6E8F','start')}`,
+    body+`<path d="M12 176 H602" stroke-width="1.2" marker-end="url(#ah)" style="stroke:var(--wire)"/>${tm(12,124,'effort and cost','var(--dim)','start')}`,
     'Bar height is how much work it is. Most estates are a mix, and the winning answer usually starts at the cheap left end: the fastest migration is the servers you turn off instead of moving.');
 })();
 
 /* --- cost: what you actually pay for --- */
 PDIAG.cost=D('0 0 620 195','A daily traffic curve under a flat on-demand capacity line, showing paid-for but unused capacity, with a committed baseline and a spot spike.',
-  `<path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146" fill="none" stroke="#60A5FA" stroke-width="2"/>
+  `<path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146" fill="none" stroke-width="2" style="stroke:var(--blue)"/>
    <path d="M40 150 C 130 148, 150 96, 220 88 S 330 40, 400 46 S 520 120, 590 146 L 590 40 L 40 40 Z" fill="rgba(248,113,113,.07)"/>
-   <line x1="40" y1="40" x2="590" y2="40" stroke="#F87171" stroke-width="1.4" stroke-dasharray="5 4"/>
-   ${tm(590,32,'capacity you bought for the peak','#F87171','end')}
-   ${tm(300,66,'paid for, nobody using it','#F87171')}
-   <line x1="40" y1="128" x2="590" y2="128" stroke="#34D399" stroke-width="1.4"/>
-   ${tm(44,122,'always-on baseline → commit and save (Savings Plan / CUD)','#34D399','start')}
-   <rect x="392" y="152" width="120" height="22" rx="5" fill="rgba(251,191,36,.16)" stroke="#FBBF24"/>${tm(452,167,'batch on Spot','#FBBF24')}
-   <path d="M40 150 H590" stroke="#39507C" stroke-width="1.2"/>${tm(40,188,'midnight','#5A6E8F','start')}${tm(590,188,'midnight','#5A6E8F','end')}
-   ${tm(315,188,'one day of real traffic','#5A6E8F')}`,
+   <line x1="40" y1="40" x2="590" y2="40" stroke-width="1.4" stroke-dasharray="5 4" style="stroke:var(--red)"/>
+   ${tm(590,32,'capacity you bought for the peak','var(--red)','end')}
+   ${tm(300,66,'paid for, nobody using it','var(--red)')}
+   <line x1="40" y1="128" x2="590" y2="128" stroke-width="1.4" style="stroke:var(--green)"/>
+   ${tm(44,122,'always-on baseline → commit and save (Savings Plan / CUD)','var(--green)','start')}
+   <rect x="392" y="152" width="120" height="22" rx="5" fill="rgba(251,191,36,.16)" style="stroke:var(--amber)"/>${tm(452,167,'batch on Spot','var(--amber)')}
+   <path d="M40 150 H590" stroke-width="1.2" style="stroke:var(--wire)"/>${tm(40,188,'midnight','var(--dim)','start')}${tm(590,188,'midnight','var(--dim)','end')}
+   ${tm(315,188,'one day of real traffic','var(--dim)')}`,
   'The blue line is demand; the red band above it is money burned on idle capacity. Commit to the flat green part, autoscale the bump, and run interruptible work on Spot.');
 
 /* --- observability: three questions --- */
 PDIAG.observability=D('0 0 620 165','Three panels for metrics, logs and traces, each with the question it answers, feeding an alert.',
-  `${box(10,14,190,86,'#34D399')}${t(105,42,'Metrics',SANS)}${tm(105,62,'is something wrong?','#34D399')}${tm(105,80,'numbers over time')}
-   ${box(215,14,190,86,'#FBBF24')}${t(310,42,'Logs',SANS)}${tm(310,62,'what exactly happened?','#FBBF24')}${tm(310,80,'the event, in words')}
-   ${box(420,14,190,86,'#A78BFA')}${t(515,42,'Traces',SANS)}${tm(515,62,'where did the time go?','#A78BFA')}${tm(515,80,'one request, every hop')}
-   <path d="M105 100 V118 H515 V100 M310 100 V118" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(210,124,200,32,'#F87171')}${t(310,145,'an alert worth waking up for',SANS)}`,
+  `${box(10,14,190,86,'var(--green)')}${t(105,42,'Metrics',SANS)}${tm(105,62,'is something wrong?','var(--green)')}${tm(105,80,'numbers over time')}
+   ${box(215,14,190,86,'var(--amber)')}${t(310,42,'Logs',SANS)}${tm(310,62,'what exactly happened?','var(--amber)')}${tm(310,80,'the event, in words')}
+   ${box(420,14,190,86,'var(--violet)')}${t(515,42,'Traces',SANS)}${tm(515,62,'where did the time go?','var(--violet)')}${tm(515,80,'one request, every hop')}
+   <path d="M105 100 V118 H515 V100 M310 100 V118" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
+   ${box(210,124,200,32,'var(--red)')}${t(310,145,'an alert worth waking up for',SANS)}`,
   'Metrics tell you there is a problem, logs tell you what happened, traces tell you where it happened. Alerting on metrics alone leaves you awake with no idea why.');
 
 /* --- integration: what a queue buys you --- */
 PDIAG.integration=D('0 0 620 195','Top row: three services chained directly, the last one failing and turning the whole chain red. Bottom row: a queue between them, so the failure is contained.',
-  `${tm(10,20,'directly chained — everyone fails together','#F87171','start')}
-   ${box(10,30,150,44,'#60A5FA')}${t(85,57,'Checkout',SANS)}
-   <path d="M162 52 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
-   ${box(210,30,150,44,'#60A5FA')}${t(285,57,'Order service',SANS)}
-   <path d="M362 52 H406" stroke="#F87171" stroke-width="1.4" marker-end="url(#ah)"/>
-   ${box(410,30,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,52,'Email service',SANS)}${tm(485,68,'down','#F87171')}
-   ${tm(575,57,'✕','#F87171','start')}
-   ${tm(10,110,'queue in the middle — the failure is contained','#34D399','start')}
-   ${box(10,120,150,44,'#60A5FA')}${t(85,147,'Checkout',SANS)}
-   <path d="M162 142 H206" stroke="#39507C" stroke-width="1.4" marker-end="url(#ah)"/>
-   ${box(210,120,150,44,'#2DD4BF','rgba(45,212,191,.08)')}${t(285,142,'Queue',SANS)}${tm(285,158,'holding 412 messages','#2DD4BF')}
-   <path d="M362 142 H406" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
-   ${box(410,120,150,44,'#F87171','rgba(248,113,113,.1)')}${t(485,142,'Email service',SANS)}${tm(485,158,'still down','#F87171')}
-   ${tm(575,147,'✓','#34D399','start')}`,
+  `${tm(10,20,'directly chained — everyone fails together','var(--red)','start')}
+   ${box(10,30,150,44,'var(--blue)')}${t(85,57,'Checkout',SANS)}
+   <path d="M162 52 H206" stroke-width="1.4" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+   ${box(210,30,150,44,'var(--blue)')}${t(285,57,'Order service',SANS)}
+   <path d="M362 52 H406" stroke-width="1.4" marker-end="url(#ah)" style="stroke:var(--red)"/>
+   ${box(410,30,150,44,'var(--red)','rgba(248,113,113,.1)')}${t(485,52,'Email service',SANS)}${tm(485,68,'down','var(--red)')}
+   ${tm(575,57,'✕','var(--red)','start')}
+   ${tm(10,110,'queue in the middle — the failure is contained','var(--green)','start')}
+   ${box(10,120,150,44,'var(--blue)')}${t(85,147,'Checkout',SANS)}
+   <path d="M162 142 H206" stroke-width="1.4" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+   ${box(210,120,150,44,'var(--teal)','rgba(45,212,191,.08)')}${t(285,142,'Queue',SANS)}${tm(285,158,'holding 412 messages','var(--teal)')}
+   <path d="M362 142 H406" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+   ${box(410,120,150,44,'var(--red)','rgba(248,113,113,.1)')}${t(485,142,'Email service',SANS)}${tm(485,158,'still down','var(--red)')}
+   ${tm(575,147,'✓','var(--green)','start')}`,
   'Same outage, two outcomes. Chained directly, a broken email service breaks checkout. With a queue, checkout still works and the emails simply go out late.');
 
 /* --- edge: why distance is latency --- */
 PDIAG.edge=D('0 0 620 170','A user far from a single origin region compared with the same user reaching a nearby edge location.',
-  `${box(10,20,110,44,'#60A5FA')}${t(65,47,'User in Sydney',SANS)}
-   <path d="M122 42 H466" stroke="#F87171" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#ah)"/>
-   ${tm(300,32,'~250 ms each way, every single request','#F87171')}
-   ${box(470,20,140,44,'#A78BFA')}${t(540,47,'Origin · Ireland',SANS)}
-   ${box(10,104,110,44,'#60A5FA')}${t(65,131,'User in Sydney',SANS)}
-   <path d="M122 126 H196" stroke="#34D399" stroke-width="1.6" marker-end="url(#ah)"/>
-   ${tm(240,116,'~20 ms','#34D399')}
-   ${box(200,104,150,44,'#2DD4BF')}${t(275,126,'Edge · Sydney',SANS)}${tm(275,142,'cached copy','#2DD4BF')}
-   <path d="M352 126 H466" stroke="#39507C" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
-   ${tm(410,116,'only on a miss','#5A6E8F')}
-   ${box(470,104,140,44,'#A78BFA')}${t(540,131,'Origin · Ireland',SANS)}`,
+  `${box(10,20,110,44,'var(--blue)')}${t(65,47,'User in Sydney',SANS)}
+   <path d="M122 42 H466" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#ah)" style="stroke:var(--red)"/>
+   ${tm(300,32,'~250 ms each way, every single request','var(--red)')}
+   ${box(470,20,140,44,'var(--violet)')}${t(540,47,'Origin · Ireland',SANS)}
+   ${box(10,104,110,44,'var(--blue)')}${t(65,131,'User in Sydney',SANS)}
+   <path d="M122 126 H196" stroke-width="1.6" marker-end="url(#ah)" style="stroke:var(--green)"/>
+   ${tm(240,116,'~20 ms','var(--green)')}
+   ${box(200,104,150,44,'var(--teal)')}${t(275,126,'Edge · Sydney',SANS)}${tm(275,142,'cached copy','var(--teal)')}
+   <path d="M352 126 H466" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+   ${tm(410,116,'only on a miss','var(--dim)')}
+   ${box(470,104,140,44,'var(--violet)')}${t(540,131,'Origin · Ireland',SANS)}`,
   'Distance is latency, and no amount of server tuning beats physics. Putting a copy near the user turns a quarter-second wait into an instant one, and quietly removes most of the traffic from your servers.');
 
 /* --- cloud-difference diagrams --- */
 const DDIAG={};
 DDIAG['Network model — the biggest one']=D('0 0 620 150','Left: three separate AWS VPCs joined by manual peering links. Right: one global GCP VPC containing three regions.',
-  `${tm(10,16,'AWS — one VPC per region, you build the links','#FBBF24','start')}
-   ${box(14,26,80,50,'#FBBF24')}${tm(54,56,'Tokyo','#E6EDF7')}
-   ${box(114,26,80,50,'#FBBF24')}${tm(154,56,'Dublin','#E6EDF7')}
-   ${box(214,26,80,50,'#FBBF24')}${tm(254,56,'Ohio','#E6EDF7')}
-   <path d="M94 51 H114 M194 51 H214" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3"/>
-   <path d="M54 76 C 54 106, 254 106, 254 76" stroke="#F87171" stroke-width="1.4" stroke-dasharray="4 3" fill="none"/>
-   ${tm(154,122,'peering / Transit Gateway you configure','#F87171')}
-   ${tm(330,16,'GCP — one VPC, regions inside it','#7CACF8','start')}
-   ${box(324,26,286,76,'#7CACF8','rgba(124,172,248,.06)')}
-   ${box(338,44,80,44,'#7CACF8')}${tm(378,71,'Tokyo','#E6EDF7')}
-   ${box(428,44,80,44,'#7CACF8')}${tm(468,71,'Dublin','#E6EDF7')}
-   ${box(518,44,80,44,'#7CACF8')}${tm(558,71,'Ohio','#E6EDF7')}
-   ${tm(467,122,'already one network, one firewall policy','#7CACF8')}`,
+  `${tm(10,16,'AWS — one VPC per region, you build the links','var(--amber)','start')}
+   ${box(14,26,80,50,'var(--amber)')}${tm(54,56,'Tokyo','var(--text)')}
+   ${box(114,26,80,50,'var(--amber)')}${tm(154,56,'Dublin','var(--text)')}
+   ${box(214,26,80,50,'var(--amber)')}${tm(254,56,'Ohio','var(--text)')}
+   <path d="M94 51 H114 M194 51 H214" stroke-width="1.4" stroke-dasharray="4 3" style="stroke:var(--red)"/>
+   <path d="M54 76 C 54 106, 254 106, 254 76" stroke-width="1.4" stroke-dasharray="4 3" fill="none" style="stroke:var(--red)"/>
+   ${tm(154,122,'peering / Transit Gateway you configure','var(--red)')}
+   ${tm(330,16,'GCP — one VPC, regions inside it','var(--gcpblue)','start')}
+   ${box(324,26,286,76,'var(--gcpblue)','rgba(124,172,248,.06)')}
+   ${box(338,44,80,44,'var(--gcpblue)')}${tm(378,71,'Tokyo','var(--text)')}
+   ${box(428,44,80,44,'var(--gcpblue)')}${tm(468,71,'Dublin','var(--text)')}
+   ${box(518,44,80,44,'var(--gcpblue)')}${tm(558,71,'Ohio','var(--text)')}
+   ${tm(467,122,'already one network, one firewall policy','var(--gcpblue)')}`,
   'The red dashed lines on the left are work you do and keep maintaining. On the right they do not exist, because the network is global to begin with.');
 
 DDIAG['Isolation & org boundary']=D('0 0 620 150','Left: three heavy separate AWS accounts. Right: a light GCP org, folder and project tree.',
-  `${tm(10,16,'AWS — the account is the wall','#FBBF24','start')}
-   ${box(14,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(57,58,'Account','#E6EDF7')}${tm(57,74,'prod','#8FA3C0')}
-   ${box(112,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(155,58,'Account','#E6EDF7')}${tm(155,74,'staging','#8FA3C0')}
-   ${box(210,26,86,72,'#FBBF24','rgba(251,191,36,.08)')}${tm(253,58,'Account','#E6EDF7')}${tm(253,74,'data','#8FA3C0')}
-   ${tm(155,122,'heavyweight: Organizations, SCPs, cross-account roles','#F87171')}
-   ${tm(330,16,'GCP — the project is the wall','#7CACF8','start')}
-   ${box(392,26,150,26,'#7CACF8')}${tm(467,44,'Organisation','#E6EDF7')}
-   <path d="M467 52 V62 M370 62 H564 M370 62 V72 M467 62 V72 M564 62 V72" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(330,72,80,30,'#7CACF8')}${tm(370,92,'prod','#E6EDF7')}
-   ${box(427,72,80,30,'#7CACF8')}${tm(467,92,'staging','#E6EDF7')}
-   ${box(524,72,80,30,'#7CACF8')}${tm(564,92,'data','#E6EDF7')}
-   ${tm(467,122,'lightweight: a project takes seconds','#7CACF8')}`,
+  `${tm(10,16,'AWS — the account is the wall','var(--amber)','start')}
+   ${box(14,26,86,72,'var(--amber)','rgba(251,191,36,.08)')}${tm(57,58,'Account','var(--text)')}${tm(57,74,'prod','var(--muted)')}
+   ${box(112,26,86,72,'var(--amber)','rgba(251,191,36,.08)')}${tm(155,58,'Account','var(--text)')}${tm(155,74,'staging','var(--muted)')}
+   ${box(210,26,86,72,'var(--amber)','rgba(251,191,36,.08)')}${tm(253,58,'Account','var(--text)')}${tm(253,74,'data','var(--muted)')}
+   ${tm(155,122,'heavyweight: Organizations, SCPs, cross-account roles','var(--red)')}
+   ${tm(330,16,'GCP — the project is the wall','var(--gcpblue)','start')}
+   ${box(392,26,150,26,'var(--gcpblue)')}${tm(467,44,'Organisation','var(--text)')}
+   <path d="M467 52 V62 M370 62 H564 M370 62 V72 M467 62 V72 M564 62 V72" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
+   ${box(330,72,80,30,'var(--gcpblue)')}${tm(370,92,'prod','var(--text)')}
+   ${box(427,72,80,30,'var(--gcpblue)')}${tm(467,92,'staging','var(--text)')}
+   ${box(524,72,80,30,'var(--gcpblue)')}${tm(564,92,'data','var(--text)')}
+   ${tm(467,122,'lightweight: a project takes seconds','var(--gcpblue)')}`,
   'Both give you the same isolation. The difference is what it costs to create one, which is why AWS estates plan accounts carefully and GCP estates hand them out freely.');
 
 DDIAG['Load balancing & global traffic']=D('0 0 620 150','Left: AWS user reaching CloudFront then three regional load balancers. Right: GCP user reaching one global IP then regions.',
-  `${tm(10,16,'AWS — layers you assemble','#FBBF24','start')}
-   ${box(14,28,70,32,'#60A5FA')}${tm(49,48,'Users','#E6EDF7')}
-   <path d="M86 44 H116" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
-   ${box(120,28,110,32,'#FBBF24')}${tm(175,48,'CloudFront','#E6EDF7')}
-   <path d="M175 60 V72 M60 72 H290 M60 72 V84 M175 72 V84 M290 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(22,84,76,28,'#FBBF24')}${tm(60,102,'ALB · eu','#E6EDF7')}
-   ${box(137,84,76,28,'#FBBF24')}${tm(175,102,'ALB · us','#E6EDF7')}
-   ${box(252,84,76,28,'#FBBF24')}${tm(290,102,'ALB · ap','#E6EDF7')}
-   ${tm(175,134,'plus Route 53 policies and health checks','#F87171')}
-   ${tm(340,16,'GCP — one address, worldwide','#7CACF8','start')}
-   ${box(344,28,70,32,'#60A5FA')}${tm(379,48,'Users','#E6EDF7')}
-   <path d="M416 44 H446" stroke="#39507C" stroke-width="1.3" marker-end="url(#ah)"/>
-   ${box(450,28,150,32,'#7CACF8')}${tm(525,48,'one anycast IP','#E6EDF7')}
-   <path d="M525 60 V72 M400 72 H600 M400 72 V84 M500 72 V84 M600 72 V84" stroke="#39507C" stroke-width="1.2" fill="none"/>
-   ${box(366,84,68,28,'#7CACF8')}${tm(400,102,'eu','#E6EDF7')}
-   ${box(466,84,68,28,'#7CACF8')}${tm(500,102,'us','#E6EDF7')}
-   ${box(566,84,50,28,'#7CACF8')}${tm(591,102,'ap','#E6EDF7')}
-   ${tm(500,134,'CDN is a checkbox on the same thing','#7CACF8')}`,
+  `${tm(10,16,'AWS — layers you assemble','var(--amber)','start')}
+   ${box(14,28,70,32,'var(--blue)')}${tm(49,48,'Users','var(--text)')}
+   <path d="M86 44 H116" stroke-width="1.3" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+   ${box(120,28,110,32,'var(--amber)')}${tm(175,48,'CloudFront','var(--text)')}
+   <path d="M175 60 V72 M60 72 H290 M60 72 V84 M175 72 V84 M290 72 V84" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
+   ${box(22,84,76,28,'var(--amber)')}${tm(60,102,'ALB · eu','var(--text)')}
+   ${box(137,84,76,28,'var(--amber)')}${tm(175,102,'ALB · us','var(--text)')}
+   ${box(252,84,76,28,'var(--amber)')}${tm(290,102,'ALB · ap','var(--text)')}
+   ${tm(175,134,'plus Route 53 policies and health checks','var(--red)')}
+   ${tm(340,16,'GCP — one address, worldwide','var(--gcpblue)','start')}
+   ${box(344,28,70,32,'var(--blue)')}${tm(379,48,'Users','var(--text)')}
+   <path d="M416 44 H446" stroke-width="1.3" marker-end="url(#ah)" style="stroke:var(--wire)"/>
+   ${box(450,28,150,32,'var(--gcpblue)')}${tm(525,48,'one anycast IP','var(--text)')}
+   <path d="M525 60 V72 M400 72 H600 M400 72 V84 M500 72 V84 M600 72 V84" stroke-width="1.2" fill="none" style="stroke:var(--wire)"/>
+   ${box(366,84,68,28,'var(--gcpblue)')}${tm(400,102,'eu','var(--text)')}
+   ${box(466,84,68,28,'var(--gcpblue)')}${tm(500,102,'us','var(--text)')}
+   ${box(566,84,50,28,'var(--gcpblue)')}${tm(591,102,'ap','var(--text)')}
+   ${tm(500,134,'CDN is a checkbox on the same thing','var(--gcpblue)')}`,
   'The same requirement — serve everyone from their nearest healthy region — is three or four moving parts on one side and one on the other.');
 
 DDIAG['Analytics stance']=D('0 0 620 150','Left: a fixed Redshift cluster with idle capacity shaded. Right: BigQuery charging only for the slice of data a query reads.',
-  `${tm(10,16,'Redshift — a building you size and keep','#FBBF24','start')}
-   ${box(14,28,280,74,'#FBBF24','rgba(251,191,36,.05)')}
-   <rect x="26" y="40" width="120" height="50" rx="5" fill="rgba(251,191,36,.3)" stroke="#FBBF24"/>${tm(86,70,'used','#E6EDF7')}
-   <rect x="152" y="40" width="130" height="50" rx="5" fill="rgba(248,113,113,.08)" stroke="#F87171" stroke-dasharray="4 3"/>${tm(217,64,'idle','#F87171')}${tm(217,80,'still paid for','#F87171')}
-   ${tm(154,124,'you pick the size, quiet days cost the same','#F87171')}
-   ${tm(330,16,'BigQuery — pay per byte read','#7CACF8','start')}
-   ${box(324,28,286,74,'#7CACF8','rgba(124,172,248,.05)')}
-   ${tm(467,46,'a petabyte sitting still costs storage only','#8FA3C0')}
-   <rect x="344" y="56" width="46" height="34" rx="5" fill="rgba(124,172,248,.35)" stroke="#7CACF8"/>${tm(367,78,'query','#E6EDF7')}
-   ${tm(500,78,'only this slice is billed','#7CACF8')}
-   ${tm(467,124,'no cluster to run, quiet days cost nothing','#7CACF8')}`,
+  `${tm(10,16,'Redshift — a building you size and keep','var(--amber)','start')}
+   ${box(14,28,280,74,'var(--amber)','rgba(251,191,36,.05)')}
+   <rect x="26" y="40" width="120" height="50" rx="5" fill="rgba(251,191,36,.3)" style="stroke:var(--amber)"/>${tm(86,70,'used','var(--text)')}
+   <rect x="152" y="40" width="130" height="50" rx="5" fill="rgba(248,113,113,.08)" stroke-dasharray="4 3" style="stroke:var(--red)"/>${tm(217,64,'idle','var(--red)')}${tm(217,80,'still paid for','var(--red)')}
+   ${tm(154,124,'you pick the size, quiet days cost the same','var(--red)')}
+   ${tm(330,16,'BigQuery — pay per byte read','var(--gcpblue)','start')}
+   ${box(324,28,286,74,'var(--gcpblue)','rgba(124,172,248,.05)')}
+   ${tm(467,46,'a petabyte sitting still costs storage only','var(--muted)')}
+   <rect x="344" y="56" width="46" height="34" rx="5" fill="rgba(124,172,248,.35)" style="stroke:var(--gcpblue)"/>${tm(367,78,'query','var(--text)')}
+   ${tm(500,78,'only this slice is billed','var(--gcpblue)')}
+   ${tm(467,124,'no cluster to run, quiet days cost nothing','var(--gcpblue)')}`,
   'One charges for the machine whether you use it or not; the other charges for the data each question actually reads. That single difference decides a lot of platform choices.');
 
 /* ================= PILLARS ================= */
@@ -701,9 +720,9 @@ function setStrat(s){
   el('B-db-t').textContent=s.B.dbt; el('B-app-t').textContent=s.B.appt;
   el('repl-t').textContent=s.B.repl;
   el('repl').style.opacity = s.id==='backup' ? .35 : 1;
-  setGauge('rtoBar',s.rto[0], s.rto[0]>60?'#F87171':s.rto[0]>30?'#FBBF24':'#34D399', s.rto[1],'rtoV');
-  setGauge('rpoBar',s.rpo[0], s.rpo[0]>60?'#F87171':s.rpo[0]>15?'#FBBF24':'#34D399', s.rpo[1],'rpoV');
-  setGauge('costBar',s.cost[0], s.cost[0]>70?'#F87171':s.cost[0]>40?'#FBBF24':'#34D399', s.cost[1],'costV');
+  setGauge('rtoBar',s.rto[0], s.rto[0]>60?'var(--red)':s.rto[0]>30?'var(--amber)':'var(--green)', s.rto[1],'rtoV');
+  setGauge('rpoBar',s.rpo[0], s.rpo[0]>60?'var(--red)':s.rpo[0]>15?'var(--amber)':'var(--green)', s.rpo[1],'rpoV');
+  setGauge('costBar',s.cost[0], s.cost[0]>70?'var(--red)':s.cost[0]>40?'var(--amber)':'var(--green)', s.cost[1],'costV');
   el('stratNote').innerHTML='<span class="plain-inline">💡 '+s.plain+'</span>'+s.note;
   el('stratExam').innerHTML=s.exam;
 }
@@ -712,7 +731,7 @@ const sleepDR = ms=>new Promise(r=>setTimeout(r,ms));
 async function breakRegion(){
   if(broken) return; broken=true;
   el('drlog').innerHTML='';
-  el('regAbox').setAttribute('stroke','#F87171'); el('regAlbl').setAttribute('fill','#F87171');
+  el('regAbox').style.stroke='var(--red)'; el('regAlbl').style.fill='var(--red)';
   ['A-lb','A-app','A-db'].forEach(k=>el(k).classList.add('dimmed'));
   el('pathA').style.opacity=.1;
   drlog('<b>us-east-1 impaired.</b> Route 53 health checks failing…','bad');
@@ -735,7 +754,7 @@ async function breakRegion(){
 }
 function resetSim(silent){
   broken=false;
-  el('regAbox').setAttribute('stroke','#2C5E4F'); el('regAlbl').setAttribute('fill','#34D399');
+  el('regAbox').style.stroke='var(--regA)'; el('regAlbl').style.fill='var(--green)';
   ['A-lb','A-app','A-db'].forEach(k=>el(k).classList.remove('dimmed'));
   el('pathA').style.opacity=1; el('pathB').style.opacity=.12;
   el('r53mode').textContent='failover routing · health checks';
@@ -920,6 +939,28 @@ jlist.addEventListener('click',e=>{const b=e.target.closest('.jitem'); if(b){jSt
 jsvg.addEventListener('click',e=>{const g=e.target.closest('.jnode'); if(g){jStop(); jRender(Number(g.dataset.i));}});
 jRender(0);
 
+
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
 
 </script>
 </body>
