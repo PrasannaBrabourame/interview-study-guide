@@ -5,56 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cloud study hub — request journey, OSI, network sim, three-cloud translator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* dark — the page's original palette */
-    --bg:#0B1220; --panel:#101A2E; --panel2:#0E1626; --line:#1C2C48; --line2:#27395C;
-    --text:#E6EDF7; --muted:#8FA3C0; --dim:#6E82A4;
-    --blue:#60A5FA; --teal:#2DD4BF; --violet:#A78BFA; --amber:#FBBF24;
-    --green:#34D399; --red:#F87171; --orange:#FB923C;
-    --gcpblue:#7CACF8; --awsorange:#FBBF24; --azblue:#5AC8F5;
-    /* structural tokens used inside the diagrams */
-    --wire:#39507C; --dot:#16233C; --sel:#1A2440;
-    --n-blue:#0F1B33; --n-violet:#171331; --n-teal:#0F2431; --n-amber:#2A2013;
-    --regA:#2C5E4F; --regB:#2A4470;
-    --exam-text:#EAD9B0; --plain-text:#C9E9E2; --alert-text:#F3C9C9;
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
   }
-  /* light — same structure, contrast-safe accents on a pale ground */
-  :root[data-theme="light"]{
-    --bg:#F4F7FB; --panel:#FFFFFF; --panel2:#F7FAFF; --line:#DCE5F0; --line2:#C3D2E6;
-    --text:#172033; --muted:#4A5B75; --dim:#5F708A;
-    --blue:#2563EB; --teal:#0E7C70; --violet:#6D3FD4; --amber:#8A5A00;
-    --green:#087A61; --red:#B73549; --orange:#B45309;
-    --gcpblue:#2563EB; --awsorange:#8A5A00; --azblue:#0F6C9E;
-    --wire:#94A8C4; --dot:#DEE7F4; --sel:#EDF2FF;
-    --n-blue:#EAF1FE; --n-violet:#F2EDFE; --n-teal:#E4F6F3; --n-amber:#FDF3E0;
-    --regA:#5FA98F; --regB:#7FA8E4;
-    --exam-text:#7A4E06; --plain-text:#0B5C53; --alert-text:#9B2033;
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
   }
-  *{box-sizing:border-box; margin:0; padding:0}
-  html,body{background:var(--bg); color:var(--text); font-family:'Space Grotesk',system-ui,sans-serif}
-  body{min-height:100vh; padding:28px 20px 60px;
-    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:26px 26px}
-  .wrap{max-width:1280px; margin:0 auto}
-  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
-  h1{font-size:clamp(22px,3.2vw,31px); font-weight:600; letter-spacing:-.01em}
-  h1 .thin{color:var(--muted); font-weight:400}
-  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
-
-  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
-  .tab{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted);
-    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
-  .tab:hover{color:var(--text); border-color:var(--muted)}
-  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
-  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
-  .pane{display:none}
-  .pane.on{display:block; animation:fade .25s ease}
-  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
-
-  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
-  h2.sec{font-size:12px; font-family:'IBM Plex Mono',monospace; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
-
   /* ---- pillars ---- */
   .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
   @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
@@ -63,21 +42,21 @@
     padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
     display:flex; justify-content:space-between; align-items:center; gap:10px}
   .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
-  .pillar .tag{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
   .pillar:hover{border-color:var(--teal)}
   .pillar.on{border-color:var(--amber); background:var(--sel)}
   .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
-  .detail h3{font-size:18px; font-weight:600; margin-bottom:4px}
-  .detail .cat{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
   .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
-  .detail h4{font-size:12px; font-family:'IBM Plex Mono',monospace; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
   .kv{display:flex; flex-direction:column; gap:8px}
   .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
   .kv .k{color:var(--teal); font-weight:500}
   .kv .v{color:var(--muted)}
   .kv .v b{color:var(--text); font-weight:500}
   @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
-  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
   .exam-line b{color:var(--orange); font-weight:500}
   .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
   .plain-line b{color:var(--teal); font-weight:500}
@@ -93,15 +72,15 @@
   .strat:hover{border-color:var(--teal)}
   .strat.on{border-color:var(--amber); background:var(--sel)}
   .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
-  .gauge label{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
   .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
   .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
   .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
-  .btn{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
   .btn:hover{border-color:var(--muted)}
   .btn.primary{border-color:var(--red); color:var(--red)}
   .btn.primary:hover{background:rgba(248,113,113,.1)}
-  .drlog{font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
   .drlog div{color:var(--muted); animation:fade .25s ease}
   .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
   .rnode rect{transition:opacity .4s, stroke .4s}
@@ -114,30 +93,30 @@
 
   /* ---- translator ---- */
   .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
-    font-family:'IBM Plex Mono',monospace; font-size:13px; padding:10px 14px; margin-bottom:12px}
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
   .search:focus{outline:2px solid var(--teal); outline-offset:1px}
   .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
-  .catf{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); background:var(--panel2);
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
     border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
   .catf.on{color:var(--teal); border-color:var(--teal)}
   table.map{width:100%; border-collapse:collapse; font-size:13px}
-  table.map th{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
   table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
   table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
   table.map td.gcp{color:var(--gcpblue); font-weight:500}
   table.map td.az{color:var(--azblue); font-weight:500}
   table.map td.note{color:var(--muted); font-size:12.5px}
-  table.map td.catcell{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
   @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
 
   /* ---- diffs ---- */
   .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
   .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
-  .diff h3{font-size:14.5px; font-weight:600; margin-bottom:8px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
   .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
   @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
   .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
-  .diff .side b{display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
   .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
   .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
   .diff p.why b{color:var(--text); font-weight:500}
@@ -161,8 +140,8 @@
   .jwire.lit{stroke:var(--amber); opacity:1}
   #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
   @media (prefers-reduced-motion: reduce){#packet{transition:none}}
-  .jstep .role{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
-  .jstep h3{font-size:17px; font-weight:600; margin-bottom:8px}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
   .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
   .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
   .jstep p.tech b{color:var(--text); font-weight:500}
@@ -172,7 +151,7 @@
   .jlist{display:flex; flex-direction:column; gap:6px}
   .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
     border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
-  .jitem .n{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
   .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
   .jitem:hover{border-color:var(--teal)}
   .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
@@ -183,7 +162,7 @@
   .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
   @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
   .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
-  .seg{cursor:pointer; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted);
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
     background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
   .seg:hover{border-color:var(--teal); color:var(--text)}
   .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
@@ -193,7 +172,7 @@
   .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
     font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
     z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
-  .nd small{display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
   .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
   .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
   .nd.hit{box-shadow:0 0 0 3px var(--sel)}
@@ -201,13 +180,13 @@
   .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
   .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
   .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
-    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
   .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
     background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
     transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
   @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
   .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
-    font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
   .term div{margin-bottom:4px}
   .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
   .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
@@ -217,10 +196,10 @@
   .simnote b{color:var(--teal); font-weight:500}
   .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
   .cidr-out .r:last-child{border-bottom:0}
-  .cidr-out .r b{font-family:'IBM Plex Mono',monospace; color:var(--text); font-weight:500}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
   input[type=range]{width:100%; accent-color:var(--amber)}
   input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
-    font-family:'IBM Plex Mono',monospace; font-size:13px; padding:9px 12px}
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
   input.ip.bad{border-color:var(--red)}
 
   /* ---- OSI ---- */
@@ -229,7 +208,7 @@
   .osi-stack{display:flex; flex-direction:column; gap:5px}
   .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
     border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
-  .osi-l .lv{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
   .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
   .osi-l:hover{border-color:var(--teal)}
   .osi-l.on{border-color:var(--amber); background:var(--sel)}
@@ -238,21 +217,21 @@
   @media (max-width:600px){.vs2{grid-template-columns:1fr}}
   .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
     font-size:12.5px; line-height:1.6; color:var(--muted)}
-  .vs2 .col b{display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
   .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
   table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
-  table.osi th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
     color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
   table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
   table.osi td b{color:var(--text); font-weight:500}
   table.osi tr:last-child td{border-bottom:0}
   .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
   .code pre{margin:0}
-  .code code{font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
   .tk-c{color:var(--dim); font-style:normal}
   .tk-k{color:var(--teal); font-style:normal}
   .tk-s{color:var(--amber); font-style:normal}
-  .cmd{font-family:'IBM Plex Mono',monospace; font-size:12px; background:var(--panel2); border:1px solid var(--line);
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
     border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
 </style>
 </head>
@@ -264,7 +243,7 @@
 <div class="wrap">
   <header>
     <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
-    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← back to the learning guide</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← back to the learning guide</a>
     <div class="eyebrow">solutions architect · study hub</div>
     <h1>How the cloud actually works <span class="thin">— one request, every pillar, across AWS, GCP and Azure</span></h1>
     <p class="sub">Companion to the network visualizer. Five sections: a step-by-step walk of one request from phone to database (start here if any of this is new), the non-networking exam domains as decision-oriented cards with a diagram each, an animated disaster-recovery failover simulator, a searchable service translator across AWS, GCP and Azure, and the deep conceptual differences between the three clouds that actually change your architecture. Every diagram has a plain-English caption — no cloud background assumed.</p>
@@ -299,16 +278,16 @@
           <path class="jwire" id="w-queue" d="M725 278 V328" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
           <path class="jwire" id="w-worker" d="M648 353 H592" stroke-width="1.6" fill="none" marker-end="url(#ah)" style="stroke:var(--wire)"/>
 
-          <g class="jnode" id="n-user" data-i="0"><rect x="30" y="56" width="142" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/><text x="101" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Your phone</text><text x="101" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">taps &quot;open&quot;</text></g>
-          <g class="jnode" id="n-dns" data-i="1"><rect x="228" y="56" width="154" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/><text x="305" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">DNS</text><text x="305" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">Route 53 / Cloud DNS</text></g>
-          <g class="jnode" id="n-cdn" data-i="2"><rect x="438" y="56" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="515" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">CDN edge</text><text x="515" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">CloudFront / Cloud CDN</text></g>
-          <g class="jnode" id="n-lb" data-i="4"><rect x="648" y="56" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="725" y="76" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text><text x="725" y="92" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">ALB / Cloud LB</text></g>
-          <g class="jnode" id="n-s3" data-i="3"><rect x="438" y="138" width="154" height="44" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="515" y="157" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:var(--text)">Object storage</text><text x="515" y="172" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">S3 / Cloud Storage</text></g>
-          <g class="jnode" id="n-app" data-i="5"><rect x="648" y="228" width="154" height="50" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="725" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">App servers</text><text x="725" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)" id="n-app-t">3 running</text></g>
-          <g class="jnode" id="n-cache" data-i="6"><rect x="438" y="228" width="154" height="50" rx="9" style="fill:var(--n-amber);stroke:var(--amber)"/><text x="515" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Cache</text><text x="515" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">Redis / Memorystore</text></g>
-          <g class="jnode" id="n-db" data-i="7"><rect x="228" y="228" width="154" height="50" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="305" y="248" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Database</text><text x="305" y="265" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">RDS / Cloud SQL</text></g>
-          <g class="jnode" id="n-queue" data-i="8"><rect x="648" y="328" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="725" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:var(--text)">Queue</text><text x="725" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">SQS / Pub-Sub</text></g>
-          <g class="jnode" id="n-worker" data-i="9"><rect x="438" y="328" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="515" y="348" text-anchor="middle" style="font:500 12.5px 'Space Grotesk';fill:var(--text)">Worker</text><text x="515" y="364" text-anchor="middle" style="font:10.5px 'IBM Plex Mono';fill:var(--muted)">sends the email</text></g>
+          <g class="jnode" id="n-user" data-i="0"><rect x="30" y="56" width="142" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/><text x="101" y="76" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Your phone</text><text x="101" y="92" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">taps &quot;open&quot;</text></g>
+          <g class="jnode" id="n-dns" data-i="1"><rect x="228" y="56" width="154" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/><text x="305" y="76" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">DNS</text><text x="305" y="92" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">Route 53 / Cloud DNS</text></g>
+          <g class="jnode" id="n-cdn" data-i="2"><rect x="438" y="56" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="515" y="76" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">CDN edge</text><text x="515" y="92" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">CloudFront / Cloud CDN</text></g>
+          <g class="jnode" id="n-lb" data-i="4"><rect x="648" y="56" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="725" y="76" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Load balancer</text><text x="725" y="92" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">ALB / Cloud LB</text></g>
+          <g class="jnode" id="n-s3" data-i="3"><rect x="438" y="138" width="154" height="44" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="515" y="157" text-anchor="middle" style="font:500 12.5px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Object storage</text><text x="515" y="172" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">S3 / Cloud Storage</text></g>
+          <g class="jnode" id="n-app" data-i="5"><rect x="648" y="228" width="154" height="50" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="725" y="248" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">App servers</text><text x="725" y="265" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)" id="n-app-t">3 running</text></g>
+          <g class="jnode" id="n-cache" data-i="6"><rect x="438" y="228" width="154" height="50" rx="9" style="fill:var(--n-amber);stroke:var(--amber)"/><text x="515" y="248" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Cache</text><text x="515" y="265" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">Redis / Memorystore</text></g>
+          <g class="jnode" id="n-db" data-i="7"><rect x="228" y="228" width="154" height="50" rx="9" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="305" y="248" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Database</text><text x="305" y="265" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">RDS / Cloud SQL</text></g>
+          <g class="jnode" id="n-queue" data-i="8"><rect x="648" y="328" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="725" y="348" text-anchor="middle" style="font:500 12.5px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Queue</text><text x="725" y="364" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">SQS / Pub-Sub</text></g>
+          <g class="jnode" id="n-worker" data-i="9"><rect x="438" y="328" width="154" height="46" rx="9" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="515" y="348" text-anchor="middle" style="font:500 12.5px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Worker</text><text x="515" y="364" text-anchor="middle" style="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">sends the email</text></g>
 
           <circle id="packet" cx="0" cy="0" r="7" style="fill:var(--amber);transform:translate(101px,79px)"/>
         </svg>
@@ -397,7 +376,7 @@
           <label style="font-size:12.5px;color:var(--muted);display:block;margin-bottom:6px">Network address</label>
           <input class="ip" id="cidrIp" value="10.0.0.0" spellcheck="false" aria-label="Base network address">
           <label style="font-size:12.5px;color:var(--muted);display:block;margin:14px 0 6px">
-            Prefix <b style="font-family:'IBM Plex Mono',monospace;color:var(--amber)">/<span id="cidrVal">24</span></b>
+            Prefix <b style="font-family:var(--mono);color:var(--amber)">/<span id="cidrVal">24</span></b>
             <span id="cidrWarn" style="color:var(--red);font-size:11.5px"></span>
           </label>
           <input type="range" id="cidrSlider" min="8" max="32" value="24" aria-label="CIDR prefix length">
@@ -547,13 +526,13 @@
           <!-- users + route53 -->
           <g>
             <rect x="375" y="14" width="150" height="42" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/>
-            <text x="450" y="32" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Users</text>
-            <text x="450" y="48" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--muted)">global</text>
+            <text x="450" y="32" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Users</text>
+            <text x="450" y="48" text-anchor="middle" style="font:11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">global</text>
           </g>
           <g>
             <rect x="360" y="88" width="180" height="46" rx="9" style="fill:var(--n-blue);stroke:var(--blue)"/>
-            <text x="450" y="107" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Route 53</text>
-            <text id="r53mode" x="450" y="124" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--muted)">failover routing · health checks</text>
+            <text x="450" y="107" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Route 53</text>
+            <text id="r53mode" x="450" y="124" text-anchor="middle" style="font:11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--muted)">failover routing · health checks</text>
           </g>
           <line x1="450" y1="56" x2="450" y2="88" stroke-width="1.2" style="stroke:var(--wire)"/>
           <!-- traffic paths -->
@@ -561,19 +540,19 @@
           <path id="pathB" d="M500 134 C 600 170, 670 190, 670 220" fill="none" stroke-width="2" class="flow" opacity="0.12" style="stroke:var(--green)"/>
           <!-- Region A -->
           <rect x="70" y="220" width="320" height="220" rx="14" fill="rgba(52,211,153,0.04)" stroke-width="1.2" id="regAbox" style="stroke:var(--regA)"/>
-          <text x="90" y="248" style="font:500 12px 'IBM Plex Mono';fill:var(--green)" id="regAlbl">PRIMARY · us-east-1</text>
-          <g class="rnode" id="A-lb"><rect x="100" y="266" width="260" height="42" rx="8" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="230" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
-          <g class="rnode" id="A-app"><rect x="100" y="320" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="230" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-app-t">App fleet · 6 instances</text></g>
-          <g class="rnode" id="A-db"><rect x="100" y="374" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="230" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="A-db-t">Aurora (writer)</text></g>
+          <text x="90" y="248" style="font:500 12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--green)" id="regAlbl">PRIMARY · us-east-1</text>
+          <g class="rnode" id="A-lb"><rect x="100" y="266" width="260" height="42" rx="8" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="230" y="291" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Load balancer</text></g>
+          <g class="rnode" id="A-app"><rect x="100" y="320" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="230" y="345" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)" id="A-app-t">App fleet · 6 instances</text></g>
+          <g class="rnode" id="A-db"><rect x="100" y="374" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="230" y="399" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)" id="A-db-t">Aurora (writer)</text></g>
           <!-- Region B -->
           <rect x="510" y="220" width="320" height="220" rx="14" fill="rgba(96,165,250,0.04)" stroke-width="1.2" id="regBbox" style="stroke:var(--regB)"/>
-          <text x="530" y="248" style="font:500 12px 'IBM Plex Mono';fill:var(--blue)" id="regBlbl">RECOVERY · eu-west-1</text>
-          <g class="rnode" id="B-lb"><rect x="540" y="266" width="260" height="42" rx="8" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="670" y="291" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)">Load balancer</text></g>
-          <g class="rnode" id="B-app"><rect x="540" y="320" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="670" y="345" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-app-t">App fleet</text></g>
-          <g class="rnode" id="B-db"><rect x="540" y="374" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="670" y="399" text-anchor="middle" style="font:500 13px 'Space Grotesk';fill:var(--text)" id="B-db-t">Database</text></g>
+          <text x="530" y="248" style="font:500 12px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--blue)" id="regBlbl">RECOVERY · eu-west-1</text>
+          <g class="rnode" id="B-lb"><rect x="540" y="266" width="260" height="42" rx="8" style="fill:var(--n-teal);stroke:var(--teal)"/><text x="670" y="291" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)">Load balancer</text></g>
+          <g class="rnode" id="B-app"><rect x="540" y="320" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="670" y="345" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)" id="B-app-t">App fleet</text></g>
+          <g class="rnode" id="B-db"><rect x="540" y="374" width="260" height="42" rx="8" style="fill:var(--n-violet);stroke:var(--violet)"/><text x="670" y="399" text-anchor="middle" style="font:500 13px Inter,Helvetica,Arial,sans-serif;fill:var(--text)" id="B-db-t">Database</text></g>
           <!-- replication -->
           <path id="repl" d="M360 395 H540" fill="none" stroke-width="1.4" stroke-dasharray="5 5" class="flow" style="stroke:var(--violet)"/>
-          <text id="repl-t" x="450" y="386" text-anchor="middle" style="font:11px 'IBM Plex Mono';fill:var(--violet)">replication</text>
+          <text id="repl-t" x="450" y="386" text-anchor="middle" style="font:11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--violet)">replication</text>
         </svg>
         <div style="display:flex; gap:10px; margin-top:6px; flex-wrap:wrap">
           <button class="btn primary" id="breakBtn">⚡ simulate region failure</button>
@@ -631,7 +610,7 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
 }));
 
 /* ================= DIAGRAMS ================= */
-const MONO="font:10.5px 'IBM Plex Mono'", SANS="font:500 12px 'Space Grotesk'";
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
 const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
 const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
 const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
