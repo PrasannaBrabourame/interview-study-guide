@@ -29,7 +29,7 @@ mark{background:color-mix(in srgb,var(--warn) 32%,transparent);color:inherit;bor
 
 /* ============ topbar ============ */
 .topbar{position:sticky;top:0;z-index:50;display:flex;gap:11px;align-items:center;padding:11px clamp(14px,3vw,28px);background:var(--glass);border-bottom:1px solid var(--line);backdrop-filter:blur(16px)}
-.brand{display:flex;gap:10px;align-items:center;margin-right:6px}
+.brand{display:flex;gap:10px;align-items:center;margin-right:6px;text-decoration:none;color:inherit}
 .logo{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;font-weight:900;font-size:14px}
 .bname b{display:block;font-size:14px;line-height:1.15;letter-spacing:-.01em}
 .bname small{color:var(--muted);font-size:11px}
@@ -289,3 +289,6 @@ h1,h2.dtitle,.dwelcome h1,.btitle h2{font-family:var(--display);font-weight:500;
 .lab .lmeta{display:block;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--faint,var(--muted));
   letter-spacing:.04em}
 @media print{.labs{display:none}}
+
+a.brand:hover .bname b{color:var(--accent)}
+a.brand:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:10px}
