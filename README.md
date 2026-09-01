@@ -35,6 +35,8 @@ cloud.html        Cloud lab — request journey, OSI, network simulator, NGINX,
                   IAM, SAP-C02 cheatsheet, pillars, DR simulator, translator
 agentcore.html    AgentCore lab — running agents in production: runtime,
                   identity, gateway, memory, evaluation, multi-agent patterns
+agentbuild.html   Agents-building-agents lab — spec-driven development with a
+                  coding agent, the ADK loop, and the Managed Agents API
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
