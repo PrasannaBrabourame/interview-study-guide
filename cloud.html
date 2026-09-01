@@ -146,6 +146,12 @@
   table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
   @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
 
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
   /* ---- diffs ---- */
   .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
   .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
@@ -293,6 +299,7 @@
     <button class="tab" data-pane="netsim" role="tab">Network simulator</button>
     <button class="tab" data-pane="nginx" role="tab">NGINX</button>
     <button class="tab" data-pane="iam" role="tab">IAM &amp; policy</button>
+    <button class="tab" data-pane="cheat" role="tab">SAP-C02 cheatsheet</button>
     <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
     <button class="tab" data-pane="dr" role="tab">DR simulator</button>
     <button class="tab" data-pane="map" role="tab">Service translator</button>
@@ -544,6 +551,53 @@
     <div class="card">
       <h2 class="sec">The checklist, and what a reviewer looks for</h2>
       <div id="iamChecklist"></div>
+    </div>
+  </section>
+
+  <!-- ================= CHEATSHEET ================= -->
+  <section class="pane" id="pane-cheat">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">What the exam is, and how it is scored</h2>
+      <div id="cheatShape"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Trigger words — what the question is really asking for</h2>
+      <div class="plain-line"><b>How to use this:</b> SAP-C02 questions are long, and most of the length is scenery. One or two phrases carry the decision. Learn to spot those phrases and the answer usually falls out before you have finished reading the options.</div>
+      <input class="search" id="cheatQ" placeholder="filter: direct connect, exfiltration, rto, 15 minutes, exactly once…" aria-label="Filter triggers">
+      <div class="cats" id="cheatCats"></div>
+      <div style="overflow-x:auto"><table class="map"><thead><tr><th class="catcell">Area</th><th>When you see this</th><th>The answer is usually</th><th>Because</th></tr></thead><tbody id="cheatBody"></tbody></table></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Drill — one trigger at a time</h2>
+      <div class="sim-layout">
+        <div><div class="card jstep" id="drillCard" style="min-height:210px"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn primary" id="drillReveal">reveal the answer</button>
+            <button class="btn" id="drillGot">✓ knew it</button>
+            <button class="btn" id="drillMiss">✗ missed it</button>
+            <button class="btn" id="drillReset">↻ start over</button>
+          </div>
+        </div>
+        <div><div id="drillScore" class="cidr-out"></div>
+          <p class="simnote">Missed cards come back. The deck is not finished until you have seen every one of them twice in a row without a miss, which is a better use of ten minutes than re-reading the table.</p></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">The four decisions that carry the most marks</h2>
+      <div id="cheatTables"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Numbers that decide answers</h2>
+      <div id="cheatNumbers"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">Traps, and how the exam words things</h2>
+      <div id="cheatTraps"></div>
     </div>
   </section>
 
@@ -2652,6 +2706,237 @@ document.getElementById('iamCompare').innerHTML=`
   <div class="col gcp"><b>GCP</b>Inheritance means a grant at the organisation is a grant on everything, forever. The basic roles are far wider than they look — Editor can delete almost anything. Service account keys are the usual root cause of a breach, so disable their creation by constraint.</div>
   <div class="col az"><b>AZURE</b>Owner and User Access Administrator can hand themselves more, so they belong in PIM rather than in anyone's standing access. Deleting a resource group deletes everything in it. And RBAC and Azure Policy are separate systems, so the answer to &ldquo;why was that refused&rdquo; is in one of two places.</div>
 </div>`;
+
+/* ================= SAP-C02 CHEATSHEET ================= */
+document.getElementById('cheatShape').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> this exam is not testing whether you know what a service does. It assumes that. It tests whether, given a messy situation with competing constraints, you pick the option that meets <em>every</em> stated requirement at the lowest cost and least operational effort. Several options usually work. Only one works within the constraints.</div>
+<table class="osi"><thead><tr><th>Domain</th><th>Weight</th><th>What it actually asks</th></tr></thead><tbody>
+<tr><td><b>1 · Organisational complexity</b></td><td>26%</td><td>Many accounts, many teams, shared networks, central guardrails, cross-account access, consolidated billing and logging</td></tr>
+<tr><td><b>2 · New solutions</b></td><td>29%</td><td>Green-field design against explicit non-functional requirements — availability, latency, RTO and RPO, security, cost</td></tr>
+<tr><td><b>3 · Continuous improvement</b></td><td>25%</td><td>Something already exists and is slow, fragile, insecure or expensive. Improve it, usually without a rewrite</td></tr>
+<tr><td><b>4 · Migration and modernisation</b></td><td>20%</td><td>Get it out of the data centre, then make it more cloud-native — often as two separate steps on purpose</td></tr>
+</tbody></table>
+<div class="vs2" style="grid-template-columns:repeat(3,1fr);margin-top:12px">
+  <div class="col"><b>SHAPE</b>75 questions in 180 minutes, so about 2 minutes 20 seconds each. Scenarios run to a full screen. Scaled score, 750 out of 1000 to pass.</div>
+  <div class="col"><b>READ IT BACKWARDS</b>Read the final sentence first. It carries the actual requirement — <em>most cost-effective</em>, <em>least operational overhead</em>, <em>minimal downtime</em> — and it decides between options that all technically work.</div>
+  <div class="col"><b>ELIMINATE, DO NOT SELECT</b>Two options are usually wrong on a fact. Of the two that remain, one violates a stated constraint. You are looking for the survivor, not the favourite.</div>
+</div>`;
+
+const TRIG=[
+['network','private, consistent bandwidth from the data centre','Direct Connect, with a VPN as backup','A VPN rides the public internet, so it cannot promise consistent throughput. The backup is what makes it highly available.'],
+['network','Direct Connect and the data must be encrypted','Direct Connect plus an IPsec VPN over it, or MACsec','Direct Connect is private but <b>not encrypted</b>. This single fact decides a lot of questions.'],
+['network','hundreds of VPCs, all need to talk','Transit Gateway','Peering is not transitive and a full mesh grows as the square of the count. TGW is the hub answer.'],
+['network','two VPCs, simple, cheapest','VPC peering','No hourly attachment charge. Reach for TGW only when the mesh or transitivity actually matters.'],
+['network','expose my service to another VPC without routing','PrivateLink endpoint service','No route tables joined, no CIDR overlap to worry about, one-way by design.'],
+['network','private access to S3 or DynamoDB','Gateway endpoint','Free, route-table based. Interface endpoints cost per hour and per gigabyte, so gateway is the cheaper right answer for these two.'],
+['network','stop data being copied to buckets outside the company','VPC endpoint policy plus an SCP with aws:PrincipalOrgID','Both halves matter: the endpoint policy limits what the network can reach, the SCP limits what identities may do.'],
+['network','static IP, TCP or UDP, global, low latency','Global Accelerator','CloudFront is for HTTP caching. Accelerator is anycast at layer 4 and keeps two static IPs.'],
+['network','centralised inspection of all egress','Transit Gateway plus a Network Firewall or Gateway Load Balancer in an inspection VPC','The pattern is a hub and spoke where the hub is where the appliance lives.'],
+['network','overlapping CIDRs and they must communicate','A NAT layer or PrivateLink — not peering','Peering refuses overlapping ranges outright. This is a fact question, not a preference.'],
+['identity','many accounts, one set of guardrails','Organizations with SCPs','SCPs cap what an account may do. They never grant, and they do not apply to the management account.'],
+['identity','let a team administer, but never beyond a limit','Permissions boundary','The ceiling that makes safe delegation possible, and the AWS-only concept the exam likes.'],
+['identity','application in account A reads a bucket in account B','A role in B that A assumes, or a bucket policy naming A','Cross-account needs both sides to agree. Long-lived keys are always the wrong answer.'],
+['identity','on-premises Active Directory, single sign-on','IAM Identity Center federated to AD','Not IAM users. The exam wants federation whenever a corporate directory is mentioned.'],
+['identity','EC2 or a pod needs credentials','An instance profile, or IRSA for a pod','Any option containing a stored access key is a distractor.'],
+['identity','audit every API call across the whole organisation','An organisation trail in CloudTrail to a central, locked S3 bucket','One trail for all accounts, delivered somewhere the audited accounts cannot edit.'],
+['compute','unpredictable, infrequent, must cost nothing when idle','Lambda','Scale to zero is the phrase that decides it.'],
+['compute','runs longer than fifteen minutes','Fargate, ECS, or Batch','Lambda has a hard fifteen-minute ceiling. This is a fact, not a tuning knob.'],
+['compute','steady, predictable, twenty-four hours a day','Compute Savings Plans','Reserved capacity for the baseline. Anything spiky sits above it on demand.'],
+['compute','fault-tolerant batch, lowest possible cost','Spot','Interruptible work only. If the question says a job cannot be interrupted, Spot is the trap.'],
+['compute','licensed per physical core, or compliance isolation','Dedicated Hosts','Dedicated Instances give isolation, but only Dedicated Hosts expose the sockets and cores a licence asks for.'],
+['storage','unknown or changing access pattern','S3 Intelligent-Tiering','The safe default when the question refuses to tell you how often the data is read.'],
+['storage','archive, retrieval in hours is fine','Glacier Flexible or Deep Archive','Match the retrieval window in the question to the tier. Instant retrieval costs more for a reason.'],
+['storage','records must not be deleted, even by an administrator','S3 Object Lock in compliance mode','Governance mode can be overridden by a privileged user; compliance mode cannot, which is what regulators ask for.'],
+['storage','shared POSIX file system across many instances','EFS','EBS attaches to one instance. Multi-attach exists but is not the answer to a shared-filesystem question.'],
+['storage','Windows file shares with Active Directory','FSx for Windows File Server','SMB plus AD is the giveaway.'],
+['storage','high-performance scratch for HPC, linked to S3','FSx for Lustre','The S3 linkage in the question is the tell.'],
+['storage','on-premises app keeps writing locally, data lands in S3','Storage Gateway, File Gateway mode','The requirement to leave the application alone is what rules out a rewrite.'],
+['data','single-digit millisecond lookups at any scale','DynamoDB','Predictable latency by key. If the question needs joins or ad-hoc queries, it is not this.'],
+['data','relational, minimal downtime on failure','RDS or Aurora Multi-AZ','Multi-AZ is availability. Read replicas are for read scaling, and confusing the two is a classic trap.'],
+['data','one region writes, several regions read, low lag','Aurora Global Database','About one second of lag, with promotion on failure.'],
+['data','several regions write the same table','DynamoDB global tables','Active-active, last writer wins. There is no relational answer to this on AWS.'],
+['data','ad-hoc SQL over files already in S3','Athena','No cluster to run. Redshift Spectrum appears when a warehouse already exists.'],
+['data','petabyte warehouse, complex joins, BI tool attached','Redshift','Athena is for ad-hoc. Redshift is for a modelled warehouse with consistent performance.'],
+['data','streaming ingestion into S3 with no code','Kinesis Data Firehose','Firehose is the managed delivery path. Data Streams is what you choose when you need consumers and replay.'],
+['integration','decouple, and each message handled once','SQS','The standard decoupling answer. Add FIFO only when ordering or exact-once processing is stated.'],
+['integration','strict ordering and no duplicates','SQS FIFO','Lower throughput than standard, so only when the question insists on it.'],
+['integration','one event, many independent consumers','SNS fanning out to SQS queues','The fan-out pattern. Each consumer gets its own queue so a slow one cannot block the others.'],
+['integration','route events by content, from SaaS or across accounts','EventBridge','Rules match on the event body. This is the modern answer where older material said SNS.'],
+['integration','multi-step workflow with retries, waits and error handling','Step Functions','If the question describes state, branching or human approval, orchestration beats a chain of Lambdas.'],
+['resilience','RTO in hours, cost matters most','Backup and restore','Nothing running in the recovery region. The give-away is infrastructure as code plus copied snapshots.'],
+['resilience','data replicated continuously, no compute running','Pilot light','Promote the database, then scale the compute from zero.'],
+['resilience','RTO in minutes, cannot pay for a full duplicate','Warm standby','A shrunken but running copy. The distinction from pilot light is that compute <b>is</b> running.'],
+['resilience','near-zero RTO and RPO, cost is not the constraint','Multi-site active/active','Both regions serve traffic. Only choose it when the question stops mentioning cost.'],
+['migration','move hundreds of VMs quickly, no refactor','Application Migration Service','Lift and shift. Optimise afterwards, which is often the second half of the question.'],
+['migration','database to a different engine, minimal downtime','DMS with the Schema Conversion Tool','SCT converts the schema, DMS moves the data and keeps replicating until cutover.'],
+['migration','petabytes and the bandwidth maths says weeks','Snowball or Snowmobile','Always do the arithmetic. The exam expects you to notice when the wire is too slow.'],
+['migration','discover what is actually running before moving','Application Discovery Service, then Migration Hub','Assessment before migration is a domain-four favourite.'],
+['cost','find waste across many accounts','Cost Explorer with allocation tags, or Trusted Advisor','Tagging is what makes the report meaningful, and untagged resources are the usual reason it is not.'],
+['cost','cap what a team can spend','Budgets with actions, plus SCPs on expensive services','Budgets alert and can trigger an action; they do not stop spend on their own.'],
+['ops','patch and configure hundreds of instances','Systems Manager','Patch Manager, Run Command and State Manager. Any answer involving SSH at scale is a distractor.'],
+['ops','detect threats from unusual API activity','GuardDuty','Config checks configuration, Inspector scans for vulnerabilities, Macie finds sensitive data. Match the verb.'],
+['ops','prove a resource never drifts from a standard','Config rules with automatic remediation','Config is the drift and compliance answer, not CloudTrail.'],
+];
+const CHEATCATS=['all','network','identity','compute','storage','data','integration','resilience','migration','cost','ops'];
+let cheatCat='all';
+const cheatCatsEl=document.getElementById('cheatCats'), cheatBody=document.getElementById('cheatBody'), cheatQ=document.getElementById('cheatQ');
+cheatCatsEl.innerHTML=CHEATCATS.map(c=>`<button class="catf${c==='all'?' on':''}" data-c="${c}">${c}</button>`).join('');
+function renderCheat(){
+  const term=cheatQ.value.trim().toLowerCase();
+  const rows=TRIG.filter(r=>(cheatCat==='all'||r[0]===cheatCat) && (!term||r.join(' ').toLowerCase().includes(term)));
+  cheatBody.innerHTML=rows.map(r=>`<tr><td class="catcell">${r[0]}</td><td class="trig">${r[1]}</td><td class="ans">${r[2]}</td><td class="note">${r[3]}</td></tr>`).join('')
+    || '<tr><td colspan="4" class="note">no matches — try another word</td></tr>';
+}
+cheatCatsEl.addEventListener('click',e=>{const b=e.target.closest('[data-c]'); if(!b)return;
+  cheatCat=b.dataset.c; document.querySelectorAll('#cheatCats .catf').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderCheat();});
+cheatQ.addEventListener('input',renderCheat);
+renderCheat();
+
+/* ---- drill ---- */
+let deck=[], drillCur=null, drillStats={seen:0,got:0,missed:0,streak:{}};
+const drillCard=document.getElementById('drillCard'), drillScore=document.getElementById('drillScore');
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function newDeck(){ deck=shuffle(TRIG.map((_,i)=>i)); drillStats={seen:0,got:0,missed:0,streak:{}}; nextCard(); }
+function nextCard(){
+  if(!deck.length){
+    drillCard.innerHTML=`<div class="role">deck finished</div><div class="drill-q">Every card cleared twice in a row.</div>
+      <p class="tech">Reshuffle and do it again tomorrow — spacing is what makes this stick, not repetition today.</p>`;
+    drillCur=null; paintScore(); return;
+  }
+  drillCur=deck[0];
+  const t=TRIG[drillCur];
+  drillCard.innerHTML=`<div class="role">${t[0]} · ${deck.length} left</div>
+    <div class="drill-q">&ldquo;${t[1]}&rdquo;</div>
+    <p class="tech">What does the question want, and why that rather than the near-miss?</p>`;
+  paintScore();
+}
+function revealCard(){
+  if(drillCur===null) return;
+  const t=TRIG[drillCur];
+  drillCard.innerHTML=`<div class="role">${t[0]} · ${deck.length} left</div>
+    <div class="drill-q">&ldquo;${t[1]}&rdquo;</div>
+    <div class="drill-a"><b>${t[2]}</b><div style="margin-top:6px;color:var(--muted);line-height:1.6">${t[3]}</div></div>`;
+}
+function score(got){
+  if(drillCur===null) return;
+  const i=drillCur;
+  drillStats.seen++;
+  drillStats.streak[i]=got?(drillStats.streak[i]||0)+1:0;
+  if(got){ drillStats.got++; } else { drillStats.missed++; }
+  deck.shift();
+  // cleared only after two correct in a row; a miss sends it to the back of the pile
+  if(!got || drillStats.streak[i]<2) deck.splice(Math.min(deck.length, got?6:3),0,i);
+  nextCard();
+}
+function paintScore(){
+  const s=drillStats, acc=s.seen?Math.round(s.got/s.seen*100):0;
+  drillScore.innerHTML=`<div class="r"><span>Cards left in the pile</span><b>${deck.length}</b></div>
+    <div class="r"><span>Answered</span><b>${s.seen}</b></div>
+    <div class="r"><span>Knew it</span><b style="color:var(--green)">${s.got}</b></div>
+    <div class="r"><span>Missed</span><b style="color:${s.missed?'var(--red)':'var(--muted)'}">${s.missed}</b></div>
+    <div class="r"><span>Accuracy</span><b style="color:${acc>=80?'var(--green)':acc>=60?'var(--amber)':'var(--red)'}">${acc}%</b></div>`;
+}
+document.getElementById('drillReveal').onclick=revealCard;
+document.getElementById('drillGot').onclick=()=>score(true);
+document.getElementById('drillMiss').onclick=()=>score(false);
+document.getElementById('drillReset').onclick=newDeck;
+newDeck();
+
+/* ---- decision tables ---- */
+document.getElementById('cheatTables').innerHTML=`
+<h4 style="margin-top:0">Getting to AWS from somewhere else</h4>
+<table class="osi"><thead><tr><th>Requirement</th><th>Answer</th><th>The near-miss</th></tr></thead><tbody>
+<tr><td>Private, predictable bandwidth</td><td><b>Direct Connect</b></td><td>VPN — cheap and quick, but it rides the internet</td></tr>
+<tr><td>Private <b>and</b> encrypted</td><td><b>VPN over Direct Connect</b>, or MACsec</td><td>Direct Connect alone — private is not encrypted</td></tr>
+<tr><td>Resilient private link</td><td>Two Direct Connects, ideally two locations</td><td>One Direct Connect with a VPN backup, if cost is the constraint</td></tr>
+<tr><td>Many VPCs and on-premises</td><td><b>Transit Gateway</b> with a Direct Connect gateway</td><td>A peering mesh — it does not transit</td></tr>
+</tbody></table>
+
+<h4>Where the data goes</h4>
+<table class="osi"><thead><tr><th>Shape of it</th><th>Answer</th><th>Chosen when</th></tr></thead><tbody>
+<tr><td>Objects, any size, cheap</td><td><b>S3</b></td><td>Default for anything file-shaped that is not a mounted disk</td></tr>
+<tr><td>One instance, block</td><td><b>EBS</b></td><td>gp3 unless the question quotes IOPS a gp3 cannot reach</td></tr>
+<tr><td>Shared across instances</td><td><b>EFS</b>, or FSx for Windows or Lustre</td><td>Linux NFS, SMB with AD, or HPC scratch respectively</td></tr>
+<tr><td>Rows and relationships</td><td><b>RDS or Aurora</b></td><td>Aurora when the question mentions throughput, replicas or global</td></tr>
+<tr><td>Key lookups at scale</td><td><b>DynamoDB</b></td><td>The access pattern is known and latency must be flat</td></tr>
+<tr><td>Analytics</td><td><b>Athena</b> ad-hoc, <b>Redshift</b> modelled</td><td>Whether a warehouse already exists decides it</td></tr>
+</tbody></table>
+
+<h4>Disaster recovery, by what the question promises</h4>
+<table class="osi"><thead><tr><th>RTO and RPO</th><th>Strategy</th><th>What is running in the second region</th></tr></thead><tbody>
+<tr><td>Hours</td><td>Backup and restore</td><td>Nothing but backups</td></tr>
+<tr><td>Tens of minutes</td><td>Pilot light</td><td>The database only, replicating</td></tr>
+<tr><td>Minutes</td><td>Warm standby</td><td>A shrunken but live copy of everything</td></tr>
+<tr><td>Near zero</td><td>Multi-site active/active</td><td>Full capacity, taking real traffic</td></tr>
+</tbody></table>
+
+<h4>Multi-account, the domain-one staples</h4>
+<table class="osi"><thead><tr><th>Need</th><th>Answer</th></tr></thead><tbody>
+<tr><td>Stop anyone in an account doing something, ever</td><td>An SCP on the OU — remembering it caps and never grants</td></tr>
+<tr><td>Delegate admin without unlimited power</td><td>A permissions boundary on the role you hand over</td></tr>
+<tr><td>One place to see every API call</td><td>An organisation trail into a locked central bucket</td></tr>
+<tr><td>Shared VPC subnets across accounts</td><td>Resource Access Manager</td></tr>
+<tr><td>New accounts that arrive already governed</td><td>Control Tower with account factory</td></tr>
+<tr><td>Only our own principals may reach our buckets</td><td>Bucket policy with a condition on aws:PrincipalOrgID</td></tr>
+</tbody></table>`;
+
+/* ---- numbers and traps ---- */
+document.getElementById('cheatNumbers').innerHTML=`
+<div class="plain-line"><b>Use these as tie-breakers, not trivia:</b> you are rarely asked a limit directly. You are asked a scenario where one option quietly exceeds a limit, which is what makes it the wrong answer. <b>Quotas change</b> — treat these as the shape, and check current values before you rely on them at work.</div>
+<table class="osi"><thead><tr><th>Thing</th><th>Number</th><th>What it decides in a question</th></tr></thead><tbody>
+<tr><td><b>Lambda</b></td><td>15 minutes maximum, up to 10 GB memory</td><td>Anything longer moves to Fargate, ECS or Batch. The most-used limit on the exam</td></tr>
+<tr><td><b>Lambda in a VPC</b></td><td>No internet unless you add NAT</td><td>A classic wrong answer: putting a function in a VPC and expecting it to reach a public API</td></tr>
+<tr><td><b>SQS</b></td><td>256 KB per message, 14 days maximum retention</td><td>Larger payloads go to S3 with a pointer in the message</td></tr>
+<tr><td><b>SQS FIFO</b></td><td>Far lower throughput than standard</td><td>Only pick FIFO when ordering or de-duplication is explicitly required</td></tr>
+<tr><td><b>Kinesis shard</b></td><td>1 MB/s in, 2 MB/s out</td><td>The question gives you a data rate; divide to see how many shards, or whether Firehose is the simpler answer</td></tr>
+<tr><td><b>S3 object</b></td><td>5 TB maximum, multipart above 5 GB</td><td>Very large single files, and why upload strategy comes up</td></tr>
+<tr><td><b>S3 requests</b></td><td>Thousands per second per prefix</td><td>Key design matters at scale; prefixes spread the load</td></tr>
+<tr><td><b>VPC subnet</b></td><td>/16 largest, /28 smallest, 5 addresses reserved</td><td>Address-planning questions, and why a /28 gives 11 usable</td></tr>
+<tr><td><b>DynamoDB item</b></td><td>400 KB</td><td>Large blobs belong in S3 with the key in the table</td></tr>
+<tr><td><b>Aurora</b></td><td>Up to 15 replicas, global lag around a second</td><td>Read scaling and cross-region RPO answers</td></tr>
+<tr><td><b>RDS backups</b></td><td>Retention up to 35 days</td><td>Anything longer needs manual snapshots or Backup with a longer policy</td></tr>
+<tr><td><b>ALB idle timeout</b></td><td>60 seconds by default</td><td>Long-polling and streaming questions where connections drop at a suspiciously round number</td></tr>
+<tr><td><b>Peering</b></td><td>Not transitive, no overlapping CIDRs</td><td>Two facts that eliminate options outright</td></tr>
+<tr><td><b>SCPs</b></td><td>Do not apply to the management account</td><td>A favourite trap in domain one</td></tr>
+</tbody></table>`;
+
+document.getElementById('cheatTraps').innerHTML=`
+<h4 style="margin-top:0">Things that are simply false, and appear as options anyway</h4>
+<table class="osi"><thead><tr><th>The distractor</th><th>The truth</th></tr></thead><tbody>
+<tr><td>An SCP grants the account a permission</td><td>SCPs only <b>cap</b>. If a principal has no grant, adding an SCP changes nothing</td></tr>
+<tr><td>Security groups are stateless</td><td>They are <b>stateful</b>. NACLs are the stateless ones, and they need a return rule</td></tr>
+<tr><td>A security group can only reference addresses</td><td>It can reference <b>another security group</b>, which is usually the better answer</td></tr>
+<tr><td>Peering is transitive</td><td>It is not. Through-VPC routing needs Transit Gateway</td></tr>
+<tr><td>Direct Connect is encrypted</td><td>Private, not encrypted. Add a VPN or MACsec when the question says encrypted</td></tr>
+<tr><td>Multi-AZ scales reads</td><td>Multi-AZ is for <b>availability</b>. Read replicas scale reads</td></tr>
+<tr><td>A read replica gives you a lower RPO</td><td>It is asynchronous. Cross-region replicas reduce RPO but do not make it zero</td></tr>
+<tr><td>Lambda in a VPC can reach the internet</td><td>Only through a NAT gateway in a private subnet</td></tr>
+<tr><td>Object Lock in governance mode is immutable</td><td>A privileged user can override governance. Compliance mode is the one nobody can</td></tr>
+<tr><td>Encryption at rest satisfies &ldquo;in transit&rdquo;</td><td>Two separate requirements. Read which one the question actually asked for</td></tr>
+</tbody></table>
+
+<h4>How the wording narrows it down</h4>
+<table class="osi"><thead><tr><th>The phrase</th><th>What it is steering you to</th></tr></thead><tbody>
+<tr><td><b>least operational overhead</b></td><td>The managed service, even when it costs more. Self-managed on EC2 is the trap</td></tr>
+<tr><td><b>most cost-effective</b></td><td>Cheapest <em>that still meets every requirement</em> — not cheapest outright</td></tr>
+<tr><td><b>without changing the application</b></td><td>Rules out refactoring. Look for lift and shift, a gateway, or a compatible drop-in</td></tr>
+<tr><td><b>minimal downtime</b></td><td>Replication and cutover, not export and import</td></tr>
+<tr><td><b>must not traverse the public internet</b></td><td>PrivateLink, VPC endpoints or Direct Connect. Eliminates anything internet-facing</td></tr>
+<tr><td><b>eventually consistent is acceptable</b></td><td>Permission to use asynchronous replication, caching, or a NoSQL answer</td></tr>
+<tr><td><b>fault tolerant</b> in a batch question</td><td>Spot becomes viable, and is usually the intended answer</td></tr>
+<tr><td><b>audit</b> or <b>who did what</b></td><td>CloudTrail. Config is <em>what it looks like</em>, CloudTrail is <em>who changed it</em></td></tr>
+</tbody></table>
+
+<h4>Working a question under time pressure</h4>
+<table class="osi"><thead><tr><th>Step</th><th>Do this</th></tr></thead><tbody>
+<tr><td><b>1</b></td><td>Read the <b>last sentence first</b>. It holds the requirement that decides between working answers</td></tr>
+<tr><td><b>2</b></td><td>Skim the options before the scenario. You then read the scenario looking for something specific</td></tr>
+<tr><td><b>3</b></td><td>Strike out anything factually wrong. Usually two go immediately</td></tr>
+<tr><td><b>4</b></td><td>Of what remains, find the one that violates a stated constraint — cost, downtime, no internet, no code change</td></tr>
+<tr><td><b>5</b></td><td>If two still survive, prefer <b>managed and simpler</b>. The exam consistently rewards less operational burden</td></tr>
+<tr><td><b>6</b></td><td>Flag and move on at ninety seconds. Marks are equal; a hard question costs the same as an easy one</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>The habit worth building:</b> after every practice question, write one line saying which phrase decided it. That list becomes your own version of the trigger table above, and it is worth more than anyone else's because it is built from the ones you actually got wrong.</div>`;
 
 </script>
 </body>
