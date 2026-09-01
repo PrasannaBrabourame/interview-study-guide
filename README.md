@@ -42,6 +42,10 @@ agentbuild.html   Agents-building-agents lab — spec-driven development with a
 adk.html          ADK lab — agents, tools and tool schemas, session state,
                   callbacks and plugins, orchestration and delegation,
                   grounding and MCP, the Agent Sandbox, skills, deployment
+evals.html        Evaluation lab — why testing breaks on generative systems,
+                  metrics and autoraters, rubrics, trajectories and golden
+                  paths, offline vs online, the managed platform, ADK
+                  build-time evals, hill climbing, unit economics, upgrades
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking

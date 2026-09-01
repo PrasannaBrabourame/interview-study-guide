@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation lab — measuring agents and climbing the hill</title>
+<style>
+  /* self-hosted, same subsets the portfolio serves — no external requests */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
+  :root{
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-family:var(--display); font-size:clamp(26px,3.4vw,38px); font-weight:500; letter-spacing:-.018em; line-height:1.05}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
+  .wf{display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:11px}
+  .wf .row{display:grid; grid-template-columns:150px 1fr 62px; gap:8px; align-items:center}
+  .wf .lab{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf .track{position:relative; height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:4px}
+  .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
+  .wf .ms{text-align:right; color:var(--dim)}
+  .wf .row.err .lab{color:var(--red)}
+  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+
+  .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
+    padding:11px 12px; text-align:center; transition:border-color .3s, background .3s, opacity .3s}
+  .chasm .cpart b{display:block; font-size:13px; font-weight:500; color:var(--text)}
+  .chasm .cpart small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.4}
+  .chasm .cagent{grid-column:1/-1; border-color:var(--blue); background:var(--n-blue)}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:var(--amber); opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  /* the same class used inline: a chip on the line, not a panel */
+  span.code{display:inline; background:var(--sel); border:1px solid var(--line2); border-radius:5px;
+    padding:.5px 5px; margin:0; overflow:visible; font-family:var(--mono); font-size:.9em;
+    line-height:inherit; color:var(--text); overflow-wrap:break-word}
+  .code pre{margin:0}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- shared note / row utilities ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
+  .lztier{display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+    border:1px solid var(--line2); border-left-width:3px; border-radius:0 9px 9px 0; background:var(--panel2);
+    cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; transition:border-color .15s}
+  .lztier:hover{border-color:var(--teal)}
+  .lztier.on{border-color:var(--amber); background:var(--sel)}
+  .lztier b{font-size:12.5px; font-weight:600}
+  .lztier span{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto; white-space:nowrap}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a>
+    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
+    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
+    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
+    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
+    <div class="eyebrow">agent evaluation · hill climbing · unit economics</div>
+    <h1>How do you know it got better? <span class="thin">— measuring agents, and improving them on purpose</span></h1>
+    <p class="sub">A test either passes or it does not. An agent gives you a different answer every time, so &ldquo;it works&rdquo; stops being a thing you can assert and becomes a thing you have to measure. This lab is about that measurement, and about the disciplined loop that turns it into improvement: diagnose, change one thing, measure, keep it or throw it away. Eleven sections, plain English first, and simulations for the parts that only make sense once you have watched a number move the wrong way.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="start" role="tab">Start here</button>
+    <button class="tab" data-pane="methods" role="tab">Metrics & methods</button>
+    <button class="tab" data-pane="rubrics" role="tab">Rubrics</button>
+    <button class="tab" data-pane="traj" role="tab">Trajectories</button>
+    <button class="tab" data-pane="onoff" role="tab">Offline & online</button>
+    <button class="tab" data-pane="geap" role="tab">The platform</button>
+    <button class="tab" data-pane="adkeval" role="tab">ADK build-time</button>
+    <button class="tab" data-pane="hill" role="tab">Hill climbing</button>
+    <button class="tab" data-pane="perf" role="tab">Latency & cost</button>
+    <button class="tab" data-pane="upgrade" role="tab">Model upgrades</button>
+    <button class="tab" data-pane="plan" role="tab">The plan & exam</button>
+  </div>
+
+  <section class="pane on" id="pane-start">
+    <div id="sec-start"></div>
+  </section>
+  <section class="pane" id="pane-methods">
+    <div id="sec-methods"></div>
+  </section>
+  <section class="pane" id="pane-rubrics">
+    <div id="sec-rubrics"></div>
+  </section>
+  <section class="pane" id="pane-traj">
+    <div id="sec-traj"></div>
+  </section>
+  <section class="pane" id="pane-onoff">
+    <div id="sec-onoff"></div>
+  </section>
+  <section class="pane" id="pane-geap">
+    <div id="sec-geap"></div>
+  </section>
+  <section class="pane" id="pane-adkeval">
+    <div id="sec-adkeval"></div>
+  </section>
+  <section class="pane" id="pane-hill">
+    <div id="sec-hill"></div>
+  </section>
+  <section class="pane" id="pane-perf">
+    <div id="sec-perf"></div>
+  </section>
+  <section class="pane" id="pane-upgrade">
+    <div id="sec-upgrade"></div>
+  </section>
+  <section class="pane" id="pane-plan">
+    <div id="sec-plan"></div>
+  </section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">learning guide</a> · <a href="cloud.html">cloud lab</a> · <a href="agentcore.html">agentcore lab</a> · <a href="agentbuild.html">agents lab</a> · <a href="adk.html">adk lab</a>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
+
+
+
+
+
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+
+
+
+
+
+/* ================= 1 · START HERE ================= */
+document.getElementById('sec-start').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A test asks &ldquo;did it pass?&rdquo;. An agent can only answer &ldquo;how often, and how well?&rdquo;</h2>
+  <div class="plain-line"><b>In plain English:</b> ordinary software is a vending machine. Press B4, get the same crisps, every time, forever. You can write a test that says &ldquo;pressing B4 returns crisps&rdquo; and that test is true or false. An agent is closer to asking a competent colleague to do something. Ask twice and you get two different sentences, both fine. Ask a hundred times and a few will be poor. <b>There is no single correct output to compare against</b>, so the question stops being <em>did it pass</em> and becomes <em>how good is it, how often, and is that better than last week</em>.</div>
+  <div class="plain-line">That one shift is where every idea in this lab comes from. If quality is a distribution rather than a boolean, you need a way to score it, a set of cases to score it on, someone to say whether the scores match human judgement, and a loop that turns the scores into changes. Skip any of the four and you are guessing with extra steps.</div>
+  ${D('0 0 660 210','Deterministic software returning the same output every time, next to a generative system returning a spread of outputs.',
+   `${box(14,26,300,150,'var(--teal)')}${t(164,50,'Ordinary software',SANS)}
+    ${tm(164,76,'same input  →  same output','var(--dim)')}
+    ${tm(164,100,'assert result == expected','var(--teal)')}
+    ${tm(164,126,'passes or fails','var(--dim)')}
+    ${tm(164,152,'one run tells you everything','var(--green)')}
+    ${box(346,26,300,150,'var(--violet)')}${t(496,50,'A generative system',SANS)}
+    ${tm(496,76,'same input  →  a spread of outputs','var(--dim)')}
+    ${tm(496,100,'score each one against a rubric','var(--violet)')}
+    ${tm(496,126,'produces a distribution','var(--dim)')}
+    ${tm(496,152,'one run tells you almost nothing','var(--red)')}`,
+   'The right-hand column is not a defect to be engineered away. It is the material you are working with, and the reason evaluation is a discipline rather than a checkbox.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; run the same input a hundred times</h2>
+  <div class="plain-line"><b>Try this:</b> one input, many runs. Watch what a pass/fail test tells you about each system, and what it hides. Then move the quality dial and see how many runs it takes before you could honestly say the change helped.</div>
+  <div class="sim-layout">
+    <div><div id="detOut"></div></div>
+    <div><div class="segmented" id="detKind" style="flex-direction:column;align-items:stretch"></div>
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">runs: <b id="detNv" style="font-family:var(--mono);color:var(--amber)">20</b></label>
+      <input type="range" id="detN" min="1" max="200" value="20" style="width:100%">
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">underlying quality: <b id="detQv" style="font-family:var(--mono);color:var(--amber)">78</b>%</label>
+      <input type="range" id="detQ" min="40" max="99" value="78" style="width:100%">
+      <div id="detNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The flywheel &mdash; the shape the whole lab is describing</h2>
+  <div class="plain-line"><b>In plain English:</b> evaluation on its own produces a number and a shrug. It only becomes useful inside a loop: measure, find out <em>why</em>, change something, measure again. Google&rsquo;s courses call this the <b>Quality Flywheel</b>, and the point of the name is that it only pays off when it goes round more than once.</div>
+  ${D('0 0 640 220','The quality flywheel: evaluate, analyze, optimize, and back to evaluate.',
+   `${box(220,22,200,52,'var(--green)')}${t(320,46,'Analyze',SANS)}${tm(320,64,'metrics and reports','var(--dim)')}
+    ${box(400,110,200,52,'var(--red)')}${t(500,134,'Optimize',SANS)}${tm(500,152,'change the agent','var(--dim)')}
+    ${box(40,110,200,52,'var(--blue)')}${t(140,134,'Evaluate',SANS)}${tm(140,152,'score it again','var(--dim)')}
+    <path d="M418 56 C470 66 496 88 500 106" style="stroke:var(--wire);fill:none" stroke-width="1.6" marker-end="url(#ah)"/>
+    <path d="M400 146 C330 168 220 168 245 152" style="stroke:var(--wire);fill:none" stroke-width="1.6" marker-end="url(#ah)"/>
+    <path d="M140 106 C136 86 168 62 218 52" style="stroke:var(--wire);fill:none" stroke-width="1.6" marker-end="url(#ah)"/>
+    ${tm(320,196,'one lap is a measurement · repeated laps are a practice','var(--dim)')}`,
+   'Analyze tells you what is wrong, Optimize changes it, Evaluate says whether the change helped. Cutting out the analyze step is the most common way teams end up making confident changes that do nothing.')}
+</div>
+
+<div class="card">
+  <h2 class="sec">Why you cannot just use the public benchmark scores</h2>
+  <div class="plain-line"><b>In plain English:</b> a model topping a leaderboard tells you it is good at the leaderboard. Two things go wrong when you treat that as evidence about your system.</div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">1</span><span><b>Data leakage.</b> Public benchmarks have been on the internet for years, so they have very likely been in the training data. A high score can mean the model has genuinely reasoned, or that it has seen the answer. From the outside these look identical.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>They test the wrong thing.</b> They over-represent tasks that are easy to score and under-represent whatever your users actually do. Nobody&rsquo;s benchmark contains your tone of voice, your policy documents, your escalation rules or your five awkward edge cases.</span></div>
+  <div class="plain-line" style="margin-top:10px"><b>So the first real deliverable is not a score, it is a set of cases.</b> Your own inputs, your own idea of a good answer, and the awkward ones written down. That set is the thing you will still be using in two years, long after the model underneath it has been replaced three times.</div>
+</div>`;
+
+/* --- SIM: determinism --- */
+(function(){
+  const kind=document.getElementById('detKind'), out=document.getElementById('detOut'),
+        n=document.getElementById('detN'), q=document.getElementById('detQ'),
+        nv=document.getElementById('detNv'), qv=document.getElementById('detQv'), note=document.getElementById('detNote');
+  if(!kind) return;
+  let cur='gen';
+  /* deterministic pseudo-random so the picture is stable across renders */
+  let seed=7; const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function render(){
+    kind.innerHTML=[['det','Ordinary software — a price calculator'],['gen','A generative system — a support agent']]
+      .map(([v,l])=>'<button class="seg'+(cur===v?' on':'')+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('');
+    kind.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.v;render();});
+    const N=+n.value, Q=+q.value; nv.textContent=N; qv.textContent=Q;
+    seed=7;
+    const runs=[];
+    for(let i=0;i<N;i++) runs.push(cur==='det' ? 100 : Math.max(5,Math.min(100, Math.round(Q + (rnd()+rnd()+rnd()-1.5)*24))));
+    const pass=runs.filter(r=>r>=70).length;
+    const mean=runs.reduce((a,b)=>a+b,0)/runs.length;
+    const sd=Math.sqrt(runs.reduce((a,b)=>a+(b-mean)*(b-mean),0)/runs.length)||0;
+    const se=sd/Math.sqrt(runs.length);
+    /* histogram */
+    const buckets=new Array(10).fill(0); runs.forEach(r=>buckets[Math.min(9,Math.floor(r/10))]++);
+    const top=Math.max(...buckets,1);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+N+' RUNS OF THE SAME INPUT — SCORE DISTRIBUTION</div>'+
+      '<div style="display:flex;align-items:flex-end;gap:4px;height:150px;padding:0 2px">'+
+      buckets.map((b,i)=>'<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">'+
+        '<div style="height:'+(b/top*100)+'%;background:'+(i<7?'var(--red)':'var(--green)')+';opacity:.72;border-radius:3px 3px 0 0;min-height:'+(b?2:0)+'px"></div>'+
+        '</div>').join('')+'</div>'+
+      '<div style="display:flex;gap:4px;padding:0 2px;margin-top:5px">'+
+      buckets.map((b,i)=>'<div style="flex:1;text-align:center;font-family:var(--mono);font-size:9px;color:var(--muted)">'+(i*10)+'</div>').join('')+'</div>'+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">mean score</span><b>'+mean.toFixed(1)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">spread (std dev)</span><b>'+sd.toFixed(1)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">above the pass line</span><b>'+pass+' / '+N+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">margin of error on the mean</span><b>±'+(1.96*se).toFixed(1)+'</b></div>'+
+      '</div>';
+    let html;
+    if(cur==='det'){
+      html='<div class="ok" style="margin-bottom:10px"><b>Every run is identical, so one run was enough.</b> This is what makes ordinary testing work: a single execution is a complete description of the behaviour.</div>'+
+        '<div class="simnote">Switch to the agent and the same slider stops meaning what you think it means.</div>';
+    } else {
+      const moe=1.96*se;
+      html='<div class="note" style="margin-bottom:10px"><b>Same input, '+N+' different answers.</b> A pass/fail test would have reported whichever one it happened to get.</div>';
+      if(N<=5) html+='<div class="lzbad" style="margin-bottom:10px"><b>With '+N+' run'+(N>1?'s':'')+' you know almost nothing.</b> The margin of error is ±'+moe.toFixed(1)+' points — wider than most improvements you will ever make. A change that looks like a win here is noise more often than not.</div>';
+      else if(moe>3) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Margin of error ±'+moe.toFixed(1)+' points.</b> You could detect a large regression, but a genuine two-point improvement would be invisible. Add runs before you trust a small delta.</div>';
+      else html+='<div class="ok" style="margin-bottom:10px"><b>Margin of error ±'+moe.toFixed(1)+' points.</b> Now a real improvement of a few points is distinguishable from luck — which is the entire reason for running the set rather than the example.</div>';
+      html+='<div class="simnote" style="margin-top:8px"><b>The thing to take from the shape:</b> the average is not the story. Those runs down at the low end are real users having a bad experience, and they do not disappear because the mean looks healthy. Evaluating the tail is usually more useful than evaluating the average.</div>';
+    }
+    note.innerHTML=html;
+  }
+  n.oninput=render; q.oninput=render; render();
+})();
+/* ================= 2 · METRICS & METHODS ================= */
+document.getElementById('sec-methods').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Three ways to score an answer, and none of them is free</h2>
+  <div class="plain-line"><b>In plain English:</b> you can score with a <b>ruler</b>, with <b>people</b>, or with <b>another model</b>. The ruler is instant and cheap and only works on things that are genuinely measurable. People are the real standard and you cannot afford many of them. A model can apply your standard at scale, but only after you have proved it agrees with the people.</div>
+  <table class="osi"><thead><tr><th></th><th>Deterministic metrics</th><th>Human raters</th><th>Autoraters (LLM-as-a-judge)</th></tr></thead><tbody>
+  <tr><td><b>What it is</b></td><td>Code that computes a number: exact match, valid JSON, latency, cost, a regex</td><td>People reading outputs and scoring them against a rubric</td><td>A model reading outputs and scoring them against the same rubric</td></tr>
+  <tr><td><b>Cost &amp; speed</b></td><td>Effectively free, instant</td><td>Expensive and slow. This is the binding constraint</td><td>Cheap enough to run on thousands of cases</td></tr>
+  <tr><td><b>Good at</b></td><td>Anything with one right answer: did the tool return valid JSON, was the total correct, did it finish in time</td><td>Judgement — tone, helpfulness, whether a person would actually be satisfied</td><td>Applying a judgement standard that humans have already agreed on, at volume</td></tr>
+  <tr><td><b>Fails at</b></td><td>Open-ended text. It cannot tell a good paraphrase from a bad one</td><td>Scale, and consistency between raters without a rubric</td><td>Anything it was never calibrated on. Uncalibrated, it is confident and wrong</td></tr>
+  <tr><td><b>Use it for</b></td><td>Guardrails and regressions &mdash; the things that must never break</td><td>Setting the standard, and checking the autorater still matches it</td><td>The everyday running of your evaluation suite</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The ordering matters.</b> Humans define what good means. The autorater learns to apply that definition and is checked against it. Deterministic metrics catch the things that are objectively broken. Reaching for the autorater first &mdash; without the human step &mdash; gives you a number that is stable, plausible, and not measuring what you think.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; the single ground truth trap</h2>
+  <div class="plain-line"><b>Try this:</b> one reference answer, four candidates. String-similarity metrics like BLEU and ROUGE score by comparing words against that single reference. Read what they reward, and what they punish.</div>
+  <div class="sim-layout">
+    <div><div id="gtOut"></div></div>
+    <div><div class="segmented" id="gtPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gtNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Absolute ratings or side-by-side? They are not interchangeable</h2>
+  <div class="vs2"><div class="col"><b>ABSOLUTE — score this output 1 to 5</b>Measures the <em>inherent</em> quality of one output. The score means the same thing next month, so the data is reusable: for tracking over time, for calibrating an autorater, for training.<br><br><b>Costs you</b> a rubric good enough that two people give the same number.</div>
+  <div class="col"><b>SIDE-BY-SIDE — which of these two is better?</b>Easier for a person to answer honestly, and good at detecting small differences between two versions.<br><br><b>Costs you</b> the absolute reading. A wins over B tells you nothing about whether either was any good, and the answer expires the moment B changes.</div></div>
+  <div class="plain-line" style="margin-top:12px"><b>The practical rule:</b> use side-by-side when the question is &ldquo;did this change help?&rdquo; and absolute ratings when the question is &ldquo;is this good enough to ship?&rdquo;. Only one of the two produces data you can still use next quarter.</div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h2 class="sec">The metrics nobody assigns to anyone, and everybody needs</h2>
+  <div class="plain-line"><b>In plain English:</b> alongside &ldquo;was the answer good&rdquo; there is a second family of numbers that describe how the agent <em>behaved</em>. They are cheap, they come straight from your traces, and they catch a class of failure that quality scoring misses entirely.</div>
+  <table class="osi"><thead><tr><th>Signal</th><th>What a spike actually means</th></tr></thead><tbody>
+  <tr><td><b>Tool invocations per trajectory</b></td><td><b>The loop detector.</b> A sudden jump means the agent is calling the same tool over and over without making progress. Quality scores will not show this — the final answer may even be fine, after forty calls and a large bill</td></tr>
+  <tr><td><b>Time to first token</b></td><td>Perceived responsiveness. It is what a user feels as &ldquo;is it broken?&rdquo;, and it is nearly independent of total time</td></tr>
+  <tr><td><b>Total turns per session</b></td><td>Rising turns often means the agent is not resolving things, just talking. Task success can stay flat while satisfaction falls</td></tr>
+  <tr><td><b>Token usage per trajectory</b></td><td>The cost signal, and an early warning of context bloat</td></tr>
+  <tr><td><b>Modality distribution</b></td><td>What people are actually sending. Usually the first evidence that real usage has drifted away from your eval set</td></tr>
+  </tbody></table>
+</div>`;
+
+/* --- SIM: ground truth trap --- */
+(function(){
+  const pick=document.getElementById('gtPick'), out=document.getElementById('gtOut'), note=document.getElementById('gtNote');
+  if(!pick) return;
+  const REF='To reset your password, open Settings, choose Security, and select Reset password.';
+  const C=[
+    {k:'para',label:'A good paraphrase',
+     txt:'Head into Settings, tap Security, then pick Reset password.',
+     sim:22,rub:95,
+     v:['bad','<b>Scored 22 by string similarity, 95 by a human.</b> It is correct, clear and arguably friendlier than the reference — and it shares almost no word sequences with it. The metric has punished a genuinely good answer for using different words.']},
+    {k:'copy',label:'The reference, word for word',
+     txt:'To reset your password, open Settings, choose Security, and select Reset password.',
+     sim:100,rub:80,
+     v:['note','<b>A perfect 100.</b> Which sounds like success until you notice what it rewards: reproducing one person&rsquo;s phrasing exactly. Optimise for this metric and you are training the system to be a photocopier.']},
+    {k:'noise',label:'Right words, wrong meaning',
+     txt:'Reset your Settings to open the password, and select Security to choose a reset.',
+     sim:71,rub:5,
+     v:['bad','<b>This is the one that should worry you.</b> Nonsense, scored 71 — higher than the good paraphrase — purely because it reuses the reference vocabulary. A metric that ranks gibberish above a correct answer is not a weak signal, it is a misleading one.']},
+    {k:'wrong',label:'Fluent and wrong',
+     txt:'Passwords reset automatically every 90 days, so no action is needed.',
+     sim:8,rub:0,
+     v:['ok','<b>Correctly scored low by both.</b> This is the case the metric handles well: when the answer shares neither meaning nor vocabulary, similarity and judgement agree. It agrees for the wrong reason, but it agrees.']}
+  ];
+  let cur='para';
+  function render(){
+    pick.innerHTML=C.map(c=>'<button class="seg'+(cur===c.k?' on':'')+'" data-k="'+c.k+'" style="text-align:left">'+c.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const c=C.find(x=>x.k===cur);
+    const bar=(v,col)=>'<div class="bar" style="height:12px"><i style="display:block;height:100%;width:'+v+'%;background:'+col+'"></i></div>';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:5px">THE ONE REFERENCE ANSWER SOMEBODY WROTE</div>'+
+      '<div class="note" style="padding:9px 11px;border-left:2px solid var(--wire);margin-bottom:16px">'+REF+'</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:5px">THE CANDIDATE</div>'+
+      '<div class="plain-line" style="margin-bottom:16px">'+c.txt+'</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:4px">string similarity — BLEU / ROUGE style</div>'+
+      bar(c.sim,'var(--red)')+'<div style="text-align:right;font-family:var(--mono);font-size:12px;margin-bottom:14px">'+c.sim+'</div>'+
+      '<div style="font-size:11.5px;color:var(--muted);margin-bottom:4px">a human applying a rubric</div>'+
+      bar(c.rub,'var(--green)')+'<div style="text-align:right;font-family:var(--mono);font-size:12px">'+c.rub+'</div>';
+    note.innerHTML='<div class="'+(c.v[0]==='ok'?'ok':c.v[0]==='note'?'note':'lzbad')+'" style="margin-bottom:10px">'+c.v[1]+'</div>'+
+      '<div class="simnote"><b>Why this matters beyond the numbers:</b> whatever you measure is what the system will be tuned towards. Optimise against string similarity on open-ended text and you will reliably get a system that is worse at its job and better at the metric.</div>'+
+      '<div class="simnote" style="margin-top:8px"><b>Where these metrics are still right:</b> anywhere there genuinely is one correct answer — a structured field, an extracted value, a tool call&rsquo;s arguments. Keep them for those, and stop asking them to judge prose.</div>';
+  }
+  render();
+})();
+
+/* ================= 3 · RUBRICS ================= */
+document.getElementById('sec-rubrics').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A rubric is the only place your definition of &ldquo;good&rdquo; actually exists</h2>
+  <div class="plain-line"><b>In plain English:</b> ask five people to score an answer out of five and you get five numbers and no agreement, because each of them invented their own standard on the spot. A <b>rubric</b> is that standard, written down: what each score means, with examples. It is what makes two raters agree, and it is the thing an autorater is copying when it grades at scale.</div>
+  <div class="plain-line">Which leads to a rule that catches everyone at least once: <b>when your evaluation numbers are noisy or confusing, the rubric is the first suspect, not the agent.</b> A rubric that says &ldquo;score 4 if the answer is helpful&rdquo; is not a standard. It is a word that means something different to every reader, human or model.</div>
+  <div class="vs2"><div class="col"><b>VAGUE — two raters will disagree</b>&ldquo;<b>5</b> — excellent answer.<br><b>3</b> — acceptable answer.<br><b>1</b> — poor answer.&rdquo;<br><br>Nothing here is checkable. Every score is a private opinion, so the spread between raters becomes noise you cannot remove by adding more of them.</div>
+  <div class="col"><b>SPECIFIC — two raters land on the same number</b>&ldquo;<b>5</b> — resolves the request, cites the policy it applied, and needs no follow-up.<br><b>3</b> — correct but omits the policy reference, or requires one clarifying exchange.<br><b>1</b> — incorrect, or refers the user somewhere that cannot help them.&rdquo;<br><br>Each level names an observable fact. Disagreement now means the rubric is ambiguous somewhere specific, and you can fix that.</div></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; calibrate an autorater and watch it drift</h2>
+  <div class="plain-line"><b>Try this:</b> an autorater is a model doing the grading. It is only as good as the rubric it was given and the human labels it was checked against. Sharpen the rubric, add calibration examples, and see how close it gets to what your people actually think.</div>
+  <div class="sim-layout">
+    <div><div id="calOut"></div></div>
+    <div>
+      <div class="dim" style="font-size:11px;margin-bottom:5px">RUBRIC CLARITY</div>
+      <div class="segmented" id="calRub" style="flex-direction:column;align-items:stretch"></div>
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">human-labelled calibration examples: <b id="calNv" style="font-family:var(--mono);color:var(--amber)">0</b></label>
+      <input type="range" id="calN" min="0" max="200" value="0" style="width:100%">
+      <div id="calNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Adaptive rubrics &mdash; and the rubric that watches the rubric</h2>
+  <div class="plain-line"><b>In plain English:</b> a fixed rubric works when every question is the same shape. It falls apart on an open-ended assistant, where &ldquo;good&rdquo; for a refund request and &ldquo;good&rdquo; for a technical explanation have almost nothing in common. An <b>adaptive rubric</b> is generated per query: for this particular question, what would a good answer have to contain?</div>
+  <div class="plain-line">That buys relevance and introduces an obvious hole. If the rubric is generated fresh every time, <b>who checks the rubric?</b> A generated rubric can be lenient, off-topic, or quietly ask for the wrong thing, and your scores will look perfectly reasonable throughout.</div>
+  ${D('0 0 660 200','An adaptive rubric generated per query, checked by a fixed meta-rubric before it is used for grading.',
+   `${box(14,26,180,44,'var(--blue)')}${tm(104,52,'the user’s question','var(--blue)')}
+    ${box(240,26,180,44,'var(--violet)')}${tm(330,46,'a rubric generated','var(--violet)')}${tm(330,62,'for this question','var(--dim)')}
+    ${box(466,26,180,44,'var(--green)')}${tm(556,52,'the grade','var(--green)')}
+    <path d="M196 48 H236" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M422 48 H462" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${box(240,110,180,44,'var(--amber)')}${tm(330,130,'the meta-rubric','var(--amber)')}${tm(330,146,'fixed, never generated','var(--dim)')}
+    <path d="M330 106 V74" style="stroke:var(--amber);fill:none" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(330,186,'is this generated rubric actually asking for the right things?','var(--dim)')}`,
+   'The meta-rubric is the fixed point in an otherwise moving system. It never changes, so it can be trusted to judge the thing that does.')}
+  <div class="plain-line" style="margin-top:12px"><b>Said plainly:</b> the meta-rubric is a rubric for grading rubrics. It sounds like one abstraction too many until the first time a generated rubric quietly stops asking for the thing you care about, and every score stays green while quality falls.</div>
+</div>`;
+
+/* --- SIM: autorater calibration --- */
+(function(){
+  const rub=document.getElementById('calRub'), out=document.getElementById('calOut'),
+        n=document.getElementById('calN'), nv=document.getElementById('calNv'), note=document.getElementById('calNote');
+  if(!rub) return;
+  const R=[['vague','“Score 1–5 on how good it is”'],['ok','Named criteria, no examples'],['sharp','Observable criteria with worked examples']];
+  let cur='vague';
+  let seed=11; const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function render(){
+    rub.innerHTML=R.map(([v,l])=>'<button class="seg'+(cur===v?' on':'')+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('');
+    rub.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.v;render();});
+    const N=+n.value; nv.textContent=N;
+    const base={vague:0.30,ok:0.55,sharp:0.72}[cur];
+    const lift=Math.min(0.26, Math.log10(1+N)/Math.log10(201)*0.26);
+    const agree=Math.min(0.96, base+lift);
+    const noise={vague:1.5,ok:0.9,sharp:0.45}[cur]*(1-Math.min(0.5,N/200));
+    seed=11;
+    const rows=[];
+    for(let i=0;i<12;i++){
+      const human=1+Math.floor(rnd()*5);
+      let auto=Math.round(human + (rnd()-0.5)*2*noise*(1+ (cur==='vague'?0.8:0)));
+      auto=Math.max(1,Math.min(5,auto));
+      rows.push([human,auto]);
+    }
+    const matched=rows.filter(([a,b])=>a===b).length;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TWELVE CASES — WHAT A PERSON SAID, AND WHAT THE AUTORATER SAID</div>'+
+      rows.map(([hu,au],i)=>{
+        const ok=hu===au, near=Math.abs(hu-au)===1;
+        return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:5px;font-family:var(--mono);font-size:11.5px">'+
+          '<span style="width:52px;color:var(--muted)">case '+(i+1)+'</span>'+
+          '<span style="width:76px">human <b>'+hu+'</b></span>'+
+          '<span style="width:70px;color:'+(ok?'var(--green)':near?'var(--amber)':'var(--red)')+'">judge <b>'+au+'</b></span>'+
+          '<div style="flex:1;height:8px;background:var(--panel2);border-radius:99px;position:relative">'+
+            '<div style="position:absolute;left:'+((Math.min(hu,au)-1)/4*100)+'%;width:'+(Math.abs(hu-au)/4*100)+'%;top:0;bottom:0;background:'+(ok?'var(--green)':near?'var(--amber)':'var(--red)')+';border-radius:99px;opacity:.8"></div>'+
+          '</div></div>';
+      }).join('')+
+      '<div class="bar" style="margin-top:14px;height:12px"><i style="display:block;height:100%;width:'+(agree*100)+'%;background:'+(agree>0.85?'var(--green)':agree>0.65?'var(--amber)':'var(--red)')+'"></i></div>'+
+      '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-top:6px">'+
+        '<span class="dim">agreement with human judgement</span><b>'+Math.round(agree*100)+'%</b></div>'+
+      '<div style="font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:4px">exact matches in this sample: '+matched+' / 12</div>';
+    let html;
+    if(agree<0.6) html='<div class="lzbad" style="margin-bottom:10px"><b>The judge is not measuring what your people mean.</b> It is producing numbers, consistently, all day — and they do not correspond to anyone&rsquo;s idea of quality. Every decision made on this data is a coin flip dressed as evidence.</div>';
+    else if(agree<0.85) html='<div class="lzwarn" style="margin-bottom:10px"><b>Usable for direction, not for decisions.</b> You can see a large regression through this. You cannot tell a two-point improvement from noise, so do not ship on it.</div>';
+    else html='<div class="ok" style="margin-bottom:10px"><b>Close enough to stand in for a person on most cases.</b> Keep a human sample running alongside it — agreement decays quietly when the traffic changes, and nothing will announce that.</div>';
+    if(cur==='vague'&&N>80) html+='<div class="note" style="margin-bottom:10px"><b>Notice the ceiling.</b> Two hundred labelled examples cannot rescue a rubric that never said what it wanted. Calibration data teaches a judge to apply a standard; it cannot invent the standard.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The order that works:</b> write a sharp rubric, have people grade a sample with it, then check the autorater against those grades. Reaching for the autorater before the human sample gives you a number nobody has ever validated — and it will look exactly as convincing as a good one.</div>';
+    note.innerHTML=html;
+  }
+  n.oninput=render; render();
+})();
+/* ================= 4 · TRAJECTORIES ================= */
+document.getElementById('sec-traj').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The answer tells you <em>what</em> happened. The trajectory tells you <em>why</em>.</h2>
+  <div class="plain-line"><b>In plain English:</b> marking only the final answer is marking an exam by the last line of the paper. You learn that the student got it wrong. You learn nothing about whether they misread the question, used the wrong formula, or made an arithmetic slip in step three &mdash; and those need completely different fixes. A <b>trajectory</b> is the working: every step the agent took, every tool it called, every intermediate result.</div>
+  <div class="plain-line">This is the single biggest difference between evaluating a model and evaluating an agent. A model produces text. An agent produces <em>a sequence of decisions</em>, and almost all of the interesting failures live in the sequence rather than in the last sentence.</div>
+  ${D('0 0 660 200','Outcome evaluation looking only at the final answer, against trajectory evaluation looking at every step.',
+   `${tm(90,26,'OUTCOME ONLY','var(--red)')}
+    ${box(14,40,150,40,'var(--wire)')}${tm(89,64,'the question','var(--dim)')}
+    ${box(494,40,150,40,'var(--red)')}${tm(569,64,'wrong answer','var(--red)')}
+    <path d="M168 60 H490" style="stroke:var(--wire);stroke-dasharray:4 4" stroke-width="1.4" marker-end="url(#ah)"/>
+    ${tm(330,54,'everything in here is invisible','var(--dim)')}
+    ${tm(90,116,'TRAJECTORY','var(--green)')}
+    ${box(14,130,120,40,'var(--wire)')}${tm(74,154,'the question','var(--dim)')}
+    ${box(146,130,150,40,'var(--red)')}${tm(221,148,'assumed the','var(--red)')}${tm(221,164,'wrong product','var(--red)')}
+    ${box(308,130,150,40,'var(--amber)')}${tm(383,148,'called the tool','var(--amber)')}${tm(383,164,'for that product','var(--dim)')}
+    ${box(470,130,174,40,'var(--red)')}${tm(557,154,'wrong answer','var(--red)')}
+    <path d="M136 150 H142" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M298 150 H304" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M460 150 H466" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>`,
+   'Both rows end in the same failure. Only the second one tells you that the fix belongs in step two, and that steps three and four were working correctly on a false premise.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; find the turn that actually broke</h2>
+  <div class="plain-line"><b>Try this:</b> a three-turn support conversation that ends badly. Grade each turn on its own and every one looks acceptable. That is precisely why this class of failure survives single-turn evaluation &mdash; and why finding it means walking <em>backwards</em> to the turn that made the assumption.</div>
+  <div class="sim-layout">
+    <div><div id="btOut"></div></div>
+    <div><div class="segmented" id="btMode" style="flex-direction:column;align-items:stretch"></div>
+      <div id="btNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; golden paths, and the false negatives they invent</h2>
+  <div class="plain-line"><b>Try this:</b> a <b>golden path</b> is a recorded sequence of tool calls you expect the agent to make. Comparing against it is cheap and objective. The question is <em>how strictly</em> you compare &mdash; and the strict setting fails good work.</div>
+  <div class="sim-layout">
+    <div><div id="gpOut"></div></div>
+    <div><div class="segmented" id="gpMode" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">What to evaluate inside an agent, layer by layer</h2>
+  <table class="osi"><thead><tr><th>Layer</th><th>The question</th><th>How you check it</th></tr></thead><tbody>
+  <tr><td><b>Tool selection</b></td><td>Did it reach for the right tool at all?</td><td>Compare the tools called against the tools a correct solution needs. Wrong tool chosen is usually a description problem, not a reasoning problem</td></tr>
+  <tr><td><b>Tool arguments</b></td><td>Did it fill the parameters correctly?</td><td>Deterministic. Exact matching genuinely belongs here — a schema either was satisfied or was not</td></tr>
+  <tr><td><b>Trajectory shape</b></td><td>Did it get there without wandering?</td><td>Step count and tool-call count against a reasonable ceiling. A correct answer after thirty calls is still a failure</td></tr>
+  <tr><td><b>Sub-agent handoff</b></td><td>Did the right specialist get the work, with what it needed?</td><td>Check the delegation happened and that the context passed with it. Silent context loss at a handoff looks like the specialist being stupid</td></tr>
+  <tr><td><b>Final response</b></td><td>Was the answer any good?</td><td>A rubric, applied by people or by a calibrated judge</td></tr>
+  <tr><td><b>Task success</b></td><td>Did the user actually get what they came for?</td><td>Graded across the whole session, not per turn. This is the only one that catches a compounding wrong assumption</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Notice the split:</b> the middle rows are objective and deterministic — cheap to check, and worth checking on every commit. The outer rows need judgement. Most teams over-invest in one half and skip the other, and which half depends entirely on who wrote the eval suite.</div>
+</div>`;
+
+/* --- SIM: backtrack to the root turn --- */
+(function(){
+  const mode=document.getElementById('btMode'), out=document.getElementById('btOut'), note=document.getElementById('btNote');
+  if(!mode) return;
+  const T=[
+    {n:1,user:'One of our instances is acting up — can you help me check?',
+     agent:'Certainly. I can see your Compute Engine VM. Let me check its status.',
+     score:88,label:'reads perfectly well',
+     root:true,
+     why:'<b>Here it is.</b> The user never said Compute Engine. The agent assumed a product and never asked. Graded on its own this turn is polite, confident and helpful — it scores 88. The mistake is not in what it said; it is in what it decided without checking.'},
+    {n:2,user:'Yes, it keeps restarting.',
+     agent:'Restart loops on a VM usually point at the boot disk or a failing startup script. Let me pull the serial console output.',
+     score:84,label:'sound reasoning',
+     why:'Genuinely good troubleshooting — for a Compute Engine VM. Every step follows correctly from turn 1. This is what makes the failure so hard to see: turn 2 is not wrong, it is <em>right about the wrong thing</em>.'},
+    {n:3,user:'None of that matches what I am seeing.',
+     agent:'Then I would recommend recreating the VM from a fresh image.',
+     score:79,label:'confident, and useless',
+     why:'The visible failure, and the last place you should look for the cause. The user was running Cloud Run all along. Fixing turn 3 — better phrasing, a hedge, a follow-up question — treats the symptom two turns downstream of the disease.'}
+  ];
+  let cur='outcome';
+  function render(){
+    mode.innerHTML=[['outcome','Grade the final answer only'],['perturn','Grade each turn on its own'],['session','Grade the whole session, then backtrack']]
+      .map(([v,l])=>'<button class="seg'+(cur===v?' on':'')+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('');
+    mode.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.v;render();});
+    const show = cur==='outcome' ? [T[2]] : T;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+
+      (cur==='outcome'?'WHAT A FINAL-ANSWER METRIC SEES':'THE WHOLE CONVERSATION')+'</div>'+
+      show.map(t=>{
+        const flagged = cur==='session' && t.root;
+        return '<div class="lzhop" style="border-left-color:'+(flagged?'var(--red)':'var(--wire)')+';display:block;padding:11px 13px">'+
+          '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:5px">TURN '+t.n+
+            (flagged?' <span style="color:var(--red)">· ROOT CAUSE</span>':'')+'</div>'+
+          '<div style="font-size:12.5px;margin-bottom:5px"><span class="dim">user</span> &nbsp;'+t.user+'</div>'+
+          '<div style="font-size:12.5px;margin-bottom:7px"><span class="dim">agent</span> &nbsp;'+t.agent+'</div>'+
+          '<div style="display:flex;align-items:center;gap:8px">'+
+            '<div style="flex:1;height:7px;background:var(--panel2);border-radius:99px"><div style="height:100%;width:'+t.score+'%;background:var(--green);border-radius:99px;opacity:.8"></div></div>'+
+            '<span style="font-family:var(--mono);font-size:11px;color:var(--green)">'+t.score+'</span>'+
+            '<span class="dim" style="font-size:11px">'+t.label+'</span></div></div>';
+      }).join('')+
+      (cur!=='outcome'
+        ? '<div style="margin-top:12px;padding:11px 13px;border-radius:9px;background:var(--panel2);border-left:3px solid var(--red)">'+
+          '<div style="font-family:var(--mono);font-size:10.5px;color:var(--red);margin-bottom:4px">MULTI-TURN TASK SUCCESS</div>'+
+          '<div style="font-family:var(--mono);font-size:20px;color:var(--red)">FAILED</div>'+
+          '<div class="dim" style="font-size:11.5px;margin-top:4px">every individual turn averaged 84 · the session got the user nowhere</div></div>'
+        : '');
+    let html;
+    if(cur==='outcome') html='<div class="lzbad" style="margin-bottom:10px"><b>Score 79. Verdict: mildly disappointing.</b> That is the whole report. You now know something went wrong and have no idea what, and nothing here points at a fix.</div>';
+    else if(cur==='perturn') html='<div class="lzwarn" style="margin-bottom:10px"><b>Every turn passes. The conversation fails.</b> Turns average 84 out of 100 and the user left without an answer. This is the trap: per-turn grading is a real improvement over final-answer grading, and it still cannot see a wrong assumption compounding, because each step is locally reasonable.</div>';
+    else html='<div class="ok" style="margin-bottom:10px"><b>Grade the session, then walk backwards.</b> The session-level score says the task failed. Reading the trace from the end towards the start, you look for the earliest turn where the agent committed to something it had not established — and stop there. That is turn 1.</div>';
+    const t=T.find(x=>x.root);
+    if(cur!=='outcome') html+='<div class="lzrow" style="margin-top:10px"><span class="lzmark" style="color:var(--red)">◎</span><span>'+t.why+'</span></div>';
+    html+='<div class="simnote" style="margin-top:10px"><b>The habit worth building:</b> when a session fails, resist starting at the last turn. Read backwards to the first unverified assumption. The last turn is where the failure became visible; it is almost never where it was made.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+/* --- SIM: golden path matching --- */
+(function(){
+  const mode=document.getElementById('gpMode'), out=document.getElementById('gpOut'), note=document.getElementById('gpNote');
+  if(!mode) return;
+  const GOLD=['lookup_account','check_balance','get_transactions','summarise'];
+  const RUNS=[
+    {k:'same',label:'Identical to the golden path',path:['lookup_account','check_balance','get_transactions','summarise'],good:true,
+     why:'The same calls in the same order. Every mode passes it, which is the easy case and the only one all three agree on.'},
+    {k:'order',label:'Same calls, sensible different order',path:['lookup_account','get_transactions','check_balance','summarise'],good:true,
+     why:'It fetched transactions before the balance. Both are needed, neither depends on the other, and the answer is identical. Exact matching calls this a failure.'},
+    {k:'extra',label:'One extra, genuinely useful call',path:['lookup_account','verify_identity','check_balance','get_transactions','summarise'],good:true,
+     why:'It verified identity before reading a balance — arguably better than the golden path. Strict matching penalises the agent for exceeding the recording.'},
+    {k:'wrong',label:'Reached the right answer the wrong way',path:['lookup_account','get_transactions','summarise'],good:false,
+     why:'It skipped the balance check and inferred the figure from transactions. The final number happened to be right this time. This is the one you actually want caught — and any-order matching lets it through.'}
+  ];
+  let cur='exact';
+  function judge(m,path){
+    if(m==='exact') return path.length===GOLD.length && path.every((p,i)=>p===GOLD[i]);
+    if(m==='inorder'){ let i=0; for(const p of path) if(p===GOLD[i]) i++; return i===GOLD.length; }
+    return GOLD.every(g=>path.includes(g));
+  }
+  function render(){
+    mode.innerHTML=[['exact','Exact match — same calls, same order, nothing extra'],
+                    ['inorder','In-order — the golden calls appear in order, extras allowed'],
+                    ['anyorder','Any-order — the golden calls all appear, order ignored']]
+      .map(([v,l])=>'<button class="seg'+(cur===v?' on':'')+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('');
+    mode.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.v;render();});
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:5px">THE GOLDEN PATH SOMEBODY RECORDED ONCE</div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px">'+GOLD.map(g=>
+        '<span class="code" style="font-size:10.5px">'+g+'</span>').join('<span class="dim">›</span>')+'</div>'+
+      RUNS.map(r=>{
+        const pass=judge(cur,r.path);
+        const right = pass===r.good;
+        return '<div style="margin-bottom:12px;padding:10px 12px;border-radius:9px;background:var(--panel2);border-left:3px solid '+
+          (right?'var(--green)':'var(--red)')+'">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+            '<b style="font-size:12px">'+r.label+'</b>'+
+            '<span style="font-family:var(--mono);font-size:10.5px;padding:1px 8px;border-radius:99px;background:'+
+              (pass?'var(--n-teal)':'var(--panel2)')+';color:'+(pass?'var(--green)':'var(--red)')+'">'+(pass?'PASS':'FAIL')+'</span></div>'+
+          '<div style="display:flex;gap:4px;flex-wrap:wrap">'+r.path.map(p=>
+            '<span class="code" style="font-size:10px;opacity:'+(GOLD.includes(p)?1:0.65)+'">'+p+'</span>').join('<span class="dim">›</span>')+'</div>'+
+          (right?'':'<div class="lzbad" style="margin-top:7px;font-size:11.5px"><b>'+(r.good?'False negative':'False positive')+'.</b> '+
+            (r.good?'Good work marked as broken.':'A real failure marked as fine.')+'</div>')+
+          '</div>';
+      }).join('');
+    const wrong=RUNS.filter(r=>judge(cur,r.path)!==r.good);
+    const M={exact:['lzbad','<b>Three of four verdicts are wrong, all in the same direction.</b> Exact matching treats one recorded solution as the only acceptable one, so every valid alternative becomes a failure. On a task with several good paths this does not measure quality — it measures conformity to a recording.'],
+             inorder:['lzwarn','<b>Better, and still opinionated about order.</b> Extra calls are tolerated, so the identity check passes. A different but equally valid ordering still fails, because in-order matching assumes the recorded sequence was the necessary one.'],
+             anyorder:['lzwarn','<b>Flexible enough to stop punishing good work, and now it lets a real failure through.</b> The run that skipped the balance check is missing a golden call, so it does fail here — but notice how little order information you have left. Loosen further and you are only checking that some tools were touched.']}[cur];
+    note.innerHTML='<div class="'+M[0]+'" style="margin-bottom:10px">'+M[1]+'</div>'+
+      '<div style="font-family:var(--mono);font-size:11.5px;margin-bottom:10px">wrong verdicts in this mode: <b style="color:'+(wrong.length?'var(--red)':'var(--green)')+'">'+wrong.length+' of 4</b></div>'+
+      '<div class="simnote"><b>Where this leaves you:</b> exact-match golden paths are a good <em>regression</em> tool — they will tell you instantly when a tool schema changed or an argument stopped parsing. They are a poor <em>quality</em> strategy for any task with more than one sensible route, because the failures they report are mostly the agent being right in an unexpected way.</div>'+
+      '<div class="simnote" style="margin-top:8px"><b>What to use instead for the main signal:</b> grade the trajectory with a rubric — did it gather what it needed, avoid redundant calls, and justify its steps — and keep the strict matcher for the narrow things that genuinely have one right answer.</div>';
+  }
+  render();
+})();
+/* ================= 5 · OFFLINE & ONLINE ================= */
+document.getElementById('sec-onoff').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two questions, two surfaces</h2>
+  <div class="plain-line"><b>In plain English:</b> <b>offline evaluation</b> asks &ldquo;is this build better than the last one?&rdquo; against a fixed set of cases you control. <b>Online monitoring</b> asks &ldquo;is the thing serving real people right now still any good?&rdquo; against traffic you do not control. They answer different questions and neither substitutes for the other &mdash; a suite that passes says nothing about a user population that has quietly changed.</div>
+  ${D('0 0 660 190','Three evaluation triggers mapping onto two surfaces: continuous production traffic to online monitoring, ad-hoc and scheduled runs to offline evaluation.',
+   `${box(14,24,210,44,'var(--green)')}${tm(119,44,'Continuous','var(--green)')}${tm(119,60,'live production traffic','var(--dim)')}
+    ${box(380,24,266,44,'var(--green)')}${tm(513,44,'Online monitoring','var(--green)')}${tm(513,60,'score a sample of what really happened','var(--dim)')}
+    <path d="M228 46 H376" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${box(14,90,210,44,'var(--blue)')}${tm(119,110,'Ad-hoc','var(--blue)')}${tm(119,126,'while you are developing','var(--dim)')}
+    ${box(14,146,210,40,'var(--amber)')}${tm(119,164,'Scheduled','var(--amber)')}${tm(119,180,'a regression gate in CI','var(--dim)')}
+    ${box(380,102,266,66,'var(--blue)')}${tm(513,128,'Offline evaluation','var(--blue)')}${tm(513,146,'score a set of cases you chose','var(--dim)')}
+    <path d="M228 112 H376" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M228 166 L374 150" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>`,
+   'Two of the three triggers land on the same surface. The distinction that matters is not how the run was started, it is whether you chose the inputs or the world did.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th></th><th>Offline evaluation</th><th>Online monitoring</th></tr></thead><tbody>
+  <tr><td><b>Inputs</b></td><td>A set you curated: captured traces, hand-written cases, simulated sessions</td><td>Whatever real users sent</td></tr>
+  <tr><td><b>Runs</b></td><td>On demand while developing, or on a schedule as a regression gate</td><td>Continuously, on a sample of live traffic</td></tr>
+  <tr><td><b>Answers</b></td><td>Did this change help, on the cases I care about?</td><td>Is quality holding up out there, on cases I never imagined?</td></tr>
+  <tr><td><b>Blind to</b></td><td>Everything your case set does not contain — which is where drift lives</td><td>Anything that has not happened yet, and it cannot tell you why</td></tr>
+  <tr><td><b>Main cost</b></td><td>Building and maintaining the case set</td><td>Grading volume. Every scored trace is a model call you pay for</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Where the cases come from when you have no users yet</h2>
+  <div class="plain-line"><b>In plain English:</b> the chicken-and-egg problem of evaluation. You need realistic conversations to test against, and you cannot get realistic conversations until you have shipped something to real people &mdash; who you would rather not experiment on. So you make the users up, on purpose, with a model playing them.</div>
+  <div class="plain-line">A <b>User Simulator</b> is given a persona and a <b>plan</b> &mdash; what this fictional person wants and how they will behave &mdash; and then holds a real conversation with your agent, turn by turn, until it succeeds or hits a turn limit. What comes out is a full session of traces, indistinguishable in structure from a real one and available before launch.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; run a simulated user against the agent</h2>
+  <div class="plain-line"><b>Try this:</b> step the conversation forward one turn at a time. Watch the traces pile up into a session. Then swap the plan for a vague one and see what the generated data is worth.</div>
+  <div class="sim-layout">
+    <div><div id="usOut"></div></div>
+    <div><div class="segmented" id="usPlan" style="flex-direction:column;align-items:stretch"></div>
+      <div style="display:flex;gap:8px;margin:12px 0">
+        <button class="btn" id="usNext" style="flex:1">next turn ▸</button>
+        <button class="btn" id="usReset">reset</button></div>
+      <div id="usNote" class="cidr-out"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The four sources of evaluation cases, and what each is for</h2>
+  <table class="osi"><thead><tr><th>Source</th><th>What it gives you</th><th>The catch</th></tr></thead><tbody>
+  <tr><td><b>Captured production traces</b></td><td>Real inputs, real messiness, real distribution</td><td>Needs a live system, and it only contains what has already happened</td></tr>
+  <tr><td><b>Hand-written cases</b></td><td>Exactly the edge cases you are worried about, including the ones nobody has hit yet</td><td>Slow, and biased towards what you thought of. This is where the awkward cases belong</td></tr>
+  <tr><td><b>Scenario generation</b></td><td>Volume. A model expands a few seeds into hundreds of variations</td><td>Variations of your seeds, not of reality. Diversity looks higher than it is</td></tr>
+  <tr><td><b>User simulation</b></td><td>Whole multi-turn conversations, which is the only way to test anything that unfolds over several turns</td><td><b>The plan is the experiment.</b> A vague persona produces a conversation that tests nothing in particular</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Use all four, for different jobs.</b> Production traces keep the suite honest about what really happens; hand-written cases hold the line on the failures you have decided are unacceptable; generated and simulated cases give you the volume to detect small changes. A suite made only of generated cases drifts steadily away from reality and reports excellent scores the whole way.</div>
+</div>`;
+
+/* --- SIM: user simulator --- */
+(function(){
+  const plan=document.getElementById('usPlan'), out=document.getElementById('usOut'),
+        next=document.getElementById('usNext'), reset=document.getElementById('usReset'), note=document.getElementById('usNote');
+  if(!plan) return;
+  const PLANS={
+    sharp:{label:'A specific plan',
+      desc:'Persona: a frustrated customer whose payment failed twice. Goal: a refund. Behaviour: does not volunteer the order number unless asked; becomes terse if the agent repeats itself. Stop when a refund is confirmed or three turns pass with no progress.',
+      turns:[
+        ['My payment went through twice and I want it sorted.','I can help with that. Could you give me the order reference so I can look it up?','the simulator withheld the order number, exactly as the plan said — this is the behaviour under test'],
+        ['It is A-4417.','Thank you. I can see two charges of £64.00 on 14 August. I have refunded the duplicate; it will clear in 3 to 5 days.','the agent asked for what it needed and acted once it had it'],
+        ['Fine. How long did you say?','Three to five working days. You will get a confirmation email shortly.','a repeat question — the plan said the persona gets terse, and the agent answered without re-explaining']],
+      verdict:['ok','<b>A usable evaluation case.</b> The conversation exercised something specific: whether the agent asks for a missing identifier rather than guessing, and whether it handles a curt follow-up without repeating itself. You can grade this, and the grade means something.']},
+    vague:{label:'A vague plan',
+      desc:'Persona: a customer. Goal: get help.',
+      turns:[
+        ['Hi, I need some help.','Of course — what can I help you with today?','neither side has anything to work with yet'],
+        ['I have a problem with my account.','I am sorry to hear that. Could you tell me a bit more about the problem?','the simulator has no goal, so it improvises something equally vague'],
+        ['It is just not working properly.','Let me check your account status. Everything looks active at the moment. Is there a specific error you are seeing?','three turns in, nothing has been tested']],
+      verdict:['lzbad','<b>Three turns of nothing.</b> Every reply is polite and reasonable and the session establishes no fact about the agent whatsoever. It will score well, add a green tick to your suite, and hide the failure it was supposed to find. <b>The plan is the experiment</b> — a simulator with no goal generates conversation, not evidence.']}
+  };
+  let cur='sharp', shown=0;
+  function render(){
+    plan.innerHTML=Object.entries(PLANS).map(([k,p])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+p.label+'</button>').join('');
+    plan.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;shown=0;render();});
+    const P=PLANS[cur];
+    const done=shown>=P.turns.length;
+    next.textContent = done ? 'turn limit reached' : 'next turn ▸';
+    next.disabled = done;
+    next.style.opacity = done?0.5:1;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:5px">THE PLAN THE SIMULATOR IS GIVEN</div>'+
+      '<div class="note" style="padding:9px 11px;border-left:2px solid var(--violet);margin-bottom:14px;font-size:12.5px">'+P.desc+'</div>'+
+      (shown===0?'<div class="simnote">Press <b>next turn</b> to run the simulated conversation.</div>':'')+
+      P.turns.slice(0,shown).map((t,i)=>
+        '<div class="lzhop" style="display:block;border-left-color:var(--teal);padding:11px 13px">'+
+        '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:5px">TRACE '+(i+1)+' · one agent invocation</div>'+
+        '<div style="font-size:12.5px;margin-bottom:4px"><span class="dim">simulated user</span> &nbsp;'+t[0]+'</div>'+
+        '<div style="font-size:12.5px;margin-bottom:6px"><span class="dim">agent</span> &nbsp;'+t[1]+'</div>'+
+        '<div class="simnote" style="font-size:11.5px">'+t[2]+'</div></div>').join('')+
+      (shown?'<div style="margin-top:12px;padding:11px 13px;border-radius:9px;background:var(--panel2);border-left:3px solid var(--violet)">'+
+        '<div style="font-family:var(--mono);font-size:10.5px;color:var(--violet);margin-bottom:4px">SESSION</div>'+
+        '<div style="font-family:var(--mono);font-size:12px">'+shown+' trace'+(shown>1?'s':'')+' captured'+
+        (done?' · turn limit reached, session closed':' · still running')+'</div></div>':'');
+    let html='<div class="lzrow"><span class="lzmark">?</span><span><b>What is being built.</b> Each exchange is one <b>trace</b> — a single agent invocation with its inputs, tool calls and response. The traces together are one <b>session</b>. Session-level metrics can only be computed once this is complete.</span></div>';
+    if(done) html+='<div class="'+PLANS[cur].verdict[0]+'" style="margin-top:10px">'+PLANS[cur].verdict[1]+'</div>';
+    html+='<div class="simnote" style="margin-top:10px"><b>The turn limit is not a detail.</b> Without it a simulated user and an agent will happily talk forever, both being agreeable, and you will pay for every turn. It also encodes a real judgement: if the task was not achieved in N turns, that is a failure, and the number you pick is your definition of acceptable.</div>';
+    note.innerHTML=html;
+  }
+  next.onclick=()=>{ if(shown<PLANS[cur].turns.length){shown++;render();} };
+  reset.onclick=()=>{shown=0;render();};
+  render();
+})();
+/* ================= 6 · THE PLATFORM ================= */
+document.getElementById('sec-geap').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Trace and session &mdash; the two words everything else is built on</h2>
+  <div class="plain-line"><b>In plain English:</b> a <b>trace</b> is one turn: the user said something, the agent thought, called some tools, and replied. A <b>session</b> is the whole conversation those turns belong to. Nearly every confusion about agent evaluation comes from mixing these up, because <b>some failures only exist at one level</b>. A wrong tool call is a trace problem. A wrong assumption in turn one that ruins turn five is a session problem, and no amount of trace-level grading will find it.</div>
+  ${D('0 0 660 220','A session containing three traces, each one turn of the conversation.',
+   `${box(14,20,632,180,'var(--green)')}${tm(330,42,'SESSION — one multi-turn conversation','var(--green)')}
+    ${box(40,58,580,38,'var(--blue)')}${tm(330,76,'Trace, turn 1','var(--blue)')}${tm(330,90,'one agent invocation: model inputs · tool calls · response','var(--dim)')}
+    ${box(40,110,580,38,'var(--blue)')}${tm(330,128,'Trace, turn 2','var(--blue)')}${tm(330,142,'one agent invocation: model inputs · tool calls · response','var(--dim)')}
+    ${box(40,162,580,30,'var(--blue)')}${tm(330,182,'Trace, turn 3  ·  and so on','var(--blue)')}`,
+   'Trace-level metrics grade one box. Session-level metrics grade the container. You need both, and knowing which one a given failure lives in is most of the diagnosis.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The telemetry contract &mdash; no data, no evaluation</h2>
+  <div class="plain-line"><b>In plain English:</b> you cannot grade what was never written down. Agents emit traces automatically, but by default those traces record <em>that</em> a tool was called, not <em>what was said</em>. Grading needs the content, so there is one switch that has to be on before any of this works.</div>
+  <div class="plain-line"><b>The switch:</b> deploy with <span class="code">OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=true</span>. Without it, tool evaluation fails &mdash; and it fails in the most confusing possible way: the evaluation runs, finds nothing to look at, and returns empty results rather than an error.</div>
+  <div class="plain-line"><b>And the second-order problem:</b> once you are capturing content, an agent handling images or large documents will blow past trace span size limits. The fix is not to stop capturing &mdash; it is to <b>offload inputs and outputs to a Cloud Storage bucket</b> using the GenAI upload environment variables, so spans carry references instead of payloads. Traces stay small; the evaluator still gets the full content when it needs it.</div>
+  <div class="vs2" style="margin-top:12px"><div class="col"><b>WHAT NOT TO DO</b>Turn content capture off to keep spans small. You have solved the size problem by removing the thing evaluation exists to read.<br><br>Base64 the images into the span. Same limit, now hit sooner.<br><br>Drop the multimodal channel and keep the text. You are now blind to exactly the inputs that are hardest to handle.</div>
+  <div class="col"><b>WHAT WORKS</b>Offload payloads to object storage and keep references in the span.<br><br>Spans stay within limits, the full content is still retrievable, and the evaluator reads what the user actually sent.<br><br>Cost moves from trace storage, which is expensive per byte, to object storage, which is not.</div></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The metric shelf &mdash; four kinds, and when each is right</h2>
+  <table class="osi"><thead><tr><th>Kind</th><th>Examples</th><th>Reach for it when</th></tr></thead><tbody>
+  <tr><td><b>Adaptive rubric</b><br><span class="dim">generated per case</span></td><td><b>Agent Final Response Quality</b> — overall answer quality<br><b>Agent Tool Use Quality</b> — selection and usage of tools</td><td>The right answer depends on the question. Most general quality grading lives here</td></tr>
+  <tr><td><b>Static rubric</b><br><span class="dim">the same test every time</span></td><td><b>Safety</b> — is the text safe and harmless<br><b>Agent Hallucination</b> — is the response grounded in what the tools returned</td><td>The standard never varies. Safety is safety regardless of the question</td></tr>
+  <tr><td><b>Multi-turn</b><br><span class="dim">graded on the session</span></td><td><b>Multi-turn Task Success</b> — did the user get what they came for<br><b>Multi-turn Trajectory Quality</b> — was the route sensible</td><td>The failure only appears across turns. This is the compounding-assumption catcher</td></tr>
+  <tr><td><b>Custom</b><br><span class="dim">yours</span></td><td>A <b>judge-based</b> metric for &ldquo;stayed calm under pressure&rdquo;<br>A <b>code-based</b> metric for &ldquo;the tool returned valid structured output&rdquo;</td><td>Judge-based for subjective calls, code-based for objective repeatable ones. Both can sit in the same run</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The rule for choosing between custom types:</b> if a competent person could disagree with the verdict, it needs a judge. If the answer is checkable by running code, use code &mdash; it is free, instant, and it never has an opinion.</div>
+  <div class="plain-line"><b>Register once, use everywhere.</b> A metric registry means the same definition of quality grades your offline experiments <em>and</em> your live monitors. Define it twice and you will eventually change one of them, and then your pre-launch numbers and your production numbers stop being comparable without anyone noticing.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; make continuous monitoring affordable</h2>
+  <div class="plain-line"><b>Try this:</b> scoring every live trace means paying for a model call on every user interaction, forever. The dials are sampling rate and a hard cap. Move them and watch what you gain, what you pay, and what you stop being able to detect.</div>
+  <div class="sim-layout">
+    <div><div id="monOut"></div></div>
+    <div>
+      <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 5px">daily traffic: <b id="monTv" style="font-family:var(--mono);color:var(--amber)">40,000</b> traces</label>
+      <input type="range" id="monT" min="1000" max="200000" step="1000" value="40000" style="width:100%">
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">sampling: <b id="monSv" style="font-family:var(--mono);color:var(--amber)">100</b>%</label>
+      <input type="range" id="monS" min="1" max="100" value="100" style="width:100%">
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">max samples per run: <b id="monCv" style="font-family:var(--mono);color:var(--amber)">unlimited</b></label>
+      <input type="range" id="monC" min="50" max="5050" step="50" value="5050" style="width:100%">
+      <label style="display:flex;gap:8px;align-items:center;margin:14px 0;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="monFilter"> filter to long conversations and high token counts only</label>
+      <div id="monNote" class="cidr-out"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; triage failures by cluster, not one at a time</h2>
+  <div class="plain-line"><b>Try this:</b> an evaluation run produced 47 failures. Reading them individually is a week of work and produces 47 small fixes. <b>Automatic Loss Analysis</b> groups them into semantic patterns first, so you are looking at four root causes instead. Pick a cluster and choose what to do about it.</div>
+  <div class="sim-layout">
+    <div><div id="clOut"></div></div>
+    <div><div id="clList"></div>
+      <div id="clNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Alerting &mdash; and the tick box that silently swallows every page</h2>
+  <div class="plain-line"><b>In plain English:</b> a monitor that finds a quality drop at 3am is only useful if it wakes somebody. Alert policies are built from templates, one per metric &mdash; final response quality, tool use quality, hallucination, safety &mdash; each with a threshold.</div>
+  <div class="plain-line"><b>The failure that looks like nothing is wrong:</b> the policy is enabled, incidents appear on the alerting page, and <b>nobody is ever notified</b>, because <b>&ldquo;use notification channel&rdquo; was left unchecked</b>. Everything is recorded. Everything is reviewable. Nothing is delivered. There is no error state to find, and the usual way this is discovered is a post-incident review asking why the alert did not fire &mdash; it did.</div>
+  <div class="plain-line"><b>Worth pairing with:</b> attach more than one channel. A single channel is a single point of failure for the mechanism whose entire job is to tell you a mechanism has failed.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">When the monitor returns nothing at all</h2>
+  <div class="plain-line"><b>In plain English:</b> empty results are the most common early problem, and the temptation is to assume the agent is simply doing well. It is not. Empty means nothing was graded, and there are only two reasons for that.</div>
+  ${D('0 0 660 180','Two diagnostic paths: empty results lead to telemetry or filter problems, failing scores lead to the failing trace and the turn that caused it.',
+   `${box(14,24,150,40,'var(--amber)')}${tm(89,48,'empty results','var(--amber)')}
+    ${box(200,24,190,40,'var(--blue)')}${tm(295,44,'is telemetry arriving?','var(--blue)')}${tm(295,58,'check the trace spans','var(--dim)')}
+    ${box(426,24,220,40,'var(--red)')}${tm(536,44,'missing content attributes','var(--red)')}${tm(536,58,'or a filter matching nothing','var(--red)')}
+    <path d="M168 44 H196" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M394 44 H422" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    ${box(14,100,150,40,'var(--amber)')}${tm(89,124,'a failing score','var(--amber)')}
+    ${box(200,100,190,40,'var(--blue)')}${tm(295,124,'open the failing trace','var(--blue)')}
+    ${box(426,100,220,40,'var(--red)')}${tm(536,124,'find the turn that caused it','var(--red)')}
+    <path d="M168 120 H196" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M394 120 H422" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    ${tm(330,166,'empty is a plumbing problem · low is a quality problem · never treat the first as the second','var(--dim)')}`,
+   'The top row is about whether data reached the evaluator at all. The bottom row is about what the data says. Confusing them wastes days.')}
+</div>`;
+
+/* --- SIM: monitor economics --- */
+(function(){
+  const T=document.getElementById('monT'), Sl=document.getElementById('monS'), C=document.getElementById('monC'),
+        f=document.getElementById('monFilter'), out=document.getElementById('monOut'), note=document.getElementById('monNote');
+  if(!T) return;
+  function render(){
+    const traffic=+T.value, samp=+Sl.value, capRaw=+C.value, filt=f.checked;
+    const cap = capRaw>5000 ? Infinity : capRaw;
+    document.getElementById('monTv').textContent=traffic.toLocaleString();
+    document.getElementById('monSv').textContent=samp;
+    document.getElementById('monCv').textContent = cap===Infinity ? 'unlimited' : cap.toLocaleString();
+    const eligible = filt ? Math.round(traffic*0.12) : traffic;
+    const sampled = Math.round(eligible*samp/100);
+    const scored = Math.min(sampled, cap===Infinity?sampled:cap);
+    const costPer = 0.004;
+    const daily = scored*costPer;
+    const moe = scored ? 1.96*Math.sqrt(0.25/scored)*100 : 100;
+    const bar=(label,v,max,col)=>'<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'+
+      '<span style="width:132px;font-size:11px;color:var(--muted);text-align:right">'+label+'</span>'+
+      '<div style="flex:1;height:16px;background:var(--panel2);border-radius:4px;overflow:hidden">'+
+      '<div style="height:100%;width:'+Math.min(100,v/max*100)+'%;background:'+col+';opacity:.8"></div></div>'+
+      '<span style="width:66px;font-family:var(--mono);font-size:11px;text-align:right">'+Math.round(v).toLocaleString()+'</span></div>';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TRACES PER DAY, AT EACH STAGE</div>'+
+      bar('arriving',traffic,traffic,'var(--wire)')+
+      bar('past the filter',eligible,traffic,'var(--blue)')+
+      bar('sampled',sampled,traffic,'var(--violet)')+
+      bar('actually graded',scored,traffic,'var(--green)')+
+      '<div class="kv" style="margin-top:16px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">graded per day</span><b>'+scored.toLocaleString()+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">cost per day</span><b>$'+daily.toFixed(2)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">cost per month</span><b style="color:'+(daily*30>500?'var(--red)':'var(--text)')+'">$'+(daily*30).toFixed(0)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">margin of error on the score</span><b>±'+moe.toFixed(1)+'%</b></div>'+
+      '</div>';
+    let html='';
+    if(samp===100&&cap===Infinity) html+='<div class="lzbad" style="margin-bottom:10px"><b>Grading every trace, forever.</b> $'+(daily*30).toFixed(0)+' a month to learn something a fraction of the traffic would have told you. This is the default that quietly becomes the largest line on the evaluation bill.</div>';
+    if(moe>6) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Too few graded to see anything subtle.</b> At ±'+moe.toFixed(1)+'% you would miss a real five-point quality drop for days. The cap has gone from a cost control to a blindfold.</div>';
+    else if(moe<=6&&scored<sampled) html+='<div class="ok" style="margin-bottom:10px"><b>The cap is doing its job.</b> '+scored.toLocaleString()+' graded traces holds the error to ±'+moe.toFixed(1)+'%, which is tight enough to spot a genuine drift, at a fraction of the cost of grading everything.</div>';
+    else if(moe<=6) html+='<div class="ok" style="margin-bottom:10px"><b>Sampling alone is holding this.</b> ±'+moe.toFixed(1)+'% is enough to trust a movement in the score. Add a cap anyway — traffic spikes are exactly when you least want an unbounded bill.</div>';
+    if(filt) html+='<div class="note" style="margin-bottom:10px"><b>The filter is a scalpel, and it cuts both ways.</b> Grading only long conversations and heavy token counts concentrates spend where failures cluster. It also means <b>you are no longer measuring your average user</b> — this score cannot be compared with an unfiltered one, and a regression in short conversations is now invisible.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The two dials do different jobs.</b> Sampling controls the <em>proportion</em>, so cost still grows with traffic. The cap controls the <em>absolute maximum</em>, so a viral day cannot produce a surprise invoice. Set both: one for representativeness, one for the ceiling.</div>';
+    note.innerHTML=html;
+  }
+  [T,Sl,C].forEach(x=>x.oninput=render); f.onchange=render; render();
+})();
+
+/* --- SIM: failure clusters --- */
+(function(){
+  const list=document.getElementById('clList'), out=document.getElementById('clOut'), note=document.getElementById('clNote');
+  if(!list) return;
+  const CL=[
+    {k:'incomplete',name:'Incomplete Execution',cat:'Instruction Following',n:19,
+     def:'The agent fails to fully execute an explicit request despite having the tools and information it needs. It shows up two ways: <b>silent omission</b> — it does part of the task and stops without noticing — and <b>unnecessary hesitation</b> — it pauses to ask permission for a step it was already told to do.',
+     fixes:[['instr','Sharpen the instruction: complete every requested step, and do not ask permission for something already asked for','ok','The right first move. This cluster is an instruction-following problem, and the instruction is the cheapest thing in the system to change. Nineteen failures, one edit, one re-run to confirm.'],
+            ['model','Move to a larger model','note','It may well help, and you have not learned anything. You have also raised the cost of every request to fix a class of failure that a sentence would have covered.'],
+            ['case','Fix the nineteen cases individually','lzbad','A week of work producing nineteen patches for one root cause — and the twentieth instance, next month, is unpatched. This is exactly what clustering exists to stop you doing.']]},
+    {k:'tool',name:'Wrong Tool Selected',cat:'Tool Use',n:14,
+     def:'The agent picks a plausible but incorrect tool when two descriptions overlap. Concentrated on the pair <span class="code">lookup_resource</span> and <span class="code">check_status</span>, whose descriptions both begin &ldquo;retrieve information about a resource&rdquo;.',
+     fixes:[['instr','Add a rule to the system instruction about which to use when','note','It will help a bit and it is treating the wrong layer. The model is choosing between two labels that genuinely look the same; the labels are the problem.'],
+            ['desc','Rewrite the two tool descriptions so they are distinguishable','ok','Correct. The model chooses from tool descriptions, so overlapping descriptions are the defect. Make each one say what it is for <em>and</em> what it is not for.'],
+            ['merge','Merge the two tools into one','note','Sometimes genuinely right — two tools that nobody can tell apart may be one tool. But check first: if callers need them separately, merging trades a selection problem for a parameter problem.']]},
+    {k:'ground',name:'Ungrounded Claim',cat:'Hallucination',n:9,
+     def:'The final answer contains specifics the tools never returned — dates, reference numbers, policy clauses. The trajectory is correct; the summary adds detail that was not there.',
+     fixes:[['instr','Instruct it to state only what the tools returned, and to say when something is unknown','ok','The right first attempt, and cheap. Pair it with the Agent Hallucination metric so the next run tells you whether it actually worked rather than whether it sounds better.'],
+            ['model','Move to a larger model','note','Larger models hallucinate less, not never. Worth testing, but a fluent invention from an expensive model is still an invention — you need the grounding metric either way.'],
+            ['drop','Stop letting the agent summarise; return raw tool output','note','It eliminates the failure and most of the product. Sometimes correct for a compliance-critical field; rarely correct for the whole response.']]},
+    {k:'verbose',name:'Excessive Turns',cat:'Efficiency',n:5,
+     def:'The task is completed correctly but takes six to nine turns where three would do. Task success passes; the user gave up on two of the five.',
+     fixes:[['instr','Instruct it to gather everything it needs in one question rather than several','ok','Right, and note why this cluster is easy to miss: <b>every quality metric passes</b>. Only an efficiency metric and the abandonment rate show it at all.'],
+            ['case','Ignore it — task success is green','lzbad','Task success is green because the metric measures whether the task completed, not whether anyone stayed to see it. Two of these five users left. That is a product failure with a passing score.'],
+            ['desc','Rewrite tool descriptions','note','Unrelated. The tools were selected correctly; the agent simply asked for their inputs one at a time.']]}
+  ];
+  let cur='incomplete', chosen={};
+  function render(){
+    list.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">47 FAILURES, GROUPED INTO 4 PATTERNS</div>'+
+      CL.map(c=>'<button class="lztier'+(cur===c.k?' on':'')+'" data-k="'+c.k+'" style="border-left-color:var(--red)">'+
+        '<b>'+c.name+'</b><span>'+c.n+' cases</span></button>').join('');
+    list.querySelectorAll('.lztier').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const c=CL.find(x=>x.k===cur);
+    out.innerHTML='<div style="font-family:var(--display);font-size:19px;margin-bottom:4px">'+c.name+'</div>'+
+      '<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px">category: '+c.cat+' · '+c.n+' of 47 failures</div>'+
+      '<div class="plain-line" style="margin-bottom:14px">'+c.def+'</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:6px">WHAT WOULD YOU DO ABOUT IT?</div>'+
+      '<div class="segmented" style="flex-direction:column;align-items:stretch">'+
+      c.fixes.map(([k,label])=>'<button class="seg'+(chosen[c.k]===k?' on':'')+'" data-f="'+k+'" style="text-align:left">'+label+'</button>').join('')+
+      '</div>';
+    out.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{chosen[c.k]=b.dataset.f;render();});
+    const pick=chosen[c.k];
+    let html='';
+    if(!pick) html='<div class="simnote">Pick a response to the cluster.</div>';
+    else { const fx=c.fixes.find(x=>x[0]===pick);
+      html='<div class="'+(fx[2]==='ok'?'ok':fx[2]==='note'?'note':'lzbad')+'" style="margin-bottom:10px">'+fx[3]+'</div>'; }
+    html+='<div class="simnote" style="margin-top:8px"><b>Why clustering changes the work.</b> Forty-seven individual failures is a triage queue. Four patterns is a diagnosis. The clusters also tell you something the raw list cannot: which root cause is <em>largest</em>, so you fix nineteen things first rather than whichever one you happened to open.</div>'+
+      '<div class="simnote" style="margin-top:8px"><b>A limit worth knowing:</b> issue clustering is available for a subset of metrics — task success and tool use quality — not for every metric on the shelf. Design the run so the metrics you most want clustered are among them.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+/* ================= 7 · ADK BUILD-TIME ================= */
+document.getElementById('sec-adkeval').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two file types, one schema, two very different cadences</h2>
+  <div class="plain-line"><b>In plain English:</b> the same distinction as unit tests and integration tests, and for the same reasons. A <b>test file</b> is one short session you run constantly while coding &mdash; local, fast, free. An <b>evalset</b> is many multi-turn sessions you run before merging &mdash; slower, billed, and the one that catches things a single turn never will.</div>
+  ${D('0 0 660 190','Test files and evalsets, sharing one schema.',
+   `${box(14,24,300,74,'var(--green)')}${t(164,48,'Test file  ·  *.test.json',SANS)}${tm(164,68,'one session  ·  runs locally','var(--dim)')}${tm(164,86,'unit-test cadence  ·  no billing','var(--green)')}
+    ${box(14,114,300,74,'var(--amber)')}${t(164,138,'Evalset  ·  *.evalset.json',SANS)}${tm(164,158,'many multi-turn sessions','var(--dim)')}${tm(164,176,'integration cadence  ·  billed','var(--amber)')}
+    ${box(360,60,286,92,'var(--wire)')}${t(503,86,'One shared schema',SANS)}${tm(503,108,'EvalCase → Invocation','var(--dim)')}${tm(503,126,'user_content · final_response','var(--dim)')}${tm(503,144,'intermediate_data.tool_uses','var(--dim)')}
+    <path d="M318 62 L356 88" style="stroke:var(--wire);stroke-dasharray:4 4" stroke-width="1.3"/>
+    <path d="M318 150 L356 124" style="stroke:var(--wire);stroke-dasharray:4 4" stroke-width="1.3"/>`,
+   'Because both use the same schema, a case can be promoted from one to the other without rewriting it — which is what makes it practical to keep the fast set and the thorough set in step.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The shape of a case, and why each field exists</h2>
+  ${D('0 0 700 250','The ADK evaluation data model, from eval set down to the four fields of a single invocation.',
+   `${box(250,20,200,44,'var(--amber)')}${tm(350,40,'Eval set','var(--amber)')}${tm(350,56,'.test.json / .evalset.json','var(--dim)')}
+    <path d="M350 66 V96" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>${tm(392,86,'eval_cases[]','var(--dim)')}
+    ${box(275,100,150,40,'var(--blue)')}${tm(350,118,'Eval case','var(--blue)')}${tm(350,134,'eval_id','var(--dim)')}
+    <path d="M350 142 V172" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>${tm(396,162,'conversation[]','var(--dim)')}
+    ${box(275,176,150,40,'var(--blue)')}${tm(350,194,'Invocation','var(--blue)')}${tm(350,210,'one turn','var(--dim)')}
+    <path d="M300 218 L110 236" style="stroke:var(--wire)" stroke-width="1.2"/>
+    <path d="M330 218 L280 236" style="stroke:var(--wire)" stroke-width="1.2"/>
+    <path d="M370 218 L440 236" style="stroke:var(--wire)" stroke-width="1.2"/>
+    <path d="M400 218 L600 236" style="stroke:var(--wire)" stroke-width="1.2"/>
+    ${tm(110,246,'user_content','var(--green)')}
+    ${tm(280,246,'tool_uses','var(--green)')}
+    ${tm(440,246,'intermediate_responses','var(--green)')}
+    ${tm(600,246,'final_response','var(--green)')}`,
+   'A case is a conversation; a conversation is a list of turns; a turn records what was asked, which tools were used in order, anything a sub-agent produced, and the reference answer.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th>Field</th><th>In plain terms</th><th>Without it you cannot score…</th></tr></thead><tbody>
+  <tr><td><span class="code">user_content</span></td><td>What the user said. The input to this turn</td><td>Anything. This is the case</td></tr>
+  <tr><td><span class="code">intermediate_data.tool_uses</span></td><td>The tools called, in order &mdash; the expected trajectory</td><td>Tool trajectory. The agent could take any route and you would never know</td></tr>
+  <tr><td><span class="code">intermediate_responses</span></td><td>What a sub-agent produced along the way. Optional</td><td>Which specialist got it wrong in a multi-agent system</td></tr>
+  <tr><td><span class="code">final_response</span></td><td>The reference answer somebody decided was good</td><td>Response quality against a reference. Judge-based metrics still work without it</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; build a case and see what it can and cannot measure</h2>
+  <div class="plain-line"><b>Try this:</b> switch fields on and off. The point is that <b>the case decides which metrics are even computable</b> &mdash; a beautifully written suite with no recorded tool calls simply cannot tell you anything about how the agent got there.</div>
+  <div class="sim-layout">
+    <div><div id="ecOut"></div></div>
+    <div><div class="toggles" id="ecCtl"></div>
+      <div id="ecNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Three ways to run it, one engine, one place the thresholds live</h2>
+  ${D('0 0 660 200','Three run surfaces feeding one ADK evaluation engine, which compares scores against thresholds in test_config.json.',
+   `${box(14,20,200,40,'var(--blue)')}${tm(114,38,'adk web','var(--blue)')}${tm(114,52,'interactive, while you build','var(--dim)')}
+    ${box(14,74,200,40,'var(--blue)')}${tm(114,92,'adk eval','var(--blue)')}${tm(114,106,'the CLI, and CI','var(--dim)')}
+    ${box(14,128,200,40,'var(--blue)')}${tm(114,146,'pytest','var(--blue)')}${tm(114,160,'AgentEvaluator.evaluate()','var(--dim)')}
+    ${box(258,66,180,56,'var(--violet)')}${tm(348,90,'the eval engine','var(--violet)')}${tm(348,108,'same scoring, all three','var(--dim)')}
+    ${box(482,66,164,56,'var(--green)')}${tm(564,90,'pass or fail','var(--green)')}${tm(564,108,'test_config.json','var(--dim)')}
+    <path d="M218 40 L254 78" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M218 94 H254" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M218 148 L254 110" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M442 94 H478" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    ${tm(330,188,'the thresholds live in a file, not in someone’s head — which is what makes it a gate','var(--dim)')}`,
+   'Three entry points so evaluation fits wherever you are working — the browser while exploring, the CLI in a pipeline, pytest alongside your other tests. The verdict is identical in all three.')}
+  <div class="plain-line" style="margin-top:12px"><b>The two criteria that come as standard:</b> a <b>tool trajectory</b> score, comparing the calls the agent made against the ones the case recorded, and a <b>response match</b> score against the reference answer. Both are deterministic, which makes them ideal regression gates and poor judges of prose &mdash; the same trade-off as everywhere else in this lab.</div>
+  <div class="plain-line"><b>And the bridge out of local:</b> add LLM-judge metrics at build time and you are grading with the same kind of instrument the managed platform uses later. An agent that passes locally is deployed to the runtime, and then the same quality question is asked continuously by offline runs, online monitors and failure clustering &mdash; on real traffic instead of your recorded cases.</div>
+</div>`;
+
+/* --- SIM: eval case fields --- */
+(function(){
+  const ctl=document.getElementById('ecCtl'), out=document.getElementById('ecOut'), note=document.getElementById('ecNote');
+  if(!ctl) return;
+  const F=[
+    {k:'user',label:'user_content — the query',on:true,fixed:true},
+    {k:'tools',label:'intermediate_data.tool_uses — the expected tool trajectory',on:true},
+    {k:'inter',label:'intermediate_responses — sub-agent output',on:false},
+    {k:'final',label:'final_response — the reference answer',on:true}
+  ];
+  const st={}; F.forEach(f=>st[f.k]=f.on);
+  const METRICS=[
+    {n:'Tool trajectory score',need:['tools'],why:'compares the calls made against the calls recorded, in order'},
+    {n:'Response match score',need:['final'],why:'compares the answer against the reference'},
+    {n:'Sub-agent attribution',need:['inter'],why:'says which specialist produced the wrong piece'},
+    {n:'LLM-judge: final response quality',need:[],why:'a judge grades against a rubric, so it needs no reference answer'},
+    {n:'LLM-judge: tool use quality',need:['tools'],why:'the judge still has to see what the agent was supposed to do'},
+    {n:'Safety',need:[],why:'a static rubric applied to the output alone'}
+  ];
+  function render(){
+    ctl.innerHTML=F.map(f=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px;opacity:'+(f.fixed?0.6:1)+'">'+
+      '<input type="checkbox" data-k="'+f.k+'"'+(st[f.k]?' checked':'')+(f.fixed?' disabled':'')+'><span>'+f.label+
+      (f.fixed?' <span class="dim">(always required)</span>':'')+'</span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{st[i.dataset.k]=i.checked;render();});
+    const json={eval_id:'refund_duplicate_charge', conversation:[{}]};
+    const inv={};
+    inv.user_content='My payment went through twice.';
+    if(st.tools) inv['intermediate_data.tool_uses']=['lookup_order','check_payments','issue_refund'];
+    if(st.inter) inv.intermediate_responses=['payments_agent: 2 charges found'];
+    if(st.final) inv.final_response='I can see two charges of GBP 64.00 and have refunded the duplicate.';
+    const txt='{\n  "eval_id": "refund_duplicate_charge",\n  "conversation": [\n    {\n'+
+      Object.entries(inv).map(([k,v])=>'      "'+k+'": '+(Array.isArray(v)?JSON.stringify(v):JSON.stringify(v))).join(',\n')+
+      '\n    }\n  ]\n}';
+    const avail=METRICS.filter(m=>m.need.every(n=>st[n]));
+    const lost=METRICS.filter(m=>!m.need.every(n=>st[n]));
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">THE CASE YOU JUST DESCRIBED</div>'+
+      '<pre class="code">'+hl(txt)+'</pre>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">WHAT CAN BE SCORED FROM IT</div>'+
+      avail.map(m=>'<div class="lzrow" style="margin-bottom:5px"><span class="lzmark" style="color:var(--green)">✓</span><span><b>'+m.n+'</b> <span class="dim">— '+m.why+'</span></span></div>').join('')+
+      (lost.length?'<div class="dim" style="font-size:11px;margin:14px 0 6px">WHAT YOU HAVE GIVEN UP</div>'+
+        lost.map(m=>'<div class="lzrow" style="margin-bottom:5px"><span class="lzmark" style="color:var(--red)">✗</span><span><b>'+m.n+'</b> <span class="dim">— needs '+m.need.join(' and ')+'</span></span></div>').join(''):'');
+    let html='<div class="'+(avail.length>=5?'ok':avail.length>=3?'note':'lzbad')+'" style="margin-bottom:10px"><b>'+
+      avail.length+' of '+METRICS.length+' metrics are computable from this case.</b></div>';
+    if(!st.tools) html+='<div class="lzbad" style="margin-bottom:10px"><b>No recorded tool trajectory.</b> This is the field people leave out because it is tedious to write, and it is the one that turns an eval suite from outcome-grading into agent-grading. Without it you can tell that the agent was wrong and never how.</div>';
+    if(!st.final) html+='<div class="note" style="margin-bottom:10px"><b>No reference answer.</b> Less fatal than it looks — judge-based metrics grade against a rubric rather than a reference, so quality scoring survives. You lose the cheap deterministic comparison, which was your fastest regression signal.</div>';
+    if(st.inter) html+='<div class="ok" style="margin-bottom:10px"><b>Sub-agent output recorded.</b> Worth the effort only in a multi-agent system — and there it is the difference between &ldquo;the answer was wrong&rdquo; and &ldquo;the pricing agent returned a stale figure&rdquo;.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The uncomfortable implication:</b> the quality of your evaluation is capped by the quality of your cases, and cases are written by hand, slowly, by someone who understands the domain. There is no way to buy past this step — every technique later in the pipeline is amplifying whatever this file contains.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+/* ================= 8 · HILL CLIMBING ================= */
+document.getElementById('sec-hill').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Hill climbing &mdash; improving on purpose instead of by vibe</h2>
+  <div class="plain-line"><b>In plain English:</b> imagine walking uphill in thick fog. You cannot see the summit, so you cannot plan a route. What you <em>can</em> do is take one step, feel whether the ground went up or down, and keep the step or take it back. Repeat. You will get higher without ever being able to see where you are going.</div>
+  <div class="plain-line">That is the whole method. <b>Hill climbing is a disciplined loop where you make one carefully chosen change, measure the metrics you care about, and keep the change only if it helped.</b> The discipline is in the word <em>only</em>. Everyone can make changes to an agent. The difference between a team that improves and one that just churns is whether they throw away the changes that did not work &mdash; which requires having measured, which requires the whole first half of this lab.</div>
+  ${D('0 0 660 236','The hill climbing loop in eight moves, from choosing a metric through to keeping or reverting the change.',
+   `${box(14,24,196,42,'var(--blue)')}${tm(112,42,'1 · choose the metric','var(--blue)')}${tm(112,58,'what does better mean?','var(--dim)')}
+    ${box(232,24,196,42,'var(--blue)')}${tm(330,42,'2 · measure a baseline','var(--blue)')}${tm(330,58,'you cannot improve on nothing','var(--dim)')}
+    ${box(450,24,196,42,'var(--blue)')}${tm(548,42,'3 · diagnose','var(--blue)')}${tm(548,58,'read the trajectories','var(--dim)')}
+    ${box(450,84,196,42,'var(--violet)')}${tm(548,102,'4 · pick the layer','var(--violet)')}${tm(548,118,'where does this actually live?','var(--dim)')}
+    ${box(232,84,196,42,'var(--violet)')}${tm(330,102,'5 · change one thing','var(--violet)')}${tm(330,118,'one, so you can attribute it','var(--dim)')}
+    ${box(14,84,196,42,'var(--violet)')}${tm(112,102,'6 · re-run the same suite','var(--violet)')}${tm(112,118,'the same suite, every lap','var(--dim)')}
+    ${box(14,144,196,42,'var(--amber)')}${tm(112,162,'7 · compare all metrics','var(--amber)')}${tm(112,178,'not just the one you aimed at','var(--dim)')}
+    ${box(232,144,196,42,'var(--green)')}${tm(330,162,'8 · keep it, or revert','var(--green)')}${tm(330,178,'reverting is a result too','var(--dim)')}
+    <path d="M436 46 H446" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M216 46 H228" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M548 70 V80" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M446 106 H434" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M228 106 H216" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M112 130 V140" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M216 166 H228" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+    <path d="M430 166 H500 V130" style="stroke:var(--green);fill:none;stroke-dasharray:5 4" stroke-width="1.4" marker-end="url(#ah)"/>
+    ${tm(520,206,'and round again','var(--green)')}`,
+   'Step 3 is the one people skip and the one that decides whether the other seven were worth doing. Step 7 is the one that catches the fix that helped here and broke something over there.')}
+  <div class="plain-line" style="margin-top:12px"><b>Why diagnosis comes before the change, always:</b> without it you are guessing which layer the problem lives in, and a guess that happens to raise your target metric can lower two others at the same time. You will have <b>traded a visible problem for an invisible regression</b> and recorded it as a win. Diagnosis is what makes the loop converge instead of wander.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; climb the hill, three rounds</h2>
+  <div class="plain-line"><b>Try this:</b> a support agent with four numbers you care about. Each round you may diagnose first or go straight to a change. Watch the metric you aimed at, and watch the other three &mdash; and keep an eye on the held-out set, which is the only honest number on the page.</div>
+  <div class="sim-layout">
+    <div><div id="hcOut"></div></div>
+    <div><div id="hcCtl"></div>
+      <div id="hcNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The toolbox &mdash; six layers, and the order to suspect them in</h2>
+  <div class="plain-line"><b>In plain English:</b> when an agent is wrong, the fix could live in six different places, and they are wildly different in cost. Changing a sentence is free. Changing the architecture is a project. The skill is knowing which layer a given symptom belongs to, because the cheap layers are also where most real problems actually are.</div>
+  <table class="osi"><thead><tr><th>Layer</th><th>Symptoms that point here</th><th>Cost to change</th></tr></thead><tbody>
+  <tr><td><b>Prompt</b></td><td>Ignores a rule you thought you set. Wrong format. Wrong tone. Stops halfway through a multi-part request</td><td>Minutes. Always try here first</td></tr>
+  <tr><td><b>Tools &amp; skills</b></td><td><b>Picks the wrong tool.</b> Passes bad arguments. Two tools it cannot tell apart</td><td>Hours. The first place to look for any tool misuse</td></tr>
+  <tr><td><b>Context &amp; state</b></td><td>Forgets something from earlier. A sub-agent behaves as if it was told nothing. Context window pressure</td><td>Hours to days</td></tr>
+  <tr><td><b>Model</b></td><td>Reasoning genuinely beyond the current model. Or the opposite: paying for a large model on work a small one does fine</td><td>Minutes to swap, and it changes cost and latency for every request forever</td></tr>
+  <tr><td><b>System &amp; UX</b></td><td>The agent is right and users still fail. No way to correct it mid-task. No visible progress on a slow job</td><td>Days. Frequently the highest-value layer and the last one anyone checks</td></tr>
+  <tr><td><b>Architecture</b></td><td>Sequential work that need not be sequential. One agent doing four jobs badly. No verification anywhere</td><td>Weeks. Genuinely necessary sometimes. Not the first answer</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The one worth memorising:</b> <b>the agent chose the wrong tool → go to the tool and skill layer first.</b> Not the prompt, not the model. The model picks from tool descriptions, so a wrong pick usually means two descriptions that a careful reader could not tell apart either.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Designing tools the agent can actually use</h2>
+  <div class="plain-line"><b>In plain English:</b> most tool problems are naming and scoping problems. A tool that does three things, or overlaps with another tool, forces the model into a judgement call it has no information to make. The course packages the guidance as a <b>D.U.M.B.</b> mnemonic, and the part that does the heavy lifting is the <b>B &mdash; Basic</b>: <b>one tool, one purpose, no overlapping functionality, no ambiguity about which one is right.</b></div>
+  <div class="vs2"><div class="col"><b>HARD TO USE</b><span class="code">manage_customer(action, id, payload)</span><br><br>One tool, three jobs, selected by a string parameter. The model has to get the tool <em>and</em> the mode right, and a wrong mode is a write where you wanted a read.<br><br>Vague names — <span class="code">get_data</span>, <span class="code">process</span> — are the same problem: they force a guess.</div>
+  <div class="col"><b>EASY TO USE</b><span class="code">get_customer(id)</span><br><span class="code">update_customer_email(id, email)</span><br><span class="code">delete_customer(id)</span><br><br>Three tools, three purposes, no overlap. Nothing to disambiguate, and the dangerous one is separately named and separately guardable.</div></div>
+  <div class="plain-line" style="margin-top:12px"><b>Tools versus skills, briefly:</b> a <b>tool</b> is a capability &mdash; it does something. A <b>skill</b> is a method &mdash; it tells the agent how to approach a class of work. When the agent <em>can</em> do everything and still handles the job badly, the missing piece is usually a skill, and no amount of tool work will supply it.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Redesign patterns &mdash; when the fix really is structural</h2>
+  <table class="osi"><thead><tr><th>Pattern</th><th>The problem it solves</th><th>What it costs</th></tr></thead><tbody>
+  <tr><td><b>Parallelisation</b></td><td><b>Slow because independent work is running one after another.</b> Split it across concurrent sub-agents and the wall clock collapses to the slowest branch</td><td>More concurrent calls, so cost per request rises even as latency falls</td></tr>
+  <tr><td><b>Step decomposition</b></td><td>One prompt asked to do too much at once, so it does parts of it badly. Break it into named steps</td><td>More model calls, more latency</td></tr>
+  <tr><td><b>Supervisor and worker</b></td><td>One agent juggling several specialisms. A supervisor routes to focused workers</td><td>Delegation overhead, and context that has to be passed explicitly</td></tr>
+  <tr><td><b>Verification</b></td><td>Plausible-but-wrong output reaching users. A second pass checks the first</td><td>Roughly doubles the cost of the checked step. Worth it exactly where being wrong is expensive</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>And the user-facing layer nobody costs properly:</b> letting a person see what the agent is doing, correct it mid-task, and approve anything irreversible. It fixes a category of failure that no metric on the shelf will report, because the agent did what it was asked and the outcome was still wrong.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">When hill climbing stops working</h2>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">1</span><span><b>The numbers are noisy and contradict each other.</b> Stop changing the agent. <b>The rubric or the dataset is the problem</b>, and every experiment you run until it is fixed is measuring your measurement instead of your system. This is the single most common reason a hill-climbing effort stalls.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>The eval score rises and production quality does not.</b> You have overfitted to the eval set. It happens gradually and it feels exactly like progress. A held-out set that you never tune against is the only defence, and it has to be genuinely held out.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">3</span><span><b>Every change makes things slightly worse.</b> A local peak. Small steps cannot get you off it by definition &mdash; that is what makes it a peak. The way off is a deliberately larger move: a different architecture, a different model, a different division of the problem.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">4</span><span><b>One metric improves and you shipped it.</b> Not a stall, a slow-motion failure. A change that lifts response quality by four points and raises p99 latency by nine seconds is not an improvement, and you will only know if you looked at both.</span></div>
+  <div class="plain-line" style="margin-top:12px"><b>On automating the loop:</b> prompt optimisers and automated search can run this cycle far faster than a person. They inherit every weakness above and amplify it &mdash; an automated optimiser pointed at a flawed rubric will overfit to it with great efficiency. Automate the turning of the handle, not the judgement about what good means.</div>
+</div>`;
+
+/* --- SIM: the hill climb --- */
+(function(){
+  const ctl=document.getElementById('hcCtl'), out=document.getElementById('hcOut'), note=document.getElementById('hcNote');
+  if(!ctl) return;
+  const M0={qual:71,tool:64,lat:100,cost:100};   /* lat and cost: 100 = baseline, lower is better */
+  const ROUNDS=[
+    {bottleneck:'tool',
+     diag:'<b>Diagnosis.</b> 14 of 22 failing trajectories called <span class="code">check_status</span> where <span class="code">lookup_resource</span> was needed. Both descriptions open with &ldquo;retrieve information about a resource&rdquo;. The reasoning after the wrong call is sound every time — the agent is not confused, the labels are.',
+     hint:'wrong tool selected in most failures'},
+    {bottleneck:'latency',
+     diag:'<b>Diagnosis.</b> p99 is 14.2s against a p50 of 3.1s. The trace shows three independent lookups running one after another, each waiting on the last for no reason — none of them uses another&rsquo;s output.',
+     hint:'independent work running sequentially'},
+    {bottleneck:'rubric',
+     diag:'<b>Diagnosis.</b> Re-running the identical suite twice gives scores 9 points apart. Two human raters disagree on a third of the cases. The agent has not changed between runs.',
+     hint:'the measurements themselves are unstable'}
+  ];
+  const MOVES=[
+    {k:'desc',label:'Rewrite the two overlapping tool descriptions',layer:'tools',fixes:'tool',
+     eff:{qual:+5,tool:+21,lat:0,cost:0}, held:+6,
+     good:'Straight at the diagnosed cause, in the cheapest layer that could hold it. Tool use jumps 21 points and response quality follows, because the agent stops answering from the wrong data source.',
+     bad:'Tool use barely moves — the descriptions were not what was wrong this round. Harmless, and a wasted lap.'},
+    {k:'dyn',label:'Add dynamic tool loading — expose only relevant tools per request',layer:'tools',fixes:'tool',
+     eff:{qual:+3,tool:+16,lat:+6,cost:+11}, held:+3,
+     good:'Selection accuracy does improve. Now read the other columns: <b>changing the toolset per request invalidates the prompt prefix cache</b>, so the cache hit ratio falls and cost rises 11% with a latency penalty on top. This is the second-order effect the course tells you to look for before accepting the change.',
+     bad:'Selection improves slightly, and you have paid for it in cache misses on every single request. A poor trade when selection was not the problem.'},
+    {k:'model',label:'Swap in a larger model',layer:'model',fixes:null,
+     eff:{qual:+7,tool:+8,lat:+22,cost:+64}, held:+5,
+     good:'Everything quality-shaped improves, because a bigger model is better at most things. It also costs 64% more and adds 22% latency, on every request, forever — to fix something a description rewrite would have covered. This is the move that always works and is almost never the right first answer.',
+     bad:'Quality rises a little, cost rises a lot, and you still have not addressed the diagnosed problem.'},
+    {k:'instr',label:'Rewrite the system instruction',layer:'prompt',fixes:null,
+     eff:{qual:+4,tool:+3,lat:0,cost:+1}, held:+3,
+     good:'Cheap, fast, and it helps a bit — instructions usually do. It is not aimed at the diagnosed cause, so most of the gap is still there after it.',
+     bad:'A small general lift. The diagnosed problem is untouched.'},
+    {k:'par',label:'Parallelise the three independent lookups',layer:'architecture',fixes:'latency',
+     eff:{qual:0,tool:0,lat:-41,cost:+8}, held:0,
+     good:'Latency down 41% — the wall clock collapses to the slowest branch instead of the sum of all three. Cost rises 8%, because three concurrent calls is more expensive than three sequential ones. That is the trade, and it is usually worth it.',
+     bad:'Latency improves and nothing else does. Real, and not what was failing this round.'},
+    {k:'verify',label:'Add a verification pass over the final answer',layer:'architecture',fixes:null,
+     eff:{qual:+9,tool:0,lat:+35,cost:+48}, held:+8,
+     good:'The largest quality gain on the board, and it roughly doubles the cost of the checked step while adding a third to latency. Right where being wrong is expensive; wrong as a general-purpose fix.',
+     bad:'Quality up, latency and cost up sharply. Powerful and indiscriminate.'},
+    {k:'rubric',label:'Fix the rubric and re-label the calibration sample',layer:'measurement',fixes:'rubric',
+     eff:{qual:0,tool:0,lat:0,cost:0}, held:0, stabilise:true,
+     good:'<b>Nothing moved, and this was the right move.</b> The agent was never the problem — the instrument was. Every lap you run on an unstable rubric produces a number you cannot act on, so this round buys you the ability to trust the next three.',
+     bad:'You spent a lap on the measurement when the measurement was fine. Not damaging, not useful.'}
+  ];
+  let round=0, diagnosed=false, noise=0, log=[], cur={...M0}, held=68, done=false;
+  function fmt(v,inv){ return (inv? (v>0?'+':'') : (v>0?'+':''))+v; }
+  function render(){
+    const R=ROUNDS[Math.min(round,ROUNDS.length-1)];
+    /* controls */
+    if(done){
+      ctl.innerHTML='<div class="ok" style="margin-bottom:10px"><b>Three laps complete.</b></div>'+
+        '<button class="btn" id="hcReset" style="width:100%">start again</button>';
+      ctl.querySelector('#hcReset').onclick=()=>{round=0;diagnosed=false;noise=0;log=[];cur={...M0};held=68;done=false;render();};
+    } else {
+      ctl.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">LAP '+(round+1)+' OF 3</div>'+
+        (diagnosed
+          ? '<div class="note" style="margin-bottom:10px;padding:9px 11px;border-left:2px solid var(--blue);background:var(--panel2);border-radius:0 7px 7px 0">'+R.diag+'</div>'
+          : '<button class="btn" id="hcDiag" style="width:100%;margin-bottom:10px">▸ diagnose first — read the trajectories</button>')+
+        '<div class="dim" style="font-size:11px;margin-bottom:6px">MAKE ONE CHANGE</div>'+
+        '<div class="segmented" style="flex-direction:column;align-items:stretch">'+
+        MOVES.map(m=>'<button class="seg" data-m="'+m.k+'" style="text-align:left">'+m.label+
+          '<br><span class="dim" style="font-size:10px">'+m.layer+' layer</span></button>').join('')+'</div>';
+      const d=ctl.querySelector('#hcDiag'); if(d) d.onclick=()=>{diagnosed=true;render();};
+      ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>apply(b.dataset.m));
+    }
+    /* metric board */
+    const rows=[['Response quality','qual',cur.qual,M0.qual,false],
+                ['Tool use quality','tool',cur.tool,M0.tool,false],
+                ['p99 latency','lat',cur.lat,M0.lat,true],
+                ['Cost per request','cost',cur.cost,M0.cost,true]];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE EVAL SUITE — SAME CASES EVERY LAP</div>'+
+      rows.map(([label,k,v,base,inv])=>{
+        const delta=v-base, better = inv ? delta<0 : delta>0;
+        const pct = inv ? Math.max(0,Math.min(100,200-v)) : v;
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+          '<span style="width:118px;font-size:11.5px;color:var(--muted);text-align:right">'+label+'</span>'+
+          '<div style="flex:1;height:14px;background:var(--panel2);border-radius:4px;overflow:hidden">'+
+            '<div style="height:100%;width:'+pct+'%;background:'+(better?'var(--green)':delta?'var(--red)':'var(--wire)')+';opacity:.75"></div></div>'+
+          '<span style="width:44px;font-family:var(--mono);font-size:11.5px;text-align:right">'+Math.round(v)+(inv?'%':'')+'</span>'+
+          '<span style="width:42px;font-family:var(--mono);font-size:10.5px;text-align:right;color:'+
+            (delta===0?'var(--muted)':better?'var(--green)':'var(--red)')+'">'+(delta===0?'—':fmt(Math.round(delta)))+'</span>'+
+          '</div>';
+      }).join('')+
+      '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line2)">'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span style="width:118px;font-size:11.5px;color:var(--amber);text-align:right">held-out set</span>'+
+        '<div style="flex:1;height:14px;background:var(--panel2);border-radius:4px;overflow:hidden">'+
+          '<div style="height:100%;width:'+held+'%;background:var(--amber);opacity:.75"></div></div>'+
+        '<span style="width:44px;font-family:var(--mono);font-size:11.5px;text-align:right">'+Math.round(held)+'</span>'+
+        '<span style="width:42px;font-family:var(--mono);font-size:10.5px;text-align:right;color:'+
+          (held-68>0?'var(--green)':'var(--muted)')+'">'+(held-68===0?'—':fmt(Math.round(held-68)))+'</span></div>'+
+        '<div class="dim" style="font-size:11px;margin-top:6px;padding-left:126px">never tuned against · the only honest number here</div></div>'+
+      (noise?'<div class="lzwarn" style="margin-top:14px">⚠ measurement noise is ±'+noise+' points — deltas smaller than that mean nothing</div>':'')+
+      (log.length?'<div class="dim" style="font-size:11px;margin:16px 0 6px">WHAT YOU DID</div>'+
+        log.map((l,i)=>'<div class="lzhop" style="border-left-color:'+l.c+';padding:8px 11px;display:block">'+
+          '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">lap '+(i+1)+(l.diag?' · diagnosed':' · no diagnosis')+'</div>'+
+          '<b style="font-size:12px">'+l.label+'</b></div>').join(''):'');
+    /* note */
+    if(!log.length){ note.innerHTML='<div class="simnote">Diagnose, then make a change. Or skip the diagnosis and find out what that costs.</div>'; return; }
+    const last=log[log.length-1];
+    let html='<div class="'+last.k+'" style="margin-bottom:10px">'+last.msg+'</div>';
+    if(!last.diag) html+='<div class="lzbad" style="margin-bottom:10px"><b>You changed it without diagnosing.</b> The number may have moved, and you cannot say why — so you cannot repeat it, and you cannot rule out that you fixed one thing while breaking another you were not watching. Diagnosis is what makes a lap evidence rather than an anecdote.</div>';
+    if(done){
+      const gap = (cur.qual-M0.qual) - (held-68);
+      if(gap>6) html+='<div class="lzbad" style="margin-bottom:10px"><b>Your eval set improved '+Math.round(cur.qual-M0.qual)+' points. The held-out set improved '+Math.round(held-68)+'.</b> That gap is overfitting, and from inside the loop it is indistinguishable from progress — the graph goes up either way. This is why the held-out set has to exist before you need it.</div>';
+      else html+='<div class="ok" style="margin-bottom:10px"><b>Eval set and held-out set moved together.</b> That is what a genuine improvement looks like: the gain generalises to cases you never tuned against.</div>';
+      if(cur.cost>140) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Cost per request is now '+Math.round(cur.cost)+'% of where you started.</b> Quality is up and so is every invoice from here on. Whether that is a win is a business question, not a metric one — and it is a question you can only ask because you tracked the column.</div>';
+    }
+    html+='<div class="simnote" style="margin-top:8px"><b>What the board is teaching:</b> a single number cannot tell you whether a change was good. Every row moves, and the ones you were not aiming at are where the surprises are.</div>';
+    note.innerHTML=html;
+  }
+  function apply(k){
+    const m=MOVES.find(x=>x.k===k), R=ROUNDS[round];
+    const hit = m.fixes===R.bottleneck;
+    const scale = hit?1:(m.fixes?0.15:0.55);
+    ['qual','tool','lat','cost'].forEach(f=>{
+      let d=m.eff[f]*( (f==='lat'||f==='cost') ? 1 : scale );
+      if(f==='lat'||f==='cost') cur[f]=Math.max(20,cur[f]+d);
+      else cur[f]=Math.max(0,Math.min(99,cur[f]+d));
+    });
+    /* held-out only moves for genuine, diagnosed fixes; tuning without diagnosis drifts the eval set alone */
+    held=Math.min(99, held + (hit?m.held:(diagnosed?m.held*0.35:m.held*0.15)));
+    if(m.stabilise && R.bottleneck==='rubric'){ noise=0; }
+    else if(R.bottleneck==='rubric'){ noise=9; }
+    log.push({label:m.label, diag:diagnosed, k:(hit?'ok':m.fixes?'lzbad':'note'),
+      c:(hit?'var(--green)':m.fixes?'var(--red)':'var(--amber)'),
+      msg:(hit?m.good:m.bad)});
+    round++; diagnosed=false;
+    if(round>=ROUNDS.length) done=true;
+    render();
+  }
+  render();
+})();
+/* ================= 9 · LATENCY & COST ================= */
+document.getElementById('sec-perf').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Quality, cost and latency &mdash; you get to pick two</h2>
+  <div class="plain-line"><b>In plain English:</b> almost every change that makes an agent better makes it slower or more expensive. A bigger model, a verification pass, more retrieved documents, more reasoning steps &mdash; all of them buy quality with time and money. This is not a problem to be solved. It is a <b>budget to be spent deliberately</b>, and the failure mode is spending it by accident.</div>
+  <div class="plain-line"><b>And measure latency at p99, not on average.</b> An average hides the slowest one per cent of requests, and those are the users who are actually suffering &mdash; the ones who reload, give up, or write in. A p50 of three seconds with a p99 of fourteen is not a fast system with a rounding error; it is a system that is unusable for a real slice of its traffic.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; where the money actually goes</h2>
+  <div class="plain-line"><b>Try this:</b> price one request, then a month of them. Two things surprise people every time: the cliff you fall off at the large-context threshold, and how completely agent step count dominates everything else.</div>
+  <div class="sim-layout">
+    <div><div id="coOut"></div></div>
+    <div>
+      <div class="dim" style="font-size:11px;margin-bottom:5px">MODEL TIER</div>
+      <div class="segmented" id="coTier"></div>
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">input tokens per call: <b id="coIv" style="font-family:var(--mono);color:var(--amber)">18k</b></label>
+      <input type="range" id="coI" min="1" max="400" value="18" style="width:100%">
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">of which served from cache: <b id="coCv" style="font-family:var(--mono);color:var(--amber)">0</b>%</label>
+      <input type="range" id="coC" min="0" max="95" value="0" style="width:100%">
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">agent steps per request: <b id="coSv" style="font-family:var(--mono);color:var(--amber)">4</b></label>
+      <input type="range" id="coS" min="1" max="30" value="4" style="width:100%">
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">requests per day: <b id="coRv" style="font-family:var(--mono);color:var(--amber)">20,000</b></label>
+      <input type="range" id="coR" min="1000" max="200000" step="1000" value="20000" style="width:100%">
+      <div id="coNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">How a cloud bills AI, in four different shapes</h2>
+  <table class="osi"><thead><tr><th>Metering</th><th>What you are paying for</th><th>Typical of</th></tr></thead><tbody>
+  <tr><td><b>Token-based</b></td><td>Volume of text in and out, priced per million tokens, with input, cached input and output all priced differently</td><td>Model inference. The line everyone watches</td></tr>
+  <tr><td><b>Resource-based</b></td><td>vCPU-hours and GiB-hours &mdash; actual compute and memory, regardless of tokens</td><td><b>Agent Runtime.</b> Your agent process is a running service and is billed like one</td></tr>
+  <tr><td><b>Provisioned resource</b></td><td>Reserved throughput you hold whether you use it or not</td><td>Provisioned Throughput, bought in capacity units</td></tr>
+  <tr><td><b>Seat-based</b></td><td>A fixed subscription per licensed user per month, <b>regardless of how much they use it</b></td><td>Packaged end-user products</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Why this list matters more than it looks:</b> an agentic system usually spans all four at once. Estimating it as &ldquo;tokens times price&rdquo; misses the runtime that bills by the hour whether anyone is talking to it, and the reserved capacity that bills whether it is used.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; reserved capacity against spiky traffic</h2>
+  <div class="plain-line"><b>Try this:</b> reserved throughput is cheaper per unit and you pay for it whether or not you use it. Pay-as-you-go costs more per unit and only bills what you consume. Drag the reservation line through a week of real-looking traffic and watch both mistakes appear.</div>
+  <div class="sim-layout">
+    <div><div id="ptOut"></div></div>
+    <div>
+      <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 5px">reserved capacity: <b id="ptRv" style="font-family:var(--mono);color:var(--amber)">50</b>% of peak</label>
+      <input type="range" id="ptR" min="0" max="110" value="50" style="width:100%">
+      <div id="ptNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The levers, cheapest first</h2>
+  <table class="osi"><thead><tr><th>Lever</th><th>What it does</th><th>What it costs you</th></tr></thead><tbody>
+  <tr><td><b>Cap the agent&rsquo;s steps</b></td><td>A hard limit on iterations. The single most effective guardrail there is, because an agent that gets confused does not fail — it loops, and every lap is billable</td><td>Nothing, until a legitimately long task hits the cap. Set it generously and alert on it</td></tr>
+  <tr><td><b>Explicit caching</b></td><td>Large static context — a policy document, a long system prompt — written to cache once and read at a discounted rate thereafter</td><td>A write cost up front and storage while it lives. Only pays back on genuinely reused context</td></tr>
+  <tr><td><b>Right-size the model per step</b></td><td>Route the easy sub-tasks to a small fast model and keep the expensive one for the step that actually needs it</td><td>More moving parts, and a routing decision that itself has to be evaluated</td></tr>
+  <tr><td><b>Batch or flex tiers</b></td><td>Asynchronous processing at significantly lower cost. Ideal for nightly summarisation and bulk re-evaluation runs</td><td>You give up latency guarantees entirely. Never for an interactive path</td></tr>
+  <tr><td><b>Tune retrieval Top-K</b></td><td>Fewer retrieved snippets means fewer input tokens on every single request</td><td><b>Recall.</b> Cut too far and the answer is missing the one document that mattered — a quality regression that presents as a cost win</td></tr>
+  <tr><td><b>Quotas and rate limits</b></td><td>A ceiling that stops a bug or an attack from becoming an invoice</td><td>Legitimate traffic can hit it. Worth it — the alternative has no ceiling at all</td></tr>
+  <tr><td><b>Labels on everything</b></td><td>Applied at provisioning, they let you slice the bill by environment, team and use case</td><td>Discipline. Retrofitting labels to a live estate is far more work than applying them from the start</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The one that catches teams unprepared:</b> <b>agent fan-out</b>. A single user request becomes an unpredictable chain of model calls and tool executions, and the chain length depends on how confused the agent gets. Cost stops being proportional to traffic and becomes proportional to <em>difficulty</em>, which nobody forecast. The step cap is what turns that back into something with an upper bound.</div>
+</div>`;
+
+/* --- SIM: cost model --- */
+(function(){
+  const tier=document.getElementById('coTier'), I=document.getElementById('coI'), C=document.getElementById('coC'),
+        Sx=document.getElementById('coS'), R=document.getElementById('coR'), out=document.getElementById('coOut'), note=document.getElementById('coNote');
+  if(!tier) return;
+  let cur='flash';
+  const P={flash:{in:0.30,out:2.50,label:'Flash-class — fast and cheap'},
+           pro:{in:1.25,out:10.00,big:{in:2.50,out:15.00},label:'Pro-class — capable and priced for it'}};
+  function render(){
+    tier.innerHTML=Object.entries(P).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'">'+v.label+'</button>').join('');
+    tier.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const inK=+I.value, cache=+C.value, steps=+Sx.value, reqs=+R.value;
+    document.getElementById('coIv').textContent=inK+'k';
+    document.getElementById('coCv').textContent=cache;
+    document.getElementById('coSv').textContent=steps;
+    document.getElementById('coRv').textContent=reqs.toLocaleString();
+    const p=P[cur]; const over = cur==='pro' && inK>200;
+    const rate = over ? p.big : p;
+    const inTok=inK*1000, outTok=1200;
+    const fresh=inTok*(1-cache/100), cached=inTok*(cache/100);
+    const perCall = (fresh*rate.in + cached*rate.in*0.25 + outTok*rate.out)/1e6;
+    const perReq = perCall*steps;
+    const monthly = perReq*reqs*30;
+    const parts=[['fresh input',fresh*rate.in/1e6*steps,'var(--blue)'],
+                 ['cached input',cached*rate.in*0.25/1e6*steps,'var(--teal)'],
+                 ['output',outTok*rate.out/1e6*steps,'var(--amber)']];
+    const tot=parts.reduce((a,b)=>a+b[1],0)||1;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">COST OF ONE USER REQUEST — '+steps+' MODEL CALL'+(steps>1?'S':'')+'</div>'+
+      '<div style="display:flex;height:26px;border-radius:6px;overflow:hidden;margin-bottom:10px">'+
+      parts.map(([n,v,c])=>'<div style="width:'+(v/tot*100)+'%;background:'+c+';opacity:.8"></div>').join('')+'</div>'+
+      parts.map(([n,v,c])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;margin-bottom:4px">'+
+        '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+c+';margin-right:6px"></span>'+n+'</span>'+
+        '<span>$'+v.toFixed(5)+'</span></div>').join('')+
+      '<div class="kv" style="margin-top:16px;font-family:var(--mono);font-size:13px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">per request</span><b>$'+perReq.toFixed(4)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">per day</span><b>$'+(perReq*reqs).toFixed(0)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">per month</span><b style="color:'+(monthly>50000?'var(--red)':monthly>10000?'var(--amber)':'var(--green)')+'">$'+monthly.toLocaleString(undefined,{maximumFractionDigits:0})+'</b></div>'+
+      '</div>'+
+      (over?'<div class="lzbad" style="margin-top:14px"><b>You are over the large-context threshold.</b> Past roughly 200k input tokens on a Pro-class model, <b>the whole request re-prices at a higher rate — input and output both</b>. It is a cliff, not a slope: one token over and every token in the request costs more.</div>':'');
+    let html='';
+    if(steps>=12) html+='<div class="lzbad" style="margin-bottom:10px"><b>'+steps+' model calls for one user request.</b> Step count multiplies everything else on this page — the token prices barely matter next to it. This is what agent fan-out does to a forecast built from a single-call estimate.</div>';
+    if(cache>=60) html+='<div class="ok" style="margin-bottom:10px"><b>'+cache+'% of input served from cache.</b> Cached tokens read at a fraction of the fresh rate, so a long stable system prompt or policy document stops being charged in full on every call. This is the highest-leverage change available on most agents, and it needs no quality trade at all.</div>';
+    if(cur==='pro'&&inK<=40) html+='<div class="note" style="margin-bottom:10px"><b>A Pro-class model on a small prompt.</b> Worth asking whether every step needs it. Routing the simple sub-tasks to Flash and keeping Pro for the one hard step is usually the largest saving available that does not cost quality.</div>';
+    if(!html) html='<div class="ok" style="margin-bottom:10px"><b>A reasonable working point.</b> Move the step count and watch how quickly it stops being one.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The estimating mistake this is built to expose:</b> people forecast agent cost by pricing one model call. An agent makes several per request, and the number is not fixed — it depends on how hard the task turns out to be. Forecast the distribution, then cap the tail.</div>';
+    note.innerHTML=html;
+  }
+  [I,C,Sx,R].forEach(x=>x.oninput=render); render();
+})();
+
+/* --- SIM: provisioned throughput mix --- */
+(function(){
+  const R=document.getElementById('ptR'), out=document.getElementById('ptOut'), note=document.getElementById('ptNote');
+  if(!R) return;
+  const traffic=[22,20,26,58,74,88,96,90,72,64,80,92,68,44,30,26,24,48,86,99,78,52,34,26];
+  const PEAK=Math.max(...traffic);
+  function render(){
+    const pct=+R.value; document.getElementById('ptRv').textContent=pct;
+    const res=PEAK*pct/100;
+    let ptUsed=0, ptIdle=0, spill=0;
+    traffic.forEach(t=>{ const u=Math.min(t,res); ptUsed+=u; ptIdle+=res-u; spill+=Math.max(0,t-res); });
+    const total=traffic.reduce((a,b)=>a+b,0);
+    const ptCost=(ptUsed+ptIdle)*0.6, payCost=spill*1.0;
+    const util= (ptUsed+ptIdle)? ptUsed/(ptUsed+ptIdle) : 0;
+    const allPay=total*1.0;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE DAY OF TRAFFIC — RESERVED CAPACITY IN GREEN, SPILLOVER IN AMBER</div>'+
+      '<div style="display:flex;align-items:flex-end;gap:2px;height:150px;position:relative">'+
+      traffic.map(t=>{
+        const under=Math.min(t,res), over=Math.max(0,t-res);
+        return '<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%">'+
+          (over?'<div style="height:'+(over/PEAK*100)+'%;background:var(--amber);opacity:.85;border-radius:2px 2px 0 0"></div>':'')+
+          '<div style="height:'+(under/PEAK*100)+'%;background:var(--green);opacity:.8"></div></div>';
+      }).join('')+
+      '<div style="position:absolute;left:0;right:0;bottom:'+(res/PEAK*100)+'%;border-top:2px dashed var(--violet)"></div>'+
+      '</div>'+
+      '<div style="text-align:right;font-family:var(--mono);font-size:10.5px;color:var(--violet);margin-top:4px">— reservation line</div>'+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">reservation utilisation</span><b style="color:'+(util>0.8?'var(--green)':util>0.55?'var(--amber)':'var(--red)')+'">'+Math.round(util*100)+'%</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">served by reservation</span><b>'+Math.round(ptUsed/total*100)+'%</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">spilled to pay-as-you-go</span><b>'+Math.round(spill/total*100)+'%</b></div>'+
+        '<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line2);margin-top:6px"><span class="dim">daily cost</span><b>'+(ptCost+payCost).toFixed(0)+' units</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">all pay-as-you-go would be</span><b>'+allPay.toFixed(0)+'</b></div>'+
+      '</div>';
+    let html;
+    if(pct===0) html='<div class="note" style="margin-bottom:10px"><b>Everything on pay-as-you-go.</b> Nothing is wasted and you are paying the highest per-unit rate on every single request, including the entirely predictable overnight baseline that never changes.</div>';
+    else if(pct>=95) html='<div class="lzbad" style="margin-bottom:10px"><b>Reserved to cover the peak.</b> No request ever spills — and utilisation is '+Math.round(util*100)+'%, meaning you are paying for idle capacity most of the day and all night. Reserving for peak converts a spiky bill into a large flat one.</div>';
+    else if(util>0.78) html='<div class="ok" style="margin-bottom:10px"><b>This is the shape you want.</b> The reservation sits near the predictable baseline and stays busy ('+Math.round(util*100)+'% utilised), while pay-as-you-go absorbs the spikes. You get the cheaper rate on the volume you could forecast, and you never have to forecast the rest.</div>';
+    else html='<div class="lzwarn" style="margin-bottom:10px"><b>Utilisation is only '+Math.round(util*100)+'%.</b> The reservation is above the level traffic reliably reaches, so a good part of it is idle. Drop it towards the baseline until it stays busy.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The rule the shape implies:</b> reserve the <em>predictable baseline</em> and let pay-as-you-go take the spiky remainder. That keeps the reservation highly utilised, and the spillover doubles as an availability safety valve when a spike is larger than anything you planned for.</div>'+
+      '<div class="simnote" style="margin-top:8px"><b>The two wrong answers:</b> reserving for peak, which is what this looks like at the top of the slider; and alternating between the two month by month based on the last invoice, which manages to get the worst of both.</div>';
+    note.innerHTML=html;
+  }
+  R.oninput=render; render();
+})();
+/* ================= 10 · MODEL UPGRADES ================= */
+document.getElementById('sec-upgrade').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <div class="note" style="margin-bottom:14px;padding:10px 12px;border-left:3px solid var(--amber);background:var(--panel2);border-radius:0 8px 8px 0">
+    <b>A note on sourcing.</b> Of the five courses behind this lab, the model-upgrade one saved only its syllabus — the lesson text was not captured. This section therefore covers the shape of the problem and the practice that the other four courses do establish. Where it names a specific behaviour of a specific model generation, it does not, because that material is not in hand.
+  </div>
+  <h2 class="sec">A model upgrade is not a version bump</h2>
+  <div class="plain-line"><b>In plain English:</b> changing the model underneath an agent feels like upgrading a library. It is closer to replacing a colleague. Everything you wrote was tuned against how the <em>previous</em> one behaved &mdash; the phrasing that stopped it rambling, the examples that fixed a weakness, the temperature somebody arrived at by trial and error. The new model does not have those weaknesses. It has different ones, and your workarounds are now just noise in the prompt.</div>
+  <div class="plain-line">Which produces the counter-intuitive result people are unprepared for: <b>a better model can score worse on your suite</b>, because your suite is measuring a system that was shaped around the old one.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; take an inventory of what you owe</h2>
+  <div class="plain-line"><b>Try this:</b> generative systems accumulate a specific kind of technical debt &mdash; accommodations for a model that is about to be replaced. Tick what is true of your system and see what an upgrade will do to it.</div>
+  <div class="sim-layout">
+    <div><div id="tdOut"></div></div>
+    <div><div class="toggles" id="tdCtl"></div>
+      <div id="tdNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The execution plan, in the order that keeps you safe</h2>
+  <div class="lzrow"><span class="lzmark">1</span><span><b>Freeze the instrument first.</b> Do not touch the rubric, the eval set or the metrics in the same change as the model. If both move, no comparison you make afterwards means anything.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>Run the existing suite against the new model, unchanged.</b> This is the honest baseline, and it will usually look worse than you expect. Resist fixing anything yet — you are measuring how much of your system was shaped around the old model.</span></div>
+  <div class="lzrow"><span class="lzmark">3</span><span><b>Compare every metric, not the headline.</b> Quality, tool use, trajectory shape, latency, cost. Model generations shift the latency and cost profile as much as the quality one, and a quality win that triples p99 is not a win.</span></div>
+  <div class="lzrow"><span class="lzmark">4</span><span><b>Remove the accommodations, then re-tune.</b> Strip the workarounds for problems the new model does not have. Re-tune sampling settings rather than copying them across &mdash; those numbers were fitted to a different model and do not transfer.</span></div>
+  <div class="lzrow"><span class="lzmark">5</span><span><b>Check the held-out set.</b> The same trap as any other hill-climbing lap: it is entirely possible to tune the new model onto your eval set and gain nothing real.</span></div>
+  <div class="lzrow"><span class="lzmark">6</span><span><b>Go online gradually.</b> Offline evaluation says it is better on the cases you thought of. Only live traffic covers the cases you did not. Route a small percentage, watch the monitors, widen slowly.</span></div>
+  <div class="lzrow"><span class="lzmark">7</span><span><b>Keep the old model routable.</b> Until the new one has been through a full traffic cycle — a weekday peak, a weekend, a month end — the rollback has to be a configuration change rather than a deployment.</span></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Why agents are harder to upgrade than prompts</h2>
+  <table class="osi"><thead><tr><th>What changes</th><th>Why it bites an agent specifically</th></tr></thead><tbody>
+  <tr><td><b>Tool selection behaviour</b></td><td>A new model reads your tool descriptions differently. Descriptions that were unambiguous enough for the old one may not be, and the failure appears as worse answers rather than as a tool error</td></tr>
+  <tr><td><b>Trajectory shape</b></td><td>More capable models often take fewer steps, and sometimes take more because they explore. Either way your step caps, timeouts and cost forecasts were calibrated on the old distribution</td></tr>
+  <tr><td><b>Instruction adherence</b></td><td>Prompts contain years of accumulated emphasis — capitals, repetition, &ldquo;you MUST&rdquo; — aimed at a model that used to ignore things. A model that follows instructions more literally will follow all of that literally too</td></tr>
+  <tr><td><b>Latency profile</b></td><td>Reasoning-heavy generations spend time before the first token. Time to first token can worsen while total time improves, and users feel the first number</td></tr>
+  <tr><td><b>Cost per step</b></td><td>Multiplied by the step count. A modest per-token change lands very differently on a one-call chatbot and a twelve-step agent</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The reassuring part:</b> none of this needs new machinery. An upgrade is a hill-climbing lap with a large step — diagnose, change one thing, run the same suite, compare every metric, keep the change or revert it. If the evaluation practice in the rest of this lab exists, the upgrade is an ordinary Tuesday. If it does not, the upgrade is a gamble with a press release attached.</div>
+</div>`;
+
+/* --- SIM: technical debt inventory --- */
+(function(){
+  const ctl=document.getElementById('tdCtl'), out=document.getElementById('tdOut'), note=document.getElementById('tdNote');
+  if(!ctl) return;
+  const D=[
+    {k:'workaround',label:'The prompt contains phrasing added to stop the old model doing something',w:22,
+     eff:'<b>Dead weight, and worse than dead.</b> Instructions written to suppress a behaviour the new model does not have are still read every turn. A model that follows instructions more literally will now follow your workaround literally too — which is how a fix for an old problem becomes a new one.'},
+    {k:'fewshot',label:'Few-shot examples were added to compensate for a weakness',w:18,
+     eff:'<b>Examples teach style as well as content.</b> If they were written to demonstrate something the new model does natively, they now mostly constrain it — and you are paying for those tokens on every single call. Remove them and re-measure before assuming they help.'},
+    {k:'temp',label:'Temperature and sampling settings were arrived at empirically',w:20,
+     eff:'<b>These do not transfer between model generations.</b> The number that produced good output on one model is not meaningful on another; it was fitted to that model&rsquo;s distribution. Re-tune from the defaults rather than carrying the old value across.'},
+    {k:'parse',label:'Output is parsed with regex or string matching rather than a schema',w:24,
+     eff:'<b>The most likely thing to break on day one.</b> Your parser encodes the old model&rsquo;s formatting habits — where it put the newline, whether it wrapped JSON in a code fence. A new model formats differently and correctly, and your parser throws.'},
+    {k:'nosuite',label:'There is no evaluation suite, or it is a handful of manual spot checks',w:32,
+     eff:'<b>This is the one that makes the others unfixable.</b> Without a suite you cannot tell whether the upgrade helped, so the decision is made on impressions from a few prompts — which is exactly how a regression reaches production with everyone feeling good about it.'},
+    {k:'noheld',label:'There is no held-out set',w:14,
+     eff:'You can measure the upgrade, and you cannot tell whether the re-tuning that follows it is real improvement or fitting to your own test cases. On an upgrade this matters more than usual, because you will be making many small adjustments in a row.'}
+  ];
+  const st={}; D.forEach(d=>st[d.k]=false);
+  function render(){
+    ctl.innerHTML=D.map(d=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+d.k+'"'+(st[d.k]?' checked':'')+'><span>'+d.label+'</span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{st[i.dataset.k]=i.checked;render();});
+    const on=D.filter(d=>st[d.k]);
+    const risk=Math.min(100,on.reduce((a,d)=>a+d.w,0));
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">UPGRADE RISK</div>'+
+      '<div class="bar" style="height:16px"><i style="display:block;height:100%;width:'+risk+'%;background:'+
+        (risk>=60?'var(--red)':risk>=30?'var(--amber)':'var(--green)')+'"></i></div>'+
+      '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-top:6px">'+
+      '<span class="dim">'+(risk>=60?'expect a bad week':risk>=30?'expect surprises':risk>0?'manageable':'nothing owed')+'</span><b>'+risk+'/100</b></div>'+
+      (on.length?'<div class="dim" style="font-size:11px;margin:18px 0 8px">WHAT EACH ONE DOES TO YOU</div>'+
+        on.map(d=>'<div class="lzrow" style="margin-bottom:10px"><span class="lzmark" style="color:var(--red)">✗</span>'+
+          '<span><b>'+d.label+'</b><br>'+d.eff+'</span></div>').join('')
+        :'<div class="simnote" style="margin-top:18px">Nothing ticked. Either the system is unusually clean, or the debt has not been looked for — the second is far more common, and the parser is where to look first.</div>');
+    let html;
+    if(!on.length) html='<div class="ok" style="margin-bottom:10px"><b>No debt declared.</b> Worth testing that claim: swap the model in a branch, run the suite, and see whether the score holds. A clean system survives that. Most do not.</div>';
+    else if(st.nosuite) html='<div class="lzbad" style="margin-bottom:10px"><b>Start here, before anything else on the list.</b> Every other item is diagnosable and fixable once you can measure. Without a suite you cannot even tell which of them is hurting you, and the upgrade becomes a matter of opinion between people who have each tried four prompts.</div>';
+    else if(risk>=50) html='<div class="lzwarn" style="margin-bottom:10px"><b>Do the cleanup as its own change, before the upgrade.</b> Removing accommodations and swapping the model at the same time means that when the score moves you will not know which one did it — and you will have to unpick both to find out.</div>';
+    else html='<div class="ok" style="margin-bottom:10px"><b>Tractable.</b> Run the suite against the new model unchanged first, then remove these one at a time, measuring after each. Slower than doing it all at once, and it is the only version where you learn anything.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The name for all of this:</b> generative-AI technical debt. It is unusual in that most of it is <em>invisible while it is working</em> — a workaround that suppresses a real problem looks exactly like a workaround that suppresses nothing, right up until the model changes underneath it.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+/* ================= 11 · THE PLAN & EXAM ================= */
+document.getElementById('sec-plan').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The plan &mdash; and the flaw that survives a technically excellent one</h2>
+  <div class="plain-line"><b>In plain English:</b> you can write an evaluation plan that is methodologically flawless &mdash; the right metrics, proper precision and recall, drift monitoring, the lot &mdash; and have it be worthless to the organisation paying for it. The missing piece is almost always the same one: <b>nothing in it says what a five-point improvement is worth in money</b>.</div>
+  <div class="plain-line">Without that link, evaluation is a research activity. Nobody can prioritise between two quality improvements, nobody can justify the spend on grading, and when budgets tighten the evaluation work is the first thing cut &mdash; because it was never connected to anything the business tracks.</div>
+  <table class="osi"><thead><tr><th>A plan needs</th><th>Which answers</th></tr></thead><tbody>
+  <tr><td><b>The link to organisational goals</b></td><td>What does moving this metric do to net revenue retention, cost to serve, handle time, acquisition cost? <b>This is the part most plans omit, and the part that decides whether the plan gets funded</b></td></tr>
+  <tr><td><b>What good means, written down</b></td><td>The rubric. If it is not written, it does not exist and two people are already measuring different things</td></tr>
+  <tr><td><b>The cases, and where they come from</b></td><td>Real traces, hand-written edge cases, generated volume, simulated sessions — and who maintains them</td></tr>
+  <tr><td><b>The metrics, and who grades</b></td><td>Deterministic, human, or a calibrated judge — and how often the judge is re-checked against people</td></tr>
+  <tr><td><b>The held-out set</b></td><td>What you never tune against, so you can tell improvement from overfitting</td></tr>
+  <tr><td><b>The thresholds and the gate</b></td><td>What score blocks a release, in a file, agreed before anyone is under pressure to ship</td></tr>
+  <tr><td><b>The online half</b></td><td>What is monitored in production, at what sampling rate, with what alert, delivered to which channel</td></tr>
+  <tr><td><b>The loop</b></td><td>Who looks at the failures, how often, and what happens to what they find</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The whole thing, end to end</h2>
+  ${D('0 0 700 190','The full reference architecture from build-time evaluation through deployment, telemetry, evaluation, failure analysis and optimisation.',
+   `${box(14,20,150,38,'var(--red)')}${tm(89,38,'build time','var(--red)')}${tm(89,52,'ADK, on your machine','var(--dim)')}
+    <path d="M89 60 V84" style="stroke:var(--red);stroke-dasharray:4 3" stroke-width="1.4" marker-end="url(#ah)"/>
+    ${tm(122,76,'deploy','var(--red)')}
+    ${box(14,88,150,38,'var(--blue)')}${tm(89,112,'instrument telemetry','var(--blue)')}
+    ${box(180,88,124,38,'var(--blue)')}${tm(242,112,'generate cases','var(--blue)')}
+    ${box(320,88,118,38,'var(--blue)')}${tm(379,112,'define metrics','var(--blue)')}
+    ${box(454,88,110,38,'var(--amber)')}${tm(509,112,'evaluate','var(--amber)')}
+    <path d="M168 107 H176" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M308 107 H316" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M442 107 H450" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    ${box(452,20,120,38,'var(--violet)')}${tm(512,44,'identify failures','var(--violet)')}
+    ${box(580,20,110,38,'var(--violet)')}${tm(635,44,'cluster them','var(--violet)')}
+    ${box(580,88,110,38,'var(--green)')}${tm(635,112,'optimise','var(--green)')}
+    <path d="M512 86 V62" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M574 39 H578" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M635 62 V84" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+    <path d="M576 140 H509 V130" style="stroke:var(--green);fill:none;stroke-dasharray:5 4" stroke-width="1.4" marker-end="url(#ah)"/>
+    ${tm(340,158,'the improved version goes straight back into evaluation — that return arrow is the whole practice','var(--dim)')}`,
+   'Read the bottom row left to right, then up and around the top. Everything before evaluate is preparation; everything after it is diagnosis; the dashed line is what makes it a loop rather than a report.')}
+</div>
+
+<div class="card">
+  <h2 class="sec">The exam and interview angle</h2>
+  <div class="exam-line"><b>&ldquo;Why does traditional testing fail on generative systems?&rdquo;</b> &rarr; They are non-deterministic. The same input does not produce the same output, so a binary pass/fail assertion has nothing stable to assert against.</div>
+  <div class="exam-line"><b>&ldquo;Why not just use public benchmark scores?&rdquo;</b> &rarr; Data leakage into training sets, and they over-weight tasks that do not resemble your use case.</div>
+  <div class="exam-line"><b>&ldquo;What is the risk of an autorater without human calibration?&rdquo;</b> &rarr; It produces confident, consistent ratings that do not align with human judgement. You cannot tell from the numbers.</div>
+  <div class="exam-line"><b>&ldquo;Why is BLEU or ROUGE a poor metric for open-ended text?&rdquo;</b> &rarr; The single ground truth trap: it penalises valid paraphrase and rewards nonsense that reuses the reference vocabulary.</div>
+  <div class="exam-line"><b>&ldquo;What does a meta-rubric do?&rdquo;</b> &rarr; It is a fixed rubric that grades the generated rubric. Adaptive rubrics change every time, so something static has to validate them.</div>
+  <div class="exam-line"><b>&ldquo;Absolute ratings or side-by-side?&rdquo;</b> &rarr; Absolute ratings measure inherent quality and stay reusable for tracking and calibration. Side-by-side only tells you which of two was preferred.</div>
+  <div class="exam-line"><b>&ldquo;Why inspect the trajectory rather than the final output?&rdquo;</b> &rarr; The outcome tells you that it failed. The trajectory tells you where and why, which is the only version you can act on.</div>
+  <div class="exam-line"><b>&ldquo;Each turn looks fine and the conversation ends wrong.&rdquo;</b> &rarr; Evaluate at session level with multi-turn task success. A wrong assumption in turn one compounds while every individual response stays locally reasonable.</div>
+  <div class="exam-line"><b>&ldquo;A teammate proposes exact-match golden paths as the core strategy.&rdquo;</b> &rarr; They create false negatives on any task with multiple valid routes. Keep them as a narrow regression tool for tool schemas and argument parsing.</div>
+  <div class="exam-line"><b>&ldquo;Which telemetry signal reveals an agent stuck in a loop?&rdquo;</b> &rarr; Tool invocations per trajectory. A spike means it is calling the same tool repeatedly without progress.</div>
+  <div class="exam-line"><b>&ldquo;Trace spans are hitting size limits on a multimodal agent.&rdquo;</b> &rarr; Offload inputs and outputs to a storage bucket via the upload environment variables so spans carry references. Do not turn off content capture — that is the data evaluation needs.</div>
+  <div class="exam-line"><b>&ldquo;The online monitor returns no scores.&rdquo;</b> &rarr; Check telemetry is arriving and that the filter is not too narrow. Empty is a plumbing problem, never evidence of quality.</div>
+  <div class="exam-line"><b>&ldquo;Keep monitoring affordable on high traffic.&rdquo;</b> &rarr; Set a sampling percentage and cap it with max samples per run. Sampling controls the proportion; the cap controls the ceiling.</div>
+  <div class="exam-line"><b>&ldquo;Alert incidents are recorded and nobody is paged.&rdquo;</b> &rarr; No notification channel is attached to the policy. The incidents are real and the delivery was never configured.</div>
+  <div class="exam-line"><b>&ldquo;What do failure clusters give you?&rdquo;</b> &rarr; Recurring failures grouped into semantic patterns, so you fix one root cause instead of triaging fifty cases.</div>
+  <div class="exam-line"><b>&ldquo;How do you verify a fix after optimising?&rdquo;</b> &rarr; Re-run the same suite that seeded the optimisation, and compare <em>all</em> metrics — a fix that lifts one score while quietly degrading another is the thing you are checking for.</div>
+  <div class="exam-line"><b>&ldquo;Scores improved on the eval set and production quality fell.&rdquo;</b> &rarr; Overfitting to the eval set, or a local peak. Improvement is never guaranteed on a lap; that is why the held-out set exists.</div>
+  <div class="exam-line"><b>&ldquo;The agent picked the wrong tool.&rdquo;</b> &rarr; The tool and skill layer, first. Usually two descriptions a careful reader could not tell apart either.</div>
+  <div class="exam-line"><b>&ldquo;Experiments are producing noisy, contradictory numbers.&rdquo;</b> &rarr; The rubric or the dataset. Fix the instrument before running another experiment on it.</div>
+  <div class="exam-line"><b>&ldquo;Dynamic tool loading improved selection accuracy. What now?&rdquo;</b> &rarr; Check the cache hit ratio. Changing the toolset per request invalidates the prompt prefix cache, with a cost and sometimes latency impact.</div>
+  <div class="exam-line"><b>&ldquo;Independent tasks are running sequentially and it is slow.&rdquo;</b> &rarr; Parallelisation across concurrent sub-agents. Latency falls to the slowest branch; cost per request rises.</div>
+  <div class="exam-line"><b>&ldquo;Why p99 rather than the average latency?&rdquo;</b> &rarr; The average hides the slowest one per cent, and those are the users who actually notice.</div>
+  <div class="exam-line"><b>&ldquo;How do you keep a confused agent from running up a bill?&rdquo;</b> &rarr; A hard cap on steps or iterations. Fail fast, then alert on the cap being hit.</div>
+  <div class="exam-line"><b>&ldquo;Predictable baseline with occasional spikes.&rdquo;</b> &rarr; Reserved throughput for the baseline, pay-as-you-go for the remainder. High utilisation on the reservation, and spillover doubles as an availability valve.</div>
+  <div class="exam-line"><b>&ldquo;Nightly summarisation of a large backlog.&rdquo;</b> &rarr; A batch or flex tier. Asynchronous, materially cheaper, and latency does not matter for work nobody is waiting on.</div>
+  <div class="exam-line"><b>&ldquo;Which component bills by vCPU-hours rather than tokens?&rdquo;</b> &rarr; The agent runtime. It is a running service and is metered as one.</div>
+  <div class="exam-line"><b>&ldquo;A Pro-class request crosses roughly 200k input tokens.&rdquo;</b> &rarr; The entire request re-prices at the higher rate, input and output both. A cliff, not a slope.</div>
+  <div class="exam-line"><b>&ldquo;A technically thorough evaluation plan is still criticised.&rdquo;</b> &rarr; It has no link to organisational KPIs. Nobody can say what a metric improvement is worth.</div>
+</div>`;
+/* ==== sections ==== */
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
+/* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
+(function(){
+  const open = id => {
+    const tab = document.querySelector(`.tab[data-pane="${id}"]`), pane = document.getElementById('pane-'+id);
+    if(!tab || !pane) return false;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    tab.classList.add('on'); pane.classList.add('on');
+    return true;
+  };
+  const fromHash = () => {
+    const m = (location.hash||'').match(/^#pane-([\w-]+)$/);
+    if (m) open(m[1]);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+  document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
+    history.replaceState(null,'','#pane-'+t.dataset.pane);
+  }));
+})();
+</script>
+</body>
+</html>
