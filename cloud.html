@@ -152,6 +152,18 @@
   .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
   .drill-a b{color:var(--teal)}
 
+  .wf2{display:flex; flex-direction:column; gap:5px; font-family:var(--mono); font-size:11px}
+  .wf2 .row2{display:grid; grid-template-columns:190px 1fr 52px; gap:8px; align-items:center}
+  .wf2 .lab2{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf2 .track2{height:14px; background:var(--panel2); border:1px solid var(--line); border-radius:4px; overflow:hidden}
+  .wf2 .track2 i{display:block; height:100%; border-radius:3px; transition:width .35s ease}
+  .wf2 .ms2{text-align:right; color:var(--dim)}
+  .wf2 .row2.err2 .lab2{color:var(--red)}
+  .mvcbox{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:12px}
+  .mvcbox .mv{background:var(--panel2); border:1.5px solid var(--line2); border-radius:9px; padding:12px; text-align:center; transition:.3s}
+  .mvcbox .mv b{display:block; font-size:13px; color:var(--text)}
+  .mvcbox .mv small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:5px; line-height:1.45}
+
   /* ---- diffs ---- */
   .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
   .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
@@ -300,6 +312,7 @@
     <button class="tab" data-pane="nginx" role="tab">NGINX</button>
     <button class="tab" data-pane="iam" role="tab">IAM &amp; policy</button>
     <button class="tab" data-pane="cheat" role="tab">SAP-C02 cheatsheet</button>
+    <button class="tab" data-pane="apptier" role="tab">Pools, timeouts &amp; MVC</button>
     <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
     <button class="tab" data-pane="dr" role="tab">DR simulator</button>
     <button class="tab" data-pane="map" role="tab">Service translator</button>
@@ -599,6 +612,57 @@
     <div class="card">
       <h2 class="sec">Traps, and how the exam words things</h2>
       <div id="cheatTraps"></div>
+    </div>
+  </section>
+
+  <!-- ================= APP TIER ================= -->
+  <section class="pane" id="pane-apptier">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Database connection pool — what min and max actually decide</h2>
+      <div class="plain-line"><b>In plain English:</b> opening a database connection is slow — a handshake, a login, a bit of setup. So the app opens a few up front and lends them out. <b>Min</b> is how many it keeps warm even when nothing is happening. <b>Max</b> is the most it will ever open. Every request that cannot get one waits in a queue, and if it waits too long it gives up with an error that looks nothing like &ldquo;the pool was full&rdquo;.</div>
+      <div class="sim-layout">
+        <div><div id="poolOut"></div><div class="term" id="poolTerm" role="log" aria-live="polite" style="height:140px"></div></div>
+        <div>
+          <label style="font-size:12.5px;color:var(--muted)">App instances <b id="pInstV" style="color:var(--amber)">4</b></label>
+          <input type="range" id="pInst" min="1" max="40" value="4">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Max pool size, per instance <b id="pMaxV" style="color:var(--amber)">10</b></label>
+          <input type="range" id="pMax" min="1" max="100" value="10">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Minimum idle kept warm <b id="pMinV" style="color:var(--amber)">2</b></label>
+          <input type="range" id="pMin" min="0" max="50" value="2">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Requests per second <b id="pRpsV" style="color:var(--amber)">400</b></label>
+          <input type="range" id="pRps" min="10" max="5000" step="10" value="400">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Average query time <b id="pMsV" style="color:var(--amber)">25</b> ms</label>
+          <input type="range" id="pMs" min="1" max="500" value="25">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Database connection limit <b id="pLimV" style="color:var(--amber)">200</b></label>
+          <input type="range" id="pLim" min="50" max="1000" step="10" value="200">
+        </div>
+      </div>
+      <div id="poolNotes" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Idle timeouts — every layer has one, and they disagree</h2>
+      <div class="plain-line"><b>In plain English:</b> a connection nobody is using gets closed, to stop things holding resources forever. The trouble is that the browser, the load balancer, the NAT gateway, your app and the database <em>all</em> do this, each on a different clock, and none of them tells the others. Almost every mysterious hang or intermittent 502 is two of these numbers disagreeing.</div>
+      <div class="sim-layout">
+        <div><div id="toChain"></div><div class="term" id="toTerm" role="log" aria-live="polite" style="height:150px"></div></div>
+        <div>
+          <div class="segmented" id="toScen" style="flex-direction:column;align-items:stretch"></div>
+          <p class="simnote" id="toNote"></p>
+        </div>
+      </div>
+      <div id="toTable" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="sec">MVC — where the logic is allowed to live</h2>
+      <div class="plain-line"><b>In plain English:</b> a restaurant. The <b>waiter</b> takes your order and brings the food, but never cooks. The <b>kitchen</b> knows the recipes and owns the ingredients, but never talks to you. The <b>plate</b> is how it arrives at the table. MVC is the same split, and almost every complaint about it comes from one of the three doing another one's job.</div>
+      <div class="sim-layout">
+        <div><div id="mvcFlow"></div><div class="term" id="mvcTerm" role="log" aria-live="polite" style="height:150px"></div></div>
+        <div><div class="toggles" id="mvcOpts"></div>
+          <button class="btn primary" id="mvcRun" style="margin-top:10px">▶ handle a request</button>
+          <div id="mvcScore" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+      <div id="mvcTable" style="margin-top:14px"></div>
     </div>
   </section>
 
@@ -2960,6 +3024,232 @@ document.getElementById('cheatTraps').innerHTML=`
     history.replaceState(null,'','#pane-'+t.dataset.pane);
   }));
 })();
+
+/* ================= SIM: connection pool ================= */
+const PIN=['pInst','pMax','pMin','pRps','pMs','pLim'];
+function poolCalc(){
+  const v=Object.fromEntries(PIN.map(k=>[k,Number(document.getElementById(k).value)]));
+  PIN.forEach(k=>document.getElementById(k+'V').textContent=v[k]);
+  const {pInst:inst,pMax:max,pMin:min,pRps:rps,pMs:ms,pLim:lim}=v;
+  // Little's Law: connections in use = arrival rate x service time
+  const needed = rps*(ms/1000);
+  const capacity = inst*max;
+  const perInstNeeded = needed/inst;
+  const util = needed/capacity;
+  const dbTotal = inst*max, dbIdle = inst*min;
+  const overLimit = dbTotal > lim;
+  // queueing: rough M/M/c wait when demand approaches capacity
+  const rho = Math.min(0.999, util);
+  const waitMs = util<1 ? Math.round((rho/(1-rho))*ms/Math.max(1,capacity)*capacity/10) : 30000;
+  const verdict = overLimit ? 'the database refuses new connections'
+    : util>1 ? 'requests queue until they time out'
+    : util>0.85 ? 'working, but with no headroom for a spike'
+    : util<0.15 && capacity>20 ? 'far more connections than the work needs'
+    : 'healthy';
+  const colour = (overLimit||util>1) ? 'var(--red)' : util>0.85||util<0.15 ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('poolOut').innerHTML=`<div class="cidr-out">
+    <div class="r"><span>Connections the work actually needs</span><b>${needed.toFixed(1)} <span style="color:var(--dim)">(${rps}/s × ${ms}ms)</span></b></div>
+    <div class="r"><span>Per instance, that is</span><b>${perInstNeeded.toFixed(1)} of ${max}</b></div>
+    <div class="r"><span>Pool utilisation</span><b style="color:${colour}">${Math.round(util*100)}%</b></div>
+    <div class="r"><span>Estimated wait for a connection</span><b style="color:${waitMs>1000?'var(--red)':waitMs>50?'var(--amber)':'var(--green)'}">${util>=1?'grows without limit':waitMs+' ms'}</b></div>
+    <div class="r"><span>Connections opened against the database</span><b style="color:${overLimit?'var(--red)':'var(--text)'}">${dbTotal} of ${lim}</b></div>
+    <div class="r"><span>Held open while completely idle</span><b>${dbIdle}</b></div>
+    <div class="r"><span>Verdict</span><b style="color:${colour}">${verdict}</b></div></div>`;
+
+  const term=document.getElementById('poolTerm'); term.innerHTML='';
+  const log=(c,m)=>{const d=document.createElement('div');d.className=c;d.innerHTML=m;term.appendChild(d);};
+  if(overLimit){
+    log('no','<b>FATAL</b> the pools can open '+dbTotal+' connections but the database allows '+lim);
+    log('no','Every instance is within its own limit. The <b>total</b> is what breaks — and autoscaling makes it worse, not better');
+    log('i','Fix: lower max per instance, or put a proxy in front (RDS Proxy, PgBouncer) so many app connections share few database ones');
+  } else if(util>1){
+    log('no','<b>Pool exhausted.</b> Demand needs '+needed.toFixed(1)+' connections, the pool tops out at '+capacity);
+    log('no','Requests queue, then fail with something like <b>&ldquo;connection is not available, request timed out&rdquo;</b>');
+    log('i','That error names the pool, not the database — which is why this gets debugged in the wrong place');
+  } else if(util>0.85){
+    log('i','Working, but at '+Math.round(util*100)+'% there is nothing left for a spike or a slow query');
+  } else if(util<0.15 && capacity>20){
+    log('i','<b>Oversized.</b> '+capacity+' connections for work that needs '+needed.toFixed(1));
+    log('i','A bigger pool does not make the database faster. Past its core count it just adds context switching and memory');
+  } else log('ok','Healthy. Demand fits comfortably inside the pool, and the total stays under the database limit');
+  if(ms>200) log('i','<b>Note the query time.</b> At '+ms+'ms, halving it would free as many connections as doubling the pool — and cost nothing at the database');
+}
+PIN.forEach(k=>document.getElementById(k).addEventListener('input',poolCalc));
+poolCalc();
+
+document.getElementById('poolNotes').innerHTML=`
+<h4>The sizing rule, and why bigger is not better</h4>
+<table class="osi"><thead><tr><th>Question</th><th>Answer</th></tr></thead><tbody>
+<tr><td><b>How many connections do I need?</b></td><td>Requests per second × average query time in seconds. 400/s at 25ms needs about 10 — not 100. This is Little's Law, and it is the whole calculation</td></tr>
+<tr><td><b>Why not just set max very high?</b></td><td>A database is not faster with more concurrent connections. Past roughly its core count they contend for the same CPUs, each costs memory, and throughput <em>falls</em> while latency rises</td></tr>
+<tr><td><b>What does min actually buy?</b></td><td>Warm connections, so a request arriving after a quiet spell does not pay the handshake, authentication and TLS setup. Set it above zero for latency-sensitive work; set it to zero for a rarely used batch job</td></tr>
+<tr><td><b>The trap when autoscaling</b></td><td>Total connections are <b>instances × max</b>. Twenty instances with a pool of 20 is 400 connections at the database. Scaling out to survive load is what exhausts it</td></tr>
+<tr><td><b>Serverless makes it worse</b></td><td>Every concurrent function can hold its own pool. This is the case a proxy exists for — RDS Proxy or PgBouncer multiplexes many client connections onto few database ones</td></tr>
+</tbody></table>
+<h4>The four pool timeouts, and what each one prevents</h4>
+<table class="osi"><thead><tr><th>Setting</th><th>Means</th><th>Set wrong and</th></tr></thead><tbody>
+<tr><td><b>connection timeout</b></td><td>How long a request waits for a free connection before giving up</td><td>Too long and requests pile up behind an exhausted pool; too short and a brief spike becomes errors</td></tr>
+<tr><td><b>idle timeout</b></td><td>How long a spare connection lives before being closed back down to min</td><td>Too aggressive and you pay handshakes constantly; too lax and you hold connections the database wants back</td></tr>
+<tr><td><b>max lifetime</b></td><td>Recycle a connection after this long, even if healthy</td><td>Must be <b>shorter</b> than any idle timeout below it — the database's, a firewall's, a NAT gateway's — or you hand out a connection the other end has already closed</td></tr>
+<tr><td><b>leak detection</b></td><td>Warn when a connection is held far longer than expected</td><td>Without it, a code path that forgets to return a connection drains the pool slowly, and the outage arrives hours after the deploy</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>The one to remember:</b> pool exhaustion and a slow database look identical from the outside — everything hangs. The difference is where the time goes: waiting <em>for a connection</em> is a pool problem, waiting <em>on a query</em> is a database problem. Any pool worth using exposes both numbers, and knowing which one is climbing decides where you look.</div>`;
+
+/* ================= SIM: the idle timeout chain ================= */
+const TOSCEN=[
+ {id:'ok', n:'Everything agrees', dur:20, idle:0,
+  layers:{alb:60,app:75,nat:350,pool:1800,db:3600},
+  log:[['i','A normal request: 20 seconds of work, no idle gap'],
+       ['ok','Nothing times out. Every layer is configured with more patience than the one above it']],
+  note:'The healthy shape: <b>each layer downstream is more patient than the one in front of it</b>. The app keep-alive (75s) outlives the load balancer idle timeout (60s), so the balancer is always the one to close a connection — never the app, mid-handover.'},
+ {id:'alb502', n:'The classic ALB 502', dur:20, idle:0,
+  layers:{alb:60,app:50,nat:350,pool:1800,db:3600}, breakAt:'app',
+  log:[['i','Request arrives on a connection the load balancer has kept alive'],
+       ['no','The app closed that connection at 50s. The balancer thought it had until 60s'],
+       ['no','<b>502 Bad Gateway</b> — the balancer sent a request into a socket closing at the same moment'],
+       ['i','Intermittent, load-dependent, and it looks like the app crashed. It did not']],
+  note:'<b>The rule:</b> the target’s keep-alive must be <em>longer</em> than the load balancer’s idle timeout, with a margin. Here it is shorter, so there is a window where both sides think they own the connection. This produces a small, steady trickle of 502s that no application log explains.'},
+ {id:'nat350', n:'The silent NAT drop', dur:600, idle:400,
+  layers:{alb:4000,app:4000,nat:350,pool:1800,db:3600}, breakAt:'nat',
+  log:[['i','A long job: 10 minutes, with a 400-second quiet stretch waiting on a third party'],
+       ['no','The NAT gateway drops the flow after 350 idle seconds'],
+       ['no','It sends nothing back. No reset, no error — the connection simply stops existing'],
+       ['no','The app hangs until <em>its own</em> timeout finally fires, minutes later']],
+  note:'<b>Why this one is so hard to find:</b> most timeouts tell you. A NAT gateway drops an idle flow and stays silent, so the client waits on a connection that is already gone. The fix is TCP keep-alive on the socket set below 350 seconds, so the flow never looks idle.'},
+ {id:'stale', n:'A stale pooled connection', dur:5, idle:0,
+  layers:{alb:60,app:75,nat:350,pool:3600,db:900}, breakAt:'db',
+  log:[['i','A quiet period. The pool holds connections open, ready'],
+       ['no','The database closed them at 900s. The pool still believes it has 20 healthy connections'],
+       ['no','The next request is handed a dead socket: <b>connection reset by peer</b>'],
+       ['i','Almost always the first request after a quiet spell, which is why it looks random']],
+  note:'<b>The rule:</b> the pool’s max lifetime must be <em>shorter</em> than the shortest idle timeout beneath it — the database’s, a firewall’s, a NAT gateway’s. Here the pool recycles at 3600s but the database closes at 900s, so the pool hands out connections the database has already abandoned.'},
+ {id:'lb504', n:'A slow request at the balancer', dur:90, idle:0,
+  layers:{alb:60,app:120,nat:350,pool:1800,db:3600}, breakAt:'alb',
+  log:[['i','A genuinely slow request: 90 seconds of real work'],
+       ['no','The load balancer gives up at 60s and returns <b>504 Gateway Timeout</b>'],
+       ['i','The app carries on and finishes at 90s, writing to a client that has gone'],
+       ['i','So the work happened — and if it was not idempotent, a retry does it twice']],
+  note:'<b>Two problems, not one.</b> The visible one is the 504. The invisible one is that the backend completed the work after the client was told it failed, so a retry duplicates it. Long operations belong behind a job queue with a status endpoint, not on a request that has to be kept open.'},
+];
+const TOLAYERS=[['browser','Browser / client'],['alb','Load balancer'],['nat','NAT gateway'],['app','App keep-alive'],['pool','Connection pool max lifetime'],['db','Database idle timeout']];
+let toI=0;
+document.getElementById('toScen').innerHTML=TOSCEN.map((s,i)=>
+ `<button class="seg${i===0?' on':''}" data-i="${i}" style="text-align:left">${s.n}</button>`).join('');
+function toPaint(){
+  const s=TOSCEN[toI];
+  const max=Math.max(...Object.values(s.layers),s.dur);
+  document.getElementById('toChain').innerHTML=`<div class="wf2">`+TOLAYERS.map(([k,label])=>{
+    const v=s.layers[k]; if(v===undefined) return '';
+    const broke=s.breakAt===k;
+    const w=Math.max(2,Math.min(100, v/max*100));
+    return `<div class="row2${broke?' err2':''}">
+      <span class="lab2">${label}</span>
+      <span class="track2"><i style="width:${w}%;background:${broke?'var(--red)':'var(--teal)'}"></i></span>
+      <span class="ms2">${v}s</span></div>`;}).join('')
+   + `<div class="row2"><span class="lab2" style="color:var(--amber)">this request</span>
+      <span class="track2"><i style="width:${Math.max(2,Math.min(100,s.dur/max*100))}%;background:var(--amber)"></i></span>
+      <span class="ms2" style="color:var(--amber)">${s.dur}s</span></div>`
+   + (s.idle?`<div class="row2"><span class="lab2" style="color:var(--dim)">…of which idle</span>
+      <span class="track2"><i style="width:${Math.min(100,s.idle/max*100)}%;background:var(--dim)"></i></span>
+      <span class="ms2" style="color:var(--dim)">${s.idle}s</span></div>`:'')
+   + `</div>`;
+  const term=document.getElementById('toTerm'); term.innerHTML='';
+  s.log.forEach(([c,m])=>{const d=document.createElement('div');d.className=c;d.innerHTML=m;term.appendChild(d);});
+  document.getElementById('toNote').innerHTML=s.note;
+}
+document.getElementById('toScen').addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(!b)return;
+  toI=Number(b.dataset.i); document.querySelectorAll('#toScen .seg').forEach(x=>x.classList.remove('on')); b.classList.add('on'); toPaint();});
+toPaint();
+
+document.getElementById('toTable').innerHTML=`
+<h4>Who closes what, and after how long</h4>
+<table class="osi"><thead><tr><th>Layer</th><th>Typical default</th><th>Adjustable</th><th>What it does when it fires</th></tr></thead><tbody>
+<tr><td><b>Application Load Balancer</b></td><td>60 seconds idle</td><td>Yes, 1–4000s</td><td>Closes the connection; a request still in flight becomes a 504</td></tr>
+<tr><td><b>Network Load Balancer</b></td><td>350 seconds, TCP flows</td><td><b>No</b></td><td>Drops the flow. Use TCP keep-alive below it to stay under the limit</td></tr>
+<tr><td><b>NAT gateway</b></td><td>350 seconds idle</td><td>Limited</td><td><b>Drops silently</b> — no reset, so the caller hangs until its own timeout</td></tr>
+<tr><td><b>API Gateway integration</b></td><td>29 seconds</td><td>Bounded</td><td>Returns a timeout. Anything slower must be asynchronous by design</td></tr>
+<tr><td><b>App server keep-alive</b></td><td>5–75 seconds, varies widely</td><td>Yes</td><td>Closes the connection. If shorter than the balancer's, causes intermittent 502s</td></tr>
+<tr><td><b>Connection pool max lifetime</b></td><td>30 minutes</td><td>Yes</td><td>Recycles the connection. Must be under everything below it</td></tr>
+<tr><td><b>Database idle timeout</b></td><td>Minutes to hours, engine dependent</td><td>Yes</td><td>Closes the session; the pool finds out only when it next tries to use it</td></tr>
+</tbody></table>
+<h4>The two rules that prevent most of these</h4>
+<table class="osi"><thead><tr><th>Rule</th><th>Because</th></tr></thead><tbody>
+<tr><td><b>Downstream must be more patient than upstream</b></td><td>App keep-alive longer than the balancer's idle timeout, so the balancer always closes first and never hands a request to a socket that is closing</td></tr>
+<tr><td><b>Pool lifetime shorter than every idle timeout beneath it</b></td><td>So the pool discards a connection before the database, firewall or NAT gateway does it silently and hands you a dead socket</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>How to read the symptom:</b> a <b>504</b> means something upstream ran out of patience while the work was still going. A <b>502</b> means the connection died mid-handover, which usually points at a keep-alive shorter than the balancer's idle timeout. A <b>hang with no error at all</b> is the signature of a silent drop — NAT is the usual culprit. And a <b>reset on the first request after a quiet period</b> is a pooled connection the far end had already closed.</div>`;
+
+/* ================= SIM: MVC ================= */
+const MVCOPT=[
+ {id:'fatctl', label:'business rules live in the controller', layer:'controller'},
+ {id:'viewsql',label:'the view fetches its own data', layer:'view'},
+ {id:'anaemic',label:'the model is just fields, no behaviour', layer:'model'},
+ {id:'godmodel',label:'one model class handles everything', layer:'model'},
+];
+document.getElementById('mvcOpts').innerHTML=
+ `<label style="color:var(--text);font-weight:500">Let logic drift, and see what it costs</label>`
+ + MVCOPT.map(o=>`<label><input type="checkbox" id="mv-${o.id}"> ${o.label}</label>`).join('');
+const mvOn=id=>document.getElementById('mv-'+id).checked;
+function mvcPaint(){
+  const bad=MVCOPT.filter(o=>mvOn(o.id)).map(o=>o.layer);
+  document.getElementById('mvcFlow').innerHTML=`<div class="mvcbox">
+   ${[['controller','Controller','the waiter — takes the request, decides what to ask for, hands back the answer'],
+      ['model','Model','the kitchen — owns the data and the rules about it'],
+      ['view','View','the plate — turns an answer into HTML or JSON']]
+     .map(([k,n,d])=>{const off=bad.includes(k);
+       return `<div class="mv" style="border-color:${off?'var(--red)':'var(--teal)'};background:${off?'rgba(163,58,65,.07)':'var(--panel2)'}">
+         <b>${n}</b><small>${d}</small></div>`;}).join('')}</div>`;
+  const term=document.getElementById('mvcTerm'); term.innerHTML='';
+  const log=(c,m)=>{const d=document.createElement('div');d.className=c;d.innerHTML=m;term.appendChild(d);term.scrollTop=term.scrollHeight;};
+  log('i','<b>&gt;</b> GET /orders/12345');
+  log(mvOn('fatctl')?'no':'ok', mvOn('fatctl')
+    ? 'Controller: parses the request <b>and</b> works out refund eligibility, tax and discounts inline'
+    : 'Controller: parses the request, calls the model, nothing more');
+  log(mvOn('anaemic')||mvOn('godmodel')?'no':'ok', mvOn('godmodel')
+    ? 'Model: one class covering orders, billing, shipping and email — 3,000 lines nobody wants to touch'
+    : mvOn('anaemic') ? 'Model: returns bare fields; every caller re-implements the same rules'
+    : 'Model: fetches the order and answers questions about it — is it refundable, what is it worth');
+  log(mvOn('viewsql')?'no':'ok', mvOn('viewsql')
+    ? 'View: loops over items and queries the database for each one — the N+1 problem, invisible until the data grows'
+    : 'View: renders what it was handed. No database access, no decisions');
+  const testable = 100 - (mvOn('fatctl')?30:0) - (mvOn('viewsql')?25:0) - (mvOn('anaemic')?20:0) - (mvOn('godmodel')?20:0);
+  const dup = (mvOn('anaemic')?3:0)+(mvOn('fatctl')?2:0);
+  const queries = mvOn('viewsql')? '1 + one per item' : '1';
+  if(!bad.length) log('ok','<b>Clean.</b> Each layer does one job, so each can be tested and changed on its own');
+  else log('no','<b>'+bad.length+' layer'+(bad.length>1?'s are':' is')+' doing someone else’s job.</b> That is the whole of what goes wrong with MVC');
+  document.getElementById('mvcScore').innerHTML=
+   `<div class="r"><span>Unit-testable without a web server or database</span><b style="color:${testable>80?'var(--green)':testable>50?'var(--amber)':'var(--red)'}">${testable}%</b></div>
+    <div class="r"><span>Places the same rule is written</span><b style="color:${dup?'var(--red)':'var(--green)'}">${1+dup}</b></div>
+    <div class="r"><span>Database queries for this page</span><b style="color:${mvOn('viewsql')?'var(--red)':'var(--green)'}">${queries}</b></div>
+    <div class="r"><span>Where a new developer looks for the rule</span><b style="color:${bad.length?'var(--red)':'var(--green)'}">${bad.length?'three places, and guesses':'the model'}</b></div>`;
+}
+document.getElementById('mvcOpts').addEventListener('change',mvcPaint);
+document.getElementById('mvcRun').onclick=mvcPaint;
+mvcPaint();
+
+document.getElementById('mvcTable').innerHTML=`
+<h4>Who owns what</h4>
+<table class="osi"><thead><tr><th>Layer</th><th>Owns</th><th>Must never</th><th>Test it by</th></tr></thead><tbody>
+<tr><td><b>Model</b></td><td>The data, and the rules about that data — is this order refundable, what is it worth, is this state change legal</td><td>Know it is being used by a web request, or produce HTML</td><td>Calling it directly. No server, no browser, no HTTP</td></tr>
+<tr><td><b>View</b></td><td>Turning an answer into something a client can read — HTML, JSON, a PDF</td><td>Query the database, or decide anything</td><td>Handing it fixed data and comparing the output</td></tr>
+<tr><td><b>Controller</b></td><td>Receiving the request, validating shape, choosing which model call to make, picking a view, mapping errors to status codes</td><td>Contain business rules. It should read like a table of contents</td><td>Asserting it called the right model method and returned the right status</td></tr>
+</tbody></table>
+<h4>The four ways it goes wrong</h4>
+<table class="osi"><thead><tr><th>Smell</th><th>What it looks like</th><th>Why it hurts</th></tr></thead><tbody>
+<tr><td><b>Fat controller</b></td><td>Hundreds of lines of rules in the request handler</td><td>The rules can now only be tested through HTTP, and the second caller — a scheduled job, a CLI, another endpoint — reimplements them</td></tr>
+<tr><td><b>Logic in the view</b></td><td>A template that queries, filters or calculates</td><td>The N+1 query problem arrives silently, and rendering becomes untestable without a database</td></tr>
+<tr><td><b>Anaemic model</b></td><td>Classes with only getters and setters; rules live wherever they were needed</td><td>The same rule is written several times and they drift apart. This is the most common of the four</td></tr>
+<tr><td><b>God model</b></td><td>One enormous class that touches everything</td><td>Every change risks everything else, and the file becomes one nobody volunteers to edit</td></tr>
+</tbody></table>
+<h4>MVC and its relatives, since interviews ask</h4>
+<table class="osi"><thead><tr><th>Pattern</th><th>The difference</th><th>Where you meet it</th></tr></thead><tbody>
+<tr><td><b>MVC</b></td><td>Controller mediates; the view may read the model directly in the classical form</td><td>Rails, Spring MVC, ASP.NET MVC, Laravel</td></tr>
+<tr><td><b>MVP</b></td><td>The presenter does all the talking; the view is passive and knows nothing</td><td>Older desktop and Android code</td></tr>
+<tr><td><b>MVVM</b></td><td>A view-model the view binds to, so updates flow automatically</td><td>WPF, SwiftUI, Vue and Angular in spirit</td></tr>
+<tr><td><b>MVT</b></td><td>Django's naming: its &ldquo;view&rdquo; is what MVC calls a controller, and its template is the view</td><td>Django — the source of much confusion in interviews</td></tr>
+<tr><td><b>Layered / hexagonal</b></td><td>Generalises the same idea: the domain sits in the middle and knows nothing about delivery</td><td>Where MVC ends up once the app outgrows one process</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>The point of all of them is one thing:</b> business rules should not know how they were reached. If your refund rule works the same whether it was called by a web request, a scheduled job, a message from a queue or a test — you have the separation, whatever you call the pattern. If it only works through an HTTP request, you do not, and no amount of correct folder naming will fix it.</div>`;
 
 </script>
 </body>
