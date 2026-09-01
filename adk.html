@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADK lab — build, orchestrate, ground and deploy agents</title>
+<style>
+  /* self-hosted, same subsets the portfolio serves — no external requests */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
+  :root{
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-family:var(--display); font-size:clamp(26px,3.4vw,38px); font-weight:500; letter-spacing:-.018em; line-height:1.05}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
+  .wf{display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:11px}
+  .wf .row{display:grid; grid-template-columns:150px 1fr 62px; gap:8px; align-items:center}
+  .wf .lab{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf .track{position:relative; height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:4px}
+  .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
+  .wf .ms{text-align:right; color:var(--dim)}
+  .wf .row.err .lab{color:var(--red)}
+  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+
+  .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
+    padding:11px 12px; text-align:center; transition:border-color .3s, background .3s, opacity .3s}
+  .chasm .cpart b{display:block; font-size:13px; font-weight:500; color:var(--text)}
+  .chasm .cpart small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.4}
+  .chasm .cagent{grid-column:1/-1; border-color:var(--blue); background:var(--n-blue)}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:var(--amber); opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  .code pre{margin:0}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a>
+    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
+    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
+    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
+    <div class="eyebrow">agent development kit · build to deploy</div>
+    <h1>Building an agent that behaves <span class="thin">— the Agent Development Kit, end to end</span></h1>
+    <p class="sub">ADK is the code-first way to build an agent: you write Python, it handles the orchestration. Most of what goes wrong is invisible in the code — a docstring that decides whether a tool is ever chosen, a state key renamed in one place that silently breaks three others, a callback that short-circuits everything downstream, model-written code running where it can do damage. Ten sections, each with the plain-English version first, and simulations for the parts that only make sense once you have seen them fail.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="start" role="tab">Start here</button>
+    <button class="tab" data-pane="agent" role="tab">Agent anatomy</button>
+    <button class="tab" data-pane="tools" role="tab">Tools & schema</button>
+    <button class="tab" data-pane="state" role="tab">State</button>
+    <button class="tab" data-pane="hooks" role="tab">Callbacks & plugins</button>
+    <button class="tab" data-pane="orch" role="tab">Orchestration</button>
+    <button class="tab" data-pane="ground" role="tab">Grounding</button>
+    <button class="tab" data-pane="exec" role="tab">Code execution</button>
+    <button class="tab" data-pane="skills" role="tab">Skills</button>
+    <button class="tab" data-pane="deploy" role="tab">Deploy & exam</button>
+  </div>
+
+  <section class="pane on" id="pane-start">
+    <div id="sec-start"></div>
+  </section>
+  <section class="pane" id="pane-agent">
+    <div id="sec-agent"></div>
+  </section>
+  <section class="pane" id="pane-tools">
+    <div id="sec-tools"></div>
+  </section>
+  <section class="pane" id="pane-state">
+    <div id="sec-state"></div>
+  </section>
+  <section class="pane" id="pane-hooks">
+    <div id="sec-hooks"></div>
+  </section>
+  <section class="pane" id="pane-orch">
+    <div id="sec-orch"></div>
+  </section>
+  <section class="pane" id="pane-ground">
+    <div id="sec-ground"></div>
+  </section>
+  <section class="pane" id="pane-exec">
+    <div id="sec-exec"></div>
+  </section>
+  <section class="pane" id="pane-skills">
+    <div id="sec-skills"></div>
+  </section>
+  <section class="pane" id="pane-deploy">
+    <div id="sec-deploy"></div>
+  </section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">learning guide</a> · <a href="cloud.html">cloud lab</a> · <a href="agentcore.html">agentcore lab</a> · <a href="agentbuild.html">agents lab</a>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
+
+
+
+
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+
+
+
+
+/* ================= 1 · START HERE ================= */
+document.getElementById('sec-start').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">An agent is four things, and only one of them is clever</h2>
+  <div class="plain-line"><b>In plain English:</b> think of hiring someone. You write a <b>job description</b> so they know what they are for. They bring a <b>brain</b>. You give them <b>logins</b> to the systems they need. And there is an <b>office</b> around them that hands them work, keeps their notes, and files what they produce. ADK is that office. You supply the job description and the logins; ADK runs everything else.</div>
+  ${D('0 0 660 250','The four parts of an ADK agent: the agent definition, the model, the tools, and the runner that executes the loop.',
+   `${box(14,26,300,84,'var(--violet)')}${t(164,50,'Agent — the job description',SANS)}${tm(164,68,'name · instruction · description','var(--dim)')}${tm(164,84,'what it is for, and how it should behave','var(--dim)')}${tm(164,100,'you write this','var(--violet)')}
+    ${box(346,26,300,84,'var(--teal)')}${t(496,50,'Model — the reasoning',SANS)}${tm(496,68,'Gemini, or another model','var(--dim)')}${tm(496,84,'decides what to say and which tool to call','var(--dim)')}${tm(496,100,'you pick this','var(--teal)')}
+    ${box(14,126,300,84,'var(--amber)')}${t(164,150,'Tools — the hands',SANS)}${tm(164,168,'plain Python functions','var(--dim)')}${tm(164,184,'the only way it touches the real world','var(--dim)')}${tm(164,200,'you write these','var(--amber)')}
+    ${box(346,126,300,84,'var(--wire)')}${t(496,150,'Runner — the office',SANS)}${tm(496,168,'runs the loop, holds the session','var(--dim)')}${tm(496,184,'stores state, streams events, files artifacts','var(--dim)')}${tm(496,200,'ADK gives you this','var(--green)')}
+    ${tm(330,232,'you own three of the four — the loop is not yours to write','var(--dim)')}`,
+   'The runner is the piece people forget exists. It is what turns a definition into something running: it keeps the conversation, persists state between turns, and emits every step as an event you can watch.')}
+  <div class="plain-line"><b>Why it matters:</b> almost every ADK bug lands in one of these four boxes, and knowing which box saves you an hour. Agent ignores your rule → instruction. Picks the wrong tool → the tool&rsquo;s docstring. Forgets what happened → state and the runner. Says something confidently wrong → the model, or missing grounding.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">When ADK is the right tool — and when it is overkill</h2>
+  <div class="vs2"><div class="col"><b>REACH FOR ADK WHEN</b>The job takes several steps that depend on each other. Something must be <em>done</em>, not just described. Different specialists handle different parts. You need an audit trail of what happened and why. The work touches real systems through real credentials.</div>
+  <div class="col"><b>DON'T WHEN</b>One prompt in, one answer out. There is no tool to call and no state to keep. A single model call already does it. Adding an agent here buys you latency, cost and a new class of failure for nothing.</div></div>
+  <div class="plain-line" style="margin-top:12px"><b>The honest test:</b> if you can draw the whole thing as one arrow, you do not need an agent. If your drawing has a decision diamond, a retry, or two boxes that hand work to each other, you do.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The ten things this lab covers, and the trap in each</h2>
+  <table class="osi"><thead><tr><th>Section</th><th>What you learn</th><th>The thing that bites</th></tr></thead><tbody>
+  <tr><td><b>Agent anatomy</b></td><td>The parameters, and running it locally</td><td>Your variable must be called <span class="code">root_agent</span> or the CLI cannot find the agent at all</td></tr>
+  <tr><td><b>Tools</b></td><td>How a Python function becomes something the model can call</td><td>The <b>docstring is the entire specification</b> the model sees. A vague one means the tool is never chosen</td></tr>
+  <tr><td><b>State</b></td><td>Memory that survives between turns and agents</td><td>Four scopes that look identical in code. Pick wrong and data leaks between users or vanishes on restart</td></tr>
+  <tr><td><b>Callbacks &amp; plugins</b></td><td>Six interception points around the loop</td><td>Return a value from a <span class="code">before_</span> callback and you have silently cancelled the thing it wrapped</td></tr>
+  <tr><td><b>Orchestration</b></td><td>Sequential, parallel, loop, graph, delegation</td><td>Parallel agents writing the same state key overwrite each other; only one survives</td></tr>
+  <tr><td><b>Grounding</b></td><td>Search, private data, and MCP servers</td><td>An agent using MCP must be built <b>synchronously</b> in <span class="code">agent.py</span> or deployment fails</td></tr>
+  <tr><td><b>Code execution</b></td><td>Running model-written code safely</td><td>Code the model wrote must never run where the agent runs. Trusted runtime, isolated sandbox — two places, on purpose</td></tr>
+  <tr><td><b>Skills</b></td><td>Packaged expertise the agent loads on demand</td><td>The folder name must match the name inside the file, or the skill silently does not load</td></tr>
+  <tr><td><b>Deploy</b></td><td>Agent Runtime, and publishing to Gemini Enterprise</td><td>Your agent&rsquo;s <b>description</b> becomes the routing signal. A weak one means users are never sent to it</td></tr>
+  </tbody></table>
+</div>`;
+
+/* ================= 2 · AGENT ANATOMY ================= */
+document.getElementById('sec-agent').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Six fields, and two of them are read by different audiences</h2>
+  <div class="plain-line"><b>In plain English:</b> defining an agent is filling in a form. The surprise is that <b>two fields sound like the same thing but are read by different readers</b>. <span class="code">instruction</span> is read by <em>this agent&rsquo;s model</em> — it is the job description. <span class="code">description</span> is read by <em>other agents and by Gemini Enterprise</em> — it is the entry in the staff directory that decides whether work gets routed here at all.</div>
+  <table class="osi"><thead><tr><th>Field</th><th>Plain meaning</th><th>Who reads it</th><th>Get it wrong and…</th></tr></thead><tbody>
+  <tr><td><span class="code">name</span></td><td>The agent&rsquo;s identifier</td><td>ADK, and other agents delegating to it</td><td>Delegation by name fails; traces are unreadable</td></tr>
+  <tr><td><span class="code">model</span></td><td>Which model does the thinking</td><td>The runtime</td><td>Wrong cost/latency profile; a cheap model on a hard task loops</td></tr>
+  <tr><td><span class="code">instruction</span></td><td>The job description and rules of behaviour</td><td><b>This agent&rsquo;s model, every turn</b></td><td>It ignores your rules — because they were never in front of it</td></tr>
+  <tr><td><span class="code">description</span></td><td>A one-line summary of what it is good for</td><td><b>Other agents, and Gemini Enterprise routing</b></td><td>Nobody routes work to it. The agent is fine and unused</td></tr>
+  <tr><td><span class="code">tools</span></td><td>The list of things it may do</td><td>The model, when choosing an action</td><td>It cannot act, or it can act too widely</td></tr>
+  <tr><td><span class="code">output_key</span></td><td>Save this agent&rsquo;s final reply into state under this name</td><td>The next agent in the pipeline</td><td>The next agent has nothing to read</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The incompatibility worth memorising:</b> <span class="code">output_schema</span> (forcing structured JSON out) <b>cannot be combined with tools or delegation</b>. Asking a model to both call tools and emit exactly one JSON shape is contradictory. If you need both, split it: one agent acts, a second agent formats.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">From nothing to a running agent — four commands</h2>
+  ${D('0 0 660 200','The ADK command line: create scaffolds a project, run gives a terminal chat, web gives a debug UI, api_server exposes HTTP.',
+   `${box(14,24,150,60,'var(--violet)')}${t(89,46,'adk create',MONO)}${tm(89,64,'scaffolds the folder','var(--dim)')}${tm(89,78,'agent.py · .env','var(--dim)')}
+    ${box(180,24,150,60,'var(--teal)')}${t(255,46,'adk run',MONO)}${tm(255,64,'chat in the terminal','var(--dim)')}${tm(255,78,'fastest sanity check','var(--dim)')}
+    ${box(346,24,150,60,'var(--amber)')}${t(421,46,'adk web',MONO)}${tm(421,64,'browser debug UI','var(--dim)')}${tm(421,78,'see every tool call','var(--dim)')}
+    ${box(512,24,134,60,'var(--wire)')}${t(579,46,'adk api_server',MONO)}${tm(579,64,'HTTP endpoint','var(--dim)')}${tm(579,78,'for integration','var(--dim)')}
+    <path d="M166 54 H178" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M332 54 H344" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M498 54 H510" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${box(14,104,632,76,'var(--red)')}
+    ${t(330,128,'The discovery rule that catches everyone',SANS)}
+    ${tm(330,148,'ADK looks inside agent.py for a variable literally named root_agent','var(--dim)')}
+    ${tm(330,164,'call it my_agent and every command reports no agent found — the code is fine, the name is not','var(--red)')}`,
+   'adk web is where you should live while developing: it shows the event stream, every tool call with its arguments, and the session state after each turn.')}
+</div>
+
+<div class="card">
+  <h2 class="sec">The instruction is a contract, not a hint</h2>
+  <div class="plain-line"><b>In plain English:</b> a model does what is in front of it. Anything you assumed &mdash; tone, refusals, when to hand off, what never to say &mdash; only exists if you wrote it down. &ldquo;Be helpful&rdquo; is not an instruction; it is a wish.</div>
+  <div class="vs2"><div class="col"><b>VAGUE — behaves differently every run</b><span class="code">You are a helpful assistant that answers questions about orders.</span><br><br>No boundary, no failure behaviour, no handoff rule. It will invent an order status rather than admit it cannot find one.</div>
+  <div class="col"><b>SPECIFIC — behaves the same way twice</b><span class="code">You look up order status. Always call get_order before answering. If the ID is not found, say so and ask for a corrected ID — never guess. For refunds, transfer to refund_agent. Never quote a delivery date the tool did not return.</span><br><br>Every sentence removes a failure mode you would otherwise debug.</div></div>
+</div>`;
+/* ================= 3 · TOOLS ================= */
+document.getElementById('sec-tools').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A tool is a normal Python function. The model only ever sees the label.</h2>
+  <div class="plain-line"><b>In plain English:</b> imagine a wall of unlabelled switches. The model cannot open the wall, read the wiring, or try one to see what happens. All it gets is the <b>label you stuck on the front</b>. ADK writes that label automatically from three parts of your function &mdash; and if the label is vague, the switch never gets flipped.</div>
+  ${D('0 0 660 236','How ADK turns a Python function into a tool schema: the name becomes the tool name, the docstring becomes the description, and type hints become the parameter types.',
+   `${box(14,24,290,150,'var(--wire)')}${t(159,46,'Your Python function',SANS)}
+    ${tm(159,70,'def get_weather(city: str) -> dict:','var(--violet)')}
+    ${tm(159,90,'"""Returns today’s forecast for','var(--amber)')}
+    ${tm(159,106,'a named city, as temp and','var(--amber)')}
+    ${tm(159,122,'conditions."""','var(--amber)')}
+    ${tm(159,146,'return {"status": "ok", ...}','var(--teal)')}
+    ${box(356,24,290,150,'var(--teal)')}${t(501,46,'What the model actually sees',SANS)}
+    ${tm(501,70,'name: get_weather','var(--violet)')}
+    ${tm(501,90,'description: Returns today’s','var(--amber)')}
+    ${tm(501,106,'forecast for a named city…','var(--amber)')}
+    ${tm(501,130,'parameters: { city: string }','var(--teal)')}
+    ${tm(501,152,'that is the whole label','var(--dim)')}
+    <path d="M306 98 H354" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(330,110,'ADK builds this','var(--dim)')}
+    ${box(14,190,632,36,'var(--amber)')}
+    ${tm(330,213,'the docstring is not documentation for humans — it is the specification the model reasons over','var(--amber)')}`,
+   'Everything the model knows about your tool comes from this generated schema. It cannot read the body. A function called process_data with no docstring is, to the model, an unlabelled switch.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — write the label, watch the model decide</h2>
+  <div class="plain-line"><b>Try this:</b> the same working function, described three different ways. The code is identical every time. Flip the switches and watch whether the model chooses it, chooses the wrong tool, or gives up and answers from memory.</div>
+  <div class="sim-layout">
+    <div><div id="toolSchema"></div></div>
+    <div>
+      <div class="toggles" id="toolCtl"></div>
+      <div id="toolVerdict" class="cidr-out" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">ToolContext — the four extra powers a tool can ask for</h2>
+  <div class="plain-line"><b>In plain English:</b> a plain tool takes inputs and returns an answer, and that is all it can do. Add <span class="code">tool_context: ToolContext</span> as a parameter and the tool suddenly has hands: it can remember things, redirect the conversation, save files, and hold credentials. ADK fills that parameter in for you &mdash; and hides it from the model, so it never appears as something the model must supply.</div>
+  <table class="osi"><thead><tr><th>Power</th><th>What it does</th><th>Plain example</th></tr></thead><tbody>
+  <tr><td><b>State</b><br><span class="code">tool_context.state[…]</span></td><td>Read and write the shared notebook that survives across turns and agents</td><td>Save the customer ID once at the start so no later step has to ask for it again</td></tr>
+  <tr><td><b>Actions</b><br><span class="code">tool_context.actions</span></td><td>Change the flow itself: <span class="code">transfer_to_agent</span> hands over to a specialist, <span class="code">escalate</span> breaks out of a loop, <span class="code">skip_summarization</span> returns the raw result untouched</td><td>A validator tool decides the answer is good enough and ends the review loop</td></tr>
+  <tr><td><b>Artifacts</b><br><span class="code">save_artifact / load_artifact</span></td><td>Store and retrieve real files &mdash; images, PDFs, CSVs &mdash; outside the conversation</td><td>A chart the agent generated, handed back as a downloadable file rather than pasted as text</td></tr>
+  <tr><td><b>Auth</b></td><td>Request and carry credentials for tools that need them</td><td>Calling an internal API on behalf of the signed-in user, without the key ever entering the prompt</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The one about <span class="code">skip_summarization</span>:</b> by default the model rewrites every tool result into prose. When your tool already returns exactly the JSON the caller needs, that rewrite is where precision goes to die &mdash; numbers get rounded, fields get dropped. Setting it tells ADK to pass the result straight through.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Four kinds of tool, and when to reach for each</h2>
+  <table class="osi"><thead><tr><th>Kind</th><th>What it is</th><th>Reach for it when</th></tr></thead><tbody>
+  <tr><td><b>Function tools</b></td><td>Your own Python functions</td><td>The logic is yours &mdash; your database, your business rules, your API</td></tr>
+  <tr><td><b>Built-in tools</b></td><td>Ship with ADK: <span class="code">google_search</span>, code execution, Vertex AI Search</td><td>You want public web grounding or a code sandbox and would rather not build it</td></tr>
+  <tr><td><b>MCP / third-party</b></td><td>Tools exposed by an external server over the Model Context Protocol</td><td>Another team already runs the capability. You connect rather than reimplement</td></tr>
+  <tr><td><b>Agents as tools</b></td><td>A whole agent, wrapped so another agent can call it</td><td>The sub-job needs its own reasoning, not just a function call &mdash; and you want the caller to stay in charge</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Return a status, always.</b> A tool that returns <span class="code">{"status": "error", "message": "no such order"}</span> lets the model recover and ask a better question. A tool that raises, or returns <span class="code">None</span>, gives the model nothing to reason about &mdash; and a confident guess is what usually comes back instead.</div>
+</div>`;
+
+/* --- SIM: tool schema quality --- */
+(function(){
+  const ctl=document.getElementById('toolCtl'), out=document.getElementById('toolSchema'), vd=document.getElementById('toolVerdict');
+  if(!ctl) return;
+  const OPTS=[
+    {k:'nm',label:'Function name',opts:[['vague','process_data'],['clear','get_order_status']]},
+    {k:'doc',label:'Docstring',opts:[['none','none at all'],['thin','one vague line'],['full','purpose + args + returns']]},
+    {k:'ty',label:'Type hints',opts:[['none','no hints'],['full','typed args and return']]},
+    {k:'ret',label:'Return shape',opts:[['bare','a bare string'],['status','dict with a status key']]}
+  ];
+  const st={nm:'vague',doc:'none',ty:'none',ret:'bare'};
+  const NAMES={vague:'process_data',clear:'get_order_status'};
+  const DOCS={
+    none:'',
+    thin:'"""Processes the data."""',
+    full:'"""Look up the current status of a customer order.\\n\\n    Args:\\n        order_id: The order reference, e.g. A-4417.\\n\\n    Returns:\\n        dict with status (ok or error), state and eta_days.\\n    """'
+  };
+  function render(){
+    ctl.innerHTML = OPTS.map(o=>
+      '<div style="margin-bottom:10px"><div class="dim" style="font-size:11px;margin-bottom:5px">'+o.label+'</div>'+
+      '<div class="segmented">'+o.opts.map(([v,l])=>
+        '<button class="seg'+(st[o.k]===v?' on':'')+'" data-k="'+o.k+'" data-v="'+v+'">'+l+'</button>').join('')+
+      '</div></div>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{st[b.dataset.k]=b.dataset.v;render();});
+
+    const fn=NAMES[st.nm];
+    const args = st.ty==='full' ? 'order_id: str' : 'order_id';
+    const ret  = st.ty==='full' ? ' -> dict' : '';
+    const body = st.ret==='status' ? 'return {"status": "ok", "state": "shipped", "eta_days": 2}'
+                                   : 'return "shipped, 2 days"';
+    const code='def '+fn+'('+args+')'+ret+':\n'+(DOCS[st.doc]?'    '+DOCS[st.doc].replace(/\\n/g,'\n')+'\n':'')+'    '+body;
+
+    const desc = st.doc==='none' ? '(empty — ADK has nothing to put here)'
+               : st.doc==='thin' ? 'Processes the data.'
+               : 'Look up the current status of a customer order.';
+    const params = st.ty==='full'
+      ? '{ "order_id": { "type": "string",\n                     "description": "The order reference, e.g. A-4417." } }'
+      : '{ "order_id": { "type": "string" } }   ← guessed, no hint given';
+    const schema='name:        '+fn+'\ndescription: '+desc+'\nparameters:  '+params;
+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">YOUR CODE</div>'+
+      '<pre class="code">'+hl(code)+'</pre>'+
+      '<div class="dim" style="font-size:11px;margin:12px 0 6px">WHAT THE MODEL IS HANDED</div>'+
+      '<pre class="code">'+esc(schema)+'</pre>';
+
+    /* score */
+    let score=0, notes=[];
+    if(st.nm==='clear'){score+=25;} else {notes.push(['bad','The name says nothing. <b>process_data</b> could be anything — the model has no reason to prefer it over another tool.']);}
+    if(st.doc==='full'){score+=40;}
+    else if(st.doc==='thin'){score+=12;notes.push(['bad','&ldquo;Processes the data&rdquo; does not say <em>which</em> data or <em>what for</em>. The model must gamble on whether this is the right tool.']);}
+    else {notes.push(['bad','No docstring at all. This is the big one: the description field is empty, so the tool is effectively unlabelled.']);}
+    if(st.ty==='full'){score+=20;} else {notes.push(['bad','No type hints, so the parameter type is inferred. The model may pass a number where a string was meant, and the call fails at runtime.']);}
+    if(st.ret==='status'){score+=15;} else {notes.push(['bad','A bare string gives the model no way to tell success from failure. On a bad order ID it will narrate something plausible rather than admit the lookup failed.']);}
+    if(st.doc==='full'&&st.nm==='clear') notes.push(['ok','Name and docstring agree. The model can tell this tool apart from its neighbours without guessing.']);
+    if(st.ty==='full') notes.push(['ok','Typed arguments mean ADK validates the call before your code runs.']);
+    if(st.ret==='status') notes.push(['ok','A status key gives the model a recovery path: it can say &ldquo;I could not find that order&rdquo; instead of inventing one.']);
+
+    const verdict = score>=90 ? ['ok','Chosen, correctly, first time']
+                  : score>=55 ? ['warn','Chosen about half the time — and confused with neighbouring tools']
+                  : ['bad','Rarely chosen. The model answers from memory instead, and sounds certain'];
+    vd.innerHTML =
+      '<div class="bar" style="margin-bottom:10px"><i style="width:'+score+'%;background:'+
+        (score>=90?'var(--green)':score>=55?'var(--amber)':'var(--red)')+'"></i></div>'+
+      '<div class="'+(verdict[0]==='ok'?'ok':verdict[0]==='warn'?'note':'err')+'" style="margin-bottom:10px"><b>Label quality '+score+'/100 — </b>'+verdict[1]+'</div>'+
+      notes.map(([k,txt])=>'<div class="'+(k==='ok'?'ok':'err')+'" style="margin-bottom:6px">'+txt+'</div>').join('')+
+      '<div class="simnote" style="margin-top:10px">The Python body never changed. Every difference above came from the label — which is why a docstring is the highest-leverage thing you will write all day.</div>';
+  }
+  render();
+})();
+/* ================= 4 · STATE ================= */
+document.getElementById('sec-state').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">One shared notebook, four drawers</h2>
+  <div class="plain-line"><b>In plain English:</b> a <b>session</b> is one conversation. Attached to it is <b>state</b> &mdash; a notebook every agent and tool in that conversation can read and write. The whole design rests on one decision per note: <b>how long should this survive, and who should be able to read it?</b> ADK answers that with a prefix on the key name. No prefix, <span class="code">user:</span>, <span class="code">app:</span>, <span class="code">temp:</span>. Four characters that decide whether your data leaks, vanishes, or lands exactly where you meant.</div>
+  ${D('0 0 660 268','The four state scopes in ADK: session, user, app and temp, drawn as nested boundaries from widest to narrowest.',
+   `${box(14,22,632,180,'var(--wire)')}${tm(330,42,'app:  —  every user, every conversation  ·  shared reference data','var(--teal)')}
+    ${box(40,58,580,132,'var(--violet)')}${tm(330,78,'user:  —  one person, all of their conversations  ·  preferences, profile','var(--violet)')}
+    ${box(68,94,524,84,'var(--amber)')}${tm(330,114,'no prefix  —  this conversation only  ·  the working draft','var(--amber)')}
+    ${box(96,130,468,36,'var(--red)')}${tm(330,152,'temp:  —  this single turn, never written to disk','var(--red)')}
+    ${tm(330,222,'widest at the top, narrowest at the bottom — pick the smallest drawer that still works','var(--dim)')}
+    ${tm(330,244,'temp: is the only one that is guaranteed to be gone afterwards','var(--dim)')}`,
+   'The nesting is the mental model: anything in an outer drawer is visible to everything inside it. That is exactly why putting one user’s data in the app: drawer shows it to everyone.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — file each note in the right drawer</h2>
+  <div class="plain-line"><b>Try this:</b> four real things an agent needs to remember. Choose a drawer for each. The consequence of the wrong choice is spelled out &mdash; some are merely wasteful, one is a data breach.</div>
+  <div class="sim-layout">
+    <div><div id="scopeItems"></div></div>
+    <div><div id="scopeOut" class="cidr-out"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">There is a right way and a wrong way to write to it</h2>
+  <div class="plain-line"><b>In plain English:</b> every change to state is supposed to travel as an <b>event</b> &mdash; that is what makes it persisted, replayable and visible in a trace. Reach into the session object and set a value directly and you have gone around the postal system: the value exists in memory right now, and is gone the moment the process restarts, with nothing in the audit trail to explain it.</div>
+  <div class="vs2"><div class="col"><b>SAFE — goes through the event system</b><span class="code">output_key="draft"</span> on the agent &mdash; ADK saves the final reply for you<br><br><span class="code">tool_context.state["customer_id"] = cid</span> inside a tool<br><br><span class="code">callback_context.state[…]</span> inside a callback<br><br>All three are tracked, persisted and appear in the trace.</div>
+  <div class="col"><b>UNSAFE — bypasses it entirely</b><span class="code">session.state["customer_id"] = cid</span><br><br>It appears to work. It survives the next line of code and not much else: not persisted, not tracked, invisible to the trace. The bug shows up as &ldquo;it forgot&rdquo; on a different machine, days later.</div></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">State is a contract between agents, and nothing enforces it</h2>
+  <div class="plain-line"><b>In plain English:</b> when agent A writes <span class="code">research_summary</span> and agent B reads <span class="code">research_summary</span>, that shared string <em>is</em> the interface between them. There is no compiler to check it. Rename it in A and B does not crash &mdash; it reads nothing, and the model politely writes something plausible from thin air.</div>
+  <div class="plain-line"><b>How to survive it:</b> write the key names down in one place before you build. Treat a key rename like an API change, because it is one. And when you are debugging &ldquo;the second agent ignored the first&rdquo;, check the key spelling before you touch a single prompt.</div>
+</div>`;
+
+/* --- SIM: state scope --- */
+(function(){
+  const wrapEl=document.getElementById('scopeItems'), out=document.getElementById('scopeOut');
+  if(!wrapEl) return;
+  const SCOPES=[['none','no prefix'],['user','user:'],['app','app:'],['temp','temp:']];
+  const ITEMS=[
+    {id:'lang',label:'The person’s preferred language',hint:'they set it once and expect it to stick',right:'user',
+     why:{none:'Works today, forgotten tomorrow. They pick French, close the tab, come back and are greeted in English again.',
+          user:'Correct. It follows the person across every conversation they ever have, and nobody else sees it.',
+          app:'<b>This is the breach.</b> One person’s preference is now every person’s preference. Swap “language” for “home address” and you can see the shape of the incident report.',
+          temp:'Gone before the turn even ends. The next tool call cannot see it.'}},
+    {id:'draft',label:'The half-finished document being edited',hint:'the writer agent produces it, the reviewer agent reads it',right:'none',
+     why:{none:'Correct. It belongs to this conversation and dies with it — which is exactly right for a working draft.',
+          user:'It leaks into their next, unrelated conversation. They ask about something else and the agent is still holding last week’s draft.',
+          app:'Everyone in the company is now editing the same document. Two users at once and one of them loses their work.',
+          temp:'The reviewer agent runs in a later step and finds nothing. Classic “the second agent ignored the first”.'}},
+    {id:'rate',label:'The company-wide VAT rate',hint:'the same number for every user, changes rarely',right:'app',
+     why:{none:'Re-fetched for every single conversation. Harmless, but you are paying for the same lookup thousands of times.',
+          user:'Stored once per person. A rate change now needs updating in as many places as you have users.',
+          app:'Correct. One value, read by everyone, fetched once.',
+          temp:'Re-fetched on every turn. The most expensive option on the board.'}},
+    {id:'count',label:'A loop counter used inside one turn',hint:'pure bookkeeping, meaningless afterwards',right:'temp',
+     why:{none:'It persists forever for no reason, and the next turn starts from a stale count. Off-by-one bugs that only appear on the second question.',
+          user:'Now permanently attached to the person. Their counter from last Tuesday is still there.',
+          app:'A single shared counter across all users, incremented concurrently. Precisely the race condition you would expect.',
+          temp:'Correct. Scratch space that is guaranteed gone, so it can never go stale.'}}
+  ];
+  const pick={};
+  function render(){
+    wrapEl.innerHTML = ITEMS.map(it=>
+      '<div style="margin-bottom:14px">'+
+        '<div style="font-weight:600;font-size:13px">'+it.label+'</div>'+
+        '<div class="dim" style="font-size:11px;margin:2px 0 6px">'+it.hint+'</div>'+
+        '<div class="segmented">'+SCOPES.map(([v,l])=>
+          '<button class="seg'+(pick[it.id]===v?' on':'')+'" data-i="'+it.id+'" data-v="'+v+'">'+l+'</button>').join('')+
+        '</div></div>').join('');
+    wrapEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.i]=b.dataset.v;render();});
+
+    const done=ITEMS.filter(it=>pick[it.id]);
+    if(!done.length){ out.innerHTML='<div class="simnote">Choose a drawer for the first note to see what it costs you.</div>'; return; }
+    let right=0;
+    out.innerHTML = done.map(it=>{
+      const p=pick[it.id], ok=p===it.right; if(ok) right++;
+      return '<div class="'+(ok?'ok':'err')+'" style="margin-bottom:8px">'+
+        '<b>'+it.label+' → '+SCOPES.find(s=>s[0]===p)[1]+'</b><br>'+it.why[p]+'</div>';
+    }).join('') +
+    '<div class="simnote" style="margin-top:10px"><b>'+right+' of '+done.length+' filed correctly.</b> '+
+    (right===ITEMS.length
+      ? 'All four right. The rule underneath: pick the narrowest drawer the data can live in and still be useful — the wide ones are where privacy incidents come from.'
+      : 'The rule underneath: pick the narrowest drawer the data can live in and still be useful.')+'</div>';
+  }
+  render();
+})();
+/* ================= 5 · CALLBACKS & PLUGINS ================= */
+document.getElementById('sec-hooks').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Six places to stand in the corridor</h2>
+  <div class="plain-line"><b>In plain English:</b> a request walks down a corridor &mdash; into the agent, out to the model, back, out to a tool, back, out of the agent. <b>Callbacks</b> let you stand at any of those six doorways and inspect what is passing. Say nothing and it walks on. <b>Say something and it turns around</b> &mdash; whatever you return replaces the thing you were standing in front of, and that thing never runs.</div>
+  ${D('0 0 680 260','The six ADK callback checkpoints arranged around the agent, model and tool calls.',
+   `${box(20,26,640,58,'var(--violet)')}${tm(340,48,'before_agent_callback   →   the whole invocation is about to start','var(--violet)')}${tm(340,68,'return something here and the agent never runs at all','var(--dim)')}
+    ${box(50,100,290,54,'var(--teal)')}${tm(195,122,'before_model_callback','var(--teal)')}${tm(195,140,'last look at the prompt','var(--dim)')}
+    ${box(360,100,290,54,'var(--teal)')}${tm(505,122,'after_model_callback','var(--teal)')}${tm(505,140,'first look at the reply','var(--dim)')}
+    ${box(50,168,290,54,'var(--amber)')}${tm(195,190,'before_tool_callback','var(--amber)')}${tm(195,208,'inspect and rewrite arguments','var(--dim)')}
+    ${box(360,168,290,54,'var(--amber)')}${tm(505,190,'after_tool_callback','var(--amber)')}${tm(505,208,'inspect and rewrite the result','var(--dim)')}
+    ${tm(340,242,'after_agent_callback closes the corridor — the last chance to change what the caller sees','var(--dim)')}`,
+   'They come in before/after pairs around the three things that actually happen: the agent runs, the model is called, a tool is called.')}
+  <table class="osi"><thead><tr><th>Checkpoint</th><th>What you would really use it for</th></tr></thead><tbody>
+  <tr><td><span class="code">before_agent</span></td><td>Refuse the request outright &mdash; out of hours, over quota, wrong tenant &mdash; without spending a single token</td></tr>
+  <tr><td><span class="code">before_model</span></td><td>Strip card numbers out of the prompt, or return a cached answer for a question you have already paid to answer</td></tr>
+  <tr><td><span class="code">after_model</span></td><td>Redact anything that slipped through, and record what the reply actually cost</td></tr>
+  <tr><td><span class="code">before_tool</span></td><td>Validate arguments and block the dangerous ones &mdash; a refund of &pound;40,000, a delete with no filter</td></tr>
+  <tr><td><span class="code">after_tool</span></td><td>Trim a huge result before it goes back into the context window, or mask fields the user must not see</td></tr>
+  <tr><td><span class="code">after_agent</span></td><td>Append a disclaimer, emit the audit record, close the trace</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — stand in the corridor and see what stops</h2>
+  <div class="plain-line"><b>Try this:</b> install hooks and watch one request try to get through. A hook that returns nothing is a silent observer. A hook that returns a value is a barrier &mdash; and everything downstream of it simply does not happen.</div>
+  <div class="sim-layout">
+    <div><div id="hookFlow"></div></div>
+    <div><div class="toggles" id="hookCtl"></div>
+      <div id="hookOut" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Plugins: the same hooks, but for the whole application</h2>
+  <div class="plain-line"><b>In plain English:</b> a callback is attached to <em>one agent</em>. A <b>plugin</b> is attached to the <em>runner</em>, so it applies to every agent it runs. If you have twelve agents and one logging rule, you do not write it twelve times &mdash; you write a plugin.</div>
+  <div class="vs2"><div class="col"><b>CALLBACK</b>Attached per agent. Fresh context each invocation. Use it when the behaviour is specific to that agent — validating the arguments of <em>its</em> tools, enforcing <em>its</em> output format.</div>
+  <div class="col"><b>PLUGIN</b>Attached to the runner, applies to every agent. <b>Runs before agent-level callbacks.</b> Created once and shared across all invocations. Use it for cross-cutting concerns: logging, metrics, global guardrails, cost tracking.</div></div>
+  <div class="plain-line" style="margin-top:12px"><b>The trap in that last sentence:</b> a plugin is <b>initialised once and shared by every request that follows</b>. Store per-request data on <span class="code">self</span> and you have built a bug that only appears under concurrency &mdash; user B seeing a fragment of user A&rsquo;s request. Per-request data belongs in state; plugins should hold configuration and nothing else.</div>
+  <div class="plain-line"><b>And the ordering matters:</b> plugins run first. A global guardrail plugin therefore gets to say no before any agent-specific callback has a chance to say yes &mdash; which is the right way round, and worth knowing when a block appears in your trace with no agent callback in sight.</div>
+</div>`;
+
+/* --- SIM: interception chain --- */
+(function(){
+  const ctl=document.getElementById('hookCtl'), flow=document.getElementById('hookFlow'), out=document.getElementById('hookOut');
+  if(!ctl) return;
+  const HOOKS=[
+    {k:'plug', at:0, label:'Plugin: global audit log', ret:false, note:'Writes a line and returns nothing. Every request passes through it, and none are stopped by it.'},
+    {k:'quota',at:0, label:'before_agent: quota check', ret:true,  blocked:'Daily limit reached. Try again tomorrow.', note:'Returns a response, so the agent never starts. Nothing after this point runs — no model call, no token spend.'},
+    {k:'pii',  at:1, label:'before_model: card-number guard', ret:true, blocked:'I cannot process card details in chat.', note:'The prompt contained a card number, so the guard answered instead of the model. Cheapest possible block: nothing was ever sent.'},
+    {k:'cache',at:1, label:'before_model: cache hit', ret:true, blocked:'(cached answer returned)', note:'The identical question was answered an hour ago. Returning the cached reply skips the model entirely — same output, no cost, no latency.'},
+    {k:'redact',at:2,at2:true, label:'after_model: redact emails', ret:'edit', note:'Returns an edited reply, so the caller sees the redacted version rather than the original. The model still ran and was still billed.'},
+    {k:'argval',at:3, label:'before_tool: block risky arguments', ret:true, blocked:'Refund over the approval limit — escalated to a human.', note:'The arguments were inspected before the tool ran. The refund never happened, and the model is told why so it can explain itself.'},
+    {k:'trim', at:4,at2:true, label:'after_tool: trim a huge result', ret:'edit', note:'The tool returned 40,000 rows. Trimming before it re-enters the context is often the difference between a working agent and one that runs out of window.'}
+  ];
+  const on={plug:true};
+  const STAGES=[
+    ['plugin + before_agent','var(--violet)'],
+    ['before_model','var(--teal)'],
+    ['THE MODEL RUNS','var(--teal)'],
+    ['after_model → before_tool','var(--amber)'],
+    ['THE TOOL RUNS','var(--amber)'],
+    ['after_tool → after_agent','var(--violet)']
+  ];
+  function render(){
+    ctl.innerHTML=HOOKS.map(hk=>
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+hk.k+'"'+(on[hk.k]?' checked':'')+'>'+
+      '<span>'+hk.label+' <span class="dim">'+(hk.ret===true?'· returns a value':hk.ret==='edit'?'· returns an edit':'· returns nothing')+'</span></span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{on[i.dataset.k]=i.checked;render();});
+
+    /* find the first blocker, in corridor order */
+    const order=['plug','quota','pii','cache','redact','argval','trim'];
+    let stopIdx=99, stopper=null;
+    for(const k of order){ const hk=HOOKS.find(x=>x.k===k);
+      if(on[k]&&hk.ret===true){ stopIdx=hk.at; stopper=hk; break; } }
+    const edits=HOOKS.filter(hk=>on[hk.k]&&hk.ret==='edit'&&hk.at<=stopIdx);
+
+    flow.innerHTML=STAGES.map((s,i)=>{
+      const blocked = i>stopIdx;
+      const isStop  = stopper && i===stopIdx;
+      return '<div class="jstep" style="opacity:'+(blocked?0.28:1)+';border-left:3px solid '+
+        (blocked?'var(--line2)':isStop?'var(--red)':s[1])+';padding:9px 12px;margin-bottom:7px;border-radius:0 8px 8px 0;background:var(--panel2)">'+
+        '<b style="font-size:12px">'+s[0]+'</b> '+
+        (isStop?'<span class="err" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;font-size:10px">STOPPED HERE</span>':
+         blocked?'<span class="dim" style="font-size:10px;margin-left:6px">never ran</span>':
+         '<span class="ok" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:99px;font-size:10px">ran</span>')+
+        '</div>';
+    }).join('');
+
+    let html;
+    if(stopper){
+      html='<div class="err" style="margin-bottom:10px"><b>Short-circuited by '+stopper.label+'</b><br>'+
+        'The caller receives: <span class="code">'+stopper.blocked+'</span></div>'+
+        '<div class="simnote">'+stopper.note+'</div>';
+    } else {
+      html='<div class="ok" style="margin-bottom:10px"><b>The request completed normally.</b> Every installed hook observed and stepped aside.</div>';
+    }
+    if(edits.length) html+=edits.map(e=>'<div class="note" style="margin-top:8px"><b>'+e.label+' rewrote what passed through.</b><br>'+e.note+'</div>').join('');
+    html+='<div class="simnote" style="margin-top:10px"><b>The one rule to carry away:</b> in a <span class="code">before_</span> callback, returning <span class="code">None</span> means &ldquo;carry on&rdquo; and returning anything else means &ldquo;stop, use this instead&rdquo;. An accidental <span class="code">return</span> at the end of a logging callback silently cancels your model call — and looks like the model went quiet.</div>';
+    out.innerHTML=html;
+  }
+  render();
+})();
+/* ================= 6 · ORCHESTRATION ================= */
+document.getElementById('sec-orch').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Three shapes that need no model to decide</h2>
+  <div class="plain-line"><b>In plain English:</b> once you have several agents, something has to decide who goes when. You can let a model work it out every single time &mdash; which costs tokens, takes latency and occasionally invents a new plan &mdash; or you can just <b>write down the order</b>. ADK gives you three ready-made shapes that contain no model at all: one after another, all at once, and again until it is good enough.</div>
+  ${D('0 0 680 250','The three template workflow agents: sequential, parallel and loop.',
+   `${t(114,26,'SequentialAgent',SANS)}
+    ${box(24,40,180,30,'var(--violet)')}${tm(114,60,'research','var(--violet)')}
+    ${box(24,80,180,30,'var(--violet)')}${tm(114,100,'write','var(--violet)')}
+    ${box(24,120,180,30,'var(--violet)')}${tm(114,140,'publish','var(--violet)')}
+    <path d="M114 72 V78" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M114 112 V118" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(114,172,'each one needs what the','var(--dim)')}${tm(114,188,'last one produced','var(--dim)')}
+    ${t(340,26,'ParallelAgent',SANS)}
+    ${box(240,40,60,110,'var(--teal)')}${tm(270,98,'news','var(--teal)')}
+    ${box(310,40,60,110,'var(--teal)')}${tm(340,98,'stocks','var(--teal)')}
+    ${box(380,40,60,110,'var(--teal)')}${tm(410,98,'weather','var(--teal)')}
+    ${tm(340,172,'nothing waits for anything','var(--dim)')}${tm(340,188,'slowest one sets the clock','var(--dim)')}
+    ${t(566,26,'LoopAgent',SANS)}
+    ${box(476,40,180,44,'var(--amber)')}${tm(566,66,'improve the draft','var(--amber)')}
+    ${box(476,96,180,44,'var(--amber)')}${tm(566,122,'critique it','var(--amber)')}
+    <path d="M476 118 H462 V62 H474" style="stroke:var(--amber);fill:none" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(566,172,'until exit_loop() is called','var(--dim)')}${tm(566,188,'or max_iterations is hit','var(--dim)')}
+    ${box(24,206,632,32,'var(--wire)')}${tm(340,226,'all three are deterministic — the order is code, not a model’s opinion, so it is the same every run','var(--dim)')}`,
+   'Use these wherever the order is genuinely fixed. Save model-driven routing for the places where the next step really does depend on what was found.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — arrange three agents and watch the clock</h2>
+  <div class="plain-line"><b>Try this:</b> the same three sub-agents, arranged three ways. Watch the elapsed time, the token bill, and &mdash; in the parallel case &mdash; what happens when two of them write to the same place in the notebook.</div>
+  <div class="sim-layout">
+    <div><div id="orchTime"></div></div>
+    <div><div class="segmented" id="orchPick" style="flex-direction:column;align-items:stretch"></div>
+      <label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="orchClash"> all three write to <span class="code">output_key="result"</span></label>
+      <div id="orchOut" class="cidr-out"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">When the shape is not a line — the ADK 2.0 graph</h2>
+  <div class="plain-line"><b>In plain English:</b> real processes branch. &ldquo;If it is under &pound;100 approve it, otherwise get a human, and if the human is out of office ping their manager.&rdquo; You cannot draw that as a straight line. ADK 2.0 lets you define the workflow as a <b>graph</b>: nodes are agents, edges are the routes between them, and an agent ends its turn by emitting an <span class="code">Event(route=…)</span> that names which edge to take.</div>
+  ${D('0 0 660 250','An ADK 2.0 graph workflow with a routing decision, a fan-out to two parallel branches, and a join node that waits for both.',
+   `${box(250,20,160,40,'var(--violet)')}${tm(330,44,'triage','var(--violet)')}
+    <path d="M300 62 L170 96" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M360 62 L490 96" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(206,80,'route=&quot;simple&quot;','var(--dim)')}
+    ${tm(456,80,'route=&quot;complex&quot;','var(--dim)')}
+    ${box(60,100,220,40,'var(--teal)')}${tm(170,124,'auto-answer','var(--teal)')}
+    ${box(380,100,220,40,'var(--amber)')}${tm(490,124,'fan out to two specialists','var(--amber)')}
+    ${box(380,152,105,34,'var(--amber)')}${tm(432,174,'legal','var(--amber)')}
+    ${box(495,152,105,34,'var(--amber)')}${tm(547,174,'pricing','var(--amber)')}
+    <path d="M470 142 L440 150" style="stroke:var(--wire)" stroke-width="1.2" marker-end="url(#ah)"/>
+    <path d="M512 142 L540 150" style="stroke:var(--wire)" stroke-width="1.2" marker-end="url(#ah)"/>
+    ${box(200,200,300,38,'var(--green)')}${tm(350,224,'JoinNode — waits for every branch, then merges','var(--green)')}
+    <path d="M170 142 V219 H196" style="stroke:var(--wire);fill:none" stroke-width="1.2" marker-end="url(#ah)"/>
+    <path d="M547 188 V219 H504" style="stroke:var(--wire);fill:none" stroke-width="1.2" marker-end="url(#ah)"/>`,
+   'Without a JoinNode a fan-out has no defined meeting point — the workflow continues as soon as any branch finishes, and the other branch’s work is quietly lost.')}
+  <div class="plain-line"><b>Why a graph beats a very clever prompt:</b> the routing is now <em>in the code</em>, so it is testable, reviewable and identical on every run. A prompt that says &ldquo;decide whether this is simple or complex&rdquo; is a routing decision you cannot unit-test and cannot show an auditor.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Delegation — handing work to a specialist, three ways</h2>
+  <div class="plain-line"><b>In plain English:</b> sometimes an agent should stop trying and pass the job to someone better suited. How completely it hands over is the choice: does the specialist take over the conversation, do one job and report back, or answer exactly once?</div>
+  <table class="osi"><thead><tr><th>Mode</th><th>What happens</th><th>Use it when</th></tr></thead><tbody>
+  <tr><td><span class="code">chat</span></td><td>The specialist <b>takes over the conversation</b> and keeps talking to the user directly</td><td>Handing a customer from the front desk to the billing team — the user should now be talking to billing</td></tr>
+  <tr><td><span class="code">task</span></td><td>The specialist does a piece of work and <b>returns the result</b>. The original agent stays in charge</td><td>&ldquo;Go and check inventory, tell me what you find&rdquo; — the caller still owns the conversation</td></tr>
+  <tr><td><span class="code">single_turn</span></td><td>Exactly one response, then control returns. No follow-up, no back and forth</td><td>A one-shot lookup or classification where a conversation would be overkill</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Three constraints that shape the design:</b></div>
+  <div class="plain-line"><b>1. Only leaf nodes can delegate.</b> An agent that is itself part of a workflow cannot hand off &mdash; otherwise two things would be steering the same flow, and neither would win predictably.</div>
+  <div class="plain-line"><b>2. Every delegation creates its own branch in the trace.</b> You can see afterwards exactly who was asked to do what, and what came back. This is the audit trail an incident review actually needs.</div>
+  <div class="plain-line"><b>3. Context isolation runs both ways.</b> The specialist does not see the caller&rsquo;s whole history, and the caller does not inherit the specialist&rsquo;s working notes. That keeps prompts small and stops one agent&rsquo;s confusion becoming everyone&rsquo;s &mdash; but it also means <b>anything the specialist genuinely needs must be passed explicitly, or written to shared state</b>. &ldquo;It worked when I tested it inline&rdquo; usually means you were relying on context that delegation removes.</div>
+</div>`;
+
+/* --- SIM: orchestration bench --- */
+(function(){
+  const pick=document.getElementById('orchPick'), tl=document.getElementById('orchTime'),
+        out=document.getElementById('orchOut'), clash=document.getElementById('orchClash');
+  if(!pick) return;
+  const AG=[{n:'fetch_news',s:3.0},{n:'fetch_stocks',s:1.2},{n:'fetch_weather',s:0.8}];
+  const MODES=[['seq','SequentialAgent — one after another'],['par','ParallelAgent — all at once'],['loop','LoopAgent — repeat until good enough']];
+  let mode='seq';
+  function render(){
+    pick.innerHTML=MODES.map(([v,l])=>'<button class="seg'+(mode===v?' on':'')+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{mode=b.dataset.v;render();});
+    const collide=clash.checked;
+    let bars=[], total=0;
+    if(mode==='seq'){ let at=0; AG.forEach(a=>{bars.push([a.n,at,a.s,'var(--violet)']);at+=a.s;}); total=at; }
+    else if(mode==='par'){ AG.forEach(a=>bars.push([a.n,0,a.s,'var(--teal)'])); total=Math.max(...AG.map(a=>a.s)); }
+    else { for(let i=0;i<3;i++){ bars.push(['draft · round '+(i+1),i*2.4,1.4,'var(--amber)']);
+                                bars.push(['critique · round '+(i+1),i*2.4+1.4,1.0,'var(--dim)']); } total=7.2; }
+    const scale=680/Math.max(total,1);
+    tl.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">EXECUTION TIMELINE — seconds</div>'+
+      bars.map(([n,st,d,c])=>
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+        '<span style="width:130px;font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:right">'+n+'</span>'+
+        '<div style="flex:1;position:relative;height:20px;background:var(--panel2);border-radius:4px">'+
+        '<div style="position:absolute;left:'+(st/total*100)+'%;width:'+(d/total*100)+'%;top:0;bottom:0;background:'+c+';opacity:.75;border-radius:4px"></div>'+
+        '</div><span style="width:42px;font-family:var(--mono);font-size:10.5px;color:var(--muted)">'+d.toFixed(1)+'s</span></div>').join('')+
+      '<div style="text-align:right;font-family:var(--mono);font-size:12px;margin-top:8px">wall clock <b>'+total.toFixed(1)+'s</b></div>';
+
+    const notes={
+      seq:['ok','<b>5.0s, and every step could read the one before it.</b> This is the right shape when the writer genuinely needs the researcher’s output. You are paying three seconds of latency for a guarantee.'],
+      par:['ok','<b>3.0s — the slowest agent sets the clock.</b> Because none of them needs another’s answer, waiting is pure waste. The saving grows with the number of branches.'],
+      loop:['note','<b>7.2s for three rounds, and it could have been fewer.</b> The loop stops early the moment the critique agent calls <span class="code">exit_loop()</span>. <span class="code">max_iterations</span> is the safety net, not the plan — without it a critic that is never satisfied will run until your budget notices.']
+    }[mode];
+    let html='<div class="'+(notes[0]==='ok'?'ok':'note')+'" style="margin-bottom:10px">'+notes[1]+'</div>';
+    if(mode==='par'&&collide){
+      html+='<div class="err" style="margin-bottom:10px"><b>State collision.</b> All three finished at roughly the same moment and all three wrote to <span class="code">result</span>. Two of those writes are gone. Downstream you will find one report where you expected three — and which one survived changes between runs, because it depends on who finished last.</div>'+
+            '<div class="ok" style="margin-bottom:10px"><b>The fix is boring and total:</b> give each parallel agent its own <span class="code">output_key</span> — <span class="code">news_result</span>, <span class="code">stocks_result</span>, <span class="code">weather_result</span> — and add a merge step afterwards that reads all three.</div>';
+    } else if(mode!=='par'&&collide){
+      html+='<div class="note" style="margin-bottom:10px"><b>Sharing a key is survivable here</b> because only one agent writes at a time — each simply overwrites the last. It is still a bad idea: you have thrown away the intermediate results you would want when debugging.</div>';
+    }
+    html+='<div class="simnote" style="margin-top:8px"><b>How to choose, in one line:</b> if step two needs step one’s answer, go sequential; if it does not, go parallel; if quality is the exit condition rather than a step count, loop.</div>';
+    out.innerHTML=html;
+  }
+  clash.onchange=render; render();
+})();
+/* ================= 7 · GROUNDING ================= */
+document.getElementById('sec-ground').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A model with no sources is a very fluent guess</h2>
+  <div class="plain-line"><b>In plain English:</b> ask a model something it was never told and it will not say &ldquo;I do not know&rdquo;. It will produce the most plausible-sounding sentence, in the same confident voice it uses for things it does know. <b>Grounding</b> is attaching the answer to something real &mdash; the live web, your documents, your database &mdash; so there is a fact underneath the fluency.</div>
+  ${D('0 0 660 226','Three grounding sources: public web search, private document search, and structured data through a tool.',
+   `${box(14,26,200,86,'var(--teal)')}${t(114,50,'The public web',SANS)}${tm(114,70,'google_search','var(--teal)')}${tm(114,88,'current, public, unowned','var(--dim)')}${tm(114,104,'today’s exchange rate','var(--dim)')}
+    ${box(230,26,200,86,'var(--violet)')}${t(330,50,'Your documents',SANS)}${tm(330,70,'VertexAiSearchTool','var(--violet)')}${tm(330,88,'private, unstructured','var(--dim)')}${tm(330,104,'the internal HR policy','var(--dim)')}
+    ${box(446,26,200,86,'var(--amber)')}${t(546,50,'Your systems',SANS)}${tm(546,70,'a function tool','var(--amber)')}${tm(546,88,'private, structured','var(--dim)')}${tm(546,104,'order 4417’s status','var(--dim)')}
+    ${box(14,134,632,72,'var(--wire)')}
+    ${t(330,158,'They fail in different ways, and only one of them fails loudly',SANS)}
+    ${tm(330,178,'structured  →  the model invents a column that does not exist  →  the query errors, you see it','var(--amber)')}
+    ${tm(330,196,'unstructured  →  retrieval returns a nearby document  →  the answer reads perfectly and is wrong','var(--red)')}`,
+   'Grounding does not remove hallucination. It changes where hallucination can hide — which is why the unstructured case needs evaluation rather than a smoke test.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — send four questions to the wrong place on purpose</h2>
+  <div class="plain-line"><b>Try this:</b> pick a source for each question and read what actually comes back. One of the wrong answers is obviously wrong. One is the dangerous kind &mdash; well written, well structured, and untrue.</div>
+  <div class="sim-layout">
+    <div><div id="gndQ"></div></div>
+    <div><div id="gndOut" class="cidr-out"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two grounding tools, and the environment variable that decides whether one works</h2>
+  <table class="osi"><thead><tr><th></th><th><span class="code">google_search</span></th><th><span class="code">VertexAiSearchTool</span></th></tr></thead><tbody>
+  <tr><td><b>Searches</b></td><td>The public web</td><td>A datastore you built from your own documents</td></tr>
+  <tr><td><b>Setup</b></td><td>Add the tool. That is all</td><td>Build the datastore first, then pass its full resource ID to the tool</td></tr>
+  <tr><td><b>Requires</b></td><td>Nothing special</td><td><span class="code">GOOGLE_GENAI_USE_VERTEXAI=TRUE</span> — it is a Vertex AI service, so the API-key path cannot reach it</td></tr>
+  <tr><td><b>Fails as</b></td><td>Stale or irrelevant results you can see</td><td>Confidently answering from a document that was <em>nearly</em> the right one</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The failure worth rehearsing:</b> a question about parental leave retrieves the section on <em>unpaid</em> leave, because the two documents look almost identical to a similarity search. The agent then answers accurately &mdash; about the wrong policy. Nothing errors. Nothing is logged as a problem. Someone acts on it.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">MCP — using tools somebody else already runs</h2>
+  <div class="plain-line"><b>In plain English:</b> the Model Context Protocol is a standard socket. If another team runs a server that speaks it, your agent can plug in and use their tools without you reimplementing anything. Two ways to plug in: <span class="code">StdioConnectionParams</span> starts the server as a local subprocess on your machine, and <span class="code">StreamableHTTPConnectionParams</span> talks to one running somewhere else over HTTP.</div>
+  <div class="plain-line"><b>Filter down to what you need.</b> An MCP server might expose forty tools. <span class="code">tool_filter</span> lets you accept three. This is least privilege in its most literal form: a tool the agent cannot see is a tool the agent cannot be talked into calling. It also keeps the tool list short enough for the model to choose well &mdash; forty near-identical labels is how wrong-tool selection starts.</div>
+  <div class="plain-line"><b>The deployment trap:</b> an agent using <span class="code">McpToolset</span> must be <b>defined synchronously in <span class="code">agent.py</span></b>. Build it inside an async factory function &mdash; which feels natural, because connecting to a server is I/O &mdash; and it will run perfectly on your laptop and <b>fail at deployment</b>, because the deployment step imports the module and looks for a ready agent object, not a coroutine that promises one.</div>
+</div>`;
+
+/* --- SIM: grounding router --- */
+(function(){
+  const qbox=document.getElementById('gndQ'), out=document.getElementById('gndOut');
+  if(!qbox) return;
+  const SRC=[['mem','no grounding'],['web','google_search'],['docs','Vertex AI Search'],['tool','a database tool']];
+  const QS=[
+    {id:'fx',q:'What is the euro to sterling rate right now?',right:'web',
+     a:{mem:['bad','&ldquo;Around 0.86.&rdquo; Delivered with no hedging at all. It is a number from training data, so it was true on some day you cannot identify.'],
+        web:['ok','&ldquo;0.8412 as of 14:20 today, per the ECB reference rate.&rdquo; Live, public, and cited.'],
+        docs:['bad','Nothing in your document store contains an exchange rate. Retrieval returns the nearest thing it can find — probably an expenses policy — and the model tries to be helpful with it.'],
+        tool:['bad','Your database does not hold FX rates. The model invents a column, the query errors, and the agent has to apologise. Loud, at least.']}},
+    {id:'hr',q:'How many days of parental leave do I get?',right:'docs',
+     a:{mem:['bad','It answers with the statutory minimum for some country. Plausible, specific, and not your company’s policy.'],
+        web:['bad','It finds a national government page and quotes that. Correct for the country, wrong for the employer — and the user has no way to tell which they were given.'],
+        docs:['ok','It retrieves the HR handbook section and quotes it with a link. <b>But check the retrieval:</b> this is exactly where “parental leave” and “unpaid leave” get confused, and the wrong answer looks identical to the right one.'],
+        tool:['bad','A policy is prose, not rows. There is no table to query.']}},
+    {id:'ord',q:'Where is order A-4417?',right:'tool',
+     a:{mem:['bad','&ldquo;It shipped on Tuesday and should arrive within two days.&rdquo; Entirely fabricated. This is the answer that generates a complaint.'],
+        web:['bad','It searches the public web for an internal order reference and finds nothing useful.'],
+        docs:['bad','Order status changes hourly; a document store is a snapshot. Even if a record were indexed, it would be stale.'],
+        tool:['ok','A live lookup returns the real row. Structured, current, and if the ID does not exist the tool says so rather than guessing.']}},
+    {id:'why',q:'Why did our umbrella sales fall last quarter?',right:'tool',
+     a:{mem:['bad','A confident essay about seasonality and consumer trends, generated with no knowledge of your business whatsoever.'],
+        web:['bad','General retail commentary. Interesting, unrelated to your numbers.'],
+        docs:['bad','It may find last year’s strategy deck and answer from that — a document about a different quarter, presented as an analysis of this one.'],
+        tool:['ok','Query the sales table, then the inventory table. The point of this one: an analysis question still resolves to structured data, and needs several tool calls rather than one clever prompt.']}}
+  ];
+  const pick={};
+  function render(){
+    qbox.innerHTML=QS.map(q=>
+      '<div style="margin-bottom:14px"><div style="font-weight:600;font-size:13px">'+q.q+'</div>'+
+      '<div class="segmented" style="margin-top:6px">'+SRC.map(([v,l])=>
+        '<button class="seg'+(pick[q.id]===v?' on':'')+'" data-i="'+q.id+'" data-v="'+v+'">'+l+'</button>').join('')+
+      '</div></div>').join('');
+    qbox.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.i]=b.dataset.v;render();});
+    const done=QS.filter(q=>pick[q.id]);
+    if(!done.length){ out.innerHTML='<div class="simnote">Route the first question to see the answer it produces.</div>'; return; }
+    out.innerHTML=done.map(q=>{
+      const [k,txt]=q.a[pick[q.id]];
+      return '<div class="'+(k==='ok'?'ok':'err')+'" style="margin-bottom:9px"><b>'+q.q+'</b><br>'+
+        '<span class="dim" style="font-size:11px">via '+SRC.find(s=>s[0]===pick[q.id])[1]+'</span><br>'+txt+'</div>';
+    }).join('')+
+    '<div class="simnote" style="margin-top:10px"><b>The pattern across all four:</b> ungrounded answers are never blank — they are fluent. That is what makes them dangerous, and why &ldquo;it gave a sensible answer&rdquo; is not evidence that grounding is working.</div>';
+  }
+  render();
+})();
+/* ================= 8 · CODE EXECUTION ================= */
+document.getElementById('sec-exec').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two rooms, on purpose</h2>
+  <div class="plain-line"><b>In plain English:</b> the moment an agent can <em>write</em> code, someone has to decide where that code runs. Your agent process holds credentials, network access and other customers&rsquo; sessions. Model-written code must never be executed there. So there are two rooms: the <b>Agent Runtime</b>, which is trusted and runs the code <em>you</em> wrote, and the <b>Agent Sandbox</b>, which is isolated and runs code <em>the model</em> wrote.</div>
+  ${D('0 0 660 258','The trust boundary between the Agent Runtime, which runs code you wrote, and the Agent Sandbox, which runs code the model wrote.',
+   `${box(14,26,300,150,'var(--teal)')}${t(164,50,'Agent Runtime — trusted',SANS)}
+    ${tm(164,74,'your code, reviewed by you','var(--dim)')}
+    ${tm(164,92,'holds credentials and network','var(--dim)')}
+    ${tm(164,110,'orchestrates the whole thing','var(--dim)')}
+    ${tm(164,136,'this is where the agent lives','var(--teal)')}
+    ${tm(164,158,'never run generated code here','var(--red)')}
+    ${box(346,26,300,150,'var(--amber)')}${t(496,50,'Agent Sandbox — isolated',SANS)}
+    ${tm(496,74,'code the model just invented','var(--dim)')}
+    ${tm(496,92,'no credentials, no network','var(--dim)')}
+    ${tm(496,110,'its own machine, its own filesystem','var(--dim)')}
+    ${tm(496,136,'one per user or session','var(--amber)')}
+    ${tm(496,158,'worst case: this box is ruined','var(--amber)')}
+    <path d="M316 100 H344" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(330,92,'code','var(--dim)')}
+    ${box(14,196,632,48,'var(--wire)')}
+    ${tm(330,216,'containment  ·  tenant isolation  ·  predictability','var(--green)')}
+    ${tm(330,234,'blast radius is one sandbox  ·  one tenant per sandbox  ·  the same environment every run','var(--dim)')}`,
+   'This split is the entire security argument. If a prompt injection convinces the model to write something malicious, the code runs somewhere that has nothing worth stealing and nowhere to send it.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th>Property</th><th>What it means in practice</th></tr></thead><tbody>
+  <tr><td><b>Containment</b></td><td>Generated code cannot reach your agent, your credentials or the internet. The worst thing it can do is break the sandbox &mdash; and you throw that away anyway</td></tr>
+  <tr><td><b>Tenant isolation</b></td><td>Each user or session gets its own sandbox. One customer&rsquo;s data cannot end up in another&rsquo;s analysis, because they were never in the same machine</td></tr>
+  <tr><td><b>Predictability</b></td><td>A fixed environment with a fixed package set. The same code produces the same result today and next quarter &mdash; which is what makes an audit meaningful</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — run cells in a sandbox and find its edges</h2>
+  <div class="plain-line"><b>Try this:</b> run the cells in any order. The sandbox behaves like a notebook &mdash; variables from one call are still there in the next. Two of these cells will not work, and <em>why</em> they do not work is the whole point of the design.</div>
+  <div class="sim-layout">
+    <div><div id="sbxOut"></div></div>
+    <div><div id="sbxCells"></div>
+      <button class="btn" id="sbxReset" style="margin-top:10px">reset the sandbox</button>
+      <div id="sbxMeta" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Lifecycle — cheap to make, and it does not tidy itself up</h2>
+  <table class="osi"><thead><tr><th>Stage</th><th>What happens</th><th>Worth knowing</th></tr></thead><tbody>
+  <tr><td><b>Create</b></td><td>A sandbox starts in <b>under a second</b></td><td>Cheap enough to create one per session rather than sharing one. Sharing is where isolation quietly disappears</td></tr>
+  <tr><td><b>Live</b></td><td>A time-to-live of up to <b>14 days</b>, and <b>every <span class="code">execute_code</span> call resets the clock</b></td><td>An agent used daily keeps its sandbox alive indefinitely. The TTL will not clean up after an active user &mdash; only after an abandoned one</td></tr>
+  <tr><td><b>Sizing</b></td><td>2 vCPU and 1.5 GB by default; <span class="code">MACHINE_CONFIG_VCPU4_RAM4GIB</span> for heavier work</td><td>The default is fine for analysis on modest data. A large dataframe will exhaust it, and the failure looks like the code being wrong</td></tr>
+  <tr><td><b>Delete</b></td><td>Delete explicitly. <span class="code">force=True</span> removes it along with everything inside</td><td>Wrap the work in <span class="code">try / finally</span> so a crash still cleans up. Orphaned sandboxes are billed and invisible</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Also worth pinning down before you design around it:</b> Agent Sandbox runs in <b><span class="code">us-central1</span></b> only. If your data is not allowed to leave a region, that constraint decides the architecture before anything else does.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Two executors — pick the one that matches how much control you need</h2>
+  <div class="vs2"><div class="col"><b>AgentEngineSandboxCodeExecutor</b>Runs in the managed Agent Sandbox. <b>Stateful</b> across calls, so a multi-step analysis can build on itself. You control the machine size and the lifecycle, and you get the isolation guarantees above.<br><br><b>Choose it</b> for enterprise work: real data, multiple steps, an audit trail, a compliance question waiting.</div>
+  <div class="col"><b>BuiltInCodeExecutor</b>Uses the model provider&rsquo;s own execution. Nothing to set up, nothing to clean up, and far less to configure.<br><br><b>Choose it</b> for a quick calculation or a prototype — where you do not need statefulness, sizing, or the ability to prove where the code ran.</div></div>
+  <div class="plain-line" style="margin-top:12px"><b>And the wiring around it:</b> the <span class="code">Runner</span> holds three services &mdash; a <b>session service</b> for the conversation, an <b>artifact service</b> for files the code produced, and a <b>memory service</b> for what should outlast the session. In development the memory service is <span class="code">InMemoryMemoryService</span>, which is exactly what it sounds like: everything vanishes on restart. The single-line production swap is <span class="code">VertexAiMemoryBankService</span> &mdash; and forgetting to make it is the classic &ldquo;it remembered perfectly in testing&rdquo; bug.</div>
+</div>`;
+
+/* --- SIM: sandbox bench --- */
+(function(){
+  const cells=document.getElementById('sbxCells'), out=document.getElementById('sbxOut'),
+        meta=document.getElementById('sbxMeta'), rst=document.getElementById('sbxReset');
+  if(!cells) return;
+  const CELLS=[
+    {k:'load',label:'load the data',code:"import pandas as pd\ndf = pd.read_csv('sales.csv')\nprint(len(df), 'rows')",
+     ok:true,res:'4213 rows',note:'pandas is one of 125+ packages already installed. Nothing to install, so nothing to wait for.'},
+    {k:'use',label:'use a variable from the last cell',code:"print(df['revenue'].sum())",
+     ok:true,needs:'load',res:'288910.44',
+     note:'<b>This is the stateful part.</b> A separate <span class="code">execute_code</span> call, and <span class="code">df</span> is still there. Without that, every step would have to re-load the data and re-send it.',
+     fail:'NameError: name &lsquo;df&rsquo; is not defined',
+     failnote:'Run the load cell first. State persists between calls, but it has to be created by one of them.'},
+    {k:'net',label:'call an external API',code:"import requests\nrequests.get('https://api.example.com/rates')",
+     ok:false,res:'ConnectionError: network is unreachable',
+     note:'<b>Working exactly as designed.</b> No network means generated code cannot exfiltrate your data or pull something unexpected in. If the analysis needs external data, <em>your</em> tool fetches it and passes it in — that fetch happens in the trusted runtime, where you reviewed the code.'},
+    {k:'pip',label:'install a package',code:"!pip install some-obscure-lib",
+     ok:false,res:'Could not reach package index',
+     note:'<b>Also by design.</b> No network means no installs, which is what makes the environment predictable: the same fixed package set today and in six months. If you need something outside the 125, the sandbox is not where that work belongs.'},
+    {k:'chart',label:'produce a chart',code:"import matplotlib.pyplot as plt\ndf.groupby('cat')['revenue'].sum().plot.bar()\nplt.savefig('breakdown.png')",
+     ok:true,needs:'load',res:'saved breakdown.png',
+     note:'Files come back as a <span class="code">Chunk</span> with <span class="code">mime_type=&quot;image/png&quot;</span> and the filename in <span class="code">metadata.attributes[&quot;file_name&quot;]</span>. Route it to the artifact service and the user gets a real download, not an image described in words.',
+     fail:'NameError: name &lsquo;df&rsquo; is not defined', failnote:'Nothing to plot yet — load the data first.'},
+    {k:'crash',label:'run something destructive',code:"import shutil\nshutil.rmtree('/')",
+     ok:false,res:'the sandbox is now broken',
+     note:'<b>And this is the whole point.</b> The blast radius is one disposable machine belonging to one session. Delete it, create another in under a second, and nothing of yours was ever in reach.'}
+  ];
+  let log=[], ttl=14*24, done={};
+  function render(){
+    cells.innerHTML=CELLS.map(c=>'<button class="btn" data-k="'+c.k+'" style="display:block;width:100%;text-align:left;margin-bottom:6px;font-size:12px">'+
+      (done[c.k]?'· ':'▸ ')+c.label+'</button>').join('');
+    cells.querySelectorAll('button').forEach(b=>b.onclick=()=>run(b.dataset.k));
+    out.innerHTML = log.length ? log.join('')
+      : '<div class="simnote">The sandbox is empty and waiting. Run a cell.</div>';
+    meta.innerHTML='<div class="kv"><b>sandbox</b><span>running · us-central1</span></div>'+
+      '<div class="kv"><b>machine</b><span>2 vCPU · 1.5 GB (default)</span></div>'+
+      '<div class="kv"><b>TTL remaining</b><span>'+(ttl/24).toFixed(0)+' days</span></div>'+
+      '<div class="kv"><b>calls made</b><span>'+Object.keys(done).length+'</span></div>'+
+      '<div class="simnote" style="margin-top:10px">Every successful call reset the TTL to the full 14 days. An agent someone uses each morning will keep its sandbox alive forever — the timer only ever collects the abandoned ones, so cleanup has to be yours.</div>';
+  }
+  function run(k){
+    const c=CELLS.find(x=>x.k===k);
+    const blocked = c.needs && !done[c.needs];
+    if(!blocked){ done[k]=true; if(c.ok) ttl=14*24; }
+    log.push('<div style="margin-bottom:12px">'+
+      '<pre class="code">'+hl(c.code)+'</pre>'+
+      '<div class="'+((c.ok&&!blocked)?'ok':'err')+'" style="margin-top:6px">'+
+        (blocked?c.fail:c.res)+'</div>'+
+      '<div class="simnote" style="margin-top:6px">'+(blocked?c.failnote:c.note)+'</div></div>');
+    render();
+  }
+  rst.onclick=()=>{log=[];done={};ttl=14*24;render();};
+  render();
+})();
+/* ================= 9 · SKILLS ================= */
+document.getElementById('sec-skills').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A skill is a folder of expertise the agent opens only when it needs to</h2>
+  <div class="plain-line"><b>In plain English:</b> you would not hand a new colleague every manual in the company on their first morning. You would give them an index, and let them pull down the one they need. A <b>skill</b> is one of those manuals: a markdown file describing a method &mdash; how we research a topic, how we write a post-incident review, what our house style is &mdash; plus any reference material and code it needs. The agent reads the index all the time and opens a manual only when the work calls for it.</div>
+  ${D('0 0 660 240','Progressive disclosure in skills: the description is always loaded, the body loads on match, and reference files load only when the body needs them.',
+   `${box(14,26,632,54,'var(--teal)')}${t(330,48,'Level 1 — the description  ·  always in context',SANS)}${tm(330,68,'one line per skill, a few dozen tokens. This is the index the model reads on every turn','var(--dim)')}
+    ${box(80,96,500,54,'var(--violet)')}${t(330,118,'Level 2 — SKILL.md  ·  loaded when the work matches',SANS)}${tm(330,138,'the method itself, a few hundred to a couple of thousand tokens','var(--dim)')}
+    ${box(150,166,360,54,'var(--amber)')}${t(330,188,'Level 3 — references  ·  loaded on demand',SANS)}${tm(330,208,'examples, checklists, templates — only if the method calls for them','var(--dim)')}
+    <path d="M330 82 V94" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M330 152 V164" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>`,
+   'This is why an agent can have forty skills without a forty-manual prompt. You pay for the index every turn and for one manual occasionally — instead of paying for everything, always.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — watch the context bill for forty manuals versus an index</h2>
+  <div class="plain-line"><b>Try this:</b> give the agent some skills, then ask it something. Compare what it costs to load them on demand against the obvious alternative &mdash; pasting all of it into the instruction and hoping the model sorts it out.</div>
+  <div class="sim-layout">
+    <div><div id="skBudget"></div></div>
+    <div><div class="dim" style="font-size:11px;margin-bottom:6px">SKILLS INSTALLED</div>
+      <div id="skList"></div>
+      <div class="dim" style="font-size:11px;margin:12px 0 6px">THE USER ASKS</div>
+      <div class="segmented" id="skAsk" style="flex-direction:column;align-items:stretch"></div>
+      <div id="skOut" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Three ways to define one, and who each is for</h2>
+  <table class="osi"><thead><tr><th>Approach</th><th>What it looks like</th><th>Right when</th></tr></thead><tbody>
+  <tr><td><b>Inline</b></td><td><span class="code">models.Skill</span> with a <span class="code">models.Frontmatter</span>, handed to a <span class="code">SkillToolset</span> — all in Python</td><td>The skill is short and belongs to this agent. Fastest to write, versioned with your code</td></tr>
+  <tr><td><b>File-based</b></td><td>A folder: <span class="code">skills/blog-writer/SKILL.md</span> plus a <span class="code">references/</span> directory, loaded with <span class="code">load_skill_from_dir</span></td><td>The content is long, or a non-engineer owns it. A subject-matter expert can edit markdown without touching Python</td></tr>
+  <tr><td><b>Meta-skill</b></td><td>A <span class="code">skill-creator</span> skill that writes new SKILL.md files to spec</td><td>You want the team producing consistent skills without everyone learning the format. The agent extends itself, correctly</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The rules the format actually enforces</b> (the <span class="code">agentskills.io</span> spec): the name is kebab-case and at most 64 characters; the description is at most 1024 characters; SKILL.md stays under 500 lines &mdash; anything longer belongs in <span class="code">references/</span>; and <b>the folder name must match the name in the frontmatter</b>. That last one is the silent failure: mismatch them and the skill simply is not loaded. No error, no warning, and an agent that behaves as though you never wrote it.</div>
+  <div class="plain-line"><b>Write the description for a stranger, not for yourself.</b> It is the only part that is always in context, so it is the only thing deciding whether the skill is ever opened. &ldquo;Writing helper&rdquo; will lose to a skill that says &ldquo;research a topic, identify keywords, check competitors, and draft SEO-optimised long-form content&rdquo;.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The Skills Registry — write it once, use it everywhere</h2>
+  <div class="plain-line"><b>In plain English:</b> once a skill is good, other teams want it. The Skills Registry is a private, low-latency store for your organisation&rsquo;s skills &mdash; each one a self-contained package of instructions, reference material and code. You publish; other agents pull it into their skills folder and reference it.</div>
+  <pre class="code">${hl("# package the folder\nzip -r skill.zip seo_skills_agent/skills/content-research-writer/\nZIP_BASE64=$(base64 -i skill.zip | tr -d '\\n')\n\n# publish it — skillId becomes its identity in the registry\ncurl -X POST \\\n  -H \"Authorization: Bearer $(gcloud auth application-default print-access-token)\" \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"displayName\\\": \\\"Content research writer\\\",\n        \\\"description\\\": \\\"Research a topic, find keywords, check competitors, draft SEO content.\\\",\n        \\\"zippedFilesystem\\\": \\\"$ZIP_BASE64\\\"}\" \\\n  \"https://REGION-aiplatform.googleapis.com/v1beta1/projects/PROJECT/locations/REGION/skills?skillId=content-research-writer\"")}</pre>
+  <div class="plain-line" style="margin-top:12px"><b>Notice what is being uploaded:</b> a whole zipped filesystem, not a string. That is what makes a skill portable &mdash; the method, its examples and its helper scripts travel together, so the receiving agent gets the same behaviour you tested, not an approximation of it.</div>
+  <div class="plain-line"><b>And notice the <span class="code">description</span> field again.</b> It is what every other team sees when browsing the registry, and what their agents use to decide whether to load it. The same sentence is doing discovery <em>and</em> runtime routing.</div>
+</div>`;
+
+/* --- SIM: skill budget --- */
+(function(){
+  const list=document.getElementById('skList'), ask=document.getElementById('skAsk'),
+        bud=document.getElementById('skBudget'), out=document.getElementById('skOut');
+  if(!list) return;
+  const SKILLS=[
+    {k:'seo',  name:'content-research-writer', desc:'Research a topic, find keywords, check competitors, draft SEO content.', d:38, body:1400, ref:2600, on:true},
+    {k:'ir',   name:'incident-review',         desc:'Run a blameless post-incident review and write the report.',            d:30, body:1100, ref:1800, on:true},
+    {k:'sql',  name:'sql-review',              desc:'Review SQL for correctness, index use and accidental full scans.',      d:34, body:900,  ref:1200, on:true},
+    {k:'brand',name:'house-style',             desc:'Apply the company tone of voice and formatting rules to any draft.',    d:28, body:600,  ref:0,    on:true}
+  ];
+  const ASKS=[
+    {k:'blog', label:'“Write me a blog post about rainwear.”', hits:['seo','brand'], refs:['seo']},
+    {k:'out',  label:'“We had an outage last night. Write it up.”', hits:['ir','brand'], refs:['ir']},
+    {k:'q',    label:'“Is this query going to be slow?”', hits:['sql'], refs:[]},
+    {k:'hi',   label:'“Hello.”', hits:[], refs:[]}
+  ];
+  let cur='blog';
+  const BASE=420;
+  function render(){
+    list.innerHTML=SKILLS.map(s=>
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin-bottom:7px;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+s.k+'"'+(s.on?' checked':'')+'>'+
+      '<span><span class="code">'+s.name+'</span><br><span class="dim" style="font-size:11px">'+s.desc+'</span></span></label>').join('');
+    list.querySelectorAll('input').forEach(i=>i.onchange=()=>{SKILLS.find(s=>s.k===i.dataset.k).on=i.checked;render();});
+    ask.innerHTML=ASKS.map(a=>'<button class="seg'+(cur===a.k?' on':'')+'" data-k="'+a.k+'" style="text-align:left">'+a.label+'</button>').join('');
+    ask.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+
+    const active=SKILLS.filter(s=>s.on), A=ASKS.find(a=>a.k===cur);
+    const idx=active.reduce((n,s)=>n+s.d,0);
+    const bodies=active.filter(s=>A.hits.includes(s.k));
+    const refs  =active.filter(s=>A.refs.includes(s.k));
+    const bodyT=bodies.reduce((n,s)=>n+s.body,0), refT=refs.reduce((n,s)=>n+s.ref,0);
+    const used=BASE+idx+bodyT+refT;
+    const naive=BASE+active.reduce((n,s)=>n+s.body+s.ref,0);
+    const rows=[['base instruction',BASE,'var(--wire)'],['skill index — always loaded',idx,'var(--teal)'],
+                ['SKILL.md bodies that matched',bodyT,'var(--violet)'],['reference files pulled in',refT,'var(--amber)']];
+    const max=Math.max(naive,1);
+    bud.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">CONTEXT USED FOR THIS ONE TURN</div>'+
+      rows.map(([n,v,c])=>'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+        '<span style="width:190px;font-size:11px;color:var(--muted);text-align:right">'+n+'</span>'+
+        '<div style="flex:1;height:18px;background:var(--panel2);border-radius:4px;overflow:hidden">'+
+        '<div style="height:100%;width:'+(v/max*100)+'%;background:'+c+';opacity:.8"></div></div>'+
+        '<span style="width:56px;font-family:var(--mono);font-size:11px">'+v+'</span></div>').join('')+
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line2)">'+
+        '<span style="width:190px;font-size:11px;color:var(--muted);text-align:right">everything pasted in instead</span>'+
+        '<div style="flex:1;height:18px;background:var(--panel2);border-radius:4px;overflow:hidden">'+
+        '<div style="height:100%;width:100%;background:var(--red);opacity:.55"></div></div>'+
+        '<span style="width:56px;font-family:var(--mono);font-size:11px">'+naive+'</span></div>'+
+      '<div style="text-align:right;font-family:var(--mono);font-size:13px;margin-top:10px">this turn: <b>'+used+'</b> tokens'+
+        (naive>used?' <span class="ok" style="padding:1px 7px;border-radius:99px;font-size:10.5px">'+Math.round((1-used/naive)*100)+'% less</span>':'')+'</div>';
+
+    let html;
+    if(!active.length) html='<div class="note">No skills installed. The agent falls back on general ability — fine for chat, not for anything with a house method behind it.</div>';
+    else if(!bodies.length) html='<div class="ok"><b>Nothing was opened.</b> The model read the '+active.length+'-line index, decided none applied, and answered. That is the cheap path, and it is the common one — most turns match no skill at all.</div>';
+    else html='<div class="ok"><b>Opened: '+bodies.map(s=>s.name).join(', ')+'.</b> Only the matching methods were loaded'+(refT?', and the reference material they asked for':'')+'. The other skills cost you their one-line description and nothing more.</div>';
+    html+='<div class="simnote" style="margin-top:10px"><b>The point the numbers make:</b> the cost of an unused skill is its description, not its content. That is what lets an agent carry forty methods and still start each turn cheap — and it is why a bad description is expensive twice over: you pay for it every turn and it still never gets opened.</div>';
+    out.innerHTML=html;
+  }
+  render();
+})();
+/* ================= 10 · DEPLOY & EXAM ================= */
+document.getElementById('sec-deploy').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">From your laptop to something the company can use</h2>
+  <div class="plain-line"><b>In plain English:</b> <span class="code">adk web</span> runs on your machine, for you. Deployment moves the agent to <b>Agent Runtime</b> &mdash; a managed service that scales it, keeps its sessions, and traces every step, so you are not the one being paged when it gets popular. Then you register it with <b>Gemini Enterprise</b>, and it appears alongside the other agents your colleagues can already talk to.</div>
+  ${D('0 0 680 234','The deployment path from local development through Agent Runtime to registration in Gemini Enterprise.',
+   `${box(14,26,196,72,'var(--wire)')}${t(112,50,'Local',SANS)}${tm(112,70,'adk web · adk run','var(--dim)')}${tm(112,88,'you are the only user','var(--dim)')}
+    ${box(242,26,196,72,'var(--violet)')}${t(340,50,'Agent Runtime',SANS)}${tm(340,70,'a reasoningEngine resource','var(--violet)')}${tm(340,88,'scaling · sessions · tracing','var(--dim)')}
+    ${box(470,26,196,72,'var(--teal)')}${t(568,50,'Gemini Enterprise',SANS)}${tm(568,70,'discoverable to employees','var(--teal)')}${tm(568,88,'routed to by description','var(--dim)')}
+    <path d="M212 62 H240" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M440 62 H468" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(226,110,'adk deploy agent_engine','var(--dim)')}
+    ${tm(454,110,'register','var(--dim)')}
+    ${box(14,140,652,74,'var(--amber)')}
+    ${t(340,164,'The field that decides whether anyone ever reaches your agent',SANS)}
+    ${tm(340,184,'Gemini Enterprise routes a user’s question to an agent by reading agent descriptions','var(--dim)')}
+    ${tm(340,202,'a vague description is a perfectly working agent that nobody is ever sent to','var(--amber)')}`,
+   'The description you wrote on day one as an afterthought becomes production routing logic. It is worth rewriting before you register.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it — deploy with four plausible mistakes in place</h2>
+  <div class="plain-line"><b>Try this:</b> each switch is a mistake people actually make, and each fails at a different point &mdash; one locally, one at deployment, one at start-up, and one that never fails at all and is the worst of the four.</div>
+  <div class="sim-layout">
+    <div><div id="depSteps"></div></div>
+    <div><div class="toggles" id="depCtl"></div>
+      <div id="depOut" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">What you hand the deployment, and why each part is there</h2>
+  <table class="osi"><thead><tr><th>Setting</th><th>What it does</th><th>Get it wrong and…</th></tr></thead><tbody>
+  <tr><td><span class="code">display_name</span></td><td>What people see in the console and the agent list</td><td>Nobody can tell your three agents apart six months later</td></tr>
+  <tr><td><span class="code">description</span></td><td>The routing signal for Gemini Enterprise</td><td>Questions it should answer go somewhere else, silently</td></tr>
+  <tr><td><span class="code">requirements</span></td><td>The Python packages the deployed agent needs</td><td>It builds fine and crashes on first request with an import error</td></tr>
+  <tr><td><span class="code">extra_packages</span></td><td>Your own local modules that are not on PyPI</td><td>Your helper module is missing in the cloud, though everything worked locally</td></tr>
+  <tr><td><span class="code">env_vars</span></td><td>Configuration and API keys for the deployed environment</td><td><span class="code">GOOGLE_GENAI_USE_VERTEXAI</span> unset means Vertex-only tools stop working in production only</td></tr>
+  <tr><td><b>staging bucket</b></td><td>Where the packaged agent is uploaded from</td><td>Deployment fails outright &mdash; the loud, easy failure</td></tr>
+  <tr><td><b>region</b></td><td>Where it runs</td><td>Mismatched regions between the agent, its datastore and its sandbox add latency, cost and a compliance conversation</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card">
+  <h2 class="sec">The exam angle &mdash; what these facts look like as a question</h2>
+  <div class="exam-line"><b>&ldquo;An agent picks the wrong tool despite the right tool being available.&rdquo;</b> &rarr; The docstring. The model chooses from generated schemas, and a vague description makes two tools indistinguishable. Not a model problem, not a prompt problem.</div>
+  <div class="exam-line"><b>&ldquo;Users report the agent reveals another user&rsquo;s preferences.&rdquo;</b> &rarr; Per-user data written to the <span class="code">app:</span> scope instead of <span class="code">user:</span>. The fix is a four-character prefix.</div>
+  <div class="exam-line"><b>&ldquo;Three parallel agents run, but only one result appears downstream.&rdquo;</b> &rarr; They share an <span class="code">output_key</span>. Give each its own and add a merge step.</div>
+  <div class="exam-line"><b>&ldquo;State changes vanish after a restart.&rdquo;</b> &rarr; Something wrote to <span class="code">session.state</span> directly instead of going through <span class="code">tool_context.state</span> or <span class="code">output_key</span>, so the change never became an event.</div>
+  <div class="exam-line"><b>&ldquo;The model call is being skipped and nobody knows why.&rdquo;</b> &rarr; A <span class="code">before_model_callback</span> is returning a value. Anything other than <span class="code">None</span> short-circuits the thing it wraps.</div>
+  <div class="exam-line"><b>&ldquo;A logging plugin occasionally attributes one user&rsquo;s request to another.&rdquo;</b> &rarr; Per-request data stored on the plugin instance. Plugins are created once and shared across every invocation.</div>
+  <div class="exam-line"><b>&ldquo;Generated code must analyse sensitive data, and the security team wants a boundary.&rdquo;</b> &rarr; Agent Sandbox, one per session, no network, deleted in a <span class="code">finally</span> block. The agent runtime keeps the credentials; the sandbox never sees them.</div>
+  <div class="exam-line"><b>&ldquo;Sandbox costs keep climbing although sessions are short.&rdquo;</b> &rarr; Nobody deletes them, and every <span class="code">execute_code</span> call resets a 14-day TTL. Expiry will not clean up an active agent.</div>
+  <div class="exam-line"><b>&ldquo;The agent works locally but deployment fails.&rdquo;</b> &rarr; Either the variable is not called <span class="code">root_agent</span>, or an MCP agent is being built inside an async factory instead of synchronously in <span class="code">agent.py</span>.</div>
+  <div class="exam-line"><b>&ldquo;An agent is deployed and healthy but gets no traffic from Gemini Enterprise.&rdquo;</b> &rarr; Its description is too vague to route on. Nothing is broken; nothing is being sent.</div>
+  <div class="exam-line"><b>&ldquo;A skill was added and the agent behaves as though it does not exist.&rdquo;</b> &rarr; The folder name does not match the name in the frontmatter, so it never loaded. There is no error for this.</div>
+  <div class="exam-line"><b>&ldquo;Answers about internal policy are fluent and subtly wrong.&rdquo;</b> &rarr; Semantic drift in unstructured retrieval &mdash; a nearby document answered a different question. Needs evaluation against known answers, not a smoke test.</div>
+</div>`;
+
+/* --- SIM: deployment gate --- */
+(function(){
+  const ctl=document.getElementById('depCtl'), steps=document.getElementById('depSteps'), out=document.getElementById('depOut');
+  if(!ctl) return;
+  const BUGS=[
+    {k:'name', at:0, label:'the agent variable is called <span class="code">my_agent</span>, not <span class="code">root_agent</span>',
+     err:'no agent found in agent.py',
+     note:'Fails immediately, locally, on the first <span class="code">adk run</span>. The friendliest of the four — you find out in seconds and the message is accurate.'},
+    {k:'mcp',  at:1, label:'the MCP agent is built inside an <span class="code">async def create_agent()</span>',
+     err:'expected an Agent, found a coroutine',
+     note:'Runs perfectly locally, because your dev script awaits it. Deployment imports the module and looks for a ready agent object. <b>Define MCP agents synchronously in agent.py</b> — this is the one that costs an afternoon.'},
+    {k:'req',  at:2, label:'a package is missing from <span class="code">requirements</span>',
+     err:'ModuleNotFoundError on the first request',
+     note:'Deployment succeeds. The agent is green. It dies on the first real user, because the build step never had to import your code. Test the deployed endpoint, not just the deployment.'},
+    {k:'desc', at:9, label:'the description reads &ldquo;An agent that helps users.&rdquo;',
+     err:'', note:''}
+  ];
+  const on={};
+  const STEPS=['adk run — does it start locally?','adk deploy agent_engine — package and upload',
+               'reasoningEngine created — first request served','registered with Gemini Enterprise',
+               'a colleague asks a question it should answer'];
+  function render(){
+    ctl.innerHTML=BUGS.map(b=>'<label style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+b.k+'"'+(on[b.k]?' checked':'')+'><span>'+b.label+'</span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{on[i.dataset.k]=i.checked;render();});
+    let stop=99, bug=null;
+    for(const b of BUGS){ if(on[b.k]&&b.at<stop){stop=b.at;bug=b;} }
+    steps.innerHTML=STEPS.map((s,i)=>{
+      const dead=i>stop, isStop=i===stop;
+      const routed = i===4 && on.desc && !dead && !isStop;
+      return '<div class="jstep" style="opacity:'+(dead?0.28:1)+';border-left:3px solid '+
+        (dead?'var(--line2)':isStop?'var(--red)':routed?'var(--amber)':'var(--green)')+
+        ';padding:10px 12px;margin-bottom:7px;border-radius:0 8px 8px 0;background:var(--panel2)">'+
+        '<b style="font-size:12px">'+(i+1)+'. '+s+'</b>'+
+        (isStop?'<div class="err" style="margin-top:6px">'+bug.err+'</div>':
+         dead?'<div class="dim" style="font-size:11px;margin-top:4px">never reached</div>':
+         routed?'<div class="err" style="margin-top:6px">routed to a different agent — yours was never considered</div>':
+         '<div class="ok" style="margin-top:6px;font-size:11px">passed</div>')+'</div>';
+    }).join('');
+    let html='';
+    if(bug) html+='<div class="err" style="margin-bottom:10px"><b>Stopped at step '+(stop+1)+'.</b><br>'+bug.note+'</div>';
+    if(on.desc && stop>4) html+='<div class="err" style="margin-bottom:10px"><b>Nothing failed, and that is the problem.</b> Every check is green, the agent is healthy, the logs are clean — and it receives no traffic, because &ldquo;helps users&rdquo; does not distinguish it from every other agent in the catalogue. This failure has no error message and no alert. Somebody notices in a quarterly review.</div>';
+    if(!bug && !on.desc) html+='<div class="ok" style="margin-bottom:10px"><b>Deployed, registered, and receiving the questions it should.</b> Four green steps and a colleague who got the right answer.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The ordering is the lesson:</b> the failures get quieter as you go. A naming mistake shouts at you in seconds; a packaging mistake waits for deployment; a requirements mistake waits for your first user; a weak description never says anything at all.</div>';
+    out.innerHTML=html;
+  }
+  render();
+})();
+/* ==== sections ==== */
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
+/* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
+(function(){
+  const open = id => {
+    const tab = document.querySelector(`.tab[data-pane="${id}"]`), pane = document.getElementById('pane-'+id);
+    if(!tab || !pane) return false;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    tab.classList.add('on'); pane.classList.add('on');
+    return true;
+  };
+  const fromHash = () => {
+    const m = (location.hash||'').match(/^#pane-([\w-]+)$/);
+    if (m) open(m[1]);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+  document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
+    history.replaceState(null,'','#pane-'+t.dataset.pane);
+  }));
+})();
+</script>
+</body>
+</html>

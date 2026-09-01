@@ -37,6 +37,9 @@ agentcore.html    AgentCore lab — running agents in production: runtime,
                   identity, gateway, memory, evaluation, multi-agent patterns
 agentbuild.html   Agents-building-agents lab — spec-driven development with a
                   coding agent, the ADK loop, and the Managed Agents API
+adk.html          ADK lab — agents, tools and tool schemas, session state,
+                  callbacks and plugins, orchestration and delegation,
+                  grounding and MCP, the Agent Sandbox, skills, deployment
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
