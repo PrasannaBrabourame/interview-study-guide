@@ -728,10 +728,10 @@ signature  header+payload signed with a private key;
 document.getElementById('acGateway').innerHTML=`
 <div class="plain-line"><b>In plain English:</b> without a gateway, every agent is wired to every tool by hand — ten agents and thirty tools is three hundred integrations, each with its own authentication and its own way of failing. Gateway is one door. Agents speak one protocol to it, and it deals with whatever is on the other side.</div>
 ${D('0 0 640 200','Agents on the left reach a single gateway, which fronts Lambda, OpenAPI services, MCP servers and knowledge bases.',
- `${box(10,26,110,30,'var(--violet)')}${tm(65,46,'Agent · LangGraph','var(--text)')}
-  ${box(10,64,110,30,'var(--violet)')}${tm(65,84,'Agent · CrewAI','var(--text)')}
-  ${box(10,102,110,30,'var(--violet)')}${tm(65,122,'Agent · Strands','var(--text)')}
-  <path d="M124 41 H184 M124 79 H184 M124 117 H184" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+ `${box(10,26,124,30,'var(--violet)')}${tm(72,46,'Agent · LangGraph','var(--text)')}
+  ${box(10,64,124,30,'var(--violet)')}${tm(72,84,'Agent · CrewAI','var(--text)')}
+  ${box(10,102,124,30,'var(--violet)')}${tm(72,122,'Agent · Strands','var(--text)')}
+  <path d="M138 41 H184 M138 79 H184 M138 117 H184" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
   ${box(188,20,150,120,'var(--teal)')}${t(263,44,'Gateway',SANS)}${tm(263,62,'one MCP endpoint','var(--teal)')}${tm(263,80,'tool search','var(--dim)')}${tm(263,96,'per-tool authorisation','var(--dim)')}${tm(263,112,'interceptors','var(--dim)')}${tm(263,128,'metrics and audit','var(--dim)')}
   <path d="M342 40 H402 M342 66 H402 M342 92 H402 M342 118 H402" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
   ${box(406,26,224,28,'var(--amber)')}${tm(518,45,'AWS Lambda target','var(--text)')}
@@ -971,8 +971,8 @@ ${D('0 0 640 170','A pull request triggers CI, which runs a test agent, produces
   <path d="M98 74 H130" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
   ${box(134,54,80,40,'var(--violet)')}${tm(174,72,'CI/CD','var(--text)')}${tm(174,86,'OIDC role','var(--dim)')}
   <path d="M216 74 H248" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
-  ${box(252,54,94,40,'var(--teal)')}${tm(299,72,'UI test agent','var(--text)')}${tm(299,86,'browser + code','var(--dim)')}
-  <path d="M348 74 H380" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+  ${box(252,54,100,40,'var(--teal)')}${tm(302,72,'UI test agent','var(--text)')}${tm(302,86,'browser + code','var(--dim)')}
+  <path d="M354 74 H380" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
   ${box(384,54,80,40,'var(--amber)')}${tm(424,72,'Findings','var(--text)')}${tm(424,86,'to the PR','var(--dim)')}
   <path d="M466 74 H498" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
   ${box(502,54,128,40,'var(--green)')}${tm(566,72,'Bug-fix agent','var(--text)')}${tm(566,86,'pushes a patch','var(--dim)')}

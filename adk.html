@@ -285,6 +285,10 @@
   table.osi td b{color:var(--text); font-weight:500}
   table.osi tr:last-child td{border-bottom:0}
   .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  /* the same class used inline: a chip on the line, not a panel */
+  span.code{display:inline; background:var(--sel); border:1px solid var(--line2); border-radius:5px;
+    padding:.5px 5px; margin:0; overflow:visible; font-family:var(--mono); font-size:.9em;
+    line-height:inherit; color:var(--text); overflow-wrap:break-word}
   .code pre{margin:0}
   .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
   .tk-c{color:var(--dim); font-style:normal}
@@ -466,8 +470,8 @@ document.getElementById('sec-agent').innerHTML=`
 <div class="card">
   <h2 class="sec">The instruction is a contract, not a hint</h2>
   <div class="plain-line"><b>In plain English:</b> a model does what is in front of it. Anything you assumed &mdash; tone, refusals, when to hand off, what never to say &mdash; only exists if you wrote it down. &ldquo;Be helpful&rdquo; is not an instruction; it is a wish.</div>
-  <div class="vs2"><div class="col"><b>VAGUE — behaves differently every run</b><span class="code">You are a helpful assistant that answers questions about orders.</span><br><br>No boundary, no failure behaviour, no handoff rule. It will invent an order status rather than admit it cannot find one.</div>
-  <div class="col"><b>SPECIFIC — behaves the same way twice</b><span class="code">You look up order status. Always call get_order before answering. If the ID is not found, say so and ask for a corrected ID — never guess. For refunds, transfer to refund_agent. Never quote a delivery date the tool did not return.</span><br><br>Every sentence removes a failure mode you would otherwise debug.</div></div>
+  <div class="vs2"><div class="col"><b>VAGUE — behaves differently every run</b><pre class="code" style="white-space:pre-wrap;margin-top:6px">You are a helpful assistant that answers questions about orders.</pre><br><br>No boundary, no failure behaviour, no handoff rule. It will invent an order status rather than admit it cannot find one.</div>
+  <div class="col"><b>SPECIFIC — behaves the same way twice</b><pre class="code" style="white-space:pre-wrap;margin-top:6px">You look up order status. Always call get_order before answering. If the ID is not found, say so and ask for a corrected ID — never guess. For refunds, transfer to refund_agent. Never quote a delivery date the tool did not return.</pre><br><br>Every sentence removes a failure mode you would otherwise debug.</div></div>
 </div>`;
 /* ================= 3 · TOOLS ================= */
 document.getElementById('sec-tools').innerHTML=`
@@ -1122,7 +1126,7 @@ document.getElementById('sec-skills').innerHTML=`
   ${D('0 0 660 240','Progressive disclosure in skills: the description is always loaded, the body loads on match, and reference files load only when the body needs them.',
    `${box(14,26,632,54,'var(--teal)')}${t(330,48,'Level 1 — the description  ·  always in context',SANS)}${tm(330,68,'one line per skill, a few dozen tokens. This is the index the model reads on every turn','var(--dim)')}
     ${box(80,96,500,54,'var(--violet)')}${t(330,118,'Level 2 — SKILL.md  ·  loaded when the work matches',SANS)}${tm(330,138,'the method itself, a few hundred to a couple of thousand tokens','var(--dim)')}
-    ${box(150,166,360,54,'var(--amber)')}${t(330,188,'Level 3 — references  ·  loaded on demand',SANS)}${tm(330,208,'examples, checklists, templates — only if the method calls for them','var(--dim)')}
+    ${box(100,166,460,54,'var(--amber)')}${t(330,188,'Level 3 — references  ·  loaded on demand',SANS)}${tm(330,208,'examples, checklists, templates — only if the method calls for them','var(--dim)')}
     <path d="M330 82 V94" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
     <path d="M330 152 V164" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>`,
    'This is why an agent can have forty skills without a forty-manual prompt. You pay for the index every turn and for one manual occasionally — instead of paying for everything, always.')}
