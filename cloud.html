@@ -288,6 +288,37 @@
   .tk-s{color:var(--amber); font-style:normal}
   .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
     border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+
+  /* ---- landing zone ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lztier{display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+    border:1px solid var(--line2); border-left-width:3px; border-radius:0 9px 9px 0; background:var(--panel2);
+    cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; transition:border-color .15s}
+  .lztier:hover{border-color:var(--teal)}
+  .lztier.on{border-color:var(--amber); background:var(--sel)}
+  .lztier b{font-size:12.5px; font-weight:600}
+  .lztier span{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto; white-space:nowrap}
+  .lzhier{display:flex; flex-direction:column; gap:0}
+  .lzhier button{border:1px solid var(--line2); background:var(--panel2); border-radius:9px; padding:9px 13px;
+    cursor:pointer; font:inherit; color:inherit; text-align:left; transition:border-color .15s}
+  .lzhier button:hover{border-color:var(--teal)}
+  .lzhier button.on{border-color:var(--amber); background:var(--sel)}
+  .lzhier .lzarrow{height:13px; width:1px; background:var(--wire); margin:0 auto}
+  .lzhier b{font-size:12.5px; font-weight:600; display:block}
+  .lzhier i{font-style:normal; font-family:var(--mono); font-size:10.5px; color:var(--muted)}
+  .lzcidr{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11.5px}
+  .lzcidr td{padding:5px 8px; border-bottom:1px solid var(--line)}
+  .lzcidr td:last-child{text-align:right; color:var(--muted)}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
 </style>
 </head>
 <body>
@@ -309,6 +340,7 @@
     <button class="tab on" data-pane="journey" role="tab">How it works</button>
     <button class="tab" data-pane="osi" role="tab">OSI layers</button>
     <button class="tab" data-pane="netsim" role="tab">Network simulator</button>
+    <button class="tab" data-pane="landing" role="tab">Landing zone</button>
     <button class="tab" data-pane="nginx" role="tab">NGINX</button>
     <button class="tab" data-pane="iam" role="tab">IAM &amp; policy</button>
     <button class="tab" data-pane="cheat" role="tab">SAP-C02 cheatsheet</button>
@@ -446,6 +478,76 @@
         <div class="cidr-out" id="cidrOut"></div>
       </div>
     </div>
+  </section>
+
+  <!-- ================= LANDING ZONE ================= -->
+  <section class="pane" id="pane-landing">
+    <div id="sec-lz1"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Where does each layer actually stop something?</h2>
+      <div class="plain-line"><b>Try this:</b> click down the ladder. Each rung looks like a container, but only some of them are a real wall. Knowing which is which is the difference between a design that holds and one that only looks like it does.</div>
+      <div class="sim-layout">
+        <div><div class="lzhier" id="lzHier"></div></div>
+        <div><div class="cidr-out" id="lzHierOut"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-lz2"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">The estate map &mdash; click any part of it</h2>
+      <div class="plain-line"><b>Try this:</b> this is one company&rsquo;s cloud network, drawn once. Click a box and you get the plain-English version, what it has to sit next to, what it must never share a room with, and what breaks when somebody ignores that.</div>
+      <div class="sim-layout">
+        <div><div id="lzMap"></div></div>
+        <div><div id="lzMapOut" class="cidr-out"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-lz3"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; put eight things in the right subnet</h2>
+      <div class="plain-line"><b>Try this:</b> eight real workloads, seven tiers. Some are obvious. Two of them are the ones people get wrong in production, and the reason is written out either way.</div>
+      <div class="sim-layout">
+        <div><div id="lzPlace"></div></div>
+        <div><div id="lzPlaceOut" class="cidr-out"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-lz4"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; hand out address ranges, then try to connect them</h2>
+      <div class="plain-line"><b>Try this:</b> pick how big the estate is and watch the plan fall out of it. Then turn on the shortcut everybody takes when they are in a hurry, and see which day it stops being free.</div>
+      <div class="sim-layout">
+        <div><div id="lzCidrOut"></div></div>
+        <div>
+          <div class="segmented" id="lzCidrSize" style="flex-direction:column;align-items:stretch"></div>
+          <label style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="lzCidrLazy"> every region just uses <span class="code">10.0.0.0/16</span></label>
+          <div id="lzCidrNote" class="cidr-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-lz5"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; follow six journeys through the estate</h2>
+      <div class="plain-line"><b>Try this:</b> pick a journey and walk it hop by hop. Then remove one control and see the shortcut the traffic takes instead &mdash; which is exactly the path an incident report describes afterwards.</div>
+      <div class="sim-layout">
+        <div><div id="lzPath"></div></div>
+        <div>
+          <div class="segmented" id="lzPathPick" style="flex-direction:column;align-items:stretch"></div>
+          <label style="display:flex;gap:8px;align-items:flex-start;margin:12px 0;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="lzPathBreak"> take out the control in the middle</label>
+          <div id="lzPathOut" class="cidr-out"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sec-lz6"></div>
   </section>
 
   <!-- ================= NGINX ================= -->
@@ -3004,6 +3106,628 @@ document.getElementById('cheatTraps').innerHTML=`
 <tr><td><b>6</b></td><td>Flag and move on at ninety seconds. Marks are equal; a hard question costs the same as an easy one</td></tr>
 </tbody></table>
 <div class="plain-line" style="margin-top:12px"><b>The habit worth building:</b> after every practice question, write one line saying which phrase decided it. That list becomes your own version of the trigger table above, and it is worth more than anyone else's because it is built from the ones you actually got wrong.</div>`;
+
+
+/* ================= LANDING ZONE ================= */
+document.getElementById('sec-lz1').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A landing zone is the estate you build before you build anything on it</h2>
+  <div class="plain-line"><b>In plain English:</b> before a business park has a single tenant, somebody has already decided where the perimeter fence runs, where the security gate is, which roads are public and which are staff-only, where the loading bay goes, and what the postcodes are. Nobody notices any of it when it is right. Everyone notices when two buildings turn out to have the same address and the post cannot be delivered.</div>
+  <div class="plain-line">A <b>landing zone</b> is that groundwork for a cloud estate. It is the accounts, the networks, the address plan, the doors in and out, and the rules about which of those may talk to which. You lay it out once, and every application that arrives afterwards inherits it. Getting it roughly right is cheap. Changing it two years and four hundred workloads later is the most expensive kind of work there is &mdash; <b>an address range cannot be renumbered while things are running on it</b>.</div>
+  ${D('0 0 680 246','The layers of a landing zone from the organisation at the top down to an individual resource, with the boundary strength of each.',
+   `${box(20,22,640,34,'var(--violet)')}${tm(340,44,'Organisation  —  the whole company. Billing, guardrails, who may create what','var(--violet)')}
+    ${box(58,66,564,34,'var(--violet)')}${tm(340,88,'Account / Subscription / Project  —  the strongest wall you get','var(--violet)')}
+    ${box(96,110,488,34,'var(--teal)')}${tm(340,132,'VPC / VNet  —  one private network. Nothing routes in or out unless you say so','var(--teal)')}
+    ${box(134,154,412,34,'var(--amber)')}${tm(340,176,'Subnet  —  a slice of that network with its own routing and its own rules','var(--amber)')}
+    ${box(172,198,336,34,'var(--wire)')}${tm(340,220,'Resource  —  the server, the database, the load balancer','var(--dim)')}`,
+   'Each box sits inside the one above it. The width is deliberate: the outer layers are about governance and billing, the middle ones about reachability, and only the innermost is a thing you can log into.')}
+  <div class="plain-line" style="margin-top:12px"><b>The trap in that picture:</b> it looks like five walls of decreasing size. It is not. Two of those layers are <em>hard</em> boundaries that a mistake cannot cross, and two are <em>soft</em> ones that a single misconfigured rule opens. The explorer below spells out which is which, because designing as though a subnet were a wall is one of the most common and most expensive misreadings in cloud architecture.</div>
+</div>`;
+
+/* --- SIM: hierarchy explorer --- */
+(function(){
+  const nav=document.getElementById('lzHier'), out=document.getElementById('lzHierOut');
+  if(!nav) return;
+  const L=[
+    {k:'org',name:'Organisation',sub:'AWS Organizations · Azure Management Group · GCP Organization &amp; Folders',
+     hard:'governance',
+     what:'The whole company, as the cloud sees it. One consolidated bill, one place to say &ldquo;nobody, anywhere, may turn off logging&rdquo;.',
+     stops:'Policy. A guardrail set here cannot be overridden further down — that is the entire point of it. Service control policies, Azure Policy and GCP organisation policy all live at this level.',
+     crosses:'Nothing technical. This layer does not carry traffic and has no idea what an IP address is.',
+     blast:'A bad policy here breaks every account at once. It is also the only place you can fix something everywhere at once.',
+     rule:'Put the rules you never want debated here: encryption required, public buckets forbidden, only these regions, logging cannot be disabled.'},
+    {k:'acct',name:'Account / Subscription / Project',sub:'AWS Account · Azure Subscription · GCP Project',
+     hard:'hard',
+     what:'A container with its own identity, its own bill and its own quotas. In practice this is <b>the strongest wall in the cloud</b>.',
+     stops:'Almost everything, by default. Nothing in one account can see or touch anything in another unless somebody deliberately builds a bridge — a role to assume, a peering, a shared resource.',
+     crosses:'Only what you explicitly grant. And that is the point: an attacker who fully owns one account still has to find a granted path to reach the next one.',
+     blast:'Contained. A compromised dev account is a compromised dev account. This is why production lives in its own, and why one account per environment beats one account with careful tagging.',
+     rule:'Separate by <b>blast radius and by who is allowed to make mistakes</b> — production, non-production, security tooling, shared services, sandbox. Not by team org chart, which reorganises every year.'},
+    {k:'vpc',name:'VPC / Virtual Network',sub:'AWS VPC (regional) · Azure VNet (regional) · GCP VPC (global)',
+     hard:'hard',
+     what:'One private network with its own address range. Think of it as a building with no doors until you cut one.',
+     stops:'All traffic, in both directions, until you add something: an internet gateway, a peering, a VPN, a transit gateway attachment, a private endpoint. A VPC in isolation is genuinely isolated.',
+     crosses:'Every connection is a thing somebody built and somebody can see. There is no accidental route between two VPCs.',
+     blast:'Contained, but note the shape: a <b>peering exposes the whole address range</b> of both sides, not a single service. That is why peering is a heavier decision than it looks.',
+     rule:'One scope-defining difference between clouds: an <b>AWS VPC and an Azure VNet are regional</b>, so multi-region means several of them plus something to join them. A <b>GCP VPC is global</b> — one network with subnets in many regions, and no peering needed to cross a region.'},
+    {k:'sub',name:'Subnet',sub:'AWS: tied to one availability zone · Azure &amp; GCP: regional',
+     hard:'soft',
+     what:'A slice of the VPC&rsquo;s addresses with its own route table. This is where the words public and private actually mean something: <b>a subnet is public if and only if its route table has a route to the internet gateway</b>. Nothing else about it is different.',
+     stops:'<b>By itself, nothing.</b> Two subnets in the same VPC can talk to each other freely unless a security group or network ACL says otherwise. This is the misreading that matters.',
+     crosses:'Everything, within the VPC. Putting the database in &ldquo;the private subnet&rdquo; does not stop the web server reaching it — the security group does.',
+     blast:'A subnet is a <b>routing and placement decision</b>, not a security boundary. Design it for reachability and availability; enforce security with the rules on top of it.',
+     rule:'AWS ties a subnet to one availability zone, so highly available means <b>one subnet per tier per zone</b> — three app subnets, not one. Azure and GCP subnets span the zones of a region, so the same design needs fewer of them.'},
+    {k:'res',name:'Resource',sub:'Instance · database · load balancer · endpoint',
+     hard:'soft',
+     what:'The actual thing. It sits in a subnet, has one or more addresses, and carries the rules that decide who may reach it.',
+     stops:'This is where the real enforcement happens — the security group or NSG attached to it. <b>The last line, and usually the only line that is actually holding.</b>',
+     crosses:'Whatever the rules allow. A security group that says <span class="code">0.0.0.0/0 on 22</span> undoes every careful thing in the four layers above it.',
+     blast:'One resource — provided its identity is scoped too. An instance with an over-permissive role is a much larger blast radius than its network position suggests.',
+     rule:'Reference <b>security groups by name, not by CIDR</b>, where the cloud supports it: &ldquo;the app tier may reach the database tier&rdquo; stays true when addresses change, and a copied CIDR does not.'}
+  ];
+  let cur='acct';
+  function render(){
+    nav.innerHTML=L.map((l,i)=>
+      '<button data-k="'+l.k+'" class="'+(cur===l.k?'on':'')+'"><b>'+l.name+'</b><i>'+l.sub+'</i></button>'+
+      (i<L.length-1?'<div class="lzarrow"></div>':'')).join('');
+    nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const l=L.find(x=>x.k===cur);
+    const badge = l.hard==='hard' ? '<span class="ok" style="font-family:var(--mono);font-size:10.5px">HARD BOUNDARY — a mistake cannot cross it</span>'
+                : l.hard==='soft' ? '<span class="lzbad" style="font-family:var(--mono);font-size:10.5px">SOFT — one rule away from open</span>'
+                : '<span class="lzwarn" style="font-family:var(--mono);font-size:10.5px">GOVERNANCE — policy, not traffic</span>';
+    out.innerHTML =
+      '<div style="margin-bottom:10px">'+badge+'</div>'+
+      '<div class="lzrow"><span class="lzmark">?</span><span><b>What it is.</b> '+l.what+'</span></div>'+
+      '<div class="lzrow"><span class="lzmark" style="color:var(--green)">✓</span><span><b>What it stops.</b> '+l.stops+'</span></div>'+
+      '<div class="lzrow"><span class="lzmark" style="color:var(--red)">→</span><span><b>What crosses it anyway.</b> '+l.crosses+'</span></div>'+
+      '<div class="lzrow"><span class="lzmark" style="color:var(--amber)">◎</span><span><b>Blast radius.</b> '+l.blast+'</span></div>'+
+      '<div class="simnote" style="margin-top:10px"><b>Design rule.</b> '+l.rule+'</div>';
+  }
+  render();
+})();
+
+
+document.getElementById('sec-lz2').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Why one company ends up with four different networks</h2>
+  <div class="plain-line"><b>In plain English:</b> the obvious design is one big network with everything in it. It works right up until the day something in it is compromised &mdash; and then the attacker is already standing next to the payroll database, the corporate directory and the VPN back to head office, because you put them all in the same room.</div>
+  <div class="plain-line">So estates get split by <b>who the traffic is talking to</b>, not by which team owns it:</div>
+  <table class="osi"><thead><tr><th>Network</th><th>In plain terms</th><th>What it is protecting you from</th></tr></thead><tbody>
+  <tr><td><b>Internet-facing VPC</b><br><span class="dim">external, untrusted, DMZ</span></td><td>The shopfront. The only place with a door onto the public internet</td><td>If the shopfront is broken into, the burglar is in the shopfront &mdash; not in the office and not in the warehouse</td></tr>
+  <tr><td><b>Perimeter VPC</b><br><span class="dim">inspection, security, transit</span></td><td>The security gate everything drives through. Firewalls, the outbound proxy, and the router that joins the estate together</td><td>Traffic that would otherwise go straight from A to B without anyone seeing it. One place to inspect, one place to log, one place to block</td></tr>
+  <tr><td><b>Intranet VPC</b><br><span class="dim">internal, corporate, shared</span></td><td>The link back to the company&rsquo;s own network and offices, plus the tools everything depends on</td><td>The internet edge reaching the corporate directory. These two must never be one hop apart</td></tr>
+  <tr><td><b>Workload VPCs</b><br><span class="dim">spokes, application, landing</span></td><td>Where the actual applications live. One per environment, or per business unit, or per system</td><td>One team&rsquo;s bad afternoon becoming everybody&rsquo;s. A spoke can be destroyed and rebuilt without touching the rest</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The shape this makes is called hub and spoke.</b> Spokes do not talk to each other directly; they talk through the hub. That sounds like an inefficiency and it is the entire point &mdash; it means <b>there is exactly one place where east-west traffic can be seen and stopped</b>. Mesh peering between forty spokes is faster and gives you eight hundred paths nobody is watching.</div>
+  <div class="plain-line"><b>The names vary and the shape does not.</b> AWS joins the spokes with a <b>Transit Gateway</b>, Azure with a <b>Virtual WAN hub or a hub VNet with peering</b>, GCP with a <b>shared VPC or Network Connectivity Center</b>. Different words, same hub, same reason.</div>
+</div>`;
+
+/* --- SIM: estate map --- */
+(function(){
+  const map=document.getElementById('lzMap'), out=document.getElementById('lzMapOut');
+  if(!map) return;
+  const V='var(--violet)', T='var(--teal)', A='var(--amber)', R='var(--red)', W='var(--wire)';
+  const C=[
+    /* containers */
+    {k:'inetvpc',x:20,y:56,w:210,h:174,c:R,box:1,label:'Internet-facing VPC',lab2:'the shopfront'},
+    {k:'perim',  x:245,y:56,w:210,h:174,c:V,box:1,label:'Perimeter VPC',lab2:'the security gate'},
+    {k:'intravpc',x:470,y:56,w:210,h:174,c:T,box:1,label:'Intranet VPC',lab2:'the link to head office'},
+    {k:'spoke',  x:20,y:256,w:660,h:148,c:A,box:1,label:'Workload VPC — a spoke',lab2:'where the applications actually live'},
+    /* internet vpc */
+    {k:'pubsub', x:32,y:86,w:186,h:34,c:R,label:'public / edge subnet'},
+    {k:'rproxy', x:32,y:126,w:186,h:34,c:R,label:'reverse proxy + WAF'},
+    {k:'nat',    x:32,y:166,w:186,h:34,c:R,label:'NAT gateway'},
+    /* perimeter */
+    {k:'fwsub',  x:257,y:86,w:186,h:34,c:V,label:'firewall subnet'},
+    {k:'fproxy', x:257,y:126,w:186,h:34,c:V,label:'forward proxy'},
+    {k:'tgw',    x:257,y:166,w:186,h:34,c:V,label:'hub router / transit'},
+    /* intranet */
+    {k:'vpn',    x:482,y:86,w:186,h:34,c:T,label:'VPN / Direct Connect'},
+    {k:'gut',    x:482,y:126,w:186,h:34,c:T,label:'GUT / shared utility'},
+    {k:'dns',    x:482,y:166,w:186,h:34,c:T,label:'private DNS resolver'},
+    /* spoke */
+    {k:'bastion',x:34,y:292,w:150,h:34,c:A,label:'bastion subnet'},
+    {k:'app',    x:196,y:292,w:150,h:34,c:A,label:'app subnet'},
+    {k:'endpoint',x:358,y:292,w:150,h:34,c:A,label:'endpoint subnet'},
+    {k:'data',   x:520,y:292,w:150,h:34,c:A,label:'data subnet'},
+    {k:'dblink', x:196,y:338,w:312,h:34,c:A,label:'database private link'}
+  ];
+  const D2={
+    inetvpc:{t:'Internet-facing VPC',
+      p:'The only network in the estate with a door onto the public internet. Everything the outside world can reach lives here, and nothing else does.',
+      with:'An internet gateway, a public load balancer or reverse proxy, a WAF, and a NAT gateway for return traffic. Its route table is the only one in the estate with <span class="code">0.0.0.0/0 → internet gateway</span>.',
+      never:'Databases. Application servers. Anything holding data. Anything with a route to the corporate network. If a workload here is compromised, whatever it can reach is what you have lost.',
+      fail:'Teams put the app here &ldquo;temporarily&rdquo; because it was quicker than configuring the load balancer. Six months later the application server has a public IP and nobody remembers why.'},
+    perim:{t:'Perimeter VPC',
+      p:'The security gate the whole estate drives through. It carries no business traffic of its own &mdash; its entire job is to look at everyone else&rsquo;s.',
+      with:'Firewall appliances, the outbound forward proxy, intrusion detection, and the hub router that every spoke attaches to. Also the natural home for centralised flow logging.',
+      never:'Applications. The moment somebody deploys a workload here to &ldquo;save a VPC&rdquo;, the inspection layer becomes something you cannot restart without an outage.',
+      fail:'Without it, spokes get peered directly to each other for speed. Now forty networks have paths nobody has drawn, and no single place shows you east-west traffic.'},
+    intravpc:{t:'Intranet VPC',
+      p:'Where the cloud meets the company&rsquo;s own network &mdash; offices, data centres, the corporate directory. Everything here is trusted-ish and internal only.',
+      with:'The VPN or dedicated-line gateway, DNS forwarders that resolve internal names, and the shared utility tier everything depends on.',
+      never:'Anything reachable from the internet. Not one hop, not through a load balancer, not &ldquo;just for the health check&rdquo;. The distance between the internet edge and this network is the control.',
+      fail:'A single peering between the internet VPC and this one, added for convenience, means a compromised public web server has a route to the corporate directory.'},
+    spoke:{t:'Workload VPC (a spoke)',
+      p:'Where an actual application lives. One per environment, per business unit, or per system &mdash; whichever line you would want to be able to destroy and rebuild without asking anyone.',
+      with:'The application tiers, its own data, its own endpoints, its own bastion access path. It attaches to the hub and gets its internet access through the perimeter.',
+      never:'Its own internet gateway. The instant a spoke has one, it has bypassed every inspection control in the design and nobody will notice until an audit.',
+      fail:'The classic incident: a spoke gets a &ldquo;temporary&rdquo; internet gateway for a migration. The migration ends, the gateway does not, and outbound traffic from that spoke has been unlogged for a year.'},
+    pubsub:{t:'Public / edge subnet',
+      p:'A subnet is public for exactly one reason: <b>its route table has a route to the internet gateway</b>. Nothing else about it is special. That single line is the whole definition.',
+      with:'Load balancers, reverse proxies, NAT gateways, and bastion hosts only where a managed alternative does not exist. Things whose job is to be reached from outside.',
+      never:'Application servers or databases, even with a tight security group. A route to the internet gateway plus one bad rule is a public database, and the rule is easier to get wrong than the route.',
+      fail:'People assume &ldquo;private subnet&rdquo; means secure and &ldquo;public subnet&rdquo; means exposed. Both are wrong. The route table decides direction; the security group decides access.'},
+    rproxy:{t:'Reverse proxy',
+      p:'The receptionist for people coming <b>in</b>. Visitors arrive, it decides who they were asking for, and it passes them on. They never learn where the office actually is.',
+      with:'TLS termination, hostname and path routing, a WAF in front of it, rate limiting, and health checks against the app tier. Managed versions: an AWS ALB, an Azure Application Gateway, a GCP external load balancer.',
+      never:'Directly on the application server. Then the application is doing TLS, routing, rate limiting and its actual job at once &mdash; and you cannot patch one without restarting all of them.',
+      fail:'Forgetting it forwards the original client address in a header, not in the packet. Every log downstream then shows the proxy&rsquo;s IP, and rate limiting by source address blocks everybody at once.'},
+    nat:{t:'NAT gateway',
+      p:'The plumbing that lets a private machine reach out without being reachable itself. It swaps the private source address for a public one and remembers the way back.',
+      with:'A public subnet, one per availability zone for resilience, and a route from the private subnets pointing at it.',
+      never:'Confused with a security control. <b>NAT is not a firewall.</b> It lets anything out to anywhere; it only hides who is asking. That is why a forward proxy sits in front of it.',
+      fail:'One NAT gateway serving three zones. It is cheaper until the zone it lives in fails, and then all three zones lose outbound at once. Also the quiet one: cross-zone data charges nobody budgeted for.'},
+    fwsub:{t:'Firewall subnet',
+      p:'A subnet that exists to hold the firewall and absolutely nothing else. Traffic is routed into it, inspected, and routed back out.',
+      with:'Only the firewall endpoints. Both AWS Network Firewall and Azure Firewall require a dedicated subnet: <b>Azure insists it is named <span class="code">AzureFirewallSubnet</span> and is at least a /26</b>; AWS wants a subnet per zone with only the endpoint in it.',
+      never:'Shared with anything. It is not an efficiency saving &mdash; the routing that forces traffic through inspection depends on that subnet containing one thing.',
+      fail:'Sizing it too small and being unable to grow it later. A /29 that seemed generous blocks the upgrade that needs more endpoints, and a subnet cannot be resized while anything is in it.'},
+    fproxy:{t:'Forward proxy',
+      p:'The post room, checking what goes <b>out</b>. Every outbound request is named, checked against a list of places you are allowed to reach, logged, and only then sent.',
+      with:'The perimeter VPC, an allow-list of destinations, TLS inspection where policy requires it, and full logging. Private subnets route outbound at it rather than straight at NAT.',
+      never:'Treated as optional because &ldquo;we already have NAT&rdquo;. NAT answers <em>can this get out</em>; a forward proxy answers <em>should this get out, to there, right now</em>.',
+      fail:'This is the control that turns a compromised server into a contained one. Without it, a machine that has been taken over can reach any address on the internet to fetch its next instruction and send your data back.'},
+    tgw:{t:'Hub router / transit gateway',
+      p:'The junction every network plugs into once, instead of every network plugging into every other network.',
+      with:'One attachment per VPC, and route tables that decide which spokes may reach which. That routing table is where &ldquo;dev may not reach production&rdquo; becomes real.',
+      never:'Configured to let everything reach everything by default. A hub with one open route table is a mesh with extra latency and none of the benefit.',
+      fail:'Ten VPCs meshed with peering need forty-five connections and forty-five sets of routes. Through a hub it is ten. The saving is not the money &mdash; it is that ten paths can be reasoned about and forty-five cannot.'},
+    vpn:{t:'VPN / Direct Connect gateway',
+      p:'The tunnel back to the company&rsquo;s own buildings. Either encrypted over the public internet (a VPN) or a dedicated private circuit (Direct Connect, ExpressRoute, Cloud Interconnect).',
+      with:'The intranet VPC, on-premises route advertisement, and address ranges that were checked against the corporate plan before anyone built anything.',
+      never:'Terminated in the internet-facing VPC. That places the corporate network one misconfiguration away from the public edge.',
+      fail:'Overlapping addresses. Head office already uses <span class="code">10.0.0.0/16</span> and so does your new VPC. The tunnel comes up and traffic goes nowhere, and the only fix is renumbering one side.'},
+    gut:{t:'GUT / shared-utility subnet',
+      p:'The tier holding the tools every other system quietly depends on: the directory, DNS, time, patching, monitoring collectors, the artifact repository, backup agents, certificate services. Nobody thinks about it until it is down, at which point everything is down.',
+      with:'The intranet or a dedicated shared-services VPC, reachable from every spoke, built for high availability across zones, and owned by a platform team rather than by whoever needed it first.',
+      never:'Business workloads. And it should be reachable <em>from</em> the spokes rather than reaching <em>into</em> them &mdash; a patching server that can open a connection to every database in the estate is a beautiful lateral-movement path.',
+      fail:'Worth being straight about the name: <b>GUT is not a cloud-vendor term.</b> It stands for generic utility tier and comes from enterprise landing-zone designs &mdash; you will also see it called shared services, management, tooling or platform. Same tier, different house style.'},
+    dns:{t:'Private DNS resolver',
+      p:'The thing that answers &ldquo;what address is this name?&rdquo; for private names that do not exist on the public internet. Boring until it is wrong, and then nothing works and nothing says why.',
+      with:'Forwarding rules in both directions &mdash; cloud names resolvable from the office, office names resolvable from the cloud &mdash; and private hosted zones for internal services.',
+      never:'Left to default. Private endpoints only work because DNS quietly returns a private address instead of a public one. Break that and traffic silently goes out over the internet to the public endpoint instead.',
+      fail:'The most confusing outage in this whole diagram: everything resolves, everything connects, and the traffic is taking a route you thought you had removed &mdash; because one resolver still returns the public address.'},
+    bastion:{t:'Bastion / jump host',
+      p:'The one door an administrator may walk through. Instead of every server accepting logins, one hardened host does, and everything else only accepts connections from it.',
+      with:'Its own small subnet, multi-factor authentication, session recording, and a security group on every other host that names the bastion rather than a range of addresses.',
+      never:'In the same subnet as the applications, and not with a wide-open SSH or RDP port. If a public bastion is unavoidable, restrict the source to known office ranges &mdash; but prefer not having one.',
+      fail:'The better answer today is <b>no bastion host at all</b>: AWS Session Manager, Azure Bastion and GCP IAP TCP forwarding all give an audited shell with <b>no inbound port open anywhere</b>. A server you cannot connect to from the internet cannot be brute-forced from it.'},
+    app:{t:'App subnet',
+      p:'Where the application actually runs. Private: no route to the internet gateway, no public address, nothing about it visible from outside.',
+      with:'Inbound only from the load balancer&rsquo;s security group. Outbound through the proxy and NAT in the perimeter. One subnet per availability zone on AWS, because an AWS subnet lives in exactly one zone.',
+      never:'Given a public IP for convenience. And it should not reach the database by IP address &mdash; use a security-group reference so the rule survives a rebuild.',
+      fail:'One app subnet in one availability zone. It works, it is cheaper, and it means a single zone failure takes the whole application down &mdash; which is the failure the cloud was supposed to survive.'},
+    endpoint:{t:'Endpoint subnet',
+      p:'A small dedicated subnet holding the private doors to cloud services. Instead of your app going out to the internet to reach object storage, there is an entrance to it inside your own network.',
+      with:'Interface endpoints (AWS PrivateLink, Azure Private Endpoint, GCP Private Service Connect), their own security group, and the private DNS that makes the service name resolve to the private address.',
+      never:'Undersized. <b>Every interface endpoint consumes an address in every zone it serves</b>, and they multiply faster than anyone predicts. A /28 that fits today blocks the endpoint somebody needs next quarter.',
+      fail:'Without it, private workloads need NAT and an internet route just to reach the cloud provider&rsquo;s own storage &mdash; so you have opened a path to the entire internet in order to reach one service.'},
+    data:{t:'Data subnet',
+      p:'The most private tier. Databases, caches, anything holding the thing you would have to write a letter about losing.',
+      with:'Inbound only from the app tier&rsquo;s security group. No outbound internet at all &mdash; not through NAT, not through the proxy. A database has no legitimate reason to start a connection to the internet.',
+      never:'Reachable from the bastion by default, or from a management tool that &ldquo;needs access to everything&rdquo;. Every extra source is another way in.',
+      fail:'The one to check on day one: managed databases have a <b>public accessibility</b> flag that defaults on in some consoles. A private subnet does not save you from it &mdash; the flag gives the database a public address regardless.'},
+    dblink:{t:'Database private link',
+      p:'Exposing exactly one service to another network, rather than joining the two networks together. The consumer gets a private address in <em>their</em> network that leads to your one service and nothing else.',
+      with:'A service endpoint you publish, an allow-list of who may connect, and private DNS on the consumer side. The traffic stays on the cloud provider&rsquo;s backbone and never touches the internet.',
+      never:'Replaced with VPC peering when a partner asks for access. <b>Peering exposes both entire address ranges; a private link exposes one service.</b> That sentence is the whole reason it exists.',
+      fail:'A partner integration built on peering. It works, and it also means their network can now reach every address in yours that a security group has not explicitly closed &mdash; and you are relying on hundreds of rules being right.'}
+  };
+  let cur='perim';
+  function render(){
+    const parts=C.map(c=>{
+      const on=cur===c.k;
+      const fill = c.box ? 'none' : (on?'var(--sel)':'var(--panel2)');
+      const sw = on?2:(c.box?1.4:1);
+      return '<g data-k="'+c.k+'" style="cursor:pointer">'+
+        '<rect x="'+c.x+'" y="'+c.y+'" width="'+c.w+'" height="'+c.h+'" rx="8" style="fill:'+fill+';stroke:'+(on?'var(--amber)':c.c)+'" stroke-width="'+sw+'"'+(c.box?' stroke-dasharray="5 4"':'')+'/>'+
+        (c.box
+          ? '<text x="'+(c.x+10)+'" y="'+(c.y+17)+'" style="'+MONO+';fill:'+(on?'var(--amber)':c.c)+'">'+c.label+'</text>'+
+            '<text x="'+(c.x+c.w-10)+'" y="'+(c.y+c.h-9)+'" text-anchor="end" style="'+MONO+';fill:var(--dim)">'+c.lab2+'</text>'
+          : '<text x="'+(c.x+c.w/2)+'" y="'+(c.y+22)+'" text-anchor="middle" style="'+MONO+';fill:'+(on?'var(--amber)':'var(--text)')+'">'+c.label+'</text>')+
+        '</g>';
+    }).join('');
+    const chrome =
+      '<rect x="20" y="10" width="210" height="30" rx="8" style="fill:var(--panel2);stroke:'+R+'"/>'+
+      '<text x="125" y="30" text-anchor="middle" style="'+MONO+';fill:'+R+'">the public internet</text>'+
+      '<rect x="470" y="10" width="210" height="30" rx="8" style="fill:var(--panel2);stroke:'+T+'"/>'+
+      '<text x="575" y="30" text-anchor="middle" style="'+MONO+';fill:'+T+'">offices &amp; data centres</text>'+
+      '<path d="M125 40 V54" style="stroke:'+W+'" stroke-width="1.4" marker-end="url(#ah)"/>'+
+      '<path d="M575 40 V54" style="stroke:'+W+'" stroke-width="1.4" marker-end="url(#ah)"/>'+
+      '<path d="M230 135 H243" style="stroke:'+W+'" stroke-width="1.4" marker-end="url(#ah)"/>'+
+      '<path d="M455 135 H468" style="stroke:'+W+'" stroke-width="1.4" marker-end="url(#ah)"/>'+
+      '<path d="M350 230 V254" style="stroke:'+W+'" stroke-width="1.4" marker-end="url(#ah)"/>'+
+      '<text x="350" y="248" text-anchor="middle" style="'+MONO+';fill:var(--dim)">every spoke attaches here, once</text>';
+    map.innerHTML='<div class="diagram"><svg viewBox="0 0 700 418" role="img" aria-label="A hub and spoke cloud estate: an internet-facing VPC, a perimeter VPC, an intranet VPC and a workload spoke VPC, each containing their subnets and gateways.">'+chrome+parts+'</svg></div>';
+    map.querySelectorAll('g[data-k]').forEach(g=>g.addEventListener('click',()=>{cur=g.getAttribute('data-k');render();}));
+    const d=D2[cur];
+    out.innerHTML='<div style="font-family:var(--display);font-size:18px;margin-bottom:9px">'+d.t+'</div>'+
+      '<div class="lzrow"><span class="lzmark">?</span><span>'+d.p+'</span></div>'+
+      '<div class="lzrow"><span class="lzmark" style="color:var(--green)">✓</span><span><b>Goes with.</b> '+d.with+'</span></div>'+
+      '<div class="lzrow"><span class="lzmark" style="color:var(--red)">✗</span><span><b>Never with.</b> '+d.never+'</span></div>'+
+      '<div class="simnote" style="margin-top:10px"><b>What goes wrong.</b> '+d.fail+'</div>';
+  }
+  render();
+})();
+
+
+document.getElementById('sec-lz3').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The seven tiers, and the only two questions that place anything</h2>
+  <div class="plain-line"><b>In plain English:</b> deciding which subnet something goes in sounds like it needs judgement. It does not. It needs two answers: <b>does the public internet need to reach this?</b> and <b>does this need to reach out?</b> Four combinations, and the tier falls out of them.</div>
+  ${D('0 0 660 210','A two-by-two grid placing workloads by whether the internet must reach in and whether the workload must reach out.',
+   `${tm(112,26,'must reach OUT','var(--dim)')}${tm(112,42,'to the internet','var(--dim)')}
+    ${tm(330,26,'NO','var(--muted)')}${tm(520,26,'YES','var(--muted)')}
+    ${tm(40,86,'internet','var(--dim)','start')}${tm(40,102,'reaches IN','var(--dim)','start')}${tm(40,118,'NO','var(--muted)','start')}
+    ${tm(40,166,'YES','var(--muted)','start')}
+    ${box(230,60,200,66,'var(--teal)')}${t(330,86,'private subnet',SANS)}${tm(330,106,'app · data · GUT','var(--teal)')}${tm(330,120,'no route out at all','var(--dim)')}
+    ${box(440,60,200,66,'var(--amber)')}${t(540,86,'private + a way out',SANS)}${tm(540,106,'app tier, most of the time','var(--amber)')}${tm(540,120,'proxy, then NAT','var(--dim)')}
+    ${box(230,140,200,56,'var(--violet)')}${t(330,166,'behind a load balancer',SANS)}${tm(330,186,'still a private subnet','var(--violet)')}
+    ${box(440,140,200,56,'var(--red)')}${t(540,162,'public subnet',SANS)}${tm(540,180,'load balancers, NAT, proxies','var(--red)')}${tm(540,192,'almost never your code','var(--dim)')}`,
+   'Notice how little ends up in the bottom-right box. Almost nothing you write belongs in a public subnet — the things that do are the ones whose job is to be reached.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th>Tier</th><th>What lives there</th><th>Route to the internet?</th><th>Who may reach it</th></tr></thead><tbody>
+  <tr><td><b>Public / edge</b></td><td>Load balancers, reverse proxies, NAT gateways</td><td><b>Yes</b> — the only tier with one</td><td>The world, on 443 only</td></tr>
+  <tr><td><b>Firewall</b></td><td>Firewall endpoints and nothing else</td><td>Routed through, not out</td><td>Nothing directly — traffic is routed <em>into</em> it</td></tr>
+  <tr><td><b>Bastion / management</b></td><td>The one jump host, if you still need one</td><td>No</td><td>Named administrators, with MFA and a recording</td></tr>
+  <tr><td><b>App</b></td><td>Your application servers, containers, functions</td><td>Outbound only, via the proxy</td><td>The load balancer&rsquo;s security group. Nothing else</td></tr>
+  <tr><td><b>GUT / shared utility</b></td><td>Directory, DNS, patching, monitoring, artifacts, backup</td><td>Outbound only, tightly listed</td><td>Every spoke &mdash; and it should not reach back into them</td></tr>
+  <tr><td><b>Endpoint</b></td><td>Private endpoints to cloud services</td><td>No — that is the point of it</td><td>The app and data tiers</td></tr>
+  <tr><td><b>Data</b></td><td>Databases, caches, queues</td><td><b>None at all</b></td><td>The app tier&rsquo;s security group only</td></tr>
+  </tbody></table>
+</div>`;
+
+/* --- SIM: placement --- */
+(function(){
+  const box2=document.getElementById('lzPlace'), out=document.getElementById('lzPlaceOut');
+  if(!box2) return;
+  const TIERS=[['pub','public / edge'],['fw','firewall'],['bas','bastion'],['app','app'],['gut','GUT / shared'],['ep','endpoint'],['data','data']];
+  const W=[
+    {id:'lb',n:'The public front door for the website',r:'pub',
+     y:'Correct. Its job is to be reached from the internet, so it is one of the very few things that belongs in a public subnet.',
+     n2:{app:'Then nothing from the internet can reach it, because the app subnet has no inbound route. The site is simply down.',
+         data:'A load balancer in the data tier is the two worst ideas at once: an internet-facing service beside your database.',
+         other:'It has to sit where the internet can reach it. That means the public subnet, and it is one of the few things that does.'}},
+    {id:'api',n:'The application server behind that front door',r:'app',
+     y:'Correct. Private subnet, no public address, inbound only from the load balancer&rsquo;s security group.',
+     n2:{pub:'This is the most common real-world mistake in the list. It works immediately, which is why it survives &mdash; and it gives your application a public address and a route to the whole internet.',
+         data:'It will work. It also means anything that compromises the app is already inside the tier holding your data, with no boundary left to cross.',
+         other:'The app tier is private, reached only through the load balancer, and reaches out only through the proxy.'}},
+    {id:'db',n:'The customer database',r:'data',
+     y:'Correct. And check the <b>public accessibility</b> flag while you are there &mdash; a private subnet does not override it.',
+     n2:{pub:'A database with a public address. This is the single most reported cloud data breach pattern there is, and it usually starts as a five-minute debugging shortcut.',
+         app:'It works, and you have given up the last boundary. Anything that reaches the app now reaches the data with nothing in between.',
+         other:'The data tier: no outbound internet at all, inbound only from the app tier. A database has no legitimate reason to start a connection outwards.'}},
+    {id:'ssh',n:'Administrator access to those servers',r:'bas',
+     y:'Correct &mdash; though the better answer is <b>no bastion at all</b>. Session Manager, Azure Bastion and IAP TCP forwarding give you an audited shell with no inbound port open anywhere.',
+     n2:{pub:'A public bastion is survivable with MFA and a locked-down source range, but it is a permanently advertised login page. A managed session service removes the port entirely.',
+         app:'Now every application server accepts logins. You have as many front doors as you have servers, and the audit trail is spread across all of them.',
+         other:'Admin access needs its own controlled path &mdash; one door, recorded &mdash; not a port on each machine.'}},
+    {id:'patch',n:'The patching server and the monitoring collector',r:'gut',
+     y:'Correct. Shared tooling that every spoke depends on, owned by a platform team, built to survive a zone failure.',
+     n2:{app:'It ends up owned by whichever team needed it first, deployed once per spoke, and patched by nobody.',
+         pub:'Infrastructure tooling with a public address, holding credentials for everything it manages. An unusually attractive target.',
+         other:'Shared tools belong in the shared tier &mdash; and reachable <em>from</em> the spokes, not reaching <em>into</em> them.'}},
+    {id:'s3',n:'Private access to the cloud&rsquo;s object storage',r:'ep',
+     y:'Correct. A private door to the service inside your own network. The traffic never touches the internet.',
+     n2:{pub:'To reach one storage service you have opened a path to the entire internet. That is a very large door for a very small need.',
+         app:'Endpoints consume an address per zone and multiply quickly. Mixed in with the app tier they will exhaust it, and you cannot resize a subnet in use.',
+         other:'A dedicated endpoint subnet, sized with room to grow, keeps private service access in one controllable place.'}},
+    {id:'fw',n:'The network firewall appliance',r:'fw',
+     y:'Correct. A dedicated subnet holding only the firewall endpoints &mdash; which both AWS and Azure actually require.',
+     n2:{pub:'Azure will refuse: the firewall must live in a subnet named <span class="code">AzureFirewallSubnet</span>. AWS wants its own subnet per zone too.',
+         other:'It needs a subnet to itself. The routing that forces traffic through inspection depends on that subnet containing one thing.'}},
+    {id:'worker',n:'A batch worker that downloads files from a partner API',r:'app',
+     y:'Correct &mdash; and this is the one people get wrong. It needs to reach <em>out</em>, which is not the same as needing to be reached. Private subnet, outbound through the forward proxy, with the partner&rsquo;s domain on the allow-list.',
+     n2:{pub:'The trap. &ldquo;It needs internet access&rdquo; gets read as &ldquo;it needs a public subnet&rdquo;. It does not: outbound is what NAT and the proxy are for, and a public subnet also makes it reachable.',
+         gut:'It is a business workload, not shared tooling. Putting it in the utility tier means an application failure now sits in the tier everything else depends on.',
+         other:'Reaching out is an egress question, answered by the proxy and NAT. Being reachable is an ingress question, and this workload is not.'}}
+  ];
+  const pick={};
+  function render(){
+    box2.innerHTML=W.map(w=>
+      '<div style="margin-bottom:13px"><div style="font-weight:600;font-size:13px;margin-bottom:5px">'+w.n+'</div>'+
+      '<div class="segmented">'+TIERS.map(([v,l])=>
+        '<button class="seg'+(pick[w.id]===v?' on':'')+'" data-i="'+w.id+'" data-v="'+v+'">'+l+'</button>').join('')+
+      '</div></div>').join('');
+    box2.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.i]=b.dataset.v;render();});
+    const done=W.filter(w=>pick[w.id]);
+    if(!done.length){out.innerHTML='<div class="simnote">Place the first workload to see what the choice costs you.</div>';return;}
+    let right=0;
+    out.innerHTML=done.map(w=>{
+      const p=pick[w.id], ok=p===w.r; if(ok) right++;
+      const why = ok ? w.y : (w.n2[p]||w.n2.other);
+      return '<div class="lzrow" style="margin-bottom:10px"><span class="lzmark" style="color:var('+(ok?'--green':'--red')+')">'+(ok?'✓':'✗')+'</span>'+
+        '<span><b>'+w.n+' → '+TIERS.find(t2=>t2[0]===p)[1]+'</b><br>'+why+'</span></div>';
+    }).join('')+
+    '<div class="simnote" style="margin-top:10px"><b>'+right+' of '+done.length+' placed correctly.</b> '+
+    (right===W.length
+      ? 'All eight. The two questions again: does the internet need to reach in, and does this need to reach out. Almost nothing you write answers yes to the first.'
+      : 'Come back to the two questions: does the internet need to reach in, and does this need to reach out. They are not the same question, and the second one does not need a public subnet.')+'</div>';
+  }
+  render();
+})();
+
+
+document.getElementById('sec-lz4').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">CIDR &mdash; the decision you cannot take back</h2>
+  <div class="plain-line"><b>In plain English:</b> a CIDR block is a range of house numbers handed to one street. <span class="code">10.0.0.0/16</span> means &ldquo;this street owns numbers 10.0.0.0 through 10.0.255.255&rdquo;. The slash number is a <em>subtraction</em>: the bigger it is, the smaller the street. A <span class="code">/16</span> is 65,536 addresses; a <span class="code">/24</span> is 256; a <span class="code">/28</span> is 16.</div>
+  <div class="plain-line">Two streets in different towns can share numbering happily &mdash; right up to the day the towns merge. Then there are two number 14s, the post cannot be delivered, and no clever routing fixes it. <b>This is the only decision in a landing zone that cannot be undone while things are running on it.</b> Everything else can be migrated, rebuilt or re-tagged. Addresses cannot: renumbering means downtime for everything that holds one.</div>
+  <table class="osi"><thead><tr><th>Rule</th><th>Why</th><th>The cost of ignoring it</th></tr></thead><tbody>
+  <tr><td><b>Only ever use the private ranges</b><br><span class="code">10.0.0.0/8</span> · <span class="code">172.16.0.0/12</span> · <span class="code">192.168.0.0/16</span></td><td>These are reserved for private networks and will never be routed on the public internet</td><td>Use somebody else&rsquo;s public range internally and you lose the ability to reach the real owner of it</td></tr>
+  <tr><td><b>Never overlap with anything you might ever connect</b></td><td>Including head office, including the data centre, including a company you have not acquired yet</td><td>Peering is refused outright, VPN tunnels come up and blackhole traffic, and the only fix is renumbering one side</td></tr>
+  <tr><td><b>Allocate top down, not on demand</b></td><td>One block per organisation, carved per region, then per environment, then per VPC. Written down before anyone builds</td><td>First-come-first-served allocation produces an estate nobody can draw and no two blocks that sit next to each other</td></tr>
+  <tr><td><b>Leave far more headroom than feels sensible</b></td><td>A VPC can gain a secondary range later; <b>a subnet can never be resized while anything is in it</b></td><td>The endpoint subnet that fits today blocks next quarter&rsquo;s project, and the fix is a migration</td></tr>
+  <tr><td><b>Remember the reserved addresses</b></td><td>AWS and Azure take 5 per subnet, GCP takes 4</td><td>A <span class="code">/28</span> gives 11 usable addresses, not 16. On a tier that autoscales, that shortfall is an outage</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>What each cloud will and will not let you change afterwards:</b> AWS lets you add secondary CIDR blocks to a VPC but never resize a subnet. Azure lets you resize a subnet only while it is completely empty. GCP lets you expand a subnet&rsquo;s primary range but never shrink it. In all three, the direction of travel is one-way &mdash; you can grow, sometimes, and you can never take back.</div>
+</div>`;
+
+/* --- SIM: CIDR allocator --- */
+(function(){
+  const pick=document.getElementById('lzCidrSize'), out=document.getElementById('lzCidrOut'),
+        note=document.getElementById('lzCidrNote'), lazy=document.getElementById('lzCidrLazy');
+  if(!pick) return;
+  const SIZES=[
+    ['s','One product, one region','a startup, a single team'],
+    ['m','Several teams, two regions','a growing company'],
+    ['l','Many regions plus on-premises','an enterprise landing zone']
+  ];
+  let cur='m';
+  const PLANS={
+    s:[[0,'10.0.0.0/16','the whole estate','65,536 addresses'],
+       [1,'10.0.0.0/17','production VPC','32,768'],
+       [2,'10.0.0.0/24','public subnet · zone a','256'],
+       [2,'10.0.1.0/24','public subnet · zone b','256'],
+       [2,'10.0.8.0/22','app subnet · zone a','1,024'],
+       [2,'10.0.12.0/22','app subnet · zone b','1,024'],
+       [2,'10.0.32.0/24','data subnet · zone a','256'],
+       [2,'10.0.33.0/24','data subnet · zone b','256'],
+       [2,'10.0.40.0/25','endpoint subnet · zone a','128'],
+       [2,'10.0.40.128/25','endpoint subnet · zone b','128'],
+       [2,'10.0.44.0/28','bastion subnet','16'],
+       [1,'10.0.128.0/17','held back for growth','32,768']],
+    m:[[0,'10.0.0.0/12','the whole estate','1,048,576 addresses'],
+       [1,'10.0.0.0/14','region 1','262,144'],
+       [2,'10.0.0.0/16','production VPC','65,536'],
+       [2,'10.1.0.0/16','non-production VPC','65,536'],
+       [2,'10.2.0.0/16','perimeter &amp; shared VPC','65,536'],
+       [2,'10.3.0.0/16','held back','65,536'],
+       [1,'10.4.0.0/14','region 2 — same shape, different numbers','262,144'],
+       [1,'10.8.0.0/13','held back for regions 3 and 4','524,288'],
+       [2,'— inside any VPC /16 —','',''],
+       [3,'x.x.0.0/24 · x.x.1.0/24 · x.x.2.0/24','public, one per zone','256 each'],
+       [3,'x.x.8.0/22 · x.x.12.0/22 · x.x.16.0/22','app, one per zone','1,024 each'],
+       [3,'x.x.32.0/24 · x.x.33.0/24 · x.x.34.0/24','data, one per zone','256 each'],
+       [3,'x.x.40.0/25 · x.x.40.128/25 · x.x.41.0/25','endpoints, one per zone','128 each'],
+       [3,'x.x.44.0/28','bastion','16'],
+       [3,'x.x.45.0/26','firewall — Azure demands a /26','64'],
+       [3,'x.x.48.0/20 onwards','never allocated, on purpose','4,096']],
+    l:[[0,'10.0.0.0/8','the cloud estate, everywhere','16,777,216 addresses'],
+       [1,'10.0.0.0/12','region 1','1,048,576'],
+       [2,'10.0.0.0/14','production','262,144'],
+       [3,'10.0.0.0/16 … 10.3.0.0/16','four workload VPCs','65,536 each'],
+       [2,'10.4.0.0/14','non-production','262,144'],
+       [2,'10.8.0.0/14','perimeter, intranet and shared utility','262,144'],
+       [2,'10.12.0.0/14','held back','262,144'],
+       [1,'10.16.0.0/12','region 2 — identical carve','1,048,576'],
+       [1,'10.32.0.0/12','region 3','1,048,576'],
+       [1,'10.48.0.0/12 onwards','regions 4 to 15, unallocated','12.5M'],
+       [0,'172.16.0.0/12','on-premises — never issued in the cloud','1,048,576'],
+       [0,'192.168.0.0/16','kept clear for labs, VPN clients and appliances','65,536']]
+  };
+  function render(){
+    pick.innerHTML=SIZES.map(([v,l,s])=>'<button class="seg'+(cur===v?' on':'')+'" data-v="'+v+'" style="text-align:left">'+l+'<br><span class="dim" style="font-size:10.5px">'+s+'</span></button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.v;render();});
+    const rows=PLANS[cur];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE ALLOCATION, WRITTEN DOWN BEFORE ANYTHING IS BUILT</div>'+
+      '<table class="lzcidr"><tbody>'+rows.map(([d,cidr,what,n])=>
+        '<tr><td style="padding-left:'+(8+d*18)+'px;color:'+(d===0?'var(--violet)':d===1?'var(--teal)':'var(--text)')+'">'+cidr+'</td>'+
+        '<td style="font-family:var(--sans);font-size:12px">'+what+'</td><td>'+n+'</td></tr>').join('')+'</tbody></table>';
+    let html;
+    if(lazy.checked){
+      html='<div class="lzbad" style="margin-bottom:10px"><b>Every region now uses <span class="code">10.0.0.0/16</span>, and everything below happens in order:</b></div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--red)">1</span><span><b>Day one — nothing at all.</b> Each region works perfectly in isolation. This is why the shortcut survives: there is no error to see.</span></div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>The day you peer two regions.</b> AWS and Azure refuse to create the peering. The message names overlapping address space, and there is no flag to override it.</span></div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--red)">3</span><span><b>The day you attach both to a hub.</b> The attachments succeed. The routes do not: two identical prefixes point at different attachments and traffic goes to whichever the table resolved first. Half your requests land in the wrong region.</span></div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--red)">4</span><span><b>The day head office connects.</b> The tunnel comes up. On-premises already advertises <span class="code">10.0.0.0/16</span> for a building. Traffic for your servers is delivered to a floor of desks, and nothing logs an error anywhere.</span></div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--red)">5</span><span><b>The fix.</b> Renumber one side. Every address changes, every hard-coded IP breaks, every firewall rule is rewritten, and it needs an outage window per system. This is a multi-quarter programme, and it exists because of a decision that took ten seconds.</span></div>'+
+        '<div class="simnote" style="margin-top:10px">The whole cost of avoiding this is a spreadsheet, written once, before the first VPC.</div>';
+    } else {
+      html='<div class="ok" style="margin-bottom:10px"><b>Every block is unique and every parent contains its children.</b> Any two of these can be joined later without a conversation.</div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--green)">✓</span><span><b>Summarisable.</b> Region 1 is one line in a route table, not forty. The hub advertises <span class="code">10.0.0.0/12</span> and every VPC inside it is covered.</span></div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--green)">✓</span><span><b>Readable.</b> Anyone can look at <span class="code">10.4.x.x</span> and know which region and which environment it is, without opening a console.</span></div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--green)">✓</span><span><b>Roomy.</b> The blocks marked held back are the entire point. They cost nothing, and they are what lets the next region, the next environment, or an acquisition arrive without renumbering anything.</span></div>'+
+        '<div class="simnote" style="margin-top:10px">Look at how much is deliberately unallocated. A plan that uses everything it owns is a plan with no next step.</div>';
+    }
+    note.innerHTML=html;
+  }
+  lazy.onchange=render; render();
+})();
+
+
+document.getElementById('sec-lz5').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two proxies, opposite directions, endlessly confused</h2>
+  <div class="plain-line"><b>In plain English:</b> they share a word and share nothing else. A <b>reverse proxy is the receptionist</b> &mdash; it faces visitors coming in and decides who they get to see. A <b>forward proxy is the post room</b> &mdash; it faces your own staff going out, and decides what is allowed to leave the building. One protects you from the outside; the other protects the outside from you, and you from yourself.</div>
+  ${D('0 0 660 190','A reverse proxy handling inbound traffic from the internet, and a forward proxy handling outbound traffic to the internet.',
+   `${box(20,26,150,44,'var(--red)')}${tm(95,46,'the internet','var(--red)')}${tm(95,62,'strangers','var(--dim)')}
+    ${box(250,26,150,44,'var(--violet)')}${tm(325,46,'REVERSE proxy','var(--violet)')}${tm(325,62,'facing inward','var(--dim)')}
+    ${box(490,26,150,44,'var(--teal)')}${tm(565,46,'your app','var(--teal)')}${tm(565,62,'never exposed','var(--dim)')}
+    <path d="M170 48 H246" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M402 48 H486" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(330,92,'who are you here to see? — TLS, routing, WAF, rate limits','var(--dim)')}
+    ${box(490,118,150,44,'var(--teal)')}${tm(565,138,'your app','var(--teal)')}${tm(565,154,'wants something','var(--dim)')}
+    ${box(250,118,150,44,'var(--amber)')}${tm(325,138,'FORWARD proxy','var(--amber)')}${tm(325,154,'facing outward','var(--dim)')}
+    ${box(20,118,150,44,'var(--red)')}${tm(95,138,'the internet','var(--red)')}${tm(95,154,'allow-listed only','var(--dim)')}
+    <path d="M486 140 H404" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    <path d="M246 140 H174" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+    ${tm(330,182,'are you allowed to go there? — allow-list, inspection, logging','var(--dim)')}`,
+   'Read the arrows. The reverse proxy sits between strangers and your app; the forward proxy sits between your app and strangers. Same word, opposite job.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th></th><th>Reverse proxy</th><th>Forward proxy</th></tr></thead><tbody>
+  <tr><td><b>Sits in front of</b></td><td>Your servers</td><td>Your users and workloads</td></tr>
+  <tr><td><b>Traffic direction</b></td><td>Inbound &mdash; the internet to you</td><td>Outbound &mdash; you to the internet</td></tr>
+  <tr><td><b>Answers</b></td><td>Who were you looking for, and are you allowed to ask?</td><td>Where are you going, and are you allowed to go there?</td></tr>
+  <tr><td><b>Typical duties</b></td><td>TLS termination, host and path routing, WAF, rate limiting, caching, health checks</td><td>Domain allow-listing, TLS inspection, malware scanning, and a log of every outbound request</td></tr>
+  <tr><td><b>Lives in</b></td><td>The public subnet of the internet-facing VPC</td><td>The perimeter VPC</td></tr>
+  <tr><td><b>Managed versions</b></td><td>AWS ALB · Azure Application Gateway · GCP external load balancer</td><td>AWS Network Firewall with domain rules · Azure Firewall · GCP Secure Web Proxy</td></tr>
+  <tr><td><b>Skip it and…</b></td><td>Your application is doing TLS, routing and rate limiting itself &mdash; and is directly reachable</td><td>A compromised server can reach any address on the internet to collect instructions and send your data out</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Private link &mdash; one service, not one network</h2>
+  <div class="plain-line"><b>In plain English:</b> a partner needs to reach one of your systems. You have two ways to arrange it. <b>Peering</b> is knocking a doorway between two buildings: now anyone in theirs can walk into yours, and the only thing stopping them is that you locked every internal door. <b>Private link</b> is fitting a service hatch that opens onto one counter. They can reach that counter. They cannot reach the building.</div>
+  <div class="vs2"><div class="col"><b>VPC PEERING / VNET PEERING</b>Joins two whole networks. Both address ranges become mutually routable, and the address plans of both sides must never overlap — now or ever.<br><br><b>Reasonable when</b> two networks you own genuinely need broad connectivity.<br><br><b>The exposure:</b> everything, minus whatever your security groups happen to be blocking today.</div>
+  <div class="col"><b>PRIVATE LINK / PRIVATE ENDPOINT</b>Exposes one service. The consumer gets a private address <em>in their own network</em> that leads to your one endpoint. Address ranges never meet, so overlap does not matter.<br><br><b>Reasonable when</b> anyone needs one service — a partner, another business unit, another account.<br><br><b>The exposure:</b> that service. Nothing else is reachable, because nothing else is routable.</div></div>
+  <table class="osi" style="margin-top:14px"><thead><tr><th>What you want</th><th>AWS</th><th>Azure</th><th>Google Cloud</th></tr></thead><tbody>
+  <tr><td>Private access to storage, cheaply</td><td>Gateway endpoint &mdash; a route table entry, no address, no charge</td><td>Service endpoint</td><td>Private Google Access</td></tr>
+  <tr><td>Private access to most services</td><td>Interface endpoint (PrivateLink) &mdash; an address per zone</td><td>Private Endpoint</td><td>Private Service Connect</td></tr>
+  <tr><td>Expose your own service to others</td><td>PrivateLink service behind a network load balancer</td><td>Private Link Service</td><td>Private Service Connect published service</td></tr>
+  <tr><td>Join whole networks</td><td>VPC peering, or a transit gateway</td><td>VNet peering, or a Virtual WAN hub</td><td>VPC peering, or shared VPC</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The part that catches people:</b> a private endpoint only works because <b>DNS quietly returns the private address instead of the public one</b>. Get the private DNS zone wrong and everything still works &mdash; over the internet, through NAT, to the public endpoint you thought you had stopped using. There is no error. The only symptom is a NAT bill that does not match the architecture diagram.</div>
+</div>`;
+
+/* --- SIM: traffic path tracer --- */
+(function(){
+  const pick=document.getElementById('lzPathPick'), body=document.getElementById('lzPath'),
+        out=document.getElementById('lzPathOut'), brk=document.getElementById('lzPathBreak');
+  if(!pick) return;
+  const J=[
+    {k:'web',label:'A customer opens the website',
+     hops:[['DNS','The name resolves to the load balancer&rsquo;s public address. Nothing else in the estate has one.'],
+           ['WAF','Obvious attacks are dropped before anything of yours sees the request.'],
+           ['Reverse proxy · public subnet','TLS is terminated here, the hostname decides which service, and the original client address is added as a header.'],
+           ['App subnet','Reached only because the app&rsquo;s security group names the load balancer&rsquo;s. It has no public address and no inbound route.'],
+           ['Data subnet','Queried by the app tier only, on one port, from one security group.'],
+           ['Back out','The reply retraces the path. The customer never learns any address inside the estate.']],
+     breakLabel:'remove the reverse proxy and the WAF',
+     broken:[['DNS','Resolves straight to the application server, which now needs a public address to be reachable at all.'],
+             ['App subnet — now public','The application is doing its own TLS, its own routing, its own rate limiting, and is directly exposed.'],
+             ['Data subnet','One hop from the internet, protected by a single security group rule.']],
+     note:'The reverse proxy is not a performance optimisation. It is the reason nothing you wrote has a public address.'},
+    {k:'egress',label:'An app server downloads a security patch',
+     hops:[['App subnet','Its route table sends everything it does not recognise to the hub, not to an internet gateway. There is no internet gateway in this VPC.'],
+           ['Hub router','Carries it to the perimeter VPC, where inspection lives.'],
+           ['Firewall subnet','Traffic is routed into the firewall, examined, and routed back out.'],
+           ['Forward proxy','The destination is checked against the allow-list. The vendor&rsquo;s domain is on it, so the request proceeds — and is logged, with the source, the destination and the time.'],
+           ['NAT gateway','The private source address is swapped for a public one, and the way back is remembered.'],
+           ['The internet','The patch is fetched. Two controls saw the request and one of them could have stopped it.']],
+     breakLabel:'remove the forward proxy',
+     broken:[['App subnet','Route now points straight at NAT.'],
+             ['NAT gateway','Hides the source address. That is all it does — <b>NAT is not a firewall</b>, and it has no opinion about destinations.'],
+             ['Anywhere on the internet','Any address, any port, unlogged. This is the exact path a compromised server uses to collect its instructions and send your data back out.']],
+     note:'The difference between the two lists is the difference between a contained incident and a breach notification.'},
+    {k:'admin',label:'An engineer logs into a server',
+     hops:[['Identity provider','They authenticate as themselves, with multi-factor. Not a shared key, not a password in a document.'],
+           ['Managed session service','AWS Session Manager, Azure Bastion or GCP IAP TCP forwarding. Authorisation is an IAM decision, checked per session.'],
+           ['No inbound port','The agent on the instance dials <em>out</em> to the service. There is no listening port anywhere for anyone to find.'],
+           ['The shell','Every keystroke recorded, tied to a named person, delivered to a log account they cannot edit.']],
+     breakLabel:'use a public bastion host instead',
+     broken:[['A public IP on port 22','Permanently advertised to the internet, and scanned within minutes of existing.'],
+             ['A shared key','Held by whoever has ever needed it. When someone leaves, you rotate it everywhere or you do not.'],
+             ['Audit on the host itself','The logs live on the machine the intruder is on. Their first act is usually to edit them.']],
+     note:'A bastion was the right answer for a long time. The better answer now is a door that is not there at all.'},
+    {k:'storage',label:'The app reads a file from object storage',
+     hops:[['App subnet','Asks for the storage service by name, exactly as it would anywhere.'],
+           ['Private DNS','Returns a <em>private</em> address — one belonging to the endpoint subnet. This single answer is what makes the whole thing private.'],
+           ['Endpoint subnet','An interface endpoint, with its own security group deciding who may use it.'],
+           ['The cloud backbone','The request reaches the service without ever touching the internet, without NAT, and without leaving the provider&rsquo;s network.']],
+     breakLabel:'remove the endpoint and its private DNS',
+     broken:[['App subnet','Asks for the same name.'],
+             ['Public DNS','Returns the service&rsquo;s public address, because nothing is overriding it.'],
+             ['NAT gateway then the internet','Out through NAT, across the public internet, to the public endpoint — and you are billed for every byte of NAT processing.'],
+             ['It works perfectly','Which is the problem. Nothing fails, nothing alerts, and the only visible symptom is a bill that does not match the diagram.']],
+     note:'The most common private-endpoint bug is not the endpoint. It is a DNS zone that was never associated with the VPC.'},
+    {k:'onprem',label:'The app queries a database in head office',
+     hops:[['App subnet','The internal name is resolved by the private resolver, which forwards office names to the office.'],
+           ['Hub router','The route for the on-premises range points at the intranet VPC.'],
+           ['Intranet VPC','Where — and only where — the corporate network terminates.'],
+           ['VPN or Direct Connect','Encrypted tunnel or dedicated circuit. The internet VPC has no path to any of this.'],
+           ['Head office','The database answers. Nothing in this journey passed through anything internet-facing.']],
+     breakLabel:'let the address ranges overlap',
+     broken:[['App subnet','Sends to 10.0.5.20 as usual.'],
+             ['The local route wins','That address also exists inside this VPC, and a local route always beats a learned one.'],
+             ['Traffic never leaves','It is delivered to a machine in the same VPC, or to nothing at all.'],
+             ['No error anywhere','The tunnel is up and healthy. Monitoring is green. The application simply times out, and the cause is three layers below where anyone is looking.']],
+     note:'This is the failure the CIDR plan exists to prevent, and the one that looks least like an addressing problem when it happens.'},
+    {k:'partner',label:'A partner&rsquo;s system calls your API',
+     hops:[['Their VPC','They connect to a private address in their own network. As far as they can tell, your service is inside their estate.'],
+           ['Private link','The hatch. One service, published deliberately, with an allow-list of who may connect.'],
+           ['Your load balancer','Receives the connection. Their network and yours have never been joined and never need to be.'],
+           ['Your service','Answers. They cannot reach anything else, because nothing else is routable to them — not blocked, <em>unroutable</em>.']],
+     breakLabel:'set up VPC peering instead',
+     broken:[['Both networks are joined','Every address on both sides is now mutually routable.'],
+             ['Address plans are locked together','Neither side may ever use a range the other uses. Their next acquisition is now your problem.'],
+             ['Hundreds of rules are the only barrier','Every security group in your estate is now load-bearing for a third party&rsquo;s access, and one wrong rule is enough.']],
+     note:'Peering exposes a whole network; private link exposes one service. When a partner asks for connectivity, that sentence is the answer.'}
+  ];
+  let cur='egress';
+  function render(){
+    pick.innerHTML=J.map(j=>'<button class="seg'+(cur===j.k?' on':'')+'" data-k="'+j.k+'" style="text-align:left">'+j.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const j=J.find(x=>x.k===cur), bad=brk.checked, hops=bad?j.broken:j.hops;
+    body.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+
+      (bad?'WITHOUT THE CONTROL — '+j.breakLabel.toUpperCase():'THE PATH, HOP BY HOP')+'</div>'+
+      hops.map(([n,d],i)=>'<div class="lzhop" style="border-left-color:'+(bad?'var(--red)':'var(--teal)')+'">'+
+        '<span class="n2">'+(i+1)+'</span><span><b>'+n+'</b><small>'+d+'</small></span></div>').join('');
+    out.innerHTML=(bad
+      ? '<div class="lzbad" style="margin-bottom:10px"><b>'+hops.length+' hops instead of '+j.hops.length+', and every removed one was a control.</b></div>'
+      : '<div class="ok" style="margin-bottom:10px"><b>'+hops.length+' hops, each of them a place something can be seen or stopped.</b></div>')+
+      '<div class="simnote">'+j.note+'</div>'+
+      '<div class="simnote" style="margin-top:8px">Tick the box to remove the control in the middle and compare the two lists. The shortened path is always the one that works fine on day one.</div>';
+  }
+  brk.onchange=render; render();
+})();
+
+
+document.getElementById('sec-lz6').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The pairing rules, in one place</h2>
+  <div class="plain-line"><b>In plain English:</b> everything above comes down to a short list of things that belong together and things that must never share a room. This is the list to check a design against.</div>
+  <table class="osi"><thead><tr><th>This</th><th>Belongs with</th><th>Must never be with</th></tr></thead><tbody>
+  <tr><td><b>Internet gateway</b></td><td>The internet-facing VPC, and nowhere else in the estate</td><td>A workload spoke. A spoke with its own gateway has bypassed every inspection control you built</td></tr>
+  <tr><td><b>Application servers</b></td><td>A private subnet, one per zone, behind a load balancer</td><td>A public subnet. &ldquo;It needs internet access&rdquo; is an egress question, and the answer is the proxy</td></tr>
+  <tr><td><b>Databases</b></td><td>The data tier, reachable only from the app tier&rsquo;s security group, with no outbound internet at all</td><td>Any subnet with a route to an internet gateway &mdash; and check the public-accessibility flag, which ignores your subnet entirely</td></tr>
+  <tr><td><b>NAT gateway</b></td><td>A public subnet, one per zone, with a forward proxy in front of it</td><td>Being mistaken for a security control. It hides who is asking; it does not care where they are going</td></tr>
+  <tr><td><b>Forward proxy</b></td><td>The perimeter VPC, with an allow-list and full logging</td><td>Being skipped because NAT already exists. They answer different questions</td></tr>
+  <tr><td><b>Firewall</b></td><td>Its own subnet, per zone, containing nothing else</td><td>Sharing a subnet with anything. Azure will refuse outright; AWS will let you and then the routing will not work as you expect</td></tr>
+  <tr><td><b>Bastion</b></td><td>Its own subnet, MFA, session recording &mdash; or better, replaced by a managed session service with no inbound port</td><td>The app subnet, and a wide-open SSH port. One shared key held by everyone who ever needed it is not an audit trail</td></tr>
+  <tr><td><b>GUT / shared utility</b></td><td>The intranet or a shared-services VPC, highly available, owned by a platform team, reachable from every spoke</td><td>Business workloads. And it should not be able to open connections <em>into</em> the spokes &mdash; that is a ready-made lateral path</td></tr>
+  <tr><td><b>Endpoint subnet</b></td><td>A dedicated subnet, sized with real headroom, with the private DNS zone actually associated with the VPC</td><td>Undersized, or sharing with the app tier. Every endpoint takes an address per zone and a subnet cannot be resized in use</td></tr>
+  <tr><td><b>Partner connectivity</b></td><td>A private link exposing one service</td><td>Peering. It joins two whole networks and locks both address plans together forever</td></tr>
+  <tr><td><b>Spoke-to-spoke traffic</b></td><td>Through the hub, where it can be seen and stopped</td><td>Direct peering between spokes. Ten VPCs meshed is forty-five paths nobody is watching</td></tr>
+  <tr><td><b>The address plan</b></td><td>A spreadsheet, written before the first VPC, with room deliberately left unused</td><td>Allocated on demand. This is the one mistake you cannot fix without an outage per system</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card">
+  <h2 class="sec">The exam and interview angle</h2>
+  <div class="exam-line"><b>&ldquo;Instances in a private subnet cannot download updates.&rdquo;</b> &rarr; No NAT gateway, or the private route table has no route to it. Not a security group issue &mdash; outbound is allowed by default.</div>
+  <div class="exam-line"><b>&ldquo;Traffic must be inspected before it leaves, and centrally logged.&rdquo;</b> &rarr; Perimeter VPC with a firewall subnet and a forward proxy, and spokes with no internet gateway of their own.</div>
+  <div class="exam-line"><b>&ldquo;A partner needs access to one internal API, and their addresses overlap ours.&rdquo;</b> &rarr; PrivateLink or Private Service Connect. Overlap is irrelevant because the networks are never joined &mdash; which is also why peering is the wrong answer here.</div>
+  <div class="exam-line"><b>&ldquo;Reduce NAT charges for traffic to object storage.&rdquo;</b> &rarr; A gateway endpoint. It is a route table entry, costs nothing, and takes that traffic off NAT entirely.</div>
+  <div class="exam-line"><b>&ldquo;Administrative access with no inbound ports and a full audit trail.&rdquo;</b> &rarr; Session Manager, Azure Bastion, or IAP TCP forwarding. If the option list contains a bastion with a restricted source range, the managed service still wins.</div>
+  <div class="exam-line"><b>&ldquo;Connect forty VPCs with the least operational overhead.&rdquo;</b> &rarr; Transit gateway or Virtual WAN hub. Peering needs 780 connections for forty networks; a hub needs forty.</div>
+  <div class="exam-line"><b>&ldquo;A VPN tunnel is up but traffic does not flow.&rdquo;</b> &rarr; Overlapping CIDR ranges, or a missing route. Check addressing before touching the tunnel.</div>
+  <div class="exam-line"><b>&ldquo;A private endpoint was created and traffic still goes over the internet.&rdquo;</b> &rarr; The private DNS zone is not associated with the VPC, so the name still resolves to the public address.</div>
+  <div class="exam-line"><b>&ldquo;The application must survive an availability zone failure.&rdquo;</b> &rarr; On AWS, a subnet lives in exactly one zone, so it is one subnet per tier per zone, and a NAT gateway per zone too. On Azure and GCP a subnet spans the region and the answer looks different.</div>
+  <div class="exam-line"><b>&ldquo;A database must not be reachable from the internet.&rdquo;</b> &rarr; Private subnet, no internet route, security group scoped to the app tier &mdash; and turn off public accessibility, which overrides all three.</div>
+  <div class="exam-line"><b>&ldquo;Development must not be able to reach production.&rdquo;</b> &rarr; Separate accounts, and hub route tables that do not carry a route between them. Not security groups &mdash; those are one edit away from being wrong.</div>
+  <div class="exam-line"><b>&ldquo;We are running out of addresses in a subnet.&rdquo;</b> &rarr; You cannot resize it in place. Add a new subnet from spare space, or a secondary CIDR to the VPC, and migrate. This is why the plan leaves blocks unallocated.</div>
+</div>`;
 
 
 /* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */

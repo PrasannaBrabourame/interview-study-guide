@@ -7,6 +7,28 @@
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="gGoogle" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0%" style="stop-color:var(--brand-g1)"/><stop offset="34%" style="stop-color:var(--brand-g2)"/>
+  <stop offset="67%" style="stop-color:var(--brand-g3)"/><stop offset="100%" style="stop-color:var(--brand-g4)"/>
+</linearGradient>
+<linearGradient id="gAzure" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%" style="stop-color:var(--brand-az2)"/><stop offset="100%" style="stop-color:var(--brand-az)"/>
+</linearGradient>
+<symbol id="mAWS" viewBox="0 0 52 30">
+  <text x="26" y="15" text-anchor="middle" style="font:800 15px var(--sans);letter-spacing:-.02em;fill:var(--brand-awstext)">aws</text>
+  <path d="M8 21.5c5.6 3.6 24 4.6 33-1.4" fill="none" stroke-width="2.4" style="stroke:var(--brand-aws)" stroke-linecap="round"/>
+  <path d="M40.2 17.2l2.6 2.4-3.4 1.2z" style="fill:var(--brand-aws)"/>
+</symbol>
+<symbol id="mGCP" viewBox="0 0 52 30">
+  <path d="M35.5 24H16.5a7.2 7.2 0 0 1-1.2-14.3A9.4 9.4 0 0 1 33 11.4a6.6 6.6 0 0 1 2.5 12.6z"
+        fill="none" stroke="url(#gGoogle)" stroke-width="2.6" stroke-linejoin="round"/>
+</symbol>
+<symbol id="mAzure" viewBox="0 0 52 30">
+  <path d="M24.5 3h6L18.8 27H9.5z" fill="url(#gAzure)"/>
+  <path d="M30.5 3L43 27H21.2l4.6-8.2h6L26.6 10z" fill="url(#gAzure)"/>
+</symbol>
+</defs></svg>
 <div id="readbar"></div>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <header class="topbar">
@@ -47,31 +69,43 @@
 <h2 class="dtitle">Hands-on labs <small>— read less, break things instead</small></h2>
 <div class="labs">
   <a class="lab" href="cloud.html">
-    <span class="licon" aria-hidden="true">☁</span>
+    <span class="lbrands" aria-hidden="true">
+      <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
+      <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
+      <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+    </span>
     <b>Cloud lab</b>
-    <small>Follow one request from phone to database, break it, and see which layer stops it. Then the OSI stack, a VPC simulator, NGINX, IAM, and a three-cloud translator.</small>
-    <span class="lmeta">10 tabs · 20 diagrams · 12 simulations</span>
+    <small>Follow one request from phone to database, break it, and see which layer stops it. Then the OSI stack, a landing zone you can click apart, a VPC simulator, NGINX, IAM, and a three-cloud translator.</small>
+    <span class="lmeta">11 tabs · 24 diagrams · 17 simulations</span>
   </a>
   <a class="lab" href="agentcore.html">
-    <span class="licon" aria-hidden="true">◆</span>
+    <span class="lbrands" aria-hidden="true">
+      <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
+    </span>
     <b>AgentCore lab</b>
     <small>What it takes to trust an agent in production: isolation, identity, tools, memory, and proving it works. Watch a request become a trace and a prompt change fail a quality gate.</small>
     <span class="lmeta">9 tabs · 4 simulations · exam angle</span>
   </a>
   <a class="lab" href="agentbuild.html">
-    <span class="licon" aria-hidden="true">⬡</span>
+    <span class="lbrands" aria-hidden="true">
+      <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+    </span>
     <b>Agents building agents</b>
     <small>A coding agent writes your agent from a specification — and quietly targets the wrong API if you skip a step. Then a managed runtime that starts locked down. Watch the drift, the eval trap and the containment layers.</small>
     <span class="lmeta">9 tabs · 8 simulations · two Google courses</span>
   </a>
   <a class="lab" href="adk.html">
-    <span class="licon" aria-hidden="true">◇</span>
+    <span class="lbrands" aria-hidden="true">
+      <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+    </span>
     <b>ADK lab</b>
     <small>Build an agent that behaves. A docstring decides whether a tool is ever chosen, a four-character prefix decides whether data leaks, and model-written code runs in a room with no doors. Ten tabs from first agent to production routing.</small>
     <span class="lmeta">10 tabs · 14 simulations · three Google courses</span>
   </a>
   <a class="lab" href="cloud.html#pane-cheat" id="labCheat">
-    <span class="licon" aria-hidden="true">✦</span>
+    <span class="lbrands" aria-hidden="true">
+      <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
+    </span>
     <b>SAP-C02 cheatsheet</b>
     <small>53 trigger phrases and what each one is really asking for, a drill that only clears a card after two clean passes, and the traps that appear as options anyway.</small>
     <span class="lmeta">trigger drill · decision tables</span>

@@ -31,7 +31,8 @@ colour then carries meaning. Tiles remain sorted alphabetically.
 index.html        Page shell — topbar, dashboard, and browse-view markup
 assets/styles.css Styling (light/dark theme, aurora backdrop, tiles, print)
 assets/fonts/     Self-hosted Inter and Newsreader subsets (woff2, 352 KB)
-cloud.html        Cloud lab — request journey, OSI, network simulator, NGINX,
+cloud.html        Cloud lab — request journey, OSI, landing zone (VPC tiers,
+                  proxies, private link, CIDR), network simulator, NGINX,
                   IAM, SAP-C02 cheatsheet, pillars, DR simulator, translator
 agentcore.html    AgentCore lab — running agents in production: runtime,
                   identity, gateway, memory, evaluation, multi-agent patterns
