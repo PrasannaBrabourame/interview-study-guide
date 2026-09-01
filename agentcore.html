@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentCore lab — production-ready agents on AWS</title>
+<style>
+  /* self-hosted, same subsets the portfolio serves — no external requests */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
+  :root{
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-family:var(--display); font-size:clamp(26px,3.4vw,38px); font-weight:500; letter-spacing:-.018em; line-height:1.05}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
+  .wf{display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:11px}
+  .wf .row{display:grid; grid-template-columns:150px 1fr 62px; gap:8px; align-items:center}
+  .wf .lab{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf .track{position:relative; height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:4px}
+  .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
+  .wf .ms{text-align:right; color:var(--dim)}
+  .wf .row.err .lab{color:var(--red)}
+  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+
+  .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
+    padding:11px 12px; text-align:center; transition:border-color .3s, background .3s, opacity .3s}
+  .chasm .cpart b{display:block; font-size:13px; font-weight:500; color:var(--text)}
+  .chasm .cpart small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.4}
+  .chasm .cagent{grid-column:1/-1; border-color:var(--blue); background:var(--n-blue)}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:var(--amber); opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  .code pre{margin:0}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a>
+    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
+    <div class="eyebrow">agentic systems · production lab</div>
+    <h1>Getting an agent you can trust <span class="thin">— Amazon Bedrock AgentCore, one concern at a time</span></h1>
+    <p class="sub">Spinning up a demo agent is a weekend. Building one you would let near a customer is the hard part: it has to run somewhere isolated, prove who it is, reach your systems without holding your passwords, remember the last conversation, and let you see and prove what it did. Nine sections, each with the plain-English version, every configuration option and what it decides, and simulations you can break.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="start" role="tab">Start here</button>
+    <button class="tab" data-pane="runtime" role="tab">Runtime</button>
+    <button class="tab" data-pane="identity" role="tab">Identity</button>
+    <button class="tab" data-pane="gateway" role="tab">Gateway & tools</button>
+    <button class="tab" data-pane="memory" role="tab">Memory</button>
+    <button class="tab" data-pane="quality" role="tab">Observe & prove</button>
+    <button class="tab" data-pane="multi" role="tab">Multi-agent</button>
+    <button class="tab" data-pane="case" role="tab">Worked case</button>
+    <button class="tab" data-pane="exam" role="tab">Exam angle</button>
+  </div>
+
+  <section class="pane on" id="pane-start">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">The gap this exists to close</h2>
+      <div class="plain-line"><b>In plain English:</b> getting an AI agent to work once, on your laptop, is a weekend. Getting one you would let near a customer is the hard part — it has to run somewhere safe, prove who it is, reach your systems without holding your passwords, remember the last conversation, and let you see and prove what it did. AgentCore is AWS selling you those seven concerns as managed pieces, so you assemble rather than build.</div>
+      <div id="acMap"></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Cross the chasm — add one concern at a time</h2>
+      <div class="plain-line"><b>Try this:</b> start with nothing and switch each piece on in order. Each one fixes a specific way the previous version was not production-ready. Turn one back off and the failure it prevented comes straight back.</div>
+      <div class="sim-layout">
+        <div><div class="chasm" id="acStage"></div>
+          <div class="term" id="acTerm" role="log" aria-live="polite" style="height:170px;margin-top:12px"></div></div>
+        <div><div class="toggles" id="acToggles"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn" id="acShip">▶ ship it to production</button>
+            <button class="btn" id="acAll">enable everything</button>
+            <button class="btn" id="acNone">strip it back</button></div>
+          <div id="acVerdict" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+    </div>
+  </section>
+  <section class="pane" id="pane-runtime">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Runtime — every configuration, and what each one decides</h2>
+      <div class="plain-line"><b>In plain English:</b> Runtime is the serverless box the agent runs inside. You do not pick a server size. You pick a <b>protocol</b> (how callers talk to it), a <b>network posture</b> (what it can reach and who can reach it), a <b>filesystem</b> (what survives), and <b>session timers</b> (how long it may sit there). Those four choices are most of the design.</div>
+      <div class="segmented" id="rtTabs"></div>
+      <div class="sim-layout">
+        <div><div id="rtContract"></div></div>
+        <div><div class="toggles" id="rtOpts"></div><p class="simnote" id="rtNote"></p></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Session lifecycle — and what you are actually billed for</h2>
+      <div class="plain-line"><b>Try this:</b> drag the timers and watch when the box is deleted. The billing line is the part people get wrong: <b>CPU is charged only while the agent is actually working</b>, not while it waits for the model to answer — but memory is charged the whole time the session is alive.</div>
+      <div class="sim-layout">
+        <div><div id="acLifeDiagram"></div></div>
+        <div>
+          <label style="font-size:12.5px;color:var(--muted)">Idle timeout <b id="acIdleV" style="color:var(--amber)">900</b> s</label>
+          <input type="range" id="acIdle" min="60" max="28800" step="60" value="900">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Max lifetime <b id="acMaxV" style="color:var(--amber)">28800</b> s</label>
+          <input type="range" id="acMax" min="60" max="28800" step="60" value="28800">
+          <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Of a 60-second turn, seconds spent waiting on the model <b id="acWaitV" style="color:var(--amber)">45</b></label>
+          <input type="range" id="acWait" min="0" max="59" value="45">
+          <div id="acLifeOut" class="cidr-out" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="pane" id="pane-identity">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Identity — two different doors, two different locks</h2>
+      <div class="sim-layout">
+        <div><div class="jlist" id="acIdSteps"></div></div>
+        <div class="card jstep" id="acIdDetail" style="margin:0"></div>
+      </div>
+      <div id="acIdExtra" style="margin-top:14px"></div>
+    </div>
+  </section>
+  <section class="pane" id="pane-gateway">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Gateway — one door to every tool</h2>
+      <div id="acGateway"></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Policy, Registry, Browser, Code Interpreter, Payments</h2>
+      <div id="acRest"></div>
+    </div>
+  </section>
+  <section class="pane" id="pane-memory">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">One conversation, four strategies — see what each keeps</h2>
+      <div class="plain-line"><b>Try this:</b> the same three sentences go into every strategy. What comes out is completely different, which is the clearest way to understand why picking the wrong one leaves your agent unable to do the thing you wanted.</div>
+      <div class="segmented" id="memConvo"></div>
+      <div id="memExtract"></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Memory — what the agent keeps, and where you put it</h2>
+      <div id="acMemory"></div>
+      <div class="sim-layout" style="margin-top:14px">
+        <div><div id="acNsOut" class="cidr-out"></div></div>
+        <div><div class="toggles" id="acNsOpts"></div><p class="simnote" id="acNsNote"></p></div>
+      </div>
+    </div>
+  </section>
+  <section class="pane" id="pane-quality">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Watch one request become a trace</h2>
+      <div class="plain-line"><b>Try this:</b> send a request and watch the spans arrive in real time, exactly as they would in a trace waterfall. Then break something and see which span turns red — that is the whole value of observability in one picture. A non-deterministic system you cannot see is a system you can only apologise for.</div>
+      <div class="sim-layout">
+        <div><div id="traceWall" style="min-height:250px"></div></div>
+        <div><div class="toggles" id="traceOpts"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn primary" id="traceRun">▶ send a request</button>
+            <button class="btn" id="traceClear">clear</button></div>
+          <div id="traceOut" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Would this change pass the gate?</h2>
+      <div class="plain-line"><b>Try this:</b> you have changed the prompt. Scores move. Decide whether it ships — then notice that an average can rise while the thing you care about falls.</div>
+      <div class="sim-layout">
+        <div><div id="gateOut"></div></div>
+        <div><div class="toggles" id="gateOpts"></div><p class="simnote" id="gateNote"></p></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Observability and Evaluations — see it, then prove it</h2>
+      <div id="acEval"></div>
+    </div>
+  </section>
+  <section class="pane" id="pane-multi">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">What the anti-patterns actually cost, per request</h2>
+      <div class="plain-line"><b>Try this:</b> start with everything wrong, then fix them one at a time and watch the token count and latency fall. These are not style preferences — each fix is measurable.</div>
+      <div class="sim-layout">
+        <div><div id="mtOut"></div></div>
+        <div><div class="toggles" id="mtOpts"></div><p class="simnote" id="mtNote"></p></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Multi-agent — four patterns, and choosing between them</h2>
+      <div class="plain-line"><b>Try this:</b> pick what you care about most. The honest answer is often that you do not need multiple agents at all — but when you do, the priority you choose rules out as much as it rules in.</div>
+      <div class="segmented" id="acPatPri"></div>
+      <div id="acPatterns"></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Six anti-patterns that quietly ruin a multi-agent system</h2>
+      <div class="sim-layout">
+        <div><div class="jlist" id="acAntiList"></div></div>
+        <div class="card jstep" id="acAntiDetail" style="margin:0"></div>
+      </div>
+    </div>
+  </section>
+  <section class="pane" id="pane-case">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">A worked case — autonomous UI QA as a closed CI/CD loop</h2>
+      <div id="acDevops"></div>
+    </div>
+  </section>
+  <section class="pane" id="pane-exam">
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">What a Solutions Architect exam asks about all this</h2>
+      <div id="acExam"></div>
+    </div>
+  </section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">learning guide</a> · <a href="cloud.html">cloud lab</a>
+  </footer>
+</div>
+
+<script>
+/* ============ tabs ============ */
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
+
+
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+
+/* ================= AGENTCORE ================= */
+document.getElementById('acMap').innerHTML=D('0 0 640 230',
+ 'The AgentCore platform in six columns: environment, harness, context, tools, optimisation and platform control.',
+ `${tm(320,16,'compose only what you need — you pay for what you use','var(--dim)')}
+  ${box(10,28,98,80,'var(--teal)')}${tm(59,50,'ENVIRONMENT','var(--teal)')}${tm(59,70,'Runtime','var(--text)')}${tm(59,86,'serverless,','var(--dim)')}${tm(59,99,'isolated','var(--dim)')}
+  ${box(114,28,98,80,'var(--violet)')}${tm(163,50,'HARNESS','var(--violet)')}${tm(163,70,'managed loop','var(--text)')}${tm(163,86,'or any','var(--dim)')}${tm(163,99,'framework','var(--dim)')}
+  ${box(218,28,98,80,'var(--blue)')}${tm(267,50,'CONTEXT','var(--blue)')}${tm(267,70,'Memory','var(--text)')}${tm(267,86,'Knowledge','var(--dim)')}${tm(267,99,'Base','var(--dim)')}
+  ${box(322,28,98,80,'var(--amber)')}${tm(371,50,'TOOLS','var(--amber)')}${tm(371,70,'Gateway','var(--text)')}${tm(371,86,'Browser · Code','var(--dim)')}${tm(371,99,'Web search','var(--dim)')}
+  ${box(426,28,98,80,'var(--green)')}${tm(475,50,'OPTIMISATION','var(--green)')}${tm(475,70,'Observability','var(--text)')}${tm(475,86,'Evaluations','var(--dim)')}${tm(475,99,'Insights','var(--dim)')}
+  ${box(530,28,100,80,'var(--red)')}${tm(580,50,'CONTROL','var(--red)')}${tm(580,70,'Identity','var(--text)')}${tm(580,86,'Policy ·','var(--dim)')}${tm(580,99,'Guardrails','var(--dim)')}
+  ${box(10,124,620,44,'var(--wire)')}
+  ${tm(320,142,'the prototype-to-production chasm','var(--text)')}
+  ${tm(320,158,'a demo needs the first two columns · production needs all six','var(--dim)')}
+  ${tm(320,192,'Your job: understand the concern and the trade-off.','var(--muted)')}
+  ${tm(320,210,'The SDK calls and config are the part a coding agent can write for you.','var(--dim)')}`,
+ 'Every column is a production concern you would otherwise hand-build. A prototype gets away with the left two. The gap between a demo and something you would let a customer touch is the other four.');
+
+/* ---- SIM: cross the chasm ---- */
+const ACPARTS=[
+ {id:'runtime', n:'Runtime', q:'Where does it run?',
+  fixes:'It runs somewhere isolated. Each session gets its own microVM, so one user’s files and state can never be seen by another.',
+  without:'It runs on your laptop, or on a server you now own, patch and scale. With ordinary serverless, sessions can share a sandbox — so one conversation can read another’s leftovers.'},
+ {id:'identity', n:'Identity', q:'Who is calling, and what may it reach?',
+  fixes:'Inbound auth checks the caller. Outbound auth lets the agent use your systems <b>without ever holding the password</b> — the secret stays in a vault the agent code never sees.',
+  without:'Either the agent is open to anyone who finds the URL, or your API keys are sitting in its prompt and environment, one log line away from leaking.'},
+ {id:'gateway', n:'Gateway', q:'How does it reach tools?',
+  fixes:'One endpoint fronts every API, Lambda and MCP server, with per-tool authorisation and a search that shows the model only the handful of tools it needs.',
+  without:'You wire every agent to every tool by hand. Ten agents and thirty tools is three hundred integrations, each with its own auth.'},
+ {id:'memory', n:'Memory', q:'Does it remember?',
+  fixes:'Short-term memory keeps the conversation; long-term memory turns it into durable facts, preferences and lessons that survive the session.',
+  without:'It has amnesia between turns. Every conversation starts from nothing, and it can never personalise or learn from a mistake it made yesterday.'},
+ {id:'observ', n:'Observability', q:'Can you see what it did?',
+  fixes:'Every step, tool call and model invocation becomes a trace, with tokens, latency and cost attached.',
+  without:'A customer says it gave a wrong answer and you have no way to find out what it actually did. Non-deterministic plus invisible is unsupportable.'},
+ {id:'evals', n:'Evaluations', q:'Can you prove it got better?',
+  fixes:'Scored against a ground-truth dataset on every change, and sampled continuously in production so drift shows up as a chart.',
+  without:'You change a prompt to fix one complaint and find out months later that three other things silently got worse.'},
+ {id:'policy', n:'Policy', q:'What is it forbidden to do?',
+  fixes:'Tool calls are checked against rules before they run, evaluated in milliseconds, allow or deny.',
+  without:'The only thing standing between the agent and a destructive action is a sentence in a prompt asking it nicely.'},
+];
+const acStage=document.getElementById('acStage'), acTerm=document.getElementById('acTerm'), acVerdict=document.getElementById('acVerdict');
+document.getElementById('acToggles').innerHTML=ACPARTS.map(p=>
+  `<label><input type="checkbox" id="ac-${p.id}"> <b style="color:var(--text)">${p.n}</b> — ${p.q}</label>`).join('');
+acStage.innerHTML=ACPARTS.map(p=>
+  `<div class="cpart" id="acn-${p.id}"><b>${p.n}</b><small>${p.q}</small></div>`).join('')
+  + `<div class="cpart cagent"><b>Your agent</b><small>the part you actually wrote — everything above is a concern you would otherwise hand-build</small></div>`;
+const acOn=id=>document.getElementById('ac-'+id).checked;
+function acLog(c,m){const d=document.createElement('div');d.className=c;d.innerHTML=m;acTerm.appendChild(d);acTerm.scrollTop=acTerm.scrollHeight;}
+function acPaint(){
+  ACPARTS.forEach(p=>{const el=document.getElementById('acn-'+p.id); const on=acOn(p.id);
+    el.style.borderColor = on ? 'var(--green)' : 'var(--line2)';
+    el.style.background  = on ? 'rgba(52,211,153,.10)' : 'var(--panel)';
+    el.style.opacity     = on ? '1' : '.5';});
+  const n=ACPARTS.filter(p=>acOn(p.id)).length;
+  acVerdict.innerHTML=`<div class="r"><span>Concerns handled</span><b>${n} of ${ACPARTS.length}</b></div>
+    <div class="r"><span>Honest description</span><b style="color:${n===7?'var(--green)':n>=4?'var(--amber)':'var(--red)'}">${
+      n===7?'production-ready':n>=5?'nearly there':n>=3?'a pilot at best':'a demo'}</b></div>`;
+}
+function acShip(){
+  acTerm.innerHTML=''; acPaint();
+  acLog('i','<b>&gt;</b> shipping the agent to real users');
+  const missing=ACPARTS.filter(p=>!acOn(p.id));
+  ACPARTS.filter(p=>acOn(p.id)).forEach(p=>acLog('ok',`<b>${p.n}</b> — ${p.fixes}`));
+  missing.forEach(p=>acLog('no',`<b>no ${p.n}</b> — ${p.without}`));
+  if(!missing.length) acLog('ok','<b>Nothing left unhandled.</b> This is what the platform is for: seven concerns, none of them your code.');
+  else acLog('i',`${missing.length} concern${missing.length>1?'s':''} still unhandled. Every one of them is a way this fails in front of a customer rather than in a test.`);
+}
+document.getElementById('acToggles').addEventListener('change',acPaint);
+document.getElementById('acShip').onclick=acShip;
+document.getElementById('acAll').onclick=()=>{ACPARTS.forEach(p=>document.getElementById('ac-'+p.id).checked=true);acShip();};
+document.getElementById('acNone').onclick=()=>{ACPARTS.forEach(p=>document.getElementById('ac-'+p.id).checked=false);acShip();};
+acPaint(); acLog('i','Switch concerns on, then ship it and read what each one bought you.');
+
+/* ---- Runtime configuration explorer ---- */
+const RTPROTO={
+ http:{n:'HTTP', port:8080, paths:['/invocations — POST, receives the request and runs your logic',
+        '/ping — GET, says whether the agent is alive and whether it is busy',
+        '/ws — POST, WebSocket for streaming'],
+   use:'The default. A user or an application calls your agent and waits for an answer.'},
+ mcp:{n:'MCP', port:8000, paths:['/mcp — POST, streamable HTTP'],
+   use:'You wrote an MCP server and want agents to use it as a tool. AgentCore proxies the JSON-RPC without parsing it, so your server runs unmodified.'},
+ a2a:{n:'A2A', port:9000, paths:['/ — POST','/.well-known/agent-card.json — how other agents discover what this one does'],
+   use:'Agent-to-agent. Another team’s agent, on another framework, calls yours.'},
+ agui:{n:'AG-UI', port:8080, paths:['/invocations — POST','/ping — GET','/ws — POST'],
+   use:'Agent-to-user, with the interface as a first-class citizen: token streaming, visible reasoning steps, tool calls shown live, human-in-the-loop pauses and inline generated components.'},
+};
+const RTNET={
+ public:{n:'Public (default)', in:'OAuth or SigV4 on a public endpoint', out:'Straight to the internet',
+   use:'SaaS agents and public assistants.', risk:'Anything reachable from the internet needs its authoriser configured properly, because the endpoint itself is discoverable.'},
+ vpc:{n:'VPC-connected egress', in:'Still a public endpoint', out:'Into your VPC through an ENI, plus the internet',
+   use:'The agent must read a private database or an internal API.', risk:'Egress data transfer through your ENI is billed at normal EC2 rates — an easy line to forget.'},
+ private:{n:'Fully private', in:'A VPC endpoint only — no public exposure', out:'Your VPC only',
+   use:'Regulated work: financial services, healthcare, anything with a residency rule.', risk:'If the agent needs a public API you must now provide the path yourself, through NAT or a proxy.'},
+};
+const RTFS={
+ none:{n:'No persistence', what:'The filesystem dies with the session.', vpc:'not needed', use:'Stateless request-response agents. The simplest thing that works.'},
+ managed:{n:'Managed session storage', what:'Per-session, isolated, survives stop and resume, expires after 14 idle days.', vpc:'not needed', use:'A long task that pauses and continues later without you running any storage.'},
+ s3:{n:'S3 files', what:'Shared across sessions, synchronised both ways, close-to-open consistency.', vpc:'required', use:'Artifacts several runs need to read and write — reports, screenshots, datasets.'},
+ efs:{n:'Amazon EFS', what:'Shared, full POSIX semantics, concurrent read and write.', vpc:'required', use:'Several agents genuinely working on the same files at the same time.'},
+};
+let rtP='http', rtN='public', rtF='none';
+document.getElementById('rtTabs').innerHTML=Object.entries(RTPROTO).map(([k,v],i)=>
+  `<button class="seg${i===0?' on':''}" data-p="${k}">${v.n}</button>`).join('');
+document.getElementById('rtOpts').innerHTML=
+  `<label style="color:var(--text);font-weight:500">Network posture</label>`
+  + Object.entries(RTNET).map(([k,v],i)=>`<label><input type="radio" name="rtn" value="${k}" ${i===0?'checked':''}> ${v.n}</label>`).join('')
+  + `<label style="color:var(--text);font-weight:500;margin-top:8px">What survives the session</label>`
+  + Object.entries(RTFS).map(([k,v],i)=>`<label><input type="radio" name="rtf" value="${k}" ${i===0?'checked':''}> ${v.n}</label>`).join('');
+function rtPaint(){
+  const p=RTPROTO[rtP], n=RTNET[rtN], f=RTFS[rtF];
+  document.getElementById('rtContract').innerHTML=`
+   <div class="code"><pre><code>${hl(
+`# the contract your container must satisfy
+host      0.0.0.0
+port      ${p.port}
+platform  linux/arm64          # not x86 — a common first failure
+paths     ${p.paths.map(x=>x.split(' —')[0]).join('  ')}
+
+# how it is packaged
+zip via S3    up to 250MB compressed / 750MB uncompressed
+container     up to 2GB in ECR
+containers    Docker, Podman or Finch all work`)}</code></pre></div>
+   <table class="osi" style="margin-top:12px"><thead><tr><th>Setting</th><th>What you chose</th><th>What it decides</th></tr></thead><tbody>
+   <tr><td><b>Protocol</b></td><td>${p.n} on port ${p.port}</td><td>${p.use}</td></tr>
+   ${p.paths.map(x=>`<tr><td><b>path</b></td><td>${x.split(' —')[0]}</td><td>${x.split(' —')[1]||''}</td></tr>`).join('')}
+   <tr><td><b>Ingress</b></td><td>${n.in}</td><td>Who is allowed to reach the agent at all</td></tr>
+   <tr><td><b>Egress</b></td><td>${n.out}</td><td>What the agent can reach once it is running</td></tr>
+   <tr><td><b>Filesystem</b></td><td>${f.n}</td><td>${f.what} VPC ${f.vpc}.</td></tr>
+   </tbody></table>`;
+  document.getElementById('rtNote').innerHTML=
+   `<b>Use it when:</b> ${n.use} ${f.use}<br><br><b>Watch for:</b> ${n.risk}`;
+}
+document.getElementById('rtTabs').addEventListener('click',e=>{const b=e.target.closest('[data-p]'); if(!b)return;
+  rtP=b.dataset.p; document.querySelectorAll('#rtTabs .seg').forEach(x=>x.classList.remove('on')); b.classList.add('on'); rtPaint();});
+document.getElementById('rtOpts').addEventListener('change',e=>{
+  if(e.target.name==='rtn') rtN=e.target.value;
+  if(e.target.name==='rtf') rtF=e.target.value;
+  rtPaint();});
+rtPaint();
+
+/* ---- session lifecycle + billing ---- */
+document.getElementById('acLifeDiagram').innerHTML=D('0 0 640 210',
+ 'A session timeline: first request starts it, it alternates between active and idle, and one of two timers ends it.',
+ `${box(10,26,120,44,'var(--blue)')}${t(70,48,'First request',SANS)}${tm(70,64,'microVM created')}
+  <path d="M132 48 H186" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
+  ${box(190,14,150,68,'var(--green)')}${t(265,38,'ACTIVE',SANS)}${tm(265,56,'working','var(--green)')}${tm(265,72,'CPU + memory billed','var(--dim)')}
+  <path d="M344 34 H400" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <path d="M400 62 H344" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
+  ${box(404,14,150,68,'var(--amber)')}${t(479,38,'IDLE',SANS)}${tm(479,56,'waiting','var(--amber)')}${tm(479,72,'memory billed only','var(--dim)')}
+  ${tm(372,26,'new request','var(--dim)')}${tm(372,76,'finished','var(--dim)')}
+  <path d="M265 86 V116" style="stroke:var(--red)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <path d="M479 86 V116" style="stroke:var(--red)" stroke-width="1.4" marker-end="url(#ah)"/>
+  ${box(150,120,340,40,'var(--red)')}${t(320,140,'whichever timer fires first ends it',SANS)}${tm(320,155,'idle timeout · max lifetime · StopRuntimeSession','var(--red)')}
+  ${tm(320,182,'termination itself can take up to 15 seconds, then the microVM is deleted','var(--dim)')}
+  ${tm(320,200,'the session ID stays valid — reusing it later gets a fresh, empty microVM','var(--dim)')}`,
+ 'The two timers do different jobs: the idle timer ends a conversation nobody came back to, the lifetime timer caps how long any one session may exist. Reaching either deletes the box, and the next call with that same session ID gets a clean one.');
+
+function acLife(){
+  const idle=Number(document.getElementById('acIdle').value), max=Number(document.getElementById('acMax').value),
+        wait=Number(document.getElementById('acWait').value);
+  document.getElementById('acIdleV').textContent=idle;
+  document.getElementById('acMaxV').textContent=max;
+  document.getElementById('acWaitV').textContent=wait;
+  const cpuSecs=60-wait, cpuShare=Math.round(cpuSecs/60*100);
+  const fmt=s=> s>=3600 ? (s/3600).toFixed(1)+' hours' : s>=60 ? (s/60).toFixed(0)+' minutes' : s+' seconds';
+  document.getElementById('acLifeOut').innerHTML=
+   `<div class="r"><span>Ends after inactivity</span><b>${fmt(idle)}</b></div>
+    <div class="r"><span>Ends regardless, at</span><b>${fmt(max)}</b></div>
+    <div class="r"><span>Effective ceiling</span><b style="color:var(--teal)">${fmt(Math.min(idle,max))} of quiet, ${fmt(max)} in total</b></div>
+    <div class="r"><span>Of that turn, CPU billed</span><b style="color:var(--green)">${cpuSecs}s (${cpuShare}%)</b></div>
+    <div class="r"><span>Waiting on the model</span><b style="color:var(--muted)">${wait}s — no CPU charge</b></div>
+    <div class="r"><span>Memory billed</span><b style="color:var(--amber)">all 60s, at peak allocated</b></div>
+    <div class="r"><span>Minimum billed memory</span><b>128 MB</b></div>
+    ${idle>max?`<div class="r"><span style="color:var(--red)">Note</span><b style="color:var(--red)">idle above max lifetime does nothing — the shorter one wins</b></div>`:''}`;
+}
+['acIdle','acMax','acWait'].forEach(k=>document.getElementById(k).addEventListener('input',acLife));
+acLife();
+
+/* ---- Identity ---- */
+const ACID=[
+ {t:'1 · Inbound — who is knocking?', say:'Someone opens your app and it calls the agent. Before anything runs, the door checks their pass. That is a different question from anything the agent later does on their behalf.',
+  tech:'The caller presents a <b>JWT</b> from your identity provider — Cognito, Entra, Okta — or signs the request with <b>AWS credentials (SigV4)</b>. The authoriser validates it. If none is configured, Runtime assumes IAM.',
+  c:'# inbound: authenticate the caller\nauthorizer  JWT   # discoveryUrl + allowed audience/clients\n            or IAM  # SigV4, the default when nothing is set\n\n401  no token, or an invalid one\n403  a valid token that lacks the required scope'},
+ {t:'2 · Identity capture — the badge is issued', say:'The platform writes down two things at once: which agent this is, and which person it is currently doing work for. One pass, two names on it.',
+  tech:'AgentCore Identity issues a <b>Workload Access Token</b>. It names the <b>agent identity</b> (I am calendar-agent) and the <b>end-user identity</b> (currently acting for alice@corp.com). That pairing is what makes per-user tokens and per-user auditing possible.',
+  c:'# the Workload Access Token, in words\nbearer:      agent  #A-1   (calendar-agent)\nacting for:  user   #U-77  (alice@corp.com)\n\n# short-lived, issued per session, never a stored secret'},
+ {t:'3 · The agent runs holding that badge', say:'Your code executes. It knows who it is working for without you having to pass a username around and hope nobody drops it.',
+  tech:'Everything the agent does from here carries both identities, which is why the audit trail can answer <em>who authorised this</em> rather than only <em>which service did it</em>.',
+  c:'# your code, unchanged — the identity travels with the session\n@app.entrypoint\ndef main(payload):\n    ...   # WAT is in context, not in your parameters'},
+ {t:'4 · Outbound — borrowing a key from the vault', say:'The agent now needs to call something real: a calendar, a ticket system, a database. It does not hold that password. It asks the vault, which does the negotiation and hands back a finished token.',
+  tech:'The <b>token vault</b> is Secrets Manager plus KMS. <b>Credential providers</b> store how to authenticate to each service. <b>Broker logic</b> performs the OAuth exchange server-side and returns a ready token. The <code>client_secret</code> never leaves the vault, never reaches agent code, and never reaches the model.',
+  c:'# what you would otherwise hand-build\n  a secure secret store kept out of the LLM\n  the full OAuth exchange and refresh, per provider\n  a public callback endpoint for auth codes\n  per-user token caching (Alice and Bob are different)\n  session binding for browser consent\n\n# what Identity gives you instead\n  token vault, server-side broker, generated callback URL,\n  per-user vault entries, sessionUri binding'},
+ {t:'5 · The tool call actually happens', say:'With a borrowed, scoped, short-lived key, the agent does the thing — and the trail shows both the agent and the person it acted for.',
+  tech:'Three shapes of outbound auth cover almost everything: <b>2LO</b> (machine-to-machine, the agent acts as itself), <b>3LO</b> (the agent acts on a user’s behalf, with the user’s consent), and <b>SigV4</b> (direct AWS calls signed with credentials).',
+  c:'2LO / M2M   agent uses its own client credentials\n            e.g. an internal knowledge base, a weather API\n\n3LO         agent acts for the user, who consented\n            e.g. reading that user’s Google Calendar or Slack\n\nSigV4       signed AWS request, no token exchange\n            e.g. reading an S3 bucket, invoking a runtime'},
+];
+const acIdList=document.getElementById('acIdSteps'), acIdDet=document.getElementById('acIdDetail');
+acIdList.innerHTML=ACID.map((s,i)=>`<button class="jitem${i===0?' on':''}" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t}</span></button>`).join('');
+function acIdRender(i){const s=ACID[i];
+  document.querySelectorAll('#acIdSteps .jitem').forEach((b,k)=>b.classList.toggle('on',k===i));
+  acIdDet.innerHTML=`<div class="role">step ${i+1} of ${ACID.length}</div><h3>${s.t}</h3>
+    <p class="say">${s.say}</p><p class="tech">${s.tech}</p>
+    <div class="code"><pre><code>${hl(s.c)}</code></pre></div>`;}
+acIdList.addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) acIdRender(Number(b.dataset.i));});
+acIdRender(0);
+
+document.getElementById('acIdExtra').innerHTML=`
+<div class="plain-line"><b>The whole idea in one line:</b> <b>inbound</b> asks &ldquo;is this user allowed to call this agent?&rdquo; and <b>outbound</b> asks &ldquo;is this agent allowed to touch this resource on that user’s behalf?&rdquo; They are different questions with different answers, and conflating them is how agents end up holding far more access than any of their users have.</div>
+<h4>Inside a JWT, since every question about this assumes you know</h4>
+<div class="code"><pre><code>${hl(`header    { "alg": "RS256", "typ": "JWT", "kid": "key-id-123" }
+payload   { "sub": "user123",              # who the token is about
+            "iss": "https://example.com",  # who issued it
+            "aud": "my-api",               # who it is for
+            "exp": 1716000000,             # when it expires
+            "scope": "read:calendar",      # what it permits
+            "client_id": "agent-app" }     # which app asked
+signature  header+payload signed with a private key;
+           anyone with the public key can verify it is authentic`)}</code></pre></div>`;
+
+/* ---- Gateway ---- */
+document.getElementById('acGateway').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> without a gateway, every agent is wired to every tool by hand — ten agents and thirty tools is three hundred integrations, each with its own authentication and its own way of failing. Gateway is one door. Agents speak one protocol to it, and it deals with whatever is on the other side.</div>
+${D('0 0 640 200','Agents on the left reach a single gateway, which fronts Lambda, OpenAPI services, MCP servers and knowledge bases.',
+ `${box(10,26,110,30,'var(--violet)')}${tm(65,46,'Agent · LangGraph','var(--text)')}
+  ${box(10,64,110,30,'var(--violet)')}${tm(65,84,'Agent · CrewAI','var(--text)')}
+  ${box(10,102,110,30,'var(--violet)')}${tm(65,122,'Agent · Strands','var(--text)')}
+  <path d="M124 41 H184 M124 79 H184 M124 117 H184" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+  ${box(188,20,150,120,'var(--teal)')}${t(263,44,'Gateway',SANS)}${tm(263,62,'one MCP endpoint','var(--teal)')}${tm(263,80,'tool search','var(--dim)')}${tm(263,96,'per-tool authorisation','var(--dim)')}${tm(263,112,'interceptors','var(--dim)')}${tm(263,128,'metrics and audit','var(--dim)')}
+  <path d="M342 40 H402 M342 66 H402 M342 92 H402 M342 118 H402" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+  ${box(406,26,224,28,'var(--amber)')}${tm(518,45,'AWS Lambda target','var(--text)')}
+  ${box(406,58,224,28,'var(--amber)')}${tm(518,77,'OpenAPI / Smithy target','var(--text)')}
+  ${box(406,90,224,28,'var(--amber)')}${tm(518,109,'existing MCP server target','var(--text)')}
+  ${box(406,122,224,28,'var(--amber)')}${tm(518,141,'Knowledge Base target','var(--text)')}
+  ${tm(320,176,'inbound OAuth on the way in · outbound OAuth, API key or IAM on the way out','var(--dim)')}
+  ${tm(320,192,'the agent never holds the downstream credential','var(--dim)')}`,
+ 'One endpoint fronts everything. The agent speaks MCP and nothing else; the gateway converts, authorises per tool, and records what happened.')}
+<h4>The four authorisation steps, in order</h4>
+<table class="osi"><thead><tr><th>#</th><th>What happens</th></tr></thead><tbody>
+<tr><td><b>1</b></td><td>Gateway retrieves the workload identity for the calling agent</td></tr>
+<tr><td><b>2</b></td><td>The inbound OAuth token from the caller is authorised</td></tr>
+<tr><td><b>3</b></td><td>Workload identity plus that inbound JWT are exchanged for a workload access token</td></tr>
+<tr><td><b>4</b></td><td>The workload token is exchanged for the <b>outbound</b> token the target actually accepts</td></tr>
+</tbody></table>
+<h4>Why tool search matters more than it sounds</h4>
+<div class="plain-line"><b>The problem:</b> three targets holding 250, 100 and 10 tools means a plain tool listing hands the model 360 tool descriptions on <em>every single request</em>. That is context spent before the user’s question is even read, and accuracy drops as the list grows.</div>
+<table class="osi"><thead><tr><th></th><th>Without search</th><th>With search</th></tr></thead><tbody>
+<tr><td><b>Tools sent to the model</b></td><td>All 360</td><td>The top handful for this task</td></tr>
+<tr><td><b>Effect</b></td><td>Slower, dearer, and the model picks wrongly more often</td><td>Better accuracy, less context, lower cost</td></tr>
+<tr><td><b>How</b></td><td>—</td><td>Gateway indexes tools automatically; the search tool is <code>x-amz-bedrock-agentcore-search</code></td></tr>
+</tbody></table>
+<h4>Interceptors — where the awkward requirements go</h4>
+<table class="osi"><thead><tr><th>Use it for</th><th>Why here rather than in the agent</th></tr></thead><tbody>
+<tr><td><b>Fine-grained access control</b></td><td>An external customer and an internal admin can be given different tools from the same target</td></tr>
+<tr><td><b>Schema translation</b></td><td>The API's shape is not the shape you want the model to see</td></tr>
+<tr><td><b>Custom header propagation</b></td><td>Trace and tenant headers survive the hop without every agent remembering to add them</td></tr>
+<tr><td><b>Per-tool authorisation</b></td><td>Read is allowed, write is not — decided centrally rather than per agent</td></tr>
+<tr><td><b>Tenant isolation</b></td><td>One multi-tenant tool, many tenants, enforced outside the model's reach</td></tr>
+<tr><td><b>Data sanitisation</b></td><td>Strip what should never reach a prompt, before it reaches one</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>Runtime or Gateway?</b> If you wrote the MCP server, deploy it on <b>Runtime</b>. If you are exposing APIs, Lambdas or a knowledge base that already exist, use <b>Gateway</b> and write no server at all. Using both is normal: Gateway in front, Runtime behind it, so the server you wrote also gets tool search, policy and guardrails.</div>`;
+
+/* ---- Memory ---- */
+document.getElementById('acMemory').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> short-term memory is what you remember during a phone call. Long-term memory is what you still know about the person next month. They are stored differently, retrieved differently and secured differently, and asking for one when you meant the other is the usual mistake.</div>
+<div class="vs2"><div class="col"><b>SHORT-TERM (STM)</b>The raw conversation, stored as <b>events</b>. Immediate context, exactly as it happened. Retrieved by listing events, synchronously.</div>
+<div class="col"><b>LONG-TERM (LTM)</b>Insights <em>extracted</em> from those events by a strategy, asynchronously, into a vector store. Retrieved by searching meaning, not by scrolling history.</div></div>
+<h4>What an event carries</h4>
+<table class="osi"><thead><tr><th>Field</th><th>What it is for</th></tr></thead><tbody>
+<tr><td><b>memoryId</b></td><td>Which memory resource this belongs to</td></tr>
+<tr><td><b>actorId</b></td><td>The entity — a user, an agent, or a combination. This is the field that decides isolation</td></tr>
+<tr><td><b>sessionId</b></td><td>Groups related events into one conversation</td></tr>
+<tr><td><b>payload</b></td><td>The content: conversational turns, or an arbitrary JSON blob</td></tr>
+<tr><td><b>timestamp</b></td><td>Chronological ordering</td></tr>
+<tr><td><b>branch</b></td><td>Alternate paths — an edited message, a what-if fork, concurrent streams</td></tr>
+<tr><td><b>metadata</b></td><td>Key-value context you attach for later filtering</td></tr>
+</tbody></table>
+<h4>The four built-in long-term strategies</h4>
+<table class="osi"><thead><tr><th>Strategy</th><th>Stores</th><th>Looks like</th><th>Reach for it when</th></tr></thead><tbody>
+<tr><td><b>Semantic</b></td><td>Facts and domain knowledge</td><td>&ldquo;User purchased headphones on 15 January for $349.99&rdquo;</td><td>You need what is <em>true</em>, retrieved by similarity to a query</td></tr>
+<tr><td><b>User preferences</b></td><td>Likes, dislikes, settings, style</td><td>&ldquo;Prefers white open-ear headphones; has a 25% corporate discount&rdquo;</td><td>Personalisation across sessions</td></tr>
+<tr><td><b>Summary</b></td><td>A condensed version of a session</td><td>&ldquo;Bought Bose open-ear, later found them $100 cheaper&rdquo;</td><td>Cutting token use while keeping the thread</td></tr>
+<tr><td><b>Episodic</b></td><td>Whole experiences, plus reflections on them</td><td>&ldquo;Always check connection pools first. Profile before guessing.&rdquo;</td><td>The agent learning <em>how</em> it solved something, so it does not rediscover it</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:10px"><b>Semantic against episodic, the distinction worth having ready:</b> semantic stores <em>what is true</em> and is fetched by similarity. Episodic stores <em>how the job got done</em> — the sequence of thought, action and observation — and is fetched per task. One personalises; the other stops the agent repeating a dead end it already walked down.</div>
+<h4>Two more, when the built-ins are not enough</h4>
+<table class="osi"><thead><tr><th>Strategy</th><th>What it gives you</th><th>Cost of it</th></tr></thead><tbody>
+<tr><td><b>Override</b></td><td>Keep the managed pipeline, but supply your own extraction prompt and choose the model</td><td>You now own prompt quality for extraction</td></tr>
+<tr><td><b>Self-managed</b></td><td>Triggers fire (message, token or time based) to SNS with the payload in S3; your pipeline extracts and consolidates, then writes back through the batch APIs</td><td>You run and pay for the pipeline, and own deduplication and conflict resolution</td></tr>
+</tbody></table>
+<h4>Three security layers — this is the part an exam asks about</h4>
+<table class="osi"><thead><tr><th>Layer</th><th>Control</th><th>Stops</th></tr></thead><tbody>
+<tr><td><b>1 · STM scoping</b></td><td>memoryId + actorId + sessionId + branch</td><td>Cross-user and cross-session bleed at the event level</td></tr>
+<tr><td><b>2 · Namespaces</b></td><td>Hierarchical paths with templated variables</td><td>Controls what a retrieval query is even able to search</td></tr>
+<tr><td><b>3 · Access scoping</b></td><td>Identity and resource policies, with condition keys on actorId, sessionId, namespace and strategyId</td><td>Enforces it in IAM rather than trusting application code</td></tr>
+</tbody></table>`;
+
+/* namespace builder */
+const NSOPTS=[['granular','Strategy + actor + session','/strategy/{strategyId}/actor/{actorId}/session/{sessionId}',
+   'One ticket, one conversation. Narrowest search, fastest retrieval, nothing bleeds.','Customer support, per-ticket context'],
+ ['actor','Strategy + actor','/strategy/{strategyId}/actor/{actorId}',
+   'Everything this one user has ever taught the agent, across every session.','A tutor tracking one student’s progress'],
+ ['strategy','Strategy only','/strategy/{strategyId}',
+   'Shared across every user. Useful for knowledge, dangerous for anything personal.','An agent’s own accumulated domain knowledge'],
+ ['global','Global','/',
+   'Everything, everywhere. Broadest search, slowest, and almost never what you want for user data.','Compliance rules that genuinely apply to all']];
+document.getElementById('acNsOpts').innerHTML=`<label style="color:var(--text);font-weight:500">How wide should retrieval be able to reach?</label>`
+ + NSOPTS.map((o,i)=>`<label><input type="radio" name="ns" value="${i}" ${i===0?'checked':''}> ${o[1]}</label>`).join('');
+function nsPaint(){
+  const i=Number(document.querySelector('input[name="ns"]:checked').value), o=NSOPTS[i];
+  document.getElementById('acNsOut').innerHTML=
+   `<div class="r"><span>Namespace</span><b style="color:var(--teal)">${o[2]}</b></div>
+    <div class="r"><span>Search breadth</span><b>${['narrowest','narrow','wide','widest'][i]}</b></div>
+    <div class="r"><span>Retrieval speed</span><b style="color:${i<2?'var(--green)':'var(--amber)'}">${['fastest','fast','slower','slowest'][i]}</b></div>
+    <div class="r"><span>Isolation</span><b style="color:${i<2?'var(--green)':'var(--red)'}">${i<2?'per user':'shared across users'}</b></div>
+    <div class="r"><span>Typical use</span><b>${o[4]}</b></div>`;
+  document.getElementById('acNsNote').innerHTML=`<b>What this means:</b> ${o[3]}<br><br>
+   <b>Then narrow further with metadata:</b> the namespace decides <em>who</em> a query may reach; metadata filtering decides <em>what, when and how</em> within it. Index the keys you will filter on, then pre-filter on structured attributes before the semantic search runs — &ldquo;high-priority billing issues from Q3&rdquo; rather than searching everything and hoping. Operators include equals, contains, before and after, and ranges.`;
+}
+document.getElementById('acNsOpts').addEventListener('change',nsPaint); nsPaint();
+
+/* ---- Observability + Evaluations ---- */
+document.getElementById('acEval').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> two different questions. Observability answers <em>what did it actually do</em> — you cannot fix what you cannot see. Evaluation answers <em>was that any good, and is it getting better</em>. A non-deterministic system without both is one you can only apologise for.</div>
+<table class="osi"><thead><tr><th>Concept</th><th>What it means here</th></tr></thead><tbody>
+<tr><td><b>Session</b></td><td>The whole conversation</td></tr>
+<tr><td><b>Trace</b></td><td>One request through the agent, end to end</td></tr>
+<tr><td><b>Span / sub-span</b></td><td>One step inside it — a model call, a tool call, a retrieval</td></tr>
+<tr><td><b>How it arrives</b></td><td>The framework emits OpenTelemetry spans; ADOT collects and exports; CloudWatch stores; Evaluations reads and scores. OTEL-compatible means Strands, LangGraph and the rest all work</td></tr>
+</tbody></table>
+<h4>Evaluators, by what they can see</h4>
+<table class="osi"><thead><tr><th>Level</th><th>Evaluators</th><th>Type</th><th>Needs ground truth</th></tr></thead><tbody>
+<tr><td><b>Session</b></td><td>Goal success rate</td><td>LLM judge</td><td>assertions</td></tr>
+<tr><td><b>Trace</b></td><td>Correctness</td><td>LLM judge</td><td>expected_response</td></tr>
+<tr><td><b>Trace</b></td><td>Helpfulness, coherence, conciseness, faithfulness, response relevance, context relevance, instruction following, harmfulness, refusal, stereotyping</td><td>LLM judge</td><td>none</td></tr>
+<tr><td><b>Tool</b></td><td>Tool selection accuracy, parameter selection accuracy</td><td>LLM judge</td><td>none</td></tr>
+<tr><td><b>Tool</b></td><td>Trajectory match — exact order, in order, any order</td><td>Programmatic</td><td>expected_trajectory</td></tr>
+<tr><td><b>Any</b></td><td>Code-based, in a Lambda</td><td>Your own logic, no model needed</td><td>—</td></tr>
+</tbody></table>
+<h4>Three ways to express what &ldquo;right&rdquo; means</h4>
+<div class="vs2" style="grid-template-columns:repeat(3,1fr)">
+ <div class="col"><b>ASSERTIONS</b>Free-text facts the answer must satisfy — &ldquo;price is present&rdquo;, &ldquo;tone is empathetic&rdquo;. For compliance, tone and safety, where many wordings are acceptable.</div>
+ <div class="col"><b>EXPECTED_RESPONSE</b>What the final answer should say. For FAQ bots, maths and finance, and regression against a known-good answer.</div>
+ <div class="col"><b>EXPECTED_TRAJECTORY</b>The ordered tools it must call. For multi-step workflows, and for security — proving it checked warranty <em>before</em> creating the RMA, not after.</div>
+</div>
+<h4>Online or on-demand — you want both</h4>
+<table class="osi"><thead><tr><th></th><th>Online</th><th>On-demand</th></tr></thead><tbody>
+<tr><td><b>Where</b></td><td>Production, sampling live traffic continuously</td><td>Development and CI/CD, on a dataset</td></tr>
+<tr><td><b>Catches</b></td><td>Silent failures, quality drift after a deploy</td><td>Regressions, before they ship</td></tr>
+<tr><td><b>Acts as</b></td><td>A chart you watch and alert on</td><td>A quality gate that fails the build</td></tr>
+</tbody></table>
+<h4>Ground truth gets stronger at each stage</h4>
+<table class="osi"><thead><tr><th>Stage</th><th>What you do</th></tr></thead><tbody>
+<tr><td><b>1 · Prototype</b></td><td>Inspect a handful of sessions by hand. Understand behaviour, spot failure patterns</td></tr>
+<tr><td><b>2 · Test suite</b></td><td>Build 20 to 100 scenarios with assertions and trajectories. Cover the edge cases</td></tr>
+<tr><td><b>3 · CI/CD gate</b></td><td>Batch evaluation in the pipeline; fail the build below threshold</td></tr>
+<tr><td><b>4 · Pre-production</b></td><td>Shadow-run against real traffic; catch distribution shift</td></tr>
+<tr><td><b>5 · Production</b></td><td>Continuous sampling, alert on drift, feed new cases back into the dataset</td></tr>
+</tbody></table>
+<div class="plain-line" style="margin-top:12px"><b>Why generic benchmarks will not do this for you:</b> leaderboard scores are static, single-shot question answering. They involve no actions, no side effects, no tool choice, no recovery from an error. A model at the top of a leaderboard can still fail badly at an interactive task, which is why your own dataset — built from your own traffic — is the only thing that measures your agent.</div>`;
+
+/* ---- the remaining services ---- */
+document.getElementById('acRest').innerHTML=`
+<table class="osi"><thead><tr><th>Capability</th><th>In plain English</th><th>What matters about it</th></tr></thead><tbody>
+<tr><td><b>Policy</b></td><td>A rulebook checked before a tool runs, not a request in the prompt</td><td>Authored in natural language or <b>Cedar</b>, evaluated in milliseconds, allow or deny, and every decision is observable. This is the difference between hoping the agent behaves and knowing it cannot misbehave</td></tr>
+<tr><td><b>Agent Registry</b></td><td>A catalogue of the agents and tools your organisation has</td><td>Registration, semantic and filter search, metadata sync, approval hooks. It is the answer to &ldquo;how many agents do we have and who owns them&rdquo;, which arrives sooner than teams expect</td></tr>
+<tr><td><b>Browser</b></td><td>A real cloud browser the agent drives — click, type, scroll, screenshot</td><td>Managed headless Chromium. The model emits an instruction, the tool translates it into a command, executes it and returns a screenshot. No browser infrastructure of your own</td></tr>
+<tr><td><b>Code Interpreter</b></td><td>A sandbox where the agent can run code and use a shell and filesystem</td><td>For analysis, cross-checking numbers and producing reports. The sandbox is the point: generated code runs somewhere it cannot hurt you</td></tr>
+<tr><td><b>Web search</b></td><td>Grounding answers in current information</td><td>A managed index with continuous refresh; queries stay inside AWS with no data egress</td></tr>
+<tr><td><b>Managed Knowledge Base</b></td><td>Your documents, made answerable</td><td>Six native connectors with ACL support, a service-managed vector store, always-on hybrid search, and it plugs into Gateway as a native target type. Self-managed gives you more control over the store and more to operate</td></tr>
+<tr><td><b>Payments</b></td><td>Letting an agent pay for something</td><td>Wallet with explicit user authorisation and <b>session-level spending limits enforced deterministically</b> — the limit is not advice to the model. Every transaction lands in the same traces</td></tr>
+<tr><td><b>Runtime instances</b></td><td>Managed EC2 for agents, including GPUs, for up to 14 days</td><td>Hibernate and resume via EBS, co-located agents sharing a filesystem, running in your own account under your IAM and VPC. For long transformations, GPU work, or agents needing OS-level access</td></tr>
+</tbody></table>`;
+
+/* ---- multi-agent patterns ---- */
+const ACPAT=[
+ {id:'router', n:'Orchestrator / router', shape:'Hub dispatches to specialists. Hub and spoke.',
+  fits:'Requests map to a single, well-bounded domain; intent is classifiable; specialists are independent.',
+  watch:'A single point of failure, and cross-domain tasks need several sequential dispatches.',
+  uses:'Customer support and service desks, banking and telco assistants, HR assistants, regulated intake, menu-driven internal tools.'},
+ {id:'swarm', n:'Swarm (peer to peer)', shape:'Agents hand off laterally, no hub.',
+  fits:'Exploratory or creative work where the path is not known in advance, and resilience matters more than predictability.',
+  watch:'Hard to debug and hard to cost-control. Context explodes, and agents can loop or duplicate work.',
+  uses:'Brainstorming and research synthesis, red-team and blue-team setups, draft-critique-revise loops, multi-perspective evaluation.'},
+ {id:'hier', n:'Hierarchical', shape:'Executive, then managers, then workers.',
+  fits:'Very complex domains with many nested sub-domains, where each level can use a different model tier.',
+  watch:'Every level is another model call, so deep chains multiply latency. Over-engineering for most problems.',
+  uses:'Large-scale code migration, end-to-end delivery copilots, deep research, equity research, campaign and course production.'},
+ {id:'parallel', n:'Supervisor + parallel merge', shape:'Fan out at once, then merge.',
+  fits:'Multi-faceted queries that genuinely decompose into independent sub-problems.',
+  watch:'The merge step is not trivial, every agent runs on every request so cost is highest, and with no shared context the results can be incompatible.',
+  uses:'Parallel code or contract review, architecture review, underwriting, market research fan-out, best-of-N generation, bulk triage.'},
+];
+const ACPRI=[
+ ['Debuggability and clear ownership','router','swarm'],
+ ['Resilience on open-ended tasks','swarm','router'],
+ ['Many nested sub-domains','hier','a flat single agent'],
+ ['Speed on decomposable queries','parallel','a deep hierarchy'],
+ ['Lowest cost per request','router','supervisor + parallel — they all run'],
+];
+document.getElementById('acPatPri').innerHTML=ACPRI.map((p,i)=>
+  `<button class="seg${i===0?' on':''}" data-i="${i}">${p[0]}</button>`).join('');
+function acPatPaint(i){
+  const pri=ACPRI[i], best=ACPAT.find(p=>p.id===pri[1]);
+  document.querySelectorAll('#acPatPri .seg').forEach((b,k)=>b.classList.toggle('on',k===i));
+  document.getElementById('acPatterns').innerHTML=`
+   <div class="cidr-out" style="margin-bottom:14px">
+     <div class="r"><span>You said you care most about</span><b>${pri[0]}</b></div>
+     <div class="r"><span>Best fit</span><b style="color:var(--green)">${best.n}</b></div>
+     <div class="r"><span>Avoid</span><b style="color:var(--red)">${ACPAT.find(p=>p.id===pri[2])?.n || pri[2]}</b></div>
+   </div>
+   <table class="osi"><thead><tr><th>Pattern</th><th>Shape</th><th>Fits when</th><th>Watch out</th></tr></thead><tbody>
+   ${ACPAT.map(p=>`<tr${p.id===pri[1]?' style="background:var(--sel)"':''}><td><b>${p.n}</b></td><td>${p.shape}</td><td>${p.fits}</td><td>${p.watch}</td></tr>`).join('')}
+   </tbody></table>
+   <div class="plain-line" style="margin-top:12px"><b>Where ${best.n} is used:</b> ${best.uses}</div>
+   <div class="plain-line"><b>Before any of this:</b> a monolithic agent asked to do everything calls the wrong tools, passes wrong arguments, answers inconsistently, needs a frontier model, and grows a prompt nobody dares edit. Splitting it is what fixes that — but only split when the work genuinely divides. Multi-agent is a cost, paid per hop, and it buys precision only when there was precision to gain.</div>`;
+}
+document.getElementById('acPatPri').addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) acPatPaint(Number(b.dataset.i));});
+acPatPaint(0);
+
+/* ---- six anti-patterns ---- */
+const ACANTI=[
+ {t:'1 · Natural language between agents', bad:'The router describes the task to the specialist in prose, and the specialist answers in prose.',
+  why:'Prose is vague, omits details and costs far more tokens than the same content as JSON. Every hop is another chance to lose a field.',
+  fix:'Natural language at the <b>user boundary only</b>. Structured JSON between agents.',
+  c:'// router -> specialist\n{ "action": "order_inquiry",\n  "parameters": { "order_id": "ORD-12345" },\n  "user_context": "Customer asking where their order is" }\n\n// specialist -> router, one of four shapes\n{ "status": "success",  "action_performed": "order_inquiry",\n  "data": { "Order Details": { "Status": "101 - In Process" } },\n  "errors": [], "suggested_next_action": "order_repush" }\n{ "status": "error",       "errors": ["What went wrong"],\n  "suggested_next_action": "create_ticket" }\n{ "status": "needs_input", "missing_params": [\n    { "name": "order_id", "label": "Order ID", "format": "13 digits" } ] }\n{ "status": "async",       "task_id": "TASK-XXX" }'},
+ {t:'2 · Everyone formats, nobody owns it', bad:'Specialists format for humans, ask follow-up questions and suggest next steps — but they are talking to the router, not to the user.',
+  why:'Double formatting, inconsistent output and extra round trips. Change the wording and you change it in six places.',
+  fix:'Specialists are <b>data services</b>. The router is the <b>presenter</b>. One layer owns formatting, one set of rules, one place to change it.',
+  c:'// specialist returns data\n{ "data": { "Order ID": "ORD-12345", "Status": "101 - In Process" },\n  "suggested_next_action": "order_repush" }\n\n// the router turns that into the sentence the user reads\n"Your order ORD-12345 is still in process.\n Would you like me to repush it?"'},
+ {t:'3 · The prompt bloat spiral', bad:'Specialist prompts reach 3-5k tokens, the router over 4.5k, and most of it is walls of DO NOT and NEVER.',
+  why:'Every bug became a new prompt line and nobody ever removed one. Negative rules can prime the very behaviour they forbid.',
+  fix:'Positive steering. Say what to do, not the nine things not to do. And read bloat as a <b>diagnostic</b>: if corrections keep piling up, either the prompt is confused and needs refactoring, or you have hit the model’s ceiling and need a better one.',
+  c:'# before — nine lines of "do not"\nDO NOT show task IDs for sync ops\nDO NOT add headers/status/tool used\nDO NOT show error blocks\n...\n\n# after — two lines of "do"\nSync results: return only the queried data fields\nErrors: one sentence stating what failed'},
+ {t:'4 · The router knows too much', bad:'Parameter formats for each specialist, which tool to prefer in edge cases, async versus sync patterns, ticket-creation flows — all leaking into the router.',
+  why:'The router grows a copy of every domain it dispatches to, and its prompt grows with it, on every single request.',
+  fix:'<b>Thin router, smart specialists.</b> The router classifies intent, dispatches, and presents the result. Domain nuance lives in the specialist. Then make the models asymmetric — small and fast for routing, capable for the specialist.',
+  c:'router      classify intent -> dispatch -> present\n            small, fast model (e.g. Haiku class)\n\nspecialist  domain logic, tool calls, structured output\n            larger, more capable model (e.g. Sonnet class)'},
+ {t:'5 · The overloaded specialist', bad:'One agent holds 30+ tools, so every request loads every tool description even when one is needed.',
+  why:'A simple lookup subsidises the entire toolbox, on every call, forever.',
+  fix:'Three options: <b>split</b> into focused sub-agents that each load their own tools; <b>load tools dynamically</b> for the classified intent, or use gateway tool search; or <b>accept the cost</b> if the tools are few and concise.',
+  c:'guideline\n  5-8 tools per agent   manageable\n  30+ tools             you are paying real cost every request'},
+ {t:'6 · The double LLM tax', bad:'The user clicks a predefined UI button with the order ID right there — and the request still goes through a full classification round trip.',
+  why:'Five to ten seconds and thousands of tokens spent classifying something already known.',
+  fix:'<b>Bypass routing when the intent is known.</b> A predefined action with an ID goes straight to the specialist as a structured payload. Keep the router for freeform text, which is the only place it earns its cost.',
+  c:'if (uiAction && knownIntent) {\n  callSpecialist({ action: uiAction, parameters: { id } });   // direct\n} else {\n  routeFreeformText(userMessage);                            // classify\n}'},
+];
+const acAntiList=document.getElementById('acAntiList'), acAntiDet=document.getElementById('acAntiDetail');
+acAntiList.innerHTML=ACANTI.map((s,i)=>`<button class="jitem${i===0?' on':''}" data-i="${i}"><span class="n">${String(i+1).padStart(2,'0')}</span><span>${s.t.replace(/^\d+ · /,'')}</span></button>`).join('');
+function acAntiRender(i){const s=ACANTI[i];
+  document.querySelectorAll('#acAntiList .jitem').forEach((b,k)=>b.classList.toggle('on',k===i));
+  acAntiDet.innerHTML=`<div class="role">anti-pattern ${i+1} of ${ACANTI.length}</div><h3>${s.t}</h3>
+    <div class="without" style="margin-bottom:10px"><b>What it looks like:</b> ${s.bad}</div>
+    <p class="tech"><b>Why it hurts:</b> ${s.why}</p>
+    <p class="say"><b>The fix:</b> ${s.fix}</p>
+    <div class="code"><pre><code>${hl(s.c)}</code></pre></div>`;}
+acAntiList.addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) acAntiRender(Number(b.dataset.i));});
+acAntiRender(0);
+
+/* ---- the DevOps closed loop ---- */
+document.getElementById('acDevops').innerHTML=`
+<div class="plain-line"><b>In plain English:</b> one agent logs into your web app like a person would, clicks through it, and writes down what looks wrong. A second agent reads those findings, works out the cause and pushes a patch to the pull request. That push re-runs the whole thing. It loops until the tests pass or it gives up and asks a human.</div>
+${D('0 0 640 170','A pull request triggers CI, which runs a test agent, produces a report, runs a fix agent, patches the PR, and re-triggers itself.',
+ `${box(10,54,86,40,'var(--blue)')}${tm(53,72,'Developer','var(--text)')}${tm(53,86,'opens a PR','var(--dim)')}
+  <path d="M98 74 H130" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+  ${box(134,54,80,40,'var(--violet)')}${tm(174,72,'CI/CD','var(--text)')}${tm(174,86,'OIDC role','var(--dim)')}
+  <path d="M216 74 H248" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+  ${box(252,54,94,40,'var(--teal)')}${tm(299,72,'UI test agent','var(--text)')}${tm(299,86,'browser + code','var(--dim)')}
+  <path d="M348 74 H380" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+  ${box(384,54,80,40,'var(--amber)')}${tm(424,72,'Findings','var(--text)')}${tm(424,86,'to the PR','var(--dim)')}
+  <path d="M466 74 H498" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
+  ${box(502,54,128,40,'var(--green)')}${tm(566,72,'Bug-fix agent','var(--text)')}${tm(566,86,'pushes a patch','var(--dim)')}
+  <path d="M566 96 V126 H174 V96" style="stroke:var(--red)" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+  ${tm(370,140,'the push re-triggers the workflow — capped at 3 rounds, then a human is asked','var(--red)')}
+  ${tm(320,20,'two separate agents, one workflow','var(--dim)')}
+  ${tm(320,36,'a tester that only finds · a fixer that only patches','var(--dim)')}`,
+ 'Two agents rather than one, because a tester that also patches will quietly fix what it should have reported. The loop is capped so it always terminates, and no diff merges without a human.')}
+<h4>The design decisions, and why each one</h4>
+<table class="osi"><thead><tr><th>Decision</th><th>Reason</th></tr></thead><tbody>
+<tr><td><b>Two agents, not one</b></td><td>Separation of concerns. The tester only finds, the fixer only patches. Each gets its own prompt, its own domain knowledge and its own limits</td></tr>
+<tr><td><b>Credentials from Secrets Manager at runtime</b></td><td>Login details are never in code, in logs, or in the prompt. The role is scoped to read only</td></tr>
+<tr><td><b>Exploratory, not scripted</b></td><td>It discovers real problems — data that does not add up, rows that vanish — rather than replaying brittle scripts that only fail when the selector changes</td></tr>
+<tr><td><b>Evidence to S3</b></td><td>Screenshots and a JSON report every run, linked from the PR comment. Auditable rather than a black box</td></tr>
+<tr><td><b>A bounded loop</b></td><td>A round counter caps retries at three, so it always terminates and escalates instead of grinding</td></tr>
+<tr><td><b>OIDC, no long-lived keys</b></td><td>The workflow assumes an AWS role. Nothing to leak from the repository</td></tr>
+<tr><td><b>A human gate</b></td><td>Bot commits pause CI until a person approves. Agents do the toil; humans keep the judgement</td></tr>
+</tbody></table>
+<h4>What it actually found, which is the point</h4>
+<div class="plain-line">The findings were the kind manual clicking misses: a view that silently dropped an untagged bucket holding about 95% of the spend, a governance page reporting zero spend while the cost page showed hundreds, a model showing a million tokens at zero cost from a missing pricing entry, and duplicate rows inflating a count. <b>Not one of those is a broken button.</b> They are data-integrity and cross-page consistency bugs — exactly what a human clicking through a checklist does not notice, and exactly what reaches production.</div>
+<h4>Two configuration facts that cost hours to learn</h4>
+<table class="osi"><thead><tr><th>Fact</th><th>Consequence</th></tr></thead><tbody>
+<tr><td><b>The allowed-tools list takes no wildcards</b></td><td>You cannot write <code>browser_*</code> and hope. Name each tool, or the agent silently has fewer tools than you think</td></tr>
+<tr><td><b>Memory needs a third IAM step</b></td><td>The data-plane grant is separate. Miss it and <em>every session fails</em> — with an error that does not point at IAM</td></tr>
+</tbody></table>`;
+
+/* ---- exam angle ---- */
+document.getElementById('acExam').innerHTML=`
+<div class="plain-line"><b>How this shows up:</b> agentic services are new, so questions tend not to ask what a feature is called. They put you in a situation and test whether you reach for the managed control or hand-build it — which is the same instinct the rest of the exam rewards.</div>
+<table class="osi"><thead><tr><th>When the scenario says</th><th>The answer is usually</th><th>Because</th></tr></thead><tbody>
+<tr><td>Agent sessions must not be able to read each other’s files</td><td>AgentCore Runtime session isolation</td><td>Each session gets its own microVM. With ordinary serverless, sessions can share a sandbox</td></tr>
+<tr><td>The agent must reach a private database</td><td>VPC-connected egress</td><td>Public ingress is fine; it is the egress that needs the ENI into your VPC</td></tr>
+<tr><td>Nothing may traverse the internet, regulated industry</td><td>Fully private — VPC endpoint ingress, VPC-only egress</td><td>The pattern the exam wants whenever residency or regulation is mentioned</td></tr>
+<tr><td>No long-lived credentials anywhere</td><td>OIDC federation into a role, and Identity’s token vault for outbound</td><td>Any option with a stored key in an environment variable is the distractor</td></tr>
+<tr><td>The agent must act on a user’s behalf against a third party</td><td>Three-legged OAuth via Identity</td><td>The user consents; the agent never holds the secret; tokens are cached per user</td></tr>
+<tr><td>Dozens of existing APIs, no time to write servers</td><td>Gateway with OpenAPI or Lambda targets</td><td>Gateway when the API exists; Runtime when you wrote the MCP server yourself</td></tr>
+<tr><td>Hundreds of tools, model picks badly</td><td>Gateway tool search</td><td>Sending 300+ tool descriptions per request costs accuracy as well as tokens</td></tr>
+<tr><td>Personalisation across sessions</td><td>Long-term memory, user-preferences strategy</td><td>Short-term memory dies with the session — it is the wrong layer for this</td></tr>
+<tr><td>Strict per-user isolation of memory</td><td>Namespaces plus IAM condition keys on actorId</td><td>Three layers: event scoping, namespace, then policy. The exam likes the third</td></tr>
+<tr><td>Prove the agent called checks in the right order</td><td>Trajectory evaluators with expected_trajectory</td><td>Programmatic, not a judge. Order matters for audit and security</td></tr>
+<tr><td>Catch regressions before deploying</td><td>On-demand evaluation as a CI/CD gate</td><td>Online evaluation is the production counterpart, not a substitute</td></tr>
+<tr><td>The agent must never take a forbidden action</td><td>Policy, evaluated before the tool call</td><td>A prompt instruction is advisory. Policy is enforced and observable</td></tr>
+<tr><td>Cost is unpredictable when idle</td><td>Scale-to-zero, and CPU billed only while working</td><td>Memory is billed for the session’s life; CPU is not billed while waiting on the model</td></tr>
+<tr><td>A run needs GPUs or many hours</td><td>Runtime instances — managed EC2, up to 14 days</td><td>The serverless runtime caps at 8 hours per session</td></tr>
+</tbody></table>
+<h4>The judgement the exam is really testing</h4>
+<table class="osi"><thead><tr><th>Principle</th><th>What it means in an answer</th></tr></thead><tbody>
+<tr><td><b>Use plain code where you can</b></td><td>Deterministic, faster, cheaper and it cannot hallucinate. Passing today’s date as an attribute beat giving the model a tool to fetch it — three model calls instead of four, and nine seconds instead of twelve</td></tr>
+<tr><td><b>Enforce sequences, do not request them</b></td><td>Asking a model to always call the check before the action works until the run where it does not. An orchestrator guarantees it</td></tr>
+<tr><td><b>Do not aim for full autonomy by default</b></td><td>There is a gradient from simple assistant to autonomous worker. Higher is not better; it is more expensive and harder to trust</td></tr>
+<tr><td><b>Context is a budget, not a dumping ground</b></td><td>Attention is U-shaped, so the middle is under-read, quality degrades well before the model’s limit, and irrelevant context actively hurts — distraction, confusion and poisoning</td></tr>
+<tr><td><b>Keep a human on anything irreversible</b></td><td>Reviewing plans, approving tool execution, acting as the fallback. Determinism is what enterprises are actually buying</td></tr>
+<tr><td><b>Instrument from the first day</b></td><td>Observability and evaluation are not a phase two. Retrofitting them onto a non-deterministic system already in production is far harder than starting with them</td></tr>
+</tbody></table>`;
+
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
+/* ================= SIM: trace waterfall ================= */
+const TRACEOPTS=[
+ {id:'memHit', label:'memory returns something useful', on:true},
+ {id:'toolSlow', label:'the tool is having a slow day', on:false},
+ {id:'toolFail', label:'the tool call fails', on:false},
+ {id:'policyBlock', label:'policy refuses the tool call', on:false},
+ {id:'search', label:'gateway tool search is on', on:true},
+];
+document.getElementById('traceOpts').innerHTML=TRACEOPTS.map(o=>
+  `<label><input type="checkbox" id="tr-${o.id}" ${o.on?'checked':''}> ${o.label}</label>`).join('');
+const trOn=id=>document.getElementById('tr-'+id)?.checked;
+function buildSpans(){
+  const s=[]; let t=0;
+  const add=(name,dur,depth,colour,err)=>{s.push({name,start:t,dur,depth,colour,err}); t+=dur; return s[s.length-1];};
+  add('session · invoke',0,0,'var(--wire)');
+  add('runtime · cold start',trOn('memHit')?40:180,1,'var(--violet)');
+  add('identity · validate JWT',12,1,'var(--teal)');
+  add('identity · issue workload token',18,1,'var(--teal)');
+  if(trOn('memHit')) add('memory · retrieve records',55,1,'var(--blue)');
+  else add('memory · miss, nothing to load',8,1,'var(--dim)');
+  add(trOn('search')?'gateway · tool search (8 tools)':'gateway · list all tools (360)',trOn('search')?45:210,1,'var(--amber)');
+  add('model · reason and choose a tool',620,1,'var(--violet)');
+  if(trOn('policyBlock')){
+    add('policy · evaluate tool call',9,1,'var(--red)',true);
+    add('model · explain the refusal',380,1,'var(--violet)');
+  } else {
+    add('policy · evaluate tool call',9,1,'var(--green)');
+    const d=trOn('toolSlow')?4200:260;
+    add('gateway · invoke tool',d,1,trOn('toolFail')?'var(--red)':'var(--amber)',trOn('toolFail'));
+    if(trOn('toolFail')) add('model · recover and retry',900,1,'var(--violet)');
+    add('model · compose the answer',540,1,'var(--violet)');
+  }
+  add('memory · write events',35,1,'var(--blue)');
+  return s;
+}
+function renderTrace(){
+  const spans=buildSpans(), total=spans.reduce((a,s)=>Math.max(a,s.start+s.dur),0);
+  document.getElementById('traceWall').innerHTML=`<div class="wf">`+spans.map(s=>
+    `<div class="row depth${s.depth}${s.err?' err':''}">
+       <span class="lab">${s.name}</span>
+       <span class="track"><i class="bar" style="left:${s.start/total*100}%;width:${Math.max(0.6,s.dur/total*100)}%;background:${s.colour}"></i></span>
+       <span class="ms">${s.dur}ms</span></div>`).join('')+`</div>`;
+  const model=spans.filter(s=>s.name.startsWith('model')).reduce((a,s)=>a+s.dur,0);
+  const tool=spans.filter(s=>s.name.includes('tool')&&!s.name.startsWith('model')).reduce((a,s)=>a+s.dur,0);
+  const errs=spans.filter(s=>s.err).length;
+  document.getElementById('traceOut').innerHTML=
+   `<div class="r"><span>Total</span><b>${total} ms</b></div>
+    <div class="r"><span>Waiting on the model</span><b style="color:var(--violet)">${model} ms (${Math.round(model/total*100)}%)</b></div>
+    <div class="r"><span>In tools</span><b style="color:var(--amber)">${tool} ms</b></div>
+    <div class="r"><span>Spans</span><b>${spans.length}</b></div>
+    <div class="r"><span>Failed spans</span><b style="color:${errs?'var(--red)':'var(--green)'}">${errs}</b></div>
+    <div class="r"><span>CPU billed</span><b style="color:var(--green)">only the non-model time — about ${total-model} ms</b></div>
+    <div class="r"><span>What the trace tells you</span><b style="color:var(--teal)">${
+      errs? 'exactly which span failed, and what ran after it'
+      : trOn('toolSlow') ? 'the tool is the problem, not your agent'
+      : !trOn('search') ? 'listing 360 tools costs more than the tool call itself'
+      : 'the model is the floor — everything else is noise'}</b></div>`;
+}
+document.getElementById('traceOpts').addEventListener('change',renderTrace);
+document.getElementById('traceRun').onclick=renderTrace;
+document.getElementById('traceClear').onclick=()=>{document.getElementById('traceWall').innerHTML='';document.getElementById('traceOut').innerHTML='';};
+renderTrace();
+
+/* ================= SIM: the evaluation gate ================= */
+const GATEM=[
+ {id:'correct',  n:'Correctness',            base:0.81, delta:+0.06, critical:true},
+ {id:'faith',    n:'Faithfulness',           base:0.88, delta:-0.09, critical:true},
+ {id:'help',     n:'Helpfulness',            base:0.74, delta:+0.11, critical:false},
+ {id:'concise',  n:'Conciseness',            base:0.69, delta:+0.14, critical:false},
+ {id:'tool',     n:'Tool selection accuracy',base:0.92, delta:-0.02, critical:true},
+ {id:'traj',     n:'Trajectory exact order', base:1.00, delta:-0.15, critical:true},
+];
+document.getElementById('gateOpts').innerHTML=
+ `<label style="color:var(--text);font-weight:500">What the gate checks</label>
+  <label><input type="checkbox" id="g-avg" checked> the average across all metrics</label>
+  <label><input type="checkbox" id="g-crit" checked> every critical metric individually</label>
+  <label><input type="checkbox" id="g-traj"> trajectory must not regress at all</label>`;
+function gatePaint(){
+  const useAvg=document.getElementById('g-avg').checked,
+        useCrit=document.getElementById('g-crit').checked,
+        useTraj=document.getElementById('g-traj').checked;
+  const before=GATEM.reduce((a,m)=>a+m.base,0)/GATEM.length;
+  const after=GATEM.reduce((a,m)=>a+m.base+m.delta,0)/GATEM.length;
+  const critFail=GATEM.filter(m=>m.critical && m.delta<-0.03);
+  const trajFail=GATEM.find(m=>m.id==='traj').delta<0;
+  const fails=[]; if(useAvg && after<before) fails.push('the average fell');
+  if(useCrit && critFail.length) fails.push(critFail.map(m=>m.n).join(' and ')+' regressed');
+  if(useTraj && trajFail) fails.push('the trajectory changed');
+  document.getElementById('gateOut').innerHTML=
+   `<table class="osi"><thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Move</th></tr></thead><tbody>`
+   + GATEM.map(m=>{const a=m.base+m.delta;
+       return `<tr><td><b>${m.n}</b>${m.critical?' <span style="color:var(--red)">·critical</span>':''}</td>
+        <td>${m.base.toFixed(2)}</td><td>${a.toFixed(2)}</td>
+        <td style="color:${m.delta>0?'var(--green)':'var(--red)'}">${m.delta>0?'+':''}${m.delta.toFixed(2)}</td></tr>`;}).join('')
+   + `<tr><td><b>Average</b></td><td>${before.toFixed(3)}</td><td>${after.toFixed(3)}</td>
+       <td style="color:${after>=before?'var(--green)':'var(--red)'}">${after>=before?'+':''}${(after-before).toFixed(3)}</td></tr>`
+   + `</tbody></table>
+   <div class="cidr-out" style="margin-top:12px"><div class="r"><span>Gate result</span>
+     <b style="color:${fails.length?'var(--red)':'var(--green)'}">${fails.length?'BLOCKED':'SHIPS'}</b></div>
+     ${fails.map(f=>`<div class="r"><span>Because</span><b style="color:var(--red)">${f}</b></div>`).join('')}</div>`;
+  document.getElementById('gateNote').innerHTML= after>=before
+   ? `<b>Notice what just happened:</b> the average went <em>up</em>, so a gate watching only the average lets this through. But faithfulness fell nine points and the trajectory changed — the agent is now more helpful, more concise, and making things up while calling tools in a different order. <b>Averages hide exactly the regressions you care about most.</b>`
+   : `<b>The average fell,</b> which is the easy case. The harder one is when it rises while a critical metric drops — turn the critical check off and watch this ship.`;
+}
+document.getElementById('gateOpts').addEventListener('change',gatePaint); gatePaint();
+
+/* ================= SIM: one conversation, four strategies ================= */
+const MEMCONV=[
+ {id:'shop', n:'A shopping conversation',
+  turns:['I like Bose headphones, and my company gives me 25% off them.',
+         'I prefer white, open-ear ones.',
+         'I bought the QuietComfort Ultra on 15 January for $349.99 — but they do not feel right.'],
+  out:{
+   semantic:['User purchased Bose QuietComfort Ultra on 15 January 2026 for $349.99','User is within a 30-day return window until 15 February'],
+   pref:['Likes Bose','Prefers white','Prefers open-ear','Has a 25% corporate discount'],
+   summary:['User discussed replacing headphones; bought Bose QC Ultra in January, comfort is the problem.'],
+   episodic:['Situation: customer dissatisfied with a recent purchase','Goal: find a replacement that fixes comfort','Insight: when a user names a specific complaint, lead with two or three options that address it rather than asking more questions']},
+  why:'Preferences drive the recommendation; semantic facts decide whether a refund is even possible; the summary is what you carry into next week cheaply; the episode is how the agent gets better at this kind of conversation.'},
+ {id:'debug', n:'A debugging session',
+  turns:['The app is running out of memory with large datasets.',
+         'I profiled it — heap grows about 2GB an hour.',
+         'Code review found unclosed database connections.'],
+  out:{
+   semantic:['Application has a memory leak','Root cause was connection pool exhaustion','Growth rate was approximately 2GB per hour'],
+   pref:['(nothing — this conversation says nothing about what the user likes)'],
+   summary:['Investigation found connection pool exhaustion as the root cause of gradual memory growth.'],
+   episodic:['Step 1: check heap usage → profiled memory → observed 2GB/hr growth','Step 2: look for unclosed resources → code review → found unclosed DB connections','Reflection: always check connection pools first. Profile before guessing. Common pitfall: blaming application code when the leak is in an infrastructure dependency']},
+  why:'This is the case that shows why episodic exists. The facts alone do not stop the agent walking the same dead end next time — the ordered method does.'},
+];
+let memI=0;
+document.getElementById('memConvo').innerHTML=MEMCONV.map((c,i)=>
+ `<button class="seg${i===0?' on':''}" data-i="${i}">${c.n}</button>`).join('');
+function memPaint(){
+  const c=MEMCONV[memI];
+  const col=(t,items,colour,note)=>`<div class="col" style="border-left:2px solid ${colour}">
+     <b style="color:${colour}">${t}</b>${items.map(x=>`• ${x}`).join('<br>')}
+     <div style="margin-top:8px;color:var(--dim);font-size:11.5px">${note}</div></div>`;
+  document.getElementById('memExtract').innerHTML=
+   `<div class="code"><pre><code>${hl(c.turns.map((t,i)=>`turn ${i+1}  ${t}`).join('\n'))}</code></pre></div>
+    <div class="vs2" style="grid-template-columns:repeat(2,1fr);margin-top:14px">
+      ${col('SEMANTIC', c.out.semantic, 'var(--blue)', 'what is true — retrieved by similarity to a query')}
+      ${col('USER PREFERENCES', c.out.pref, 'var(--teal)', 'what this person likes — retrieved to personalise')}
+      ${col('SUMMARY', c.out.summary, 'var(--amber)', 'the session, compressed — retrieved to save tokens')}
+      ${col('EPISODIC', c.out.episodic, 'var(--violet)', 'how the job got done, plus the lesson — retrieved per task')}
+    </div>
+    <div class="plain-line" style="margin-top:12px"><b>Why it matters here:</b> ${c.why}</div>`;
+}
+document.getElementById('memConvo').addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(!b)return;
+  memI=Number(b.dataset.i); document.querySelectorAll('#memConvo .seg').forEach(x=>x.classList.remove('on')); b.classList.add('on'); memPaint();});
+memPaint();
+
+/* ================= SIM: what the anti-patterns cost ================= */
+const MTFIX=[
+ {id:'json',   label:'JSON between agents instead of prose',      tok:-1400, ms:-900,  n:1},
+ {id:'format', label:'only the router formats for humans',        tok:-600,  ms:-700,  n:2},
+ {id:'prompt', label:'positive steering instead of walls of DO NOT', tok:-2100, ms:-300, n:3},
+ {id:'thin',   label:'thin router + a small model for routing',   tok:-1800, ms:-1600, n:4},
+ {id:'split',  label:'specialists split, so tools load per intent', tok:-2400, ms:-400, n:5},
+ {id:'bypass', label:'known intents bypass the router entirely',  tok:-1500, ms:-5000, n:6},
+];
+document.getElementById('mtOpts').innerHTML=
+ `<label style="color:var(--text);font-weight:500">Fixes applied</label>`
+ + MTFIX.map(f=>`<label><input type="checkbox" id="mt-${f.id}"> <b style="color:var(--text)">${f.n}</b> · ${f.label}</label>`).join('');
+function mtPaint(){
+  const BASE_TOK=12800, BASE_MS=11500, PRICE=3.0/1e6*4; // illustrative blended $/token
+  let tok=BASE_TOK, ms=BASE_MS, on=[];
+  MTFIX.forEach(f=>{ if(document.getElementById('mt-'+f.id).checked){ tok+=f.tok; ms+=f.ms; on.push(f.n); }});
+  tok=Math.max(1200,tok); ms=Math.max(1400,ms);
+  const perDay=50000;
+  const costNow=tok*PRICE*perDay, costBase=BASE_TOK*PRICE*perDay;
+  document.getElementById('mtOut').innerHTML=
+   `<div class="cidr-out">
+      <div class="r"><span>Tokens per request</span><b style="color:${tok<6000?'var(--green)':tok<10000?'var(--amber)':'var(--red)'}">${tok.toLocaleString()}</b></div>
+      <div class="r"><span>Latency per request</span><b style="color:${ms<5000?'var(--green)':ms<9000?'var(--amber)':'var(--red)'}">${(ms/1000).toFixed(1)} s</b></div>
+      <div class="r"><span>Against the unfixed baseline</span><b style="color:var(--green)">${Math.round((1-tok/BASE_TOK)*100)}% fewer tokens · ${Math.round((1-ms/BASE_MS)*100)}% faster</b></div>
+      <div class="r"><span>At 50,000 requests a day</span><b>about ${Math.round(costNow).toLocaleString()} a day, down from ${Math.round(costBase).toLocaleString()}</b></div>
+      <div class="r"><span>Fixes applied</span><b>${on.length?on.join(', '):'none — this is the version that grew by accident'}</b></div>
+    </div>
+    <div class="plain-line" style="margin-top:12px">${
+      on.length===MTFIX.length
+      ? '<b>All six.</b> Same functionality, a fraction of the cost and a third of the wait. Nothing here required a better model — only deciding where each responsibility lives.'
+      : on.length===0
+      ? '<b>This is the default state,</b> and it is nobody’s fault in particular. Every bug added a prompt line, every specialist started formatting to be helpful, and the router learned each domain so it could route better. Systems degrade by default.'
+      : `<b>${on.length} of 6 applied.</b> Keep going — the two with the largest effect are usually the thin router and bypassing known intents, because they remove whole model calls rather than trimming tokens.`}</div>`;
+  document.getElementById('mtNote').innerHTML='<b>Numbers are illustrative,</b> chosen to show relative effect rather than to predict your bill. The shape is what transfers: fixes that <em>remove a model call</em> (thin router, bypass) beat fixes that shrink a prompt, and prompt bloat is the one that grows again on its own unless someone prunes it.';
+}
+document.getElementById('mtOpts').addEventListener('change',mtPaint); mtPaint();
+
+/* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
+(function(){
+  const open = id => {
+    const tab = document.querySelector(`.tab[data-pane="${id}"]`), pane = document.getElementById('pane-'+id);
+    if(!tab || !pane) return false;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    tab.classList.add('on'); pane.classList.add('on');
+    return true;
+  };
+  const fromHash = () => {
+    const m = (location.hash||'').match(/^#pane-([\w-]+)$/);
+    if (m) open(m[1]);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+  document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
+    history.replaceState(null,'','#pane-'+t.dataset.pane);
+  }));
+})();
+
+</script>
+</body>
+</html>
