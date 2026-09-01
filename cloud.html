@@ -281,6 +281,10 @@
   table.osi td b{color:var(--text); font-weight:500}
   table.osi tr:last-child td{border-bottom:0}
   .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  /* the same class used inline: a chip on the line, not a panel */
+  span.code{display:inline; background:var(--sel); border:1px solid var(--line2); border-radius:5px;
+    padding:.5px 5px; margin:0; overflow:visible; font-family:var(--mono); font-size:.9em;
+    line-height:inherit; color:var(--text); overflow-wrap:break-word}
   .code pre{margin:0}
   .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
   .tk-c{color:var(--dim); font-style:normal}
@@ -512,6 +516,18 @@
       <div class="sim-layout">
         <div><div id="lzPlace"></div></div>
         <div><div id="lzPlaceOut" class="cidr-out"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-lz3b"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; close one gate and read the symptom</h2>
+      <div class="plain-line"><b>Try this:</b> one request, seven gates, every one of which must say yes. Close any of them and the request fails &mdash; but <b>each layer fails in a different way</b>, and telling those ways apart is the single most useful debugging skill on this page.</div>
+      <div class="sim-layout">
+        <div><div id="lzGates"></div></div>
+        <div><div class="toggles" id="lzGateCtl"></div>
+          <div id="lzGateOut" class="cidr-out" style="margin-top:12px"></div></div>
       </div>
     </div>
 
@@ -892,8 +908,8 @@ PDIAG.compute=(()=>{
     return `${t(150,y+19,r[0],SANS,'end')}
       <rect x="162" y="${y}" width="${w}" height="26" rx="5" fill="rgba(251,191,36,.22)" style="stroke:var(--amber)"/>
       <rect x="${162+w}" y="${y}" width="${400-w}" height="26" rx="5" fill="rgba(45,212,191,.16)" style="stroke:var(--teal)"/>
-      ${tm(576,y+17,r[2],'var(--dim)','end')}`;}).join('');
-  return D('0 0 620 210','Four compute options as bars: the amber part is what you operate, the teal part is what the cloud operates. EC2 is mostly amber, Lambda is almost entirely teal.',
+      ${tm(790,y+17,r[2],'var(--dim)','end')}`;}).join('');
+  return D('0 0 800 210','Four compute options as bars: the amber part is what you operate, the teal part is what the cloud operates. EC2 is mostly amber, Lambda is almost entirely teal.',
     body+`${tm(162,200,'amber = your job','var(--amber)','start')}${tm(562,200,'teal = the cloud does it','var(--teal)','end')}`,
     'Every rung down hands more of the work to the cloud and takes away more control. Pick the lowest bar your constraints allow, because everything amber is work your team does forever.');
 })();
@@ -2183,10 +2199,10 @@ document.getElementById('encapDiagram').innerHTML=(()=>{
     {l:3, hdr:'IP',   carries:'TCP segment',    note:'source and dest address'},
     {l:2, hdr:'Eth',  carries:'IP packet',      note:'MAC of the next hop'}];
   const body=rows.map((r,i)=>{
-    const y=16+i*50, pad=i*34, ox=44+pad, ow=376-pad*2, ix=ox+30, iw=ow-60;
+    const y=16+i*50, pad=i*34, ox=44+pad, ow=376-pad*2, ix=ox+34, iw=ow-68;
     return `<text x="8" y="${y+24}" style="${MONO};fill:var(--dim)">L${r.l}</text>
       <rect x="${ox}" y="${y}" width="${ow}" height="38" rx="6" style="fill:var(--panel2);stroke:var(--wire)"/>
-      <text x="${ox+15}" y="${y+24}" text-anchor="middle" style="${MONO};fill:var(--amber)">${r.hdr}</text>
+      <text x="${ox+17}" y="${y+24}" text-anchor="middle" style="${MONO};fill:var(--amber)">${r.hdr}</text>
       <rect x="${ix}" y="${y+6}" width="${iw}" height="26" rx="4" style="fill:var(--n-blue);stroke:var(--blue)"/>
       <text x="${ix+iw/2}" y="${y+24}" text-anchor="middle" style="${MONO};fill:var(--text)">${r.carries}</text>
       <text x="430" y="${y+24}" style="${MONO};fill:var(--dim)">${r.note}</text>`;
@@ -3114,12 +3130,12 @@ document.getElementById('sec-lz1').innerHTML=`
   <h2 class="sec">A landing zone is the estate you build before you build anything on it</h2>
   <div class="plain-line"><b>In plain English:</b> before a business park has a single tenant, somebody has already decided where the perimeter fence runs, where the security gate is, which roads are public and which are staff-only, where the loading bay goes, and what the postcodes are. Nobody notices any of it when it is right. Everyone notices when two buildings turn out to have the same address and the post cannot be delivered.</div>
   <div class="plain-line">A <b>landing zone</b> is that groundwork for a cloud estate. It is the accounts, the networks, the address plan, the doors in and out, and the rules about which of those may talk to which. You lay it out once, and every application that arrives afterwards inherits it. Getting it roughly right is cheap. Changing it two years and four hundred workloads later is the most expensive kind of work there is &mdash; <b>an address range cannot be renumbered while things are running on it</b>.</div>
-  ${D('0 0 680 246','The layers of a landing zone from the organisation at the top down to an individual resource, with the boundary strength of each.',
-   `${box(20,22,640,34,'var(--violet)')}${tm(340,44,'Organisation  —  the whole company. Billing, guardrails, who may create what','var(--violet)')}
-    ${box(58,66,564,34,'var(--violet)')}${tm(340,88,'Account / Subscription / Project  —  the strongest wall you get','var(--violet)')}
-    ${box(96,110,488,34,'var(--teal)')}${tm(340,132,'VPC / VNet  —  one private network. Nothing routes in or out unless you say so','var(--teal)')}
-    ${box(134,154,412,34,'var(--amber)')}${tm(340,176,'Subnet  —  a slice of that network with its own routing and its own rules','var(--amber)')}
-    ${box(172,198,336,34,'var(--wire)')}${tm(340,220,'Resource  —  the server, the database, the load balancer','var(--dim)')}`,
+  ${D('0 0 820 246','The layers of a landing zone from the organisation at the top down to an individual resource, with the boundary strength of each.',
+   `${box(20,22,780,34,'var(--violet)')}${tm(410,44,'Organisation  —  the whole company. Billing, guardrails, who may create what','var(--violet)')}
+    ${box(66,66,688,34,'var(--violet)')}${tm(410,88,'Account / Subscription / Project  —  the strongest wall you get','var(--violet)')}
+    ${box(112,110,596,34,'var(--teal)')}${tm(410,132,'VPC / VNet  —  one private network. Nothing routes in or out unless you say so','var(--teal)')}
+    ${box(159,154,502,34,'var(--amber)')}${tm(410,176,'Subnet  —  a slice of that network with its own routing and its own rules','var(--amber)')}
+    ${box(205,198,410,34,'var(--wire)')}${tm(410,220,'Resource  —  the server, the database, the load balancer','var(--dim)')}`,
    'Each box sits inside the one above it. The width is deliberate: the outer layers are about governance and billing, the middle ones about reachability, and only the innermost is a thing you can log into.')}
   <div class="plain-line" style="margin-top:12px"><b>The trap in that picture:</b> it looks like five walls of decreasing size. It is not. Two of those layers are <em>hard</em> boundaries that a mistake cannot cross, and two are <em>soft</em> ones that a single misconfigured rule opens. The explorer below spells out which is which, because designing as though a subnet were a wall is one of the most common and most expensive misreadings in cloud architecture.</div>
 </div>`;
@@ -3710,6 +3726,12 @@ document.getElementById('sec-lz6').innerHTML=`
   <tr><td><b>Partner connectivity</b></td><td>A private link exposing one service</td><td>Peering. It joins two whole networks and locks both address plans together forever</td></tr>
   <tr><td><b>Spoke-to-spoke traffic</b></td><td>Through the hub, where it can be seen and stopped</td><td>Direct peering between spokes. Ten VPCs meshed is forty-five paths nobody is watching</td></tr>
   <tr><td><b>The address plan</b></td><td>A spreadsheet, written before the first VPC, with room deliberately left unused</td><td>Allocated on demand. This is the one mistake you cannot fix without an outage per system</td></tr>
+  <tr><td><b>Security group rules</b></td><td>A reference to another security group &mdash; &ldquo;the app tier&rdquo;</td><td>A hard-coded CIDR. It is a guess about today&rsquo;s addresses and it survives nothing</td></tr>
+  <tr><td><b>Network ACLs</b></td><td>A coarse subnet-wide backstop, with the return path allowed on <span class="code">1024-65535</span></td><td>Used as your main access control. They are stateless, and forgetting the reply path is a silent outage</td></tr>
+  <tr><td><b>Workload credentials</b></td><td>An attached role or managed identity, issuing short-lived credentials</td><td>An access key in a config file. It never expires, it gets committed, and it works from anywhere on earth</td></tr>
+  <tr><td><b>Cross-account access</b></td><td>Both an identity policy and a resource policy, agreeing</td><td>Only one of them. Either alone is refused, and the message will point at the wrong half</td></tr>
+  <tr><td><b>A KMS key</b></td><td>A key policy that first delegates to IAM</td><td>An IAM policy alone. It grants nothing until the key policy allows IAM to matter</td></tr>
+  <tr><td><b>Private endpoints</b></td><td>An endpoint policy scoped to your own organisation</td><td>Left open. A private path with no policy is a tidy route to somebody else&rsquo;s account</td></tr>
   </tbody></table>
 </div>
 
@@ -3726,8 +3748,142 @@ document.getElementById('sec-lz6').innerHTML=`
   <div class="exam-line"><b>&ldquo;The application must survive an availability zone failure.&rdquo;</b> &rarr; On AWS, a subnet lives in exactly one zone, so it is one subnet per tier per zone, and a NAT gateway per zone too. On Azure and GCP a subnet spans the region and the answer looks different.</div>
   <div class="exam-line"><b>&ldquo;A database must not be reachable from the internet.&rdquo;</b> &rarr; Private subnet, no internet route, security group scoped to the app tier &mdash; and turn off public accessibility, which overrides all three.</div>
   <div class="exam-line"><b>&ldquo;Development must not be able to reach production.&rdquo;</b> &rarr; Separate accounts, and hub route tables that do not carry a route between them. Not security groups &mdash; those are one edit away from being wrong.</div>
+  <div class="exam-line"><b>&ldquo;The connection times out with no error message.&rdquo;</b> &rarr; A network control: a missing route, a security group, or a stateless ACL blocking the reply. Permissions never hang &mdash; they answer at once.</div>
+  <div class="exam-line"><b>&ldquo;AccessDenied, but the role has the permission.&rdquo;</b> &rarr; An explicit deny above it: a service control policy, a permissions boundary, an endpoint policy, or &mdash; if a KMS key is involved &mdash; the key policy.</div>
+  <div class="exam-line"><b>&ldquo;Requests arrive and replies never get back.&rdquo;</b> &rarr; A network ACL. They are stateless, so the reply needs outbound <span class="code">1024-65535</span> allowed explicitly.</div>
+  <div class="exam-line"><b>&ldquo;Instances must reach only our own buckets, never a third party&rsquo;s.&rdquo;</b> &rarr; A VPC endpoint policy scoped to the organisation. Neither the role nor the network can express this on its own.</div>
+  <div class="exam-line"><b>&ldquo;Another account needs to read our bucket.&rdquo;</b> &rarr; Both documents: a resource policy naming their principal, and an identity policy on their side allowing the call.</div>
   <div class="exam-line"><b>&ldquo;We are running out of addresses in a subnet.&rdquo;</b> &rarr; You cannot resize it in place. Add a new subnet from spare space, or a secondary CIDR to the VPC, and migrate. This is why the plan leaves blocks unallocated.</div>
 </div>`;
+
+
+document.getElementById('sec-lz3b').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The packet arrived. Now what actually stops it?</h2>
+  <div class="plain-line"><b>In plain English:</b> getting into a building needs two separate things &mdash; <b>a road to the door</b>, and <b>a key that turns</b>. Everything above this point was roads: subnets, routes, proxies, addresses. None of it decides whether you are <em>allowed</em> to do anything once you arrive. That is a different set of controls, written by different people, and the two are <b>and-ed together</b>: a road with no key gets you a locked door, and a key with no road gets you nowhere to use it.</div>
+  <div class="plain-line">This is where most real incidents live. An open security group is only dangerous because something also had a route and an over-broad role. A perfect network design leaks because a bucket policy said <span class="code">Principal: *</span>. You cannot reason about one half without the other.</div>
+  ${D('0 0 700 250','The gates a request passes through: organisation guardrail, route, security group, network ACL, identity policy, resource policy and endpoint policy.',
+   `${box(20,22,660,32,'var(--red)')}${tm(350,42,'organisation guardrail  —  a ceiling nobody below can raise','var(--red)')}
+    ${box(20,68,320,74,'var(--teal)')}${t(180,90,'CAN IT GET THERE?',SANS)}${tm(180,110,'route table  ·  security group','var(--teal)')}${tm(180,128,'network ACL  ·  firewall rules','var(--teal)')}
+    ${box(360,68,320,74,'var(--violet)')}${t(520,90,'IS IT ALLOWED TO?',SANS)}${tm(520,110,'the role it runs as','var(--violet)')}${tm(520,128,'the policy on the resource','var(--violet)')}
+    ${tm(350,110,'AND','var(--dim)')}
+    ${box(20,156,660,32,'var(--amber)')}${tm(350,176,'both must say yes  —  there is no majority vote and no partial credit','var(--amber)')}
+    ${box(20,202,660,32,'var(--green)')}${tm(350,222,'and one explicit deny, anywhere in the stack, beats every allow above it','var(--green)')}`,
+   'Read it as two independent questions joined by an AND. Network people tend to see only the left box and security people only the right; an incident usually needs both to have been wrong.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Security groups, network ACLs and firewalls &mdash; three things, three jobs</h2>
+  <div class="plain-line"><b>In plain English:</b> a <b>security group is a bouncer on each individual door</b> &mdash; it knows who is standing in front of that one door. A <b>network ACL is a gate at the end of the street</b> &mdash; it sees everyone coming and going and knows nothing about which building they want. A <b>firewall is the checkpoint on the road</b>, and it is the only one that can read where you say you are going.</div>
+  <table class="osi"><thead><tr><th></th><th>Security group</th><th>Network ACL</th><th>Firewall</th></tr></thead><tbody>
+  <tr><td><b>Attaches to</b></td><td>The resource itself &mdash; its network interface</td><td>The whole subnet</td><td>Traffic routed into it</td></tr>
+  <tr><td><b>Stateful?</b></td><td><b>Yes.</b> Allow a request in and the reply goes out automatically</td><td><b>No.</b> You must allow the return traffic yourself, explicitly</td><td>Yes</td></tr>
+  <tr><td><b>Rules</b></td><td>Allow only. There is no deny rule</td><td>Allow <em>and</em> deny</td><td>Allow, deny, and inspect &mdash; by domain, protocol or signature</td></tr>
+  <tr><td><b>Evaluated</b></td><td>All rules at once; any match permits</td><td>In number order; <b>first match wins</b> and the rest are never read</td><td>Rule groups in order</td></tr>
+  <tr><td><b>Can refer to</b></td><td><b>Another security group by name</b> &mdash; &ldquo;the app tier&rdquo; rather than an address range</td><td>Address ranges only</td><td>Domain names, which is why it can allow-list the internet</td></tr>
+  <tr><td><b>Reach for it when</b></td><td>Always. This is your real access control</td><td>A coarse subnet-wide backstop &mdash; blocking one bad range across everything at once</td><td>Egress control, domain allow-listing, deep inspection</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The outage this table is really about:</b> network ACLs are <b>stateless</b>. Somebody allows inbound 443 and outbound 443, which looks complete and is not &mdash; the reply to an incoming request leaves from a high random port, so you also need outbound <span class="code">1024-65535</span> allowed. Requests arrive, the application answers, and the answer never gets out. Every symptom points at the application, and the application is fine.</div>
+  <div class="plain-line"><b>Say what you mean, not where it lives.</b> A rule that says &ldquo;allow 10.0.8.0/22&rdquo; is a guess about which addresses the app tier happens to have today. A rule that says &ldquo;allow the app tier&rsquo;s security group&rdquo; stays true after a rebuild, a rescale or a region move. AWS calls this a security group reference, Azure calls it an <b>application security group</b>, GCP does it with <b>network tags or the service account</b> the workload runs as. Same idea in all three, and it is always the better rule.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The badge and the door &mdash; identity policies versus resource policies</h2>
+  <div class="plain-line"><b>In plain English:</b> there are two places a permission can be written, and they are genuinely different documents. An <b>identity policy is printed on the badge</b>: &ldquo;this holder may open the vault&rdquo;. A <b>resource policy is fixed to the door</b>: &ldquo;this vault opens for that holder&rdquo;. Inside one account, either is usually enough. <b>Across two accounts you need both</b> &mdash; the badge must claim it and the door must agree.</div>
+  <table class="osi"><thead><tr><th></th><th>Identity policy</th><th>Resource policy</th></tr></thead><tbody>
+  <tr><td><b>Attached to</b></td><td>A user, group or role</td><td>The thing being accessed</td></tr>
+  <tr><td><b>Answers</b></td><td>What may this identity do, to what?</td><td>Who may do things to me?</td></tr>
+  <tr><td><b>Examples</b></td><td>An IAM role policy, an Azure role assignment, a GCP IAM binding</td><td>An S3 bucket policy, a KMS key policy, an SQS queue policy, a VPC endpoint policy</td></tr>
+  <tr><td><b>Cross-account</b></td><td>Not sufficient on its own</td><td>Not sufficient on its own &mdash; <b>both sides must say yes</b></td></tr>
+  <tr><td><b>Can name an outsider</b></td><td>No</td><td><b>Yes</b> &mdash; which is exactly how a bucket becomes public. <span class="code">Principal: *</span> is one character away from correct</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The one that behaves differently:</b> a <b>KMS key policy is the root of trust for that key</b>. An IAM policy granting <span class="code">kms:Decrypt</span> does nothing at all unless the key policy first delegates to IAM. This is why the answer to &ldquo;my role has full access and the decrypt is still denied&rdquo; is almost always the key policy, and almost never the role.</div>
+  <div class="plain-line"><b>And the one that turns the network into a policy control:</b> a <b>VPC endpoint policy</b>. Your instance has a valid role and a private path to object storage &mdash; and an endpoint policy that only permits buckets belonging to your own organisation means that path cannot be used to upload your data to somebody else&rsquo;s account. The credentials are real, the network is private, and the request is still refused. That is what a data perimeter is.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">What a workload runs as, and the ceilings above it</h2>
+  <div class="plain-line"><b>In plain English:</b> code has to prove who it is before it can do anything. The wrong way is an access key in a config file &mdash; it never expires, it gets committed, and it works from anywhere in the world. The right way is to <b>attach an identity to the machine</b>: the cloud hands the code short-lived credentials automatically, rotates them, and they are worthless anywhere else.</div>
+  <table class="osi"><thead><tr><th>What you want</th><th>AWS</th><th>Azure</th><th>Google Cloud</th></tr></thead><tbody>
+  <tr><td>An identity for a running workload</td><td>IAM role via an instance profile, task role or IRSA</td><td>Managed identity</td><td>Service account attached to the resource</td></tr>
+  <tr><td>A ceiling nobody below can raise</td><td>Service control policy on the organisation</td><td>Azure Policy at the management group</td><td>Organisation policy constraints</td></tr>
+  <tr><td>A ceiling on one delegated role</td><td>Permissions boundary</td><td>Custom role scope</td><td>IAM conditions</td></tr>
+  <tr><td>Access without any stored secret</td><td>OIDC federation for CI/CD</td><td>Workload identity federation</td><td>Workload identity federation</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The order everything is decided in</b>, and the reason a permission can look correct and still be refused:</div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">0</span><span><b>Any explicit deny, anywhere, wins immediately.</b> Not a tie-break &mdash; a full stop. Nothing further is read.</span></div>
+  <div class="lzrow"><span class="lzmark">1</span><span><b>The organisation guardrail must permit it.</b> An administrator in a member account genuinely cannot exceed this, and that is the point of it.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>Any permissions boundary must permit it.</b> The ceiling on what a delegated role is able to grant itself.</span></div>
+  <div class="lzrow"><span class="lzmark">3</span><span><b>The identity policy must permit it</b> &mdash; and for anything cross-account, the resource policy must permit it as well.</span></div>
+  <div class="lzrow"><span class="lzmark">4</span><span><b>The network must permit it:</b> a route to get there, a security group that allows it, and a network ACL that lets the reply home.</span></div>
+  <div class="simnote" style="margin-top:6px">Every step is an <b>and</b>. There is no majority verdict and no partial credit &mdash; which is why &ldquo;but the role has full access&rdquo; explains nothing on its own.</div>
+</div>`;
+
+/* --- SIM: the seven gates --- */
+(function(){
+  const ctl=document.getElementById('lzGateCtl'), body=document.getElementById('lzGates'), out=document.getElementById('lzGateOut');
+  if(!ctl) return;
+  const G=[
+    {k:'scp',n:'Organisation guardrail (SCP)',ok:'The action is inside what the organisation permits at all.',
+     err:'AccessDenied — with an explicit deny by a service control policy',
+     sym:'fast',
+     why:'Reads like a permissions problem and cannot be fixed like one. No amount of editing the role helps: the ceiling is above the account, and only the organisation can lower it. The message names the SCP, which is the only clue you get.'},
+    {k:'route',n:'Route table — is there a path at all?',ok:'The subnet has a route towards the destination.',
+     err:'the connection hangs, then times out',
+     sym:'slow',
+     why:'Nothing answers, because nothing was ever reached. There is no error to read because no service ever saw the request. Check the route table before anything else — this failure and the next one look identical from the client.'},
+    {k:'sg',n:'Security group on the destination',ok:'An allow rule matches the source and the port.',
+     err:'the connection hangs, then times out',
+     sym:'slow',
+     why:'<b>Indistinguishable from a missing route</b> from the caller&rsquo;s side, because a security group <em>drops</em> rather than rejects — deliberately, so a scanner learns nothing. Flow logs are what tells the two apart: a REJECT line means the packet arrived and the group refused it; no line at all means it never got there.'},
+    {k:'nacl',n:'Network ACL — the return path',ok:'The reply is allowed back out on its high random port.',
+     err:'the request arrives, the reply never comes back',
+     sym:'slow',
+     why:'The nastiest one on the list. The server logs a completed request and the client sees a timeout, so both teams have evidence that the other is at fault. The cause is that ACLs are <b>stateless</b>: allowing inbound 443 does not allow the reply, which leaves from a port in the <span class="code">1024-65535</span> range.'},
+    {k:'role',n:'The identity policy on the workload&rsquo;s role',ok:'The role is permitted to perform this action.',
+     err:'AccessDenied — no identity-based policy allows the action',
+     sym:'fast',
+     why:'Fast, explicit, and it names the action and the resource. This is the friendly failure: the message usually tells you precisely what to add. Read it before assuming anything.'},
+    {k:'res',n:'The resource policy on the target',ok:'The bucket, key or queue permits this principal.',
+     err:'AccessDenied — the resource policy does not allow this principal',
+     sym:'fast',
+     why:'The one people miss, because the role looks correct and it <em>is</em> correct. Across accounts, both documents must agree. And if the target is a KMS key, the key policy is the root of trust — an IAM grant does nothing until the key policy delegates to IAM.'},
+    {k:'ep',n:'The VPC endpoint policy',ok:'The endpoint permits this principal and this destination.',
+     err:'AccessDenied — the endpoint policy does not allow this request',
+     sym:'fast',
+     why:'The data perimeter. Valid credentials, a private path, a legitimate service call — and still refused, because the destination bucket belongs to somebody outside your organisation. This is the control that stops a compromised instance being used to move your data somewhere you do not own.'}
+  ];
+  const on={}; G.forEach(g=>on[g.k]=true);
+  function render(){
+    ctl.innerHTML=G.map(g=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+g.k+'"'+(on[g.k]?' checked':'')+'><span>'+g.n+'</span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{on[i.dataset.k]=i.checked;render();});
+    const firstClosed=G.findIndex(g=>!on[g.k]);
+    body.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE REQUEST — AN APP SERVER WRITING A FILE TO OBJECT STORAGE</div>'+
+      G.map((g,i)=>{
+        const dead=firstClosed>-1&&i>firstClosed, stop=i===firstClosed;
+        return '<div class="lzhop" style="opacity:'+(dead?0.3:1)+';border-left-color:'+
+          (dead?'var(--line2)':stop?'var(--red)':'var(--green)')+'">'+
+          '<span class="n2">'+(i+1)+'</span><span><b>'+g.n+'</b><small>'+
+          (stop?'<span style="color:var(--red)">'+g.err+'</span>':dead?'never evaluated':g.ok)+'</small></span></div>';
+      }).join('');
+    let html;
+    if(firstClosed===-1){
+      html='<div class="ok" style="margin-bottom:10px"><b>The file is written.</b> Seven independent yeses, from four teams who probably never spoke to each other.</div>'+
+        '<div class="simnote">Close any one of them and watch what the failure looks like. The point is not that it fails &mdash; it is that only two of the seven tell you why.</div>';
+    } else {
+      const g=G[firstClosed];
+      html='<div class="lzbad" style="margin-bottom:10px"><b>Stopped at gate '+(firstClosed+1)+' — '+g.n+'</b><br>'+g.err+'</div>'+
+        '<div class="lzrow"><span class="lzmark" style="color:var(--amber)">◎</span><span>'+g.why+'</span></div>';
+    }
+    const slow=G.filter(g=>g.sym==='slow').length;
+    html+='<div class="simnote" style="margin-top:10px"><b>The heuristic worth memorising.</b> '+
+      '<b>A hang is the network. A fast AccessDenied is a policy.</b> '+slow+' of these seven gates fail by going quiet, and all of them are network controls; the other '+(G.length-slow)+
+      ' answer immediately and all of them are permissions. Before you open a single policy document, ask whether it timed out or whether it was refused &mdash; that one question eliminates most of the stack.</div>';
+    out.innerHTML=html;
+  }
+  render();
+})();
 
 
 /* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
