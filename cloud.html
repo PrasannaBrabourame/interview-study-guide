@@ -60,6 +60,17 @@
   .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
   h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
 
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
   /* ---- pillars ---- */
   .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
   @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
@@ -270,6 +281,7 @@
   <header>
     <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
     <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← back to the learning guide</a>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
     <div class="eyebrow">solutions architect · study hub</div>
     <h1>How the cloud actually works <span class="thin">— one request, every pillar, across AWS, GCP and Azure</span></h1>
     <p class="sub">Companion to the network visualizer. Five sections: a step-by-step walk of one request from phone to database (start here if any of this is new), the non-networking exam domains as decision-oriented cards with a diagram each, an animated disaster-recovery failover simulator, a searchable service translator across AWS, GCP and Azure, and the deep conceptual differences between the three clouds that actually change your architecture. Every diagram has a plain-English caption — no cloud background assumed.</p>
@@ -624,6 +636,11 @@
   <section class="pane" id="pane-diffs">
     <div class="diff-grid" id="diffGrid"></div>
   </section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">back to the learning guide</a>
+  </footer>
 </div>
 
 <script>
