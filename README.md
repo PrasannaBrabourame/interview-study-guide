@@ -50,6 +50,10 @@ gemini.html       Gemini Enterprise lab — architecture and provisioning, the
                   identity decision, Workforce Identity Federation, networking,
                   data stores and connectors, agents, Model Armor, search
                   quality and tuning, governance, change management
+govern.html       Govern & secure lab — the agent gateway on both sides, the
+                  policy chain, private egress, agent identity, delegated
+                  access, the threat landscape, boundaries and controls,
+                  perimeters, the registry, tracing and audit
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
