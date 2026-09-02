@@ -46,6 +46,10 @@ evals.html        Evaluation lab — why testing breaks on generative systems,
                   metrics and autoraters, rubrics, trajectories and golden
                   paths, offline vs online, the managed platform, ADK
                   build-time evals, hill climbing, unit economics, upgrades
+gemini.html       Gemini Enterprise lab — architecture and provisioning, the
+                  identity decision, Workforce Identity Federation, networking,
+                  data stores and connectors, agents, Model Armor, search
+                  quality and tuning, governance, change management
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
