@@ -335,6 +335,87 @@
     font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
   .lzhop b{font-size:12.5px; font-weight:600}
   .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
+  /* ================= INTERFACE ================= */
+  /* one global motion guard rather than per-component handling */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important; scroll-behavior:auto !important}
+  }
+  html{scroll-behavior:smooth}
+
+  /* ---- reading progress ---- */
+  .rprog{position:fixed; inset:0 0 auto 0; height:2px; z-index:60; background:transparent; pointer-events:none}
+  .rprog i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--teal),var(--violet));
+    transition:width .12s linear}
+
+  /* ---- sticky, single-row tab bar ---- */
+  .tabwrap{position:sticky; top:0; z-index:50; margin:22px 0 20px;
+    background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); padding:9px 0 10px}
+  .tabwrap::before,.tabwrap::after{content:""; position:absolute; top:0; bottom:0; width:36px; pointer-events:none; z-index:2}
+  .tabwrap::before{left:0; background:linear-gradient(90deg,var(--bg),transparent)}
+  .tabwrap::after{right:0; background:linear-gradient(270deg,var(--bg),transparent)}
+  .tabs{display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+    scroll-snap-type:x proximity; padding:2px 30px; margin:0}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto; scroll-snap-align:center; cursor:pointer; font-family:var(--mono); font-size:12px;
+    color:var(--muted); background:transparent; border:1px solid transparent; border-radius:99px;
+    padding:7px 14px; transition:color .15s, background .15s, border-color .15s; white-space:nowrap}
+  .tab:hover{color:var(--text); background:var(--panel2)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .tab .tcount{display:inline-block; margin-left:7px; font-size:9.5px; opacity:.7;
+    border:1px solid currentColor; border-radius:99px; padding:0 5px; line-height:1.5}
+
+  /* ---- layout with the section rail ---- */
+  .labgrid{display:grid; grid-template-columns:minmax(0,1fr) 208px; gap:26px; align-items:start}
+  .railcol{position:sticky; top:72px; max-height:calc(100vh - 96px); overflow-y:auto; scrollbar-width:thin;
+    padding-right:2px}
+  .railhead{font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 10px 10px}
+  .rail{display:flex; flex-direction:column; gap:1px; border-left:1px solid var(--line); padding-left:0}
+  .rail a{display:flex; gap:7px; align-items:baseline; padding:5px 8px 5px 11px; margin-left:-1px;
+    border-left:2px solid transparent; font-size:11.5px; line-height:1.4; color:var(--muted);
+    text-decoration:none; transition:color .15s, border-color .15s}
+  .rail a:hover{color:var(--text)}
+  .rail a.on{color:var(--amber); border-left-color:var(--amber)}
+  .rail a i{flex:none; width:5px; height:5px; border-radius:50%; background:var(--teal); margin-top:6px; opacity:0}
+  .rail a.sim i{opacity:1}
+  .rail a:focus-visible{outline:2px solid var(--teal); outline-offset:-2px}
+  @media (max-width:1180px){.labgrid{grid-template-columns:minmax(0,1fr)} .railcol{display:none}}
+
+  /* ---- a simulation card should look like one ---- */
+  .card.issim{border-left:3px solid var(--teal); background:
+    linear-gradient(180deg, color-mix(in srgb, var(--teal) 4%, var(--panel)) 0 64px, var(--panel) 64px)}
+  .card.issim > h2.sec::before{content:"interactive"; display:inline-block; vertical-align:middle;
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal);
+    border:1px solid var(--teal); border-radius:99px; padding:2px 7px; margin-right:9px; transform:translateY(-2px)}
+
+  /* ---- command palette ---- */
+  .cmdk{position:fixed; inset:0; z-index:80; display:none; padding:12vh 16px 16px;
+    background:color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter:blur(6px)}
+  .cmdk.on{display:block; animation:cmdIn .16s ease}
+  @keyframes cmdIn{from{opacity:0} to{opacity:1}}
+  .cmdbox{max-width:620px; margin:0 auto; background:var(--panel); border:1px solid var(--line2);
+    border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.22); overflow:hidden}
+  .cmdbox input{width:100%; border:0; border-bottom:1px solid var(--line); background:transparent;
+    color:var(--text); font:inherit; font-size:15px; padding:15px 18px; outline:none}
+  .cmdlist{max-height:46vh; overflow-y:auto; padding:6px}
+  .cmdlist button{display:block; width:100%; text-align:left; border:0; background:transparent; color:inherit;
+    font:inherit; padding:9px 12px; border-radius:9px; cursor:pointer; line-height:1.4}
+  .cmdlist button .cmdtab{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:2px}
+  .cmdlist button .cmdname{font-size:13px}
+  .cmdlist button.on,.cmdlist button:hover{background:var(--panel2)}
+  .cmdlist button.on .cmdname{color:var(--amber)}
+  .cmdnone{padding:16px 18px; color:var(--muted); font-size:13px}
+  .cmdfoot{border-top:1px solid var(--line); padding:8px 14px; font-family:var(--mono); font-size:10px;
+    color:var(--dim); display:flex; gap:14px; flex-wrap:wrap}
+  .cmdfoot b{font-weight:400; color:var(--muted)}
+  .kbdhint{float:right; margin:6px 12px 0 0; font-family:var(--mono); font-size:10.5px; color:var(--dim);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px; cursor:default}
+  .kbdhint b{font-weight:400; color:var(--muted); margin-right:6px}
+  @media (max-width:760px){.kbdhint{display:none}}
 </style>
 </head>
 <body>
@@ -344,6 +425,7 @@
 </defs></svg>
 <div class="wrap">
   <header>
+    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
     <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
     <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
     <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a>
@@ -1631,6 +1713,173 @@ document.getElementById('sec-deploy').innerHTML=`
       '<div class="simnote" style="margin-top:8px"><b>The pair worth memorising:</b> <span class="code">instruction</span> is read by this agent&rsquo;s model, every turn — it is the job description. <span class="code">description</span> is read by other agents and by whatever routes work to it — it is the entry in the staff directory. They sound like the same field and they have different readers, and mixing them up produces an agent that either ignores your rules or is never asked anything.</div>';
   }
   render();
+})();
+
+
+/* ================= INTERFACE =================
+   Navigation and orientation only. Nothing here touches what a simulation does — and it is
+   wrapped so that if any of it fails, the content and the simulations still work. */
+(function(){
+ try{
+  const tabsEl=document.querySelector('.tabs');
+  if(!tabsEl||!tabsEl.parentNode) return;
+
+  /* --- sticky bar + reading progress --- */
+  const wrap=document.createElement('div'); wrap.className='tabwrap';
+  tabsEl.parentNode.insertBefore(wrap, tabsEl); wrap.appendChild(tabsEl);
+  const prog=document.createElement('div'); prog.className='rprog';
+  const progBar=document.createElement('i');
+  prog.appendChild(progBar);
+  document.body.appendChild(prog);
+  const onScroll=()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    progBar.style.width=(h>0?Math.min(100,window.scrollY/h*100):0)+'%';
+  };
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* --- count the simulations in each tab, and mark their cards --- */
+  const panes=[...document.querySelectorAll('.pane')];
+  /* mark the cards that contain a simulation, by looking down rather than up */
+  panes.forEach(p=>{
+    p.querySelectorAll('.card').forEach(c=>{
+      if(c.querySelectorAll('.simplain').length) c.classList.add('issim');
+    });
+  });
+  [...tabsEl.querySelectorAll('.tab')].forEach(t=>{
+    const p=document.getElementById('pane-'+t.dataset.pane);
+    if(!p) return;
+    const n=p.querySelectorAll('.simplain').length;
+    if(n) t.insertAdjacentHTML('beforeend','<span class="tcount">'+n+'</span>');
+  });
+
+  /* --- wrap the panes so a rail can sit beside them --- */
+  const first=panes[0]; if(!first) return;
+  const grid=document.createElement('div'); grid.className='labgrid';
+  const main=document.createElement('div');
+  first.parentNode.insertBefore(grid, first);
+  panes.forEach(p=>main.appendChild(p));
+  grid.appendChild(main);
+  const railCol=document.createElement('div'); railCol.className='railcol';
+  const railHead=document.createElement('div'); railHead.className='railhead'; railHead.textContent='on this tab';
+  const rail=document.createElement('nav'); rail.className='rail'; rail.id='labRail';
+  railCol.appendChild(railHead); railCol.appendChild(rail);
+  grid.appendChild(railCol);
+
+  let spy=null;
+  function buildRail(){
+    const pane=document.querySelector('.pane.on'); if(!pane) return;
+    /* walk cards rather than headings, so “is this section interactive?” is answered
+       by the card that owns the heading instead of by climbing the tree */
+    const rows=[];
+    pane.querySelectorAll('.card').forEach((c,i)=>{
+      const h=c.querySelector('h2.sec'); if(!h) return;
+      if(!h.id) h.id='s-'+pane.id.replace('pane-','')+'-'+i;
+      rows.push({id:h.id, sim:c.querySelectorAll('.simplain').length>0,
+                 txt:h.textContent.replace(/^Try it\s*[—–-]\s*/,'').trim()});
+    });
+    const heads=rows.map(r=>document.getElementById(r.id)).filter(Boolean);
+    rail.innerHTML=rows.map(r=>
+      '<a href="#'+r.id+'" data-t="'+r.id+'" class="'+(r.sim?'sim':'')+'"><i></i><span>'+r.txt+'</span></a>').join('');
+    rail.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{
+      e.preventDefault();
+      const el=document.getElementById(a.dataset.t);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84, behavior:'smooth'});
+    }));
+    if(spy) spy.disconnect();
+    if(typeof IntersectionObserver!=='undefined'&&heads.length){
+      spy=new IntersectionObserver(es=>{
+        es.forEach(en=>{
+          if(!en.isIntersecting) return;
+          rail.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.t===en.target.id));
+        });
+      },{rootMargin:'-84px 0px -70% 0px'});
+      heads.forEach(h=>spy.observe(h));
+    }
+    const f=rail.querySelector('a'); if(f) f.classList.add('on');
+  }
+
+  /* --- keep the active tab visible, and rebuild the rail on every switch --- */
+  function afterSwitch(){
+    const on=tabsEl.querySelector('.tab.on');
+    if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    buildRail();
+  }
+  tabsEl.addEventListener('click',e=>{ if(e.target.closest('.tab')) setTimeout(afterSwitch,0); });
+  buildRail();
+
+  function switchTo(pane){
+    const t=tabsEl.querySelector('.tab[data-pane="'+pane+'"]');
+    if(t){ t.click(); setTimeout(afterSwitch,0); }
+  }
+
+  /* --- command palette over every heading on the page --- */
+  const idx=[];
+  panes.forEach(p=>{
+    const label=(tabsEl.querySelector('.tab[data-pane="'+p.id.replace('pane-','')+'"]')||{}).textContent||'';
+    p.querySelectorAll('h2.sec').forEach((h,i)=>{
+      if(!h.id) h.id='s-'+p.id.replace('pane-','')+'-'+i;
+      idx.push({pane:p.id.replace('pane-',''), tab:label.replace(/\d+$/,'').trim(), id:h.id, name:h.textContent.trim()});
+    });
+  });
+  const pal=document.createElement('div'); pal.className='cmdk';
+  const box=document.createElement('div'); box.className='cmdbox';
+  box.setAttribute('role','dialog'); box.setAttribute('aria-label','Find a section');
+  const inp=document.createElement('input');
+  inp.id='cmdInput'; inp.placeholder='Find a section…';
+  inp.setAttribute('autocomplete','off'); inp.setAttribute('spellcheck','false');
+  const list=document.createElement('div'); list.className='cmdlist'; list.id='cmdList';
+  const foot=document.createElement('div'); foot.className='cmdfoot';
+  foot.innerHTML='<span><b>↑↓</b> move</span><span><b>↵</b> jump</span><span><b>esc</b> close</span>'+
+    '<span><b>← →</b> switch tab</span>';
+  box.appendChild(inp); box.appendChild(list); box.appendChild(foot);
+  pal.appendChild(box); document.body.appendChild(pal);
+  let hits=[], sel=0;
+  function draw(q){
+    const s=q.trim().toLowerCase();
+    hits=(s?idx.filter(x=>(x.name+' '+x.tab).toLowerCase().includes(s)):idx).slice(0,60);
+    sel=0;
+    list.innerHTML=hits.length
+      ? hits.map((h,i)=>'<button data-i="'+i+'" class="'+(i===0?'on':'')+'"><span class="cmdtab">'+h.tab+'</span><span class="cmdname">'+h.name+'</span></button>').join('')
+      : '<div class="cmdnone">Nothing matches that.</div>';
+    list.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.i)));
+  }
+  function go(i){
+    const h=hits[i]; if(!h) return;
+    close(); switchTo(h.pane);
+    setTimeout(()=>{ const el=document.getElementById(h.id);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84,behavior:'smooth'}); },60);
+  }
+  function open(){ pal.classList.add('on'); inp.value=''; draw(''); if(inp.focus) inp.focus(); }
+  function close(){ pal.classList.remove('on'); }
+  pal.addEventListener('click',e=>{ if(e.target===pal) close(); });
+  inp.addEventListener('input',()=>draw(inp.value));
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault(); if(!hits.length) return;
+      sel=(sel+(e.key==='ArrowDown'?1:-1)+hits.length)%hits.length;
+      list.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===sel));
+      const b=list.querySelectorAll('button')[sel]; if(b&&b.scrollIntoView) b.scrollIntoView({block:'nearest'});
+    } else if(e.key==='Enter'){ e.preventDefault(); go(sel); }
+    else if(e.key==='Escape'){ close(); }
+  });
+  draw('');
+
+  /* --- keyboard --- */
+  window.addEventListener('keydown',e=>{
+    const typing=/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||'');
+    if(e.key==='Escape'){ close(); return; }
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); open(); return; }
+    if(typing) return;
+    if(e.key==='/'){ e.preventDefault(); open(); return; }
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+      const all=[...tabsEl.querySelectorAll('.tab')];
+      const i=all.findIndex(t=>t.classList.contains('on'));
+      if(i<0) return;
+      const n=all[(i+(e.key==='ArrowRight'?1:-1)+all.length)%all.length];
+      n.click(); setTimeout(afterSwitch,0); n.focus&&n.focus();
+    }
+  });
+ }catch(err){ if(window.console) console.warn('interface enhancements unavailable:', err); }
 })();
 
 </script>
