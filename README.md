@@ -61,7 +61,7 @@ design.html       Diagram lab — audiences, levels of zoom, anatomy, notation,
                   do's and don'ts, and the whiteboard interview
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
-                  progress rings + streak tracking
+                  progress rings + streak tracking, lab-to-topic mapping
 data/topics.json  The 267 topics as plain JSON (incl. per-topic difficulty)
 ```
 
@@ -70,6 +70,20 @@ controls: an everyday analogy for the mechanism, one concrete first action,
 and a short glossary of only the jargon that appears on that screen. The
 glossary is per-simulation rather than per-page, because someone lost in
 the middle of an interaction does not scroll away to look a word up.
+
+## Labs and topics are linked
+
+Each hands-on lab card carries a **related-topics** strip showing how many of
+the 267 topics that lab actually covers — 50 for the Cloud lab, 35 for
+Evaluation, 33 for the diagram lab. Clicking it opens the browse view filtered
+to just those, rather than the whole pile. The map from lab to categories lives
+in `assets/app.js` (`LABS`); the counts are computed from `data/topics.json` at
+load, so adding a topic updates the right card by itself. Every lab page has a
+matching **▤ related topics** chip that links back to its own reading, and the
+view is shareable as `index.html#lab=<key>`.
+
+Categories a lab only brushes against are deliberately left out — a link that
+returns half the site is the problem it was meant to fix.
 
 Data, styling, and behavior are split into separate files so each can be
 edited and diffed independently — e.g. adding a topic only touches
