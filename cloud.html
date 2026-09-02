@@ -323,6 +323,19 @@
     font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
   .lzhop b{font-size:12.5px; font-weight:600}
   .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
 </style>
 </head>
 <body>
@@ -399,6 +412,7 @@
         <div style="margin-top:16px;border-top:1px dashed var(--line2);padding-top:14px">
           <h2 class="sec">Now break something</h2>
           <div class="plain-line"><b>Try this:</b> switch pieces off and send a request. Some failures nobody notices, some make the site slower, and one takes it down completely. That difference is the entire reason the diagram has this many boxes.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A relay of people passing a note across a building. Remove one and sometimes the note still gets through by another route; remove a different one and everything stops.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch off the cache and send a request, then switch off the database and send another. Very different outcomes.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>request</b> one tap on a phone, travelling all the way to a server and back</span><span class="sp-w"><b>cache</b> a copy of a recent answer, kept close by so nobody has to fetch it again</span><span class="sp-w"><b>load balancer</b> the receptionist deciding which server takes this one</span></span></div></div>
           <div class="toggles" id="jBreak"></div>
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
             <button class="btn" id="jTry">▶ send a request</button>
@@ -434,6 +448,7 @@
     <div class="card" style="margin-top:16px">
       <h2 class="sec">Break something — and see which layer stops it</h2>
       <div class="plain-line"><b>Try this:</b> every one of these faults looks identical to a user (&ldquo;the site is down&rdquo;) and completely different to whoever has to fix it. Pick one, watch how far the request gets, and read what the command actually prints.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A tap that will not run. It could be the tap, the pipe, the stopcock, or the water company. To the person in the kitchen all four look exactly the same.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>DNS fails</b>, then pick <b>the certificate expired</b>, and compare what the commands print.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>OSI layers</b> seven named levels, from the cable up to the app, used to say where a fault lives</span><span class="sp-w"><b>DNS</b> the phone book that turns a name into an address</span><span class="sp-w"><b>certificate</b> the proof a site is who it says it is — it expires on a date</span></span></div></div>
       <div class="sim-layout">
         <div><div id="osiStage"></div></div>
         <div>
@@ -493,6 +508,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Where does each layer actually stop something?</h2>
       <div class="plain-line"><b>Try this:</b> click down the ladder. Each rung looks like a container, but only some of them are a real wall. Knowing which is which is the difference between a design that holds and one that only looks like it does.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A building with a perimeter fence, locked floors, and rooms with no locks at all. Three of those look like security. Only two of them are.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Subnet</b> and read the line about what it stops. It is the answer most people get wrong.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>VPC</b> your own private network in the cloud, with nothing going in or out until you allow it</span><span class="sp-w"><b>subnet</b> a slice of that network — a routing decision, not a wall</span><span class="sp-w"><b>blast radius</b> how much is affected when one thing goes wrong</span></span></div></div>
       <div class="sim-layout">
         <div><div class="lzhier" id="lzHier"></div></div>
         <div><div class="cidr-out" id="lzHierOut"></div></div>
@@ -504,6 +520,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">The estate map &mdash; click any part of it</h2>
       <div class="plain-line"><b>Try this:</b> this is one company&rsquo;s cloud network, drawn once. Click a box and you get the plain-English version, what it has to sit next to, what it must never share a room with, and what breaks when somebody ignores that.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A business park. A gatehouse everyone drives through, a shopfront facing the road, a private road to head office, and the buildings where the actual work happens.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click the <b>GUT / shared utility</b> box — the tier nobody thinks about until it is down.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>perimeter</b> the security gate all traffic passes through and is inspected at</span><span class="sp-w"><b>bastion</b> the single controlled door administrators use to log in</span><span class="sp-w"><b>proxy</b> something that stands in the middle and decides what may pass</span><span class="sp-w"><b>private link</b> a hatch exposing one service, instead of joining two networks</span></span></div></div>
       <div class="sim-layout">
         <div><div id="lzMap"></div></div>
         <div><div id="lzMapOut" class="cidr-out"></div></div>
@@ -515,6 +532,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Try it &mdash; put eight things in the right subnet</h2>
       <div class="plain-line"><b>Try this:</b> eight real workloads, seven tiers. Some are obvious. Two of them are the ones people get wrong in production, and the reason is written out either way.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding which room in a building each thing goes in. The reception desk faces the street; the safe does not. Almost nothing you build belongs at the front.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>place the <b>batch worker that downloads from a partner API</b> in the public tier and read why that is the trap.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>public subnet</b> the only tier with a route out to the open internet</span><span class="sp-w"><b>private subnet</b> no route in from outside; it reaches out through a controlled path</span><span class="sp-w"><b>endpoint</b> a private door to a cloud service, so you never go via the internet</span></span></div></div>
       <div class="sim-layout">
         <div><div id="lzPlace"></div></div>
         <div><div id="lzPlaceOut" class="cidr-out"></div></div>
@@ -526,6 +544,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Try it &mdash; close one gate and read the symptom</h2>
       <div class="plain-line"><b>Try this:</b> one request, seven gates, every one of which must say yes. Close any of them and the request fails &mdash; but <b>each layer fails in a different way</b>, and telling those ways apart is the single most useful debugging skill on this page.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Getting into a building: a road to the door, a key that turns, and your name on the list inside. Missing the road and missing the key feel completely different — one is a locked door, the other is being lost.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>close the <b>route table</b> gate, then close the <b>identity policy</b> gate, and compare the two symptoms.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>route</b> whether there is a path there at all</span><span class="sp-w"><b>security group</b> the rule on the door of one machine saying who may knock</span><span class="sp-w"><b>IAM</b> who is allowed to do what, once they have arrived</span><span class="sp-w"><b>AccessDenied</b> a fast, explicit refusal — as opposed to a hang, which means the network</span></span></div></div>
       <div class="sim-layout">
         <div><div id="lzGates"></div></div>
         <div><div class="toggles" id="lzGateCtl"></div>
@@ -538,6 +557,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Try it &mdash; hand out address ranges, then try to connect them</h2>
       <div class="plain-line"><b>Try this:</b> pick how big the estate is and watch the plan fall out of it. Then turn on the shortcut everybody takes when they are in a hurry, and see which day it stops being free.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>House numbering across a town. Two streets can both have a number 14 quite happily — right up to the day the council merges them and the post stops being deliverable.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>every region just uses 10.0.0.0/16</b> and read the four days on which that stops being free.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>CIDR</b> a range of addresses written as a block, like 10.0.0.0/16</span><span class="sp-w"><b>/16 and /24</b> the bigger the number, the smaller the block</span><span class="sp-w"><b>overlap</b> two networks using the same addresses — they can never be joined</span><span class="sp-w"><b>peering</b> connecting two networks so they can reach each other</span></span></div></div>
       <div class="sim-layout">
         <div><div id="lzCidrOut"></div></div>
         <div>
@@ -554,6 +574,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Try it &mdash; follow six journeys through the estate</h2>
       <div class="plain-line"><b>Try this:</b> pick a journey and walk it hop by hop. Then remove one control and see the shortcut the traffic takes instead &mdash; which is exactly the path an incident report describes afterwards.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Following a parcel through a sorting office. Every stop is somewhere it can be checked, delayed or turned back — and the fast route is fast because nobody is checking.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>choose <b>an app server downloads a patch</b>, then tick the box to remove the control in the middle.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>egress</b> traffic going out to the internet</span><span class="sp-w"><b>NAT</b> hides who is asking, but has no opinion about where they are going</span><span class="sp-w"><b>forward proxy</b> checks whether you are allowed to go there, and writes it down</span><span class="sp-w"><b>hop</b> one step of the journey</span></span></div></div>
       <div class="sim-layout">
         <div><div id="lzPath"></div></div>
         <div>
@@ -598,6 +619,7 @@
     <div class="card" style="margin-top:16px">
       <h2 class="sec">Run it yourself — turn things on and send traffic</h2>
       <div class="plain-line"><b>Try this:</b> switch the cache off and send twenty requests, then switch it on and send twenty more. Then break the upstream and watch the difference between a cache that can serve stale and one that cannot.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A shop assistant who keeps the ten most-asked-about items on the counter. Most customers are served without anyone going to the stockroom.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send twenty requests with the cache off, then switch it on and send twenty more.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>cache</b> a copy of a recent answer kept close by</span><span class="sp-w"><b>hit rate</b> the fraction of requests answered without going to the database</span><span class="sp-w"><b>origin</b> the real source, at the far end, that you are trying not to bother</span></span></div></div>
       <div class="sim-layout">
         <div>
           <div id="ngxMeters"></div>
@@ -630,6 +652,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Where permissions come from — grant one, see what it reaches</h2>
       <div class="plain-line"><b>Try this:</b> grant at the organisation and watch every resource light up. Then try to take one back by granting less further down — you cannot. Only a deny or a guardrail claws anything back, which is why a grant made high up is never really temporary.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Giving someone a master key at head office. It opens the branch offices too, and every cupboard in them, and nobody at the branch was asked.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>grant at the top level and watch how far down the tree it reaches.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>inheritance</b> a permission given high up applies to everything beneath it</span><span class="sp-w"><b>scope</b> how much of the estate a permission covers</span><span class="sp-w"><b>least privilege</b> granting the smallest thing that still does the job</span></span></div></div>
       <div class="sim-layout">
         <div><div class="stage" id="iamTreeStage" style="height:340px"></div></div>
         <div>
@@ -648,6 +671,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Try it — will this request be allowed?</h2>
       <div class="plain-line"><b>Try this:</b> give the developer admin rights, then turn the region guardrail on and try to create a VM in the wrong region anyway. Admin does not help. That is the point of a guardrail.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A company rule that no office may be opened abroad. It does not matter how senior you are — the rule is above you, and that is the whole point of it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>grant full admin, then switch the guardrail on and try the same action again.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>guardrail</b> a rule set above an account that nobody inside it can override</span><span class="sp-w"><b>explicit deny</b> a refusal that beats every permission granted anywhere else</span><span class="sp-w"><b>boundary</b> a ceiling on what a role is able to grant itself</span></span></div></div>
       <div class="sim-layout">
         <div><div id="iamStage"></div><div class="term" id="iamTerm" role="log" aria-live="polite"></div></div>
         <div>
@@ -1108,6 +1132,7 @@ const PSIM={};
 PSIM.compute=`<div class="card" style="margin:0 0 14px;padding:14px">
   <h4 style="margin-top:0">Playground — what does the peak actually cost you?</h4>
   <div class="plain-line"><b>Try this:</b> drag the spike up. Fixed capacity has to be bought for the worst minute of the day and paid for all night; autoscaling only pays for what is running.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Hiring staff for a shop. Enough for Christmas Eve means standing around all February. Enough for February means turning people away in December.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag the spike to its maximum and compare what each of the two approaches costs.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>fixed capacity</b> servers you own and pay for whether busy or idle</span><span class="sp-w"><b>autoscaling</b> adding and removing capacity as demand moves</span><span class="sp-w"><b>peak</b> the busiest moment, which is what fixed capacity has to be sized for</span></span></div></div>
   <label style="font-size:12.5px;color:var(--muted)">Quiet-hours traffic <b id="cbaseV" style="color:var(--amber)">2</b> servers</label>
   <input type="range" id="cbase" min="1" max="10" value="2">
   <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Peak is <b id="cpeakV" style="color:var(--amber)">5</b>x the quiet hours</label>
@@ -1117,6 +1142,7 @@ PSIM.compute=`<div class="card" style="margin:0 0 14px;padding:14px">
 PSIM.storage=`<div class="card" style="margin:0 0 14px;padding:14px">
   <h4 style="margin-top:0">Playground — one terabyte, as it gets older</h4>
   <div class="plain-line"><b>Try this:</b> drag the age forward. The lifecycle rule moves the data for you; the saving needs nobody to remember it. Notice what happens to how long a retrieval takes.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Papers on a desk, then in a filing cabinet, then in the loft. You could move them yourself every month. Or you could set a rule once and stop thinking about it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag the age past ninety days and watch which storage tier the data ends up in.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>storage class</b> how quickly you can get data back, and how much it costs to keep</span><span class="sp-w"><b>lifecycle rule</b> an automatic instruction to move or delete data as it ages</span><span class="sp-w"><b>retrieval cost</b> what you pay to read something back out of cheap storage</span></span></div></div>
   <label style="font-size:12.5px;color:var(--muted)">Days since it was uploaded <b id="sdayV" style="color:var(--amber)">0</b></label>
   <input type="range" id="sday" min="0" max="400" value="0">
   <div id="sout" class="cidr-out" style="margin-top:12px"></div></div>`;
@@ -1155,6 +1181,7 @@ function simStorage(){
 PSIM.security=`<div class="card" style="margin:0 0 14px;padding:14px">
   <h4 style="margin-top:0">Playground — how far does the attacker get?</h4>
   <div class="plain-line"><b>Try this:</b> turn everything off and run it. Then switch controls on one at a time and watch where the attack stops. No single control saves you; each one just has to hold long enough for the next.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A checklist before takeoff. Every item seems unnecessary until the one flight where it is not.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run it with everything off first, so the later ones have something to fix.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>control</b> one specific safeguard you can switch on or off</span><span class="sp-w"><b>failure mode</b> the particular way a thing goes wrong</span><span class="sp-w"><b>defence in depth</b> several controls, so one failing is not the end of it</span></span></div></div>
   <div class="toggles" id="secCtl"></div>
   <button class="btn" id="secRun" style="margin-top:10px">▶ run the attack</button>
   <div class="term" id="secTerm" role="log" aria-live="polite" style="height:190px"></div></div>`;
@@ -1162,6 +1189,7 @@ PSIM.security=`<div class="card" style="margin:0 0 14px;padding:14px">
 PSIM.integration=`<div class="card" style="margin:0 0 14px;padding:14px">
   <h4 style="margin-top:0">Playground — the same outage, with and without a queue</h4>
   <div class="plain-line"><b>Try this:</b> break the email service with the queue off, then again with it on. Same failure, two completely different customer experiences.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A restaurant where the waiter refuses to take your order because the dessert chef is off sick. A queue means they take the order and the dessert catches up later.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>break the email service with the queue off, then switch the queue on and break it again.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>queue</b> a waiting line for work, so the sender does not have to wait for the doer</span><span class="sp-w"><b>synchronous</b> the caller waits for it to finish</span><span class="sp-w"><b>asynchronous</b> the caller hands it over and carries on</span></span></div></div>
   <div class="toggles">
     <label><input type="checkbox" id="intQ" checked> put a queue between checkout and email</label>
     <label><input type="checkbox" id="intDown"> the email service is down</label>
@@ -1177,6 +1205,7 @@ PSIM.integration=`<div class="card" style="margin:0 0 14px;padding:14px">
 PSIM.edge=`<div class="card" style="margin:0 0 14px;padding:14px">
   <h4 style="margin-top:0">Playground — distance, caching and what the user feels</h4>
   <div class="plain-line"><b>Try this:</b> put the user far from the origin, then raise the cache hit rate. You cannot make the distance shorter, but you can stop paying for it on most requests.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Post from Australia. You cannot make the plane faster. You can open a warehouse in Sydney, which is a different solution to the same complaint.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>move the user to the far side of the world, then raise the hit rate and watch what does and does not improve.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>origin</b> the one real source of the content, in one place</span><span class="sp-w"><b>edge</b> copies kept near users all over the world</span><span class="sp-w"><b>round trip</b> one journey there and back — distance you cannot argue with</span><span class="sp-w"><b>hit rate</b> how often the nearby copy already has what was asked for</span></span></div></div>
   <label style="font-size:12.5px;color:var(--muted)">Round trip to the origin <b id="edgeRttV" style="color:var(--amber)">250</b> ms</label>
   <input type="range" id="edgeRtt" min="10" max="350" value="250">
   <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Cache hit rate <b id="edgeHitV" style="color:var(--amber)">0</b>%</label>
@@ -1272,6 +1301,7 @@ function wireEdge(){
 PSIM.resilience=`<div class="card" style="margin:0 0 14px;padding:14px">
   <h4 style="margin-top:0">Playground — the arithmetic of nines</h4>
   <div class="plain-line"><b>Try this:</b> set six services at 99.9% each. Every one of them is doing well, and the thing they add up to is not. Then give the weakest one a second copy and watch what redundancy actually buys.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Six people in a chain, each reliable 999 days out of 1000. The chain is noticeably less reliable than any single person in it, and nobody in it is doing anything wrong.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set all six to 99.9% and read the number the chain actually achieves.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>availability</b> the fraction of time something is working</span><span class="sp-w"><b>nines</b> 99.9% is “three nines” — about 43 minutes down a month</span><span class="sp-w"><b>dependency chain</b> services that each need the next one to be up</span></span></div></div>
   <label style="font-size:12.5px;color:var(--muted)">Services the request passes through <b id="avNV" style="color:var(--amber)">4</b></label>
   <input type="range" id="avN" min="1" max="10" value="4">
   <label style="font-size:12.5px;color:var(--muted);display:block;margin-top:10px">Each one is up <b id="avAV" style="color:var(--amber)">99.9</b>% of the time</label>
@@ -1283,6 +1313,7 @@ PSIM.resilience=`<div class="card" style="margin:0 0 14px;padding:14px">
 PSIM.db=`<div class="card" style="margin:0 0 14px;padding:14px">
   <h4 style="margin-top:0">Playground — answer three questions, get the shortlist</h4>
   <div class="plain-line"><b>Try this:</b> the questions are the ones that actually decide it. Notice how rarely the answer is "whatever we used last time", and how one requirement — multi-region writes — collapses the options in every cloud.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A doctor’s triage questions. Not the most interesting things you could ask, just the few that change what happens next.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer the first question honestly rather than aspirationally, and see how quickly the options narrow.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>RTO</b> how long you can be down before it really hurts</span><span class="sp-w"><b>RPO</b> how much recent data you can afford to lose</span><span class="sp-w"><b>failover</b> switching to the standby copy when the main one fails</span></span></div></div>
   <div class="toggles" id="dbQ"></div>
   <div id="dbOut" class="cidr-out" style="margin-top:12px"></div></div>`;
 
