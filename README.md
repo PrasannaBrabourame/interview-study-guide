@@ -54,6 +54,10 @@ govern.html       Govern & secure lab — the agent gateway on both sides, the
                   policy chain, private egress, agent identity, delegated
                   access, the threat landscape, boundaries and controls,
                   perimeters, the registry, tracing and audit
+design.html       Diagram lab — audiences, levels of zoom, anatomy, notation,
+                  choosing services, what people leave out, the questions
+                  behind the picture, surviving a review, diagram rot, the
+                  do's and don'ts, and the whiteboard interview
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking
