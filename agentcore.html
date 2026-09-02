@@ -78,7 +78,7 @@
   .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
   .wf .ms{text-align:right; color:var(--dim)}
   .wf .row.err .lab{color:var(--red)}
-  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+  .wf .depth0 .lab{padding-left:0} .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
 
   .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
   .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
@@ -305,6 +305,32 @@
   .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
   @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
     .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- scenario drill, built from the page's own exam lines ---- */
+  .drl{border:1px solid var(--line2); border-radius:11px; padding:14px 16px; background:var(--panel2)}
+  .drl-q{font-size:14px; line-height:1.6; margin-bottom:14px}
+  .drl-o{display:block; width:100%; text-align:left; border:1px solid var(--line2); background:var(--panel);
+    border-radius:9px; padding:9px 12px; margin-bottom:7px; font:inherit; font-size:12.5px; color:inherit;
+    cursor:pointer; line-height:1.45; transition:border-color .15s}
+  .drl-o:hover{border-color:var(--teal)}
+  .drl-o:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .drl-o.right{border-color:var(--green); color:var(--green)}
+  .drl-o.wrong{border-color:var(--red); color:var(--red)}
+  .drl-o.muted{opacity:.5}
+  .drl-bar{display:flex; gap:4px; margin-bottom:12px}
+  .drl-bar i{flex:1; height:5px; border-radius:99px; background:var(--line2)}
+  .drl-bar i.ok{background:var(--green)} .drl-bar i.no{background:var(--red)} .drl-bar i.now{background:var(--amber)}
+  /* ---- shared row / note utilities used by the simulations ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
 </style>
 </head>
 <body>
@@ -403,6 +429,23 @@
   </section>
   <section class="pane" id="pane-gateway">
     <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; count the integrations</h2>
+  <div class="plain-line"><b>Try this:</b> drag the number of agents and tools. The figure that matters is not how many boxes there are &mdash; it is how many <em>connections</em> somebody has to build, authenticate and maintain.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Plugging appliances into sockets. Ten appliances and thirty sockets means three hundred possible cables if each one needs its own. One extension board means forty.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag <b>tools</b> up to 60 with the gateway unticked, and read the number.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>integration</b> one wired-up connection between an agent and a tool</span><span class="sp-w"><b>gateway</b> one door everything goes through, instead of many</span><span class="sp-w"><b>credential</b> the secret needed to use a tool</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="acGwOut"></div></div>
+    <div>
+      <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 5px">agents: <b id="acGwAv" style="font-family:var(--mono);color:var(--amber)">10</b></label>
+      <input type="range" id="acGwA" min="1" max="40" value="10" style="width:100%">
+      <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">tools they need: <b id="acGwTv" style="font-family:var(--mono);color:var(--amber)">30</b></label>
+      <input type="range" id="acGwT" min="1" max="60" value="30" style="width:100%">
+      <label style="display:flex;gap:8px;align-items:center;margin:14px 0;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="acGwUse" checked> route them through one gateway</label>
+      <div id="acGwNote" class="cidr-out"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
       <h2 class="sec">Gateway — one door to every tool</h2>
       <div id="acGateway"></div>
     </div>
@@ -483,6 +526,22 @@
   </section>
   <section class="pane" id="pane-case">
     <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; run the loop until the pull request is green</h2>
+  <div class="plain-line"><b>Try this:</b> a change is pushed. Step the loop forward and watch it close &mdash; and notice where it stops on its own, because a loop with no stopping condition is not automation, it is a bill.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A dishwasher that reloads itself. Fine, until it decides the plates are not clean and starts again — and nothing tells it to stop.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next step</b> seven times, then untick the cap and keep going.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>pull request</b> a proposed code change somebody reviews before it lands</span><span class="sp-w"><b>pipeline</b> the automation that runs when code changes</span><span class="sp-w"><b>round</b> one full pass of test, report, fix, re-test</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="acLoopOut"></div></div>
+    <div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn" id="acLoopNext" style="flex:1">next step ▸</button>
+        <button class="btn" id="acLoopReset">reset</button></div>
+      <label style="display:flex;gap:8px;align-items:center;margin:0 0 12px;font-size:12px;cursor:pointer">
+        <input type="checkbox" id="acLoopCap" checked> cap the loop at three rounds, then ask a human</label>
+      <div id="acLoopNote" class="cidr-out"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
       <h2 class="sec">A worked case — autonomous UI QA as a closed CI/CD loop</h2>
       <div id="acDevops"></div>
     </div>
@@ -490,7 +549,14 @@
   <section class="pane" id="pane-exam">
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">What a Solutions Architect exam asks about all this</h2>
-      <div id="acExam"></div>
+      <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly &mdash; which is the point.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not — you recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the table below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is nonetheless a real answer to something else</span></span></div></div>
+  <div id="drillHost"></div>
+</div>
+
+    <div id="acExam"></div>
     </div>
   </section>
 
@@ -1280,6 +1346,168 @@ document.getElementById('mtOpts').addEventListener('change',mtPaint); mtPaint();
   document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
     history.replaceState(null,'','#pane-'+t.dataset.pane);
   }));
+})();
+
+
+/* ================= SCENARIO DRILL =================
+   Reads the page's own .exam-line entries at runtime, so it can never
+   drift from the content and a new scenario becomes a new question free.
+   Distractors are the answers to other scenarios on the same page, which
+   makes them plausible by construction rather than by invention. */
+(function(){
+  const host=document.getElementById('drillHost');
+  if(!host) return;
+  const src=[...document.querySelectorAll('.exam-line')].map(el=>{
+    const html=el.innerHTML;
+    /* .exam-line is also used for pillar notes, which are multi-fact and start differently.
+       A drillable scenario is authored as <b>“…”</b> → answer, so require that shape. */
+    if(!/^\s*<b>\s*&ldquo;/.test(html)) return null;
+    const i=html.indexOf('&rarr;')>=0?html.indexOf('&rarr;'):html.indexOf('→');
+    if(i<0) return null;
+    const q=html.slice(0,i).replace(/<\/?b>/g,'').replace(/&ldquo;|&rdquo;/g,'').trim();
+    const full=html.slice(i+6).trim();
+    /* the headline answer is the first sentence; the rest is the explanation */
+    const m=full.match(/^(.*?[.!?])(\s|$)([\s\S]*)$/);
+    const head=(m?m[1]:full).replace(/^\s+/,'');
+    return {q, head, rest:(m?m[3]:'').trim(), full};
+  }).filter(Boolean);
+  /* some pages author the same content as a three-column table instead of exam lines:
+     scenario | answer | because. Collect those too, so one engine serves both shapes. */
+  [...document.querySelectorAll('table')].forEach(tb=>{
+    const h=tb.innerHTML;
+    if(!/When the scenario says/i.test(h)) return;
+    const rows=h.match(/<tr>[\s\S]*?<\/tr>/g)||[];
+    rows.forEach(r=>{
+      const cells=(r.match(/<td[^>]*>([\s\S]*?)<\/td>/g)||[]).map(c=>c.replace(/^<td[^>]*>|<\/td>$/g,'').trim());
+      if(cells.length<2) return;
+      const q=cells[0].replace(/<\/?b>/g,'').trim();
+      const head=cells[1].replace(/<\/?b>/g,'').trim();
+      if(!q||!head) return;
+      src.push({q:'&ldquo;'+q+'&rdquo;', head, rest:(cells[2]||'').trim(), full:head});
+    });
+  });
+  if(src.length<4){ host.innerHTML='<div class="simnote">Not enough scenarios on this page to drill.</div>'; return; }
+
+  let order=[], idx=0, chosen=null, score=[], opts=[];
+  let seed=src.length*7919;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function shuffle(a){const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b;}
+  function build(){
+    order=shuffle(src.map((_,i)=>i)); idx=0; score=[]; chosen=null; setOpts(); render();
+  }
+  function setOpts(){
+    const cur=src[order[idx]];
+    const others=shuffle(src.filter(x=>x!==cur && x.head!==cur.head)).slice(0,3);
+    opts=shuffle([cur,...others]);
+  }
+  function render(){
+    const cur=src[order[idx]];
+    const done=idx>=order.length;
+    if(done){
+      const right=score.filter(Boolean).length;
+      host.innerHTML='<div class="drl">'+
+        '<div style="font-family:var(--display);font-size:22px;margin-bottom:8px">'+right+' of '+score.length+'</div>'+
+        '<div class="plain-line" style="margin-bottom:12px">'+
+          (right===score.length?'Every one. Worth re-running it — the questions come back in a different order and the wrong answers move around.'
+           :right/score.length>=0.7?'Solid. The ones you missed are the ones worth reading again, and they are the ones an interviewer will reach for.'
+           :'Worth another pass. These are not memory questions — each one has a reason underneath it, and the reason is what makes the next one answerable.')+
+        '</div><button class="btn" id="drlAgain">run it again</button></div>';
+      host.querySelector('#drlAgain').onclick=build; return;
+    }
+    host.innerHTML='<div class="drl">'+
+      '<div class="drl-bar">'+order.map((_,i)=>'<i class="'+(i<score.length?(score[i]?'ok':'no'):i===idx?'now':'')+'"></i>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:6px">SCENARIO '+(idx+1)+' OF '+order.length+'</div>'+
+      '<div class="drl-q">'+cur.q+'</div>'+
+      opts.map((o,i)=>'<button class="drl-o'+(chosen===null?'':(o===cur?' right':(o===chosen?' wrong':' muted')))+'" data-i="'+i+'"'+(chosen!==null?' disabled':'')+'>'+o.head+'</button>').join('')+
+      (chosen!==null?'<div class="'+(chosen===cur?'ok':'lzbad')+'" style="margin-top:12px">'+
+          (chosen===cur?'<b>Right.</b> ':'<b>Not that one.</b> ')+cur.head+(cur.rest?' '+cur.rest:'')+'</div>'+
+        '<button class="btn" id="drlNext" style="margin-top:12px">next scenario ▸</button>':'')+
+      '</div>';
+    host.querySelectorAll('.drl-o').forEach(b=>b.onclick=()=>{
+      if(chosen!==null) return;
+      chosen=opts[+b.dataset.i]; score[idx]=(chosen===cur); render();
+    });
+    const n=host.querySelector('#drlNext');
+    if(n) n.onclick=()=>{ idx++; chosen=null; if(idx<order.length) setOpts(); render(); };
+  }
+  build();
+})();
+
+
+/* --- SIM: gateway integration count --- */
+(function(){
+  const A=document.getElementById('acGwA'), T=document.getElementById('acGwT'),
+        U=document.getElementById('acGwUse'), out=document.getElementById('acGwOut'), note=document.getElementById('acGwNote');
+  if(!A) return;
+  function render(){
+    const a=+A.value, t=+T.value, gw=U.checked;
+    document.getElementById('acGwAv').textContent=a;
+    document.getElementById('acGwTv').textContent=t;
+    const direct=a*t, viaGw=a+t;
+    const n=gw?viaGw:direct;
+    const cells=Math.min(direct,600);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+
+      (gw?'EVERY AGENT SPEAKS ONE PROTOCOL TO ONE DOOR':'EVERY AGENT WIRED TO EVERY TOOL IT NEEDS')+'</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:2px;padding:12px;border:1px dashed var(--line2);border-radius:10px;background:var(--panel2);min-height:120px;align-content:flex-start">'+
+      Array.from({length:Math.min(n,600)},()=>'<span style="width:6px;height:6px;border-radius:1px;background:'+(gw?'var(--green)':'var(--red)')+';opacity:.75"></span>').join('')+
+      (n>600?'<span style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-left:6px">…and '+(n-600)+' more</span>':'')+
+      '</div>'+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">integrations to build</span><b style="color:'+(gw?'var(--green)':'var(--red)')+'">'+n.toLocaleString()+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">wired directly it would be</span><b>'+direct.toLocaleString()+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">through one gateway</span><b>'+viaGw.toLocaleString()+'</b></div>'+
+        (direct>viaGw?'<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line2);margin-top:6px"><span class="dim">difference</span><b style="color:var(--amber)">'+(direct-viaGw).toLocaleString()+' fewer</b></div>':'')+
+      '</div>';
+    let html='';
+    if(!gw&&direct>60) html='<div class="lzbad" style="margin-bottom:10px"><b>'+direct.toLocaleString()+' integrations.</b> Each one is its own authentication, its own error handling and its own way of breaking. Nobody designed this — it grew one reasonable afternoon at a time, and now no single person knows what the estate talks to.</div>';
+    else if(!gw) html='<div class="lzwarn" style="margin-bottom:10px"><b>Small enough to hand-wire, for now.</b> Note the shape though: the count is agents <em>times</em> tools, so it does not grow gently. Two more agents and five more tools is not seven more integrations.</div>';
+    else html='<div class="ok" style="margin-bottom:10px"><b>'+viaGw.toLocaleString()+' instead of '+direct.toLocaleString()+'.</b> Each agent speaks one protocol to one place, and each tool is registered once. The count becomes agents <em>plus</em> tools, which is the whole argument.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The number is not really the point.</b> With one door there is one place to see what every agent reaches, one place to revoke it, and one place where the credential lives — so the agent never holds the downstream secret. Hand-wiring gives you none of that, at any scale.</div>';
+    note.innerHTML=html;
+  }
+  [A,T].forEach(x=>x.oninput=render); U.onchange=render; render();
+})();
+
+/* --- SIM: the closed CI/CD loop --- */
+(function(){
+  const out=document.getElementById('acLoopOut'), next=document.getElementById('acLoopNext'),
+        rst=document.getElementById('acLoopReset'), cap=document.getElementById('acLoopCap'), note=document.getElementById('acLoopNote');
+  if(!out) return;
+  const STEPS=[
+    ['A change is pushed','A pull request touching the front end. Nobody has looked at it yet.','var(--blue)'],
+    ['The pipeline assumes a role','Short-lived credentials from the identity provider — no long-lived key sitting in the repository.','var(--violet)'],
+    ['The test agent explores the app','It logs in and drives a real browser across five pages, taking screenshots as it goes.','var(--teal)'],
+    ['Findings are posted to the pull request','Four issues, with evidence attached. A human can read them without running anything.','var(--amber)'],
+    ['The fix agent patches','It works out the root cause and pushes a minimal change to the same branch.','var(--green)'],
+    ['The push re-triggers everything','Which is the loop closing — and the reason a stopping condition is not optional.','var(--red)']
+  ];
+  let i=0, round=1;
+  function render(){
+    const capped=cap.checked;
+    const stuck = round>3 && capped;
+    next.disabled = stuck; next.style.opacity = stuck?0.5:1;
+    next.textContent = stuck ? 'stopped — a human is asked' : 'next step ▸';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ROUND '+round+(capped?' OF 3':'')+'</div>'+
+      STEPS.slice(0,i).map(([n,d,c],k)=>'<div class="lzhop" style="display:block;border-left-color:'+c+';padding:10px 12px">'+
+        '<div style="display:flex;gap:9px"><span class="n2">'+(k+1)+'</span><span><b>'+n+'</b><small>'+d+'</small></span></div></div>').join('')+
+      (i===0?'<div class="simnote">Press <b>next step</b> to push the change.</div>':'')+
+      (round>3&&capped?'<div style="margin-top:12px;padding:11px 13px;border-radius:9px;background:var(--panel2);border-left:3px solid var(--amber)">'+
+        '<div style="font-family:var(--mono);font-size:10.5px;color:var(--amber);margin-bottom:4px">THE LOOP STOPPED ITSELF</div>'+
+        '<div style="font-size:12.5px">Three rounds and the tests are still failing. It escalates rather than trying a fourth time.</div></div>':'')+
+      (round>4&&!capped?'<div style="margin-top:12px;padding:11px 13px;border-radius:9px;background:var(--panel2);border-left:3px solid var(--red)">'+
+        '<div style="font-family:var(--mono);font-size:10.5px;color:var(--red);margin-bottom:4px">ROUND '+round+' AND COUNTING</div>'+
+        '<div style="font-size:12.5px">Nothing is stopping this. Each round is a full browser run and a model working through a codebase, and it is three in the morning.</div></div>':'');
+    let html='';
+    if(round>3&&capped) html='<div class="ok" style="margin-bottom:10px"><b>The cap is the design.</b> An agent that can push a commit that re-triggers itself has built a loop, and a loop needs a way out that does not depend on the agent noticing it is stuck. Three rounds, then a person.</div>';
+    else if(round>4&&!capped) html='<div class="lzbad" style="margin-bottom:10px"><b>This is the failure people do not anticipate.</b> Nothing is broken — every component is doing its job correctly. The agent fixes, the push triggers, the tests run, the agent fixes. It is a working system with no terminating condition.</div>';
+    else if(i>=STEPS.length) html='<div class="note" style="margin-bottom:10px"><b>Round '+round+' complete, and the tests still fail.</b> Press again to watch it go round.</div>';
+    else html='<div class="simnote">Six steps to a round. Watch what happens at the last one.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The other control worth noticing</b> is at step 4: findings go to the pull request as evidence a person reads, and every patch is reviewed before merge. The agents do the repetitive part; the judgement stays with a human, and that is a deliberate boundary rather than a limitation.</div>';
+    note.innerHTML=html;
+  }
+  next.onclick=()=>{ i++; if(i>STEPS.length){ i=1; round++; } render(); };
+  rst.onclick=()=>{ i=0; round=1; render(); };
+  cap.onchange=render; render();
 })();
 
 </script>

@@ -309,6 +309,32 @@
   .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
   @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
     .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- scenario drill, built from the page's own exam lines ---- */
+  .drl{border:1px solid var(--line2); border-radius:11px; padding:14px 16px; background:var(--panel2)}
+  .drl-q{font-size:14px; line-height:1.6; margin-bottom:14px}
+  .drl-o{display:block; width:100%; text-align:left; border:1px solid var(--line2); background:var(--panel);
+    border-radius:9px; padding:9px 12px; margin-bottom:7px; font:inherit; font-size:12.5px; color:inherit;
+    cursor:pointer; line-height:1.45; transition:border-color .15s}
+  .drl-o:hover{border-color:var(--teal)}
+  .drl-o:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .drl-o.right{border-color:var(--green); color:var(--green)}
+  .drl-o.wrong{border-color:var(--red); color:var(--red)}
+  .drl-o.muted{opacity:.5}
+  .drl-bar{display:flex; gap:4px; margin-bottom:12px}
+  .drl-bar i{flex:1; height:5px; border-radius:99px; background:var(--line2)}
+  .drl-bar i.ok{background:var(--green)} .drl-bar i.no{background:var(--red)} .drl-bar i.now{background:var(--amber)}
+  /* ---- shared row / note utilities used by the simulations ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
 </style>
 </head>
 <body>
@@ -348,9 +374,32 @@
 
   <section class="pane on" id="pane-start">
     <div id="sec-start"></div>
+    <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; does this actually need an agent?</h2>
+  <div class="plain-line"><b>Try this:</b> eight jobs somebody might ask you to build. Decide which need an agent and which are a single model call wearing a costume. Getting this wrong in either direction is expensive.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding whether a job needs a project manager. Booking one meeting does not. Coordinating four teams across three months does — and treating the first like the second is how simple things get slow.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>judge <b>translate a paragraph</b> first, then <b>issue a refund</b>. The difference between them is the whole test.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>agent</b> something that takes several steps and decides what to do next</span><span class="sp-w"><b>prompt</b> one question in, one answer out</span><span class="sp-w"><b>tool</b> a way for the model to actually do something in a real system</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="adkNeedOut"></div></div>
+    <div><div id="adkNeedNote" class="cidr-out"></div></div>
+  </div>
+</div>
+
+
   </section>
   <section class="pane" id="pane-agent">
     <div id="sec-agent"></div>
+    <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; fill in the form and watch what breaks</h2>
+  <div class="plain-line"><b>Try this:</b> the six fields, and one combination the framework refuses outright. Two of these fields sound alike and are read by different audiences &mdash; get them the wrong way round and the agent works perfectly and is never used.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Filling in a job advert. Two of the boxes look almost the same — what the job involves, and what the role is called on the intranet. One is read by the person doing the job; the other decides whether anyone applies.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>untick <b>a specific description</b> and read why nothing appears to break.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>instruction</b> the rules this agent follows, read by its own model every turn</span><span class="sp-w"><b>description</b> one line saying what it is good for, read by whatever routes work to it</span><span class="sp-w"><b>output_schema</b> forcing the answer into one exact JSON shape</span><span class="sp-w"><b>output_key</b> the name its answer is saved under for the next agent</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="adkFormOut"></div></div>
+    <div><div class="toggles" id="adkFormCtl"></div>
+      <div id="adkFormNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+
   </section>
   <section class="pane" id="pane-tools">
     <div id="sec-tools"></div>
@@ -1293,6 +1342,13 @@ document.getElementById('sec-deploy').innerHTML=`
   </tbody></table>
 </div>
 
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly &mdash; which is the point.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not — you recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the list below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is nonetheless a real answer to something else</span></span></div></div>
+  <div id="drillHost"></div>
+</div>
+
 <div class="card">
   <h2 class="sec">The exam angle &mdash; what these facts look like as a question</h2>
   <div class="exam-line"><b>&ldquo;An agent picks the wrong tool despite the right tool being available.&rdquo;</b> &rarr; The docstring. The model chooses from generated schemas, and a vague description makes two tools indistinguishable. Not a model problem, not a prompt problem.</div>
@@ -1399,6 +1455,184 @@ document.getElementById('sec-deploy').innerHTML=`
     history.replaceState(null,'','#pane-'+t.dataset.pane);
   }));
 })();
+
+/* ================= SCENARIO DRILL =================
+   Reads the page's own .exam-line entries at runtime, so it can never
+   drift from the content and a new scenario becomes a new question free.
+   Distractors are the answers to other scenarios on the same page, which
+   makes them plausible by construction rather than by invention. */
+(function(){
+  const host=document.getElementById('drillHost');
+  if(!host) return;
+  const src=[...document.querySelectorAll('.exam-line')].map(el=>{
+    const html=el.innerHTML;
+    /* .exam-line is also used for pillar notes, which are multi-fact and start differently.
+       A drillable scenario is authored as <b>“…”</b> → answer, so require that shape. */
+    if(!/^\s*<b>\s*&ldquo;/.test(html)) return null;
+    const i=html.indexOf('&rarr;')>=0?html.indexOf('&rarr;'):html.indexOf('→');
+    if(i<0) return null;
+    const q=html.slice(0,i).replace(/<\/?b>/g,'').replace(/&ldquo;|&rdquo;/g,'').trim();
+    const full=html.slice(i+6).trim();
+    /* the headline answer is the first sentence; the rest is the explanation */
+    const m=full.match(/^(.*?[.!?])(\s|$)([\s\S]*)$/);
+    const head=(m?m[1]:full).replace(/^\s+/,'');
+    return {q, head, rest:(m?m[3]:'').trim(), full};
+  }).filter(Boolean);
+  /* some pages author the same content as a three-column table instead of exam lines:
+     scenario | answer | because. Collect those too, so one engine serves both shapes. */
+  [...document.querySelectorAll('table')].forEach(tb=>{
+    const h=tb.innerHTML;
+    if(!/When the scenario says/i.test(h)) return;
+    const rows=h.match(/<tr>[\s\S]*?<\/tr>/g)||[];
+    rows.forEach(r=>{
+      const cells=(r.match(/<td[^>]*>([\s\S]*?)<\/td>/g)||[]).map(c=>c.replace(/^<td[^>]*>|<\/td>$/g,'').trim());
+      if(cells.length<2) return;
+      const q=cells[0].replace(/<\/?b>/g,'').trim();
+      const head=cells[1].replace(/<\/?b>/g,'').trim();
+      if(!q||!head) return;
+      src.push({q:'&ldquo;'+q+'&rdquo;', head, rest:(cells[2]||'').trim(), full:head});
+    });
+  });
+  if(src.length<4){ host.innerHTML='<div class="simnote">Not enough scenarios on this page to drill.</div>'; return; }
+
+  let order=[], idx=0, chosen=null, score=[], opts=[];
+  let seed=src.length*7919;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function shuffle(a){const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b;}
+  function build(){
+    order=shuffle(src.map((_,i)=>i)); idx=0; score=[]; chosen=null; setOpts(); render();
+  }
+  function setOpts(){
+    const cur=src[order[idx]];
+    const others=shuffle(src.filter(x=>x!==cur && x.head!==cur.head)).slice(0,3);
+    opts=shuffle([cur,...others]);
+  }
+  function render(){
+    const cur=src[order[idx]];
+    const done=idx>=order.length;
+    if(done){
+      const right=score.filter(Boolean).length;
+      host.innerHTML='<div class="drl">'+
+        '<div style="font-family:var(--display);font-size:22px;margin-bottom:8px">'+right+' of '+score.length+'</div>'+
+        '<div class="plain-line" style="margin-bottom:12px">'+
+          (right===score.length?'Every one. Worth re-running it — the questions come back in a different order and the wrong answers move around.'
+           :right/score.length>=0.7?'Solid. The ones you missed are the ones worth reading again, and they are the ones an interviewer will reach for.'
+           :'Worth another pass. These are not memory questions — each one has a reason underneath it, and the reason is what makes the next one answerable.')+
+        '</div><button class="btn" id="drlAgain">run it again</button></div>';
+      host.querySelector('#drlAgain').onclick=build; return;
+    }
+    host.innerHTML='<div class="drl">'+
+      '<div class="drl-bar">'+order.map((_,i)=>'<i class="'+(i<score.length?(score[i]?'ok':'no'):i===idx?'now':'')+'"></i>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:6px">SCENARIO '+(idx+1)+' OF '+order.length+'</div>'+
+      '<div class="drl-q">'+cur.q+'</div>'+
+      opts.map((o,i)=>'<button class="drl-o'+(chosen===null?'':(o===cur?' right':(o===chosen?' wrong':' muted')))+'" data-i="'+i+'"'+(chosen!==null?' disabled':'')+'>'+o.head+'</button>').join('')+
+      (chosen!==null?'<div class="'+(chosen===cur?'ok':'lzbad')+'" style="margin-top:12px">'+
+          (chosen===cur?'<b>Right.</b> ':'<b>Not that one.</b> ')+cur.head+(cur.rest?' '+cur.rest:'')+'</div>'+
+        '<button class="btn" id="drlNext" style="margin-top:12px">next scenario ▸</button>':'')+
+      '</div>';
+    host.querySelectorAll('.drl-o').forEach(b=>b.onclick=()=>{
+      if(chosen!==null) return;
+      chosen=opts[+b.dataset.i]; score[idx]=(chosen===cur); render();
+    });
+    const n=host.querySelector('#drlNext');
+    if(n) n.onclick=()=>{ idx++; chosen=null; if(idx<order.length) setOpts(); render(); };
+  }
+  build();
+})();
+
+
+/* --- SIM: does this need an agent --- */
+(function(){
+  const out=document.getElementById('adkNeedOut'), note=document.getElementById('adkNeedNote');
+  if(!out) return;
+  const J=[
+    {k:'sum',n:'Summarise a document somebody pastes in',need:false,
+     y:'One call in, one answer out. No tool, no state, nothing to decide. An agent here buys latency, cost and a new class of failure for nothing.'},
+    {k:'tone',n:'Rewrite a message in a friendlier tone',need:false,
+     y:'Same shape. If you can draw it as one arrow, it is a prompt.'},
+    {k:'refund',n:'Decide whether a refund is claimable and issue it',need:true,
+     y:'Several steps that depend on each other, real systems touched through real credentials, and a point where being wrong costs money. That is an agent.'},
+    {k:'faq',n:'Answer questions from a fixed set of help articles',need:false,
+     y:'Retrieval plus a call. It looks agentic because a document is fetched, and there is still only one decision: what to say.'},
+    {k:'triage',n:'Read a support ticket, check the account, and route it',need:true,
+     y:'The second step depends on what the first found, and the route depends on both. A decision diamond, and something is done at the end.'},
+    {k:'trans',n:'Translate a paragraph',need:false,
+     y:'The clearest example on the list. Nobody would build an agent for this, and the useful part is noticing why: nothing is decided.'},
+    {k:'onb',n:'Onboard a supplier: verify details, create records in three systems, notify finance',need:true,
+     y:'Multi-step, cross-system, with a failure halfway through that has to be handled. Also the case for splitting it into several agents rather than one.'},
+    {k:'extract',n:'Pull five fields out of an invoice into JSON',need:false,
+     y:'One call with a schema. Reliable, cheap, testable — and an agent would make it slower and less predictable at exactly the thing it is good at.'}
+  ];
+  const pick={};
+  function render(){
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">EIGHT JOBS — WHICH NEED AN AGENT?</div>'+
+      J.map(j=>'<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">'+
+        '<span style="flex:1;font-size:12.5px">'+j.n+'</span>'+
+        '<div class="segmented" style="flex:none">'+
+        '<button class="seg'+(pick[j.k]==='p'?' on':'')+'" data-k="'+j.k+'" data-v="p">a prompt</button>'+
+        '<button class="seg'+(pick[j.k]==='a'?' on':'')+'" data-k="'+j.k+'" data-v="a">an agent</button>'+
+        '</div></div>').join('');
+    out.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.k]=b.dataset.v;render();});
+    const done=J.filter(j=>pick[j.k]); const right=done.filter(j=>(pick[j.k]==='a')===j.need).length;
+    let html;
+    if(!done.length) html='<div class="simnote">Decide the first one. Three of the eight need an agent.</div>';
+    else html=done.map(j=>{const ok=(pick[j.k]==='a')===j.need;
+      return '<div class="lzrow" style="margin-bottom:9px"><span class="lzmark" style="color:var('+(ok?'--green':'--red')+')">'+(ok?'✓':'✗')+'</span>'+
+      '<span><b>'+j.n+'</b><br>'+j.y+'</span></div>';}).join('')+
+      '<div class="simnote" style="margin-top:10px"><b>'+right+' of '+done.length+' right.</b></div>';
+    if(done.length===J.length) html+='<div class="'+(right===J.length?'ok':'note')+'" style="margin-top:10px"><b>The test that separates them:</b> if you can draw the whole thing as one arrow, it is a prompt. If your drawing has a decision that depends on what came back, a retry, or two things handing work to each other, it is an agent. <b>Five of these eight are prompts</b>, and building them as agents is the commonest way a team ends up with something slow, expensive and harder to test than what it replaced.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+
+/* --- SIM: agent definition form --- */
+(function(){
+  const ctl=document.getElementById('adkFormCtl'), out=document.getElementById('adkFormOut'), note=document.getElementById('adkFormNote');
+  if(!ctl) return;
+  const st={root:true,instr:true,desc:true,tools:true,schema:false,okey:true};
+  function render(){
+    ctl.innerHTML=[['root','the variable is named <span class="code">root_agent</span>'],
+                   ['instr','a specific <span class="code">instruction</span> — the rules it follows'],
+                   ['desc','a specific <span class="code">description</span> — what it is good for'],
+                   ['tools','it has <span class="code">tools</span>'],
+                   ['schema','it has an <span class="code">output_schema</span> — forced JSON out'],
+                   ['okey','it sets <span class="code">output_key</span> for the next agent']]
+      .map(([k,l])=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+k+'"'+(st[k]?' checked':'')+'><span>'+l+'</span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{st[i.dataset.k]=i.checked;render();});
+    const code='root_agent = Agent(\n'+
+      '    name="order_status_agent",\n'+
+      '    model="gemini-2.5-flash",\n'+
+      '    instruction='+(st.instr?'"Look up order status. Always call get_order before\n                  answering. If the ID is not found, say so — never guess."':'"You are a helpful assistant."')+',\n'+
+      '    description='+(st.desc?'"Answers questions about the status and delivery\n                  date of an existing customer order."':'"An agent that helps users."')+',\n'+
+      (st.tools?'    tools=[get_order, check_delivery],\n':'')+
+      (st.schema?'    output_schema=OrderStatus,\n':'')+
+      (st.okey?'    output_key="order_result",\n':'')+
+      ')';
+    const conflict = st.schema && st.tools;
+    const CH=[
+      {ok:st.root, t:'the CLI can find it', bad:'<b>Nothing runs.</b> ADK looks inside agent.py for a variable named exactly <span class="code">root_agent</span>. Call it anything else and every command reports no agent found — the code is fine, the name is not.'},
+      {ok:!conflict, t:'the definition is valid', bad:'<b>Refused.</b> <span class="code">output_schema</span> cannot be combined with tools or delegation. Asking a model to both call tools and emit exactly one JSON shape is contradictory. Split it: one agent acts, a second formats.'},
+      {ok:st.instr, t:'it follows your rules', bad:'The instruction is a wish, not a contract. &ldquo;Be helpful&rdquo; contains no rule, so it will invent an order status rather than admit it cannot find one — and it will do it differently each time.'},
+      {ok:st.desc, t:'work gets routed to it', bad:'<b>The quiet one.</b> The description is read by <em>other agents and by the enterprise router</em>, not by this agent. &ldquo;An agent that helps users&rdquo; does not distinguish it from anything, so it is healthy, correct, and never sent a question.'},
+      {ok:st.tools||st.schema, t:'it can do something', bad:'No tools and no output shape. It can talk and nothing else — which may be what you want, and is worth having decided rather than defaulted into.'},
+      {ok:st.okey, t:'the next agent can read its answer', bad:'Without <span class="code">output_key</span> the reply is not saved into state, so a following agent in a pipeline finds nothing there. It does not error — it reads an empty value and writes something plausible.'}
+    ];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">THE DEFINITION</div>'+
+      '<pre class="code">'+hl(code)+'</pre>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">WHAT WORKS</div>'+
+      CH.map(c=>'<div class="lzrow" style="margin-bottom:5px"><span class="lzmark" style="color:var('+(c.ok?'--green':'--red')+')">'+(c.ok?'✓':'✗')+'</span><span'+(c.ok?'':' style="color:var(--red)"')+'>'+c.t+'</span></div>').join('');
+    const broken=CH.filter(c=>!c.ok);
+    note.innerHTML=(broken.length
+      ? broken.map(c=>'<div class="lzbad" style="margin-bottom:9px">'+c.bad+'</div>').join('')
+      : '<div class="ok" style="margin-bottom:10px"><b>Every field is doing its job.</b> Note how little of that is about the model — five of the six checks are about naming, wording and wiring.</div>')+
+      '<div class="simnote" style="margin-top:8px"><b>The pair worth memorising:</b> <span class="code">instruction</span> is read by this agent&rsquo;s model, every turn — it is the job description. <span class="code">description</span> is read by other agents and by whatever routes work to it — it is the entry in the staff directory. They sound like the same field and they have different readers, and mixing them up produces an agent that either ignores your rules or is never asked anything.</div>';
+  }
+  render();
+})();
+
 </script>
 </body>
 </html>

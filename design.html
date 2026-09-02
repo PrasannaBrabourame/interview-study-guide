@@ -408,9 +408,34 @@
   </section>
   <section class="pane" id="pane-rules">
     <div id="sec-rules"></div>
+    <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; score a diagram you have actually got</h2>
+  <div class="plain-line"><b>Try this:</b> think of a diagram in your own repository or wiki and tick what is genuinely true of it. The score is less interesting than the order the missing items come back in &mdash; some of these cost far more than others.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A car's MOT checklist. The tyres matter more than the wing mirrors, and a list that treats them equally is not much help when you have an hour.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick nothing at first and read the top item on the missing list.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>legend</b> the key saying what a line, colour or shape means</span><span class="sp-w"><b>stale</b> the diagram no longer matches the real system</span><span class="sp-w"><b>critical path</b> the route through the system that actually matters</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="dgScoreOut"></div></div>
+    <div><div class="toggles" id="dgScoreCtl"></div>
+      <div id="dgScoreNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+
   </section>
   <section class="pane" id="pane-board">
     <div id="sec-board"></div>
+    <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; spend the first ten minutes</h2>
+  <div class="plain-line"><b>Try this:</b> forty minutes on the clock and six things you could do. Pick them in the order you would actually do them, and watch the clock &mdash; the commonest mistake is not a wrong answer, it is starting to draw in minute one.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A doctor's appointment. Ten minutes, and the ones who ask three questions before reaching for the prescription pad are not being slow.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>draw the containers</b> first and read what it says.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>context diagram</b> your whole system as one box, and who talks to it</span><span class="sp-w"><b>containers</b> each separately deployable piece</span><span class="sp-w"><b>scope</b> what you are deliberately not covering</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="dgBoardOut"></div></div>
+    <div><div class="segmented" id="dgBoardCtl" style="flex-direction:column;align-items:stretch"></div>
+      <button class="btn" id="dgBoardReset" style="margin-top:10px;width:100%">start again</button>
+      <div id="dgBoardNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+
   </section>
 
   <footer class="lab-foot">
@@ -1358,6 +1383,110 @@ document.getElementById('sec-board').innerHTML=`
     history.replaceState(null,'','#pane-'+t.dataset.pane);
   }));
 })();
+
+/* --- SIM: score your diagram --- */
+(function(){
+  const ctl=document.getElementById('dgScoreCtl'), out=document.getElementById('dgScoreOut'), note=document.getElementById('dgScoreNote');
+  if(!ctl) return;
+  const C=[
+    {k:'date',l:'it carries a date and an owner',w:16,miss:'<b>Fix this one first.</b> Undated is unknowable, and unknowable gets treated as fiction. It is the cheapest item on the list and the commonest reason a correct diagram is ignored.'},
+    {k:'q',l:'a question at the top, not just a subject',w:14,miss:'Without a question you cannot decide what to leave out, so the page grows until nobody reads it. Everything else on this list gets easier once this exists.'},
+    {k:'live',l:'it lives next to the code and changes with it',w:15,miss:'It will be wrong within a year, and a wrong diagram is worse than none — it sends somebody confidently to a service that was decommissioned in March.'},
+    {k:'level',l:'one level of zoom on the page',w:11,miss:'A class name beside a load balancer means every reader is simultaneously overwhelmed and missing something. The fix is to split, never to redraw more neatly.'},
+    {k:'legend',l:'a legend for lines, colours and shapes',w:9,miss:'There is no standard for what a dashed line means. Readers guess, most guess wrong, and none of them will mention it.'},
+    {k:'sync',l:'solid and dashed distinguish sync from async',w:10,miss:'The highest-value distinction available and free to add. Without it the page cannot answer “what happens when this is slow?”, which is the question behind most incidents.'},
+    {k:'fail',l:'failure behaviour on the critical path',w:12,miss:'Nobody opens a diagram to find out how it works when it works. Timeouts, retries and what happens when they are exhausted are the reason it gets opened at all.'},
+    {k:'scope',l:'a line saying what is deliberately not shown',w:6,miss:'One sentence. It saves twenty minutes in every review, with every reviewer, forever.'},
+    {k:'bound',l:'boundaries drawn as containers',w:9,miss:'A reviewer cannot tell what is inside what, which is most of what they came to check.'},
+    {k:'own',l:'who owns each box',w:8,miss:'A box is a future on-call rota entry. If nobody has agreed to own it, it is a wish rather than a design.'},
+    {k:'labels',l:'every edge labelled with protocol and payload',w:8,miss:'An unlabelled arrow could mean four different things, two of which point the opposite way.'},
+    {k:'rev',l:'somebody other than the author has read it',w:7,miss:'It may well be correct. Nobody else has tested that, and the first test will be production.'}
+  ];
+  const st={}; C.forEach(c=>st[c.k]=false);
+  function render(){
+    ctl.innerHTML=C.map(c=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+c.k+'"'+(st[c.k]?' checked':'')+'><span>'+c.l+'</span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{st[i.dataset.k]=i.checked;render();});
+    const total=C.reduce((a,c)=>a+c.w,0);
+    const got=C.filter(c=>st[c.k]).reduce((a,c)=>a+c.w,0);
+    const pct=Math.round(got/total*100);
+    const missing=C.filter(c=>!st[c.k]).sort((a,b)=>b.w-a.w);
+    out.innerHTML='<div class="bar" style="height:18px"><i style="display:block;height:100%;width:'+pct+'%;background:'+
+      (pct>=80?'var(--green)':pct>=45?'var(--amber)':'var(--red)')+'"></i></div>'+
+      '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;margin-top:7px">'+
+        '<span class="dim">'+(pct>=80?'a diagram people will use':pct>=45?'usable, with gaps that cost you':'accurate, probably, and not much help')+'</span><b>'+pct+'%</b></div>'+
+      (missing.length?'<div class="dim" style="font-size:11px;margin:18px 0 8px">WHAT IS MISSING, MOST EXPENSIVE FIRST</div>'+
+        missing.map(c=>'<div class="lzhop" style="display:block;border-left-color:'+(c.w>=12?'var(--red)':c.w>=9?'var(--amber)':'var(--wire)')+';padding:9px 12px">'+
+          '<b style="font-size:12.5px">'+c.l+'</b><small style="display:block;color:var(--muted);font-size:11.5px;margin-top:3px">'+c.miss+'</small></div>').join('')
+        :'<div class="ok" style="margin-top:18px"><b>Everything on the list.</b> Worth noticing how much of it is not the drawing — seven of the twelve are the small print, and every one takes under a minute.</div>');
+    let html='';
+    if(pct<45) html='<div class="lzbad" style="margin-bottom:10px"><b>The diagram may be entirely accurate.</b> That is the point of this list — accuracy has never been the problem. Start with the three at the top: a date, a question and a home next to the code. They cost about ten minutes between them and they are worth more than any amount of redrawing.</div>';
+    else if(pct<80) html='<div class="lzwarn" style="margin-bottom:10px"><b>Usable, with the gaps that cost most still open.</b> Take the top two in the list — they are ordered by what they cost you, not by effort.</div>';
+    else html='<div class="ok" style="margin-bottom:10px"><b>This is a diagram somebody will actually open twice.</b> Worth re-scoring in six months; the one that decays first is almost always whether it still lives next to the code.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The weightings are the argument.</b> A date is worth more than a legend, and living next to the code is worth more than either — because a diagram that goes stale fails completely, while one with an ambiguous line only fails a little.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+
+/* --- SIM: the first ten minutes --- */
+(function(){
+  const ctl=document.getElementById('dgBoardCtl'), out=document.getElementById('dgBoardOut'),
+        rst=document.getElementById('dgBoardReset'), note=document.getElementById('dgBoardNote');
+  if(!ctl) return;
+  const M=[
+    {k:'restate',n:'Restate the problem in your own words',min:0.5,pos:1,
+     good:'Thirty seconds, and it catches the misunderstanding now rather than in minute thirty.'},
+    {k:'scale',n:'Ask about scale — users, data, read or write heavy',min:1.5,pos:2,
+     good:'Changes the design more than any technology you will name. Asking is not stalling; not asking is the mistake.'},
+    {k:'fail',n:'Ask what must not fail, and what may be slow',min:1.5,pos:3,
+     good:'Two sentences that eliminate half the design space. Most systems have one thing that must be correct and a great deal that can be eventually consistent.'},
+    {k:'scope',n:'Say out loud what you are not going to cover',min:0.5,pos:4,
+     good:'Shows you can scope, and stops you being asked about the admin console in minute thirty-five.'},
+    {k:'ctx',n:'Draw the context diagram — one box and who talks to it',min:2,pos:5,
+     good:'Two minutes, anchors everything after it, and it is almost never wrong.'},
+    {k:'cont',n:'Draw the containers',min:4,pos:6,
+     good:'Now you are drawing an answer to a question rather than a system you imagined.'}
+  ];
+  let order=[];
+  function render(){
+    const left=M.filter(m=>!order.includes(m.k));
+    ctl.innerHTML=left.length
+      ? left.map(m=>'<button class="seg" data-k="'+m.k+'" style="text-align:left">'+m.n+'</button>').join('')
+      : '<div class="simnote">All six placed.</div>';
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{order.push(b.dataset.k);render();});
+    let t=0;
+    const rows=order.map((k,i)=>{const m=M.find(x=>x.k===k); const start=t; t+=m.min;
+      return {m,i,start,ok:m.pos===i+1};});
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">YOUR FIRST TEN MINUTES</div>'+
+      (rows.length?rows.map(r=>'<div class="lzhop" style="display:block;border-left-color:'+(r.ok?'var(--green)':'var(--amber)')+';padding:9px 12px">'+
+        '<div style="display:flex;gap:9px;align-items:baseline"><span class="n2">'+(r.i+1)+'</span>'+
+        '<span style="flex:1"><b style="font-size:12.5px">'+r.m.n+'</b>'+
+        '<small style="display:block;color:var(--muted);font-size:11.5px;margin-top:2px">'+r.m.good+'</small></span>'+
+        '<span style="font-family:var(--mono);font-size:10.5px;color:var(--muted)">'+r.start.toFixed(1)+'–'+(r.start+r.m.min).toFixed(1)+'m</span></div></div>').join('')
+        :'<div class="simnote">Pick what you would do first.</div>')+
+      (rows.length?'<div class="kv" style="margin-top:12px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">time spent</span><b>'+t.toFixed(1)+' of 40 minutes</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">in the recommended order</span><b style="color:'+
+          (rows.every(r=>r.ok)?'var(--green)':'var(--amber)')+'">'+rows.filter(r=>r.ok).length+' of '+rows.length+'</b></div></div>':'');
+    let html='';
+    const drewFirst = order[0]==='ctx'||order[0]==='cont';
+    if(drewFirst) html+='<div class="lzbad" style="margin-bottom:10px"><b>You started drawing in minute one.</b> It looks decisive and it is the opposite — you have committed to an architecture for a system whose requirements you do not know, and every question from here is you defending a guess. This is the single commonest failure in a design interview.</div>';
+    if(order.includes('cont')&&!order.includes('ctx')) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Containers before context.</b> Not fatal, and you have skipped the two-minute drawing that would have anchored the rest and is almost never wrong.</div>';
+    if(order.length===M.length){
+      const right=M.filter((m,i)=>order[m.pos-1]===m.k).length;
+      html+= right===M.length
+        ? '<div class="ok" style="margin-bottom:10px"><b>The recommended order, and about ten minutes used.</b> You have thirty left to draw an answer to a question, rather than forty to defend a guess.</div>'
+        : '<div class="note" style="margin-bottom:10px"><b>'+right+' of six in the recommended position.</b> The order matters less than the principle: every question you ask before the pen moves removes design space, and every minute you draw before asking adds something to defend.</div>';
+    }
+    html+='<div class="simnote" style="margin-top:8px"><b>What is being assessed is not the architecture.</b> Nobody can produce the right one in forty minutes from a two-sentence brief. They are watching whether you ask before you build, whether you name your own trade-offs, and whether you can be wrong gracefully — which is what the job actually needs.</div>';
+    note.innerHTML=html;
+  }
+  rst.onclick=()=>{order=[];render();};
+  render();
+})();
+
 </script>
 </body>
 </html>

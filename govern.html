@@ -328,6 +328,20 @@
   .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
   @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
     .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- scenario drill, built from the page's own exam lines ---- */
+  .drl{border:1px solid var(--line2); border-radius:11px; padding:14px 16px; background:var(--panel2)}
+  .drl-q{font-size:14px; line-height:1.6; margin-bottom:14px}
+  .drl-o{display:block; width:100%; text-align:left; border:1px solid var(--line2); background:var(--panel);
+    border-radius:9px; padding:9px 12px; margin-bottom:7px; font:inherit; font-size:12.5px; color:inherit;
+    cursor:pointer; line-height:1.45; transition:border-color .15s}
+  .drl-o:hover{border-color:var(--teal)}
+  .drl-o:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .drl-o.right{border-color:var(--green); color:var(--green)}
+  .drl-o.wrong{border-color:var(--red); color:var(--red)}
+  .drl-o.muted{opacity:.5}
+  .drl-bar{display:flex; gap:4px; margin-bottom:12px}
+  .drl-bar i{flex:1; height:5px; border-radius:99px; background:var(--line2)}
+  .drl-bar i.ok{background:var(--green)} .drl-bar i.no{background:var(--red)} .drl-bar i.now{background:var(--amber)}
 </style>
 </head>
 <body>
@@ -369,6 +383,20 @@
 
   <section class="pane on" id="pane-start">
     <div id="sec-start"></div>
+    <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; four incidents, four questions</h2>
+  <div class="plain-line"><b>Try this:</b> four things that went wrong. For each, decide which of the four questions the estate had failed to answer &mdash; because each one maps to a different mechanism, and reaching for the wrong one is how a post-incident action produces no change.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Four break-ins at four buildings. One had no name badges, one lent out a master key, one let a stranger in with a forged note, and one had cameras that recorded nothing useful. Four different failures, four different fixes.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick the warranty document incident and try <b>tighter permissions</b> — the answer that feels right and is not.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>identity</b> which particular agent acted, provably</span><span class="sp-w"><b>delegated authority</b> acting as a person, so their permissions apply</span><span class="sp-w"><b>audit trail</b> a record complete enough to reconstruct a decision afterwards</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gvWhyOut"></div></div>
+    <div><div class="segmented" id="gvWhyPick" style="flex-direction:column;align-items:stretch"></div>
+      <div class="dim" style="font-size:11px;margin:14px 0 6px">WHICH QUESTION WENT UNANSWERED?</div>
+      <div class="segmented" id="gvWhyCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gvWhyNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+
   </section>
   <section class="pane" id="pane-paths">
     <div id="sec-paths"></div>
@@ -1314,6 +1342,13 @@ document.getElementById('sec-observe').innerHTML=`
 
 /* ================= 12 · EXAM ANGLE ================= */
 document.getElementById('sec-exam').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly &mdash; which is the point.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not — you recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the list below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is nonetheless a real answer to something else</span></span></div></div>
+  <div id="drillHost"></div>
+</div>
+
 <div class="card">
   <h2 class="sec">The exam and interview angle</h2>
   <div class="exam-line"><b>&ldquo;Which policy streams the request and response bodies to a service extension to check for data leaks?&rdquo;</b> &rarr; <span class="code">CONTENT_AUTHZ</span>. It is the streaming profile that sends both bodies to Model Armor. <span class="code">REQUEST_AUTHZ</span> is the identity check and reads headers, not bodies.</div>
@@ -1379,6 +1414,142 @@ document.getElementById('sec-exam').innerHTML=`
     history.replaceState(null,'','#pane-'+t.dataset.pane);
   }));
 })();
+
+/* ================= SCENARIO DRILL =================
+   Reads the page's own .exam-line entries at runtime, so it can never
+   drift from the content and a new scenario becomes a new question free.
+   Distractors are the answers to other scenarios on the same page, which
+   makes them plausible by construction rather than by invention. */
+(function(){
+  const host=document.getElementById('drillHost');
+  if(!host) return;
+  const src=[...document.querySelectorAll('.exam-line')].map(el=>{
+    const html=el.innerHTML;
+    /* .exam-line is also used for pillar notes, which are multi-fact and start differently.
+       A drillable scenario is authored as <b>“…”</b> → answer, so require that shape. */
+    if(!/^\s*<b>\s*&ldquo;/.test(html)) return null;
+    const i=html.indexOf('&rarr;')>=0?html.indexOf('&rarr;'):html.indexOf('→');
+    if(i<0) return null;
+    const q=html.slice(0,i).replace(/<\/?b>/g,'').replace(/&ldquo;|&rdquo;/g,'').trim();
+    const full=html.slice(i+6).trim();
+    /* the headline answer is the first sentence; the rest is the explanation */
+    const m=full.match(/^(.*?[.!?])(\s|$)([\s\S]*)$/);
+    const head=(m?m[1]:full).replace(/^\s+/,'');
+    return {q, head, rest:(m?m[3]:'').trim(), full};
+  }).filter(Boolean);
+  /* some pages author the same content as a three-column table instead of exam lines:
+     scenario | answer | because. Collect those too, so one engine serves both shapes. */
+  [...document.querySelectorAll('table')].forEach(tb=>{
+    const h=tb.innerHTML;
+    if(!/When the scenario says/i.test(h)) return;
+    const rows=h.match(/<tr>[\s\S]*?<\/tr>/g)||[];
+    rows.forEach(r=>{
+      const cells=(r.match(/<td[^>]*>([\s\S]*?)<\/td>/g)||[]).map(c=>c.replace(/^<td[^>]*>|<\/td>$/g,'').trim());
+      if(cells.length<2) return;
+      const q=cells[0].replace(/<\/?b>/g,'').trim();
+      const head=cells[1].replace(/<\/?b>/g,'').trim();
+      if(!q||!head) return;
+      src.push({q:'&ldquo;'+q+'&rdquo;', head, rest:(cells[2]||'').trim(), full:head});
+    });
+  });
+  if(src.length<4){ host.innerHTML='<div class="simnote">Not enough scenarios on this page to drill.</div>'; return; }
+
+  let order=[], idx=0, chosen=null, score=[], opts=[];
+  let seed=src.length*7919;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function shuffle(a){const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b;}
+  function build(){
+    order=shuffle(src.map((_,i)=>i)); idx=0; score=[]; chosen=null; setOpts(); render();
+  }
+  function setOpts(){
+    const cur=src[order[idx]];
+    const others=shuffle(src.filter(x=>x!==cur && x.head!==cur.head)).slice(0,3);
+    opts=shuffle([cur,...others]);
+  }
+  function render(){
+    const cur=src[order[idx]];
+    const done=idx>=order.length;
+    if(done){
+      const right=score.filter(Boolean).length;
+      host.innerHTML='<div class="drl">'+
+        '<div style="font-family:var(--display);font-size:22px;margin-bottom:8px">'+right+' of '+score.length+'</div>'+
+        '<div class="plain-line" style="margin-bottom:12px">'+
+          (right===score.length?'Every one. Worth re-running it — the questions come back in a different order and the wrong answers move around.'
+           :right/score.length>=0.7?'Solid. The ones you missed are the ones worth reading again, and they are the ones an interviewer will reach for.'
+           :'Worth another pass. These are not memory questions — each one has a reason underneath it, and the reason is what makes the next one answerable.')+
+        '</div><button class="btn" id="drlAgain">run it again</button></div>';
+      host.querySelector('#drlAgain').onclick=build; return;
+    }
+    host.innerHTML='<div class="drl">'+
+      '<div class="drl-bar">'+order.map((_,i)=>'<i class="'+(i<score.length?(score[i]?'ok':'no'):i===idx?'now':'')+'"></i>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:6px">SCENARIO '+(idx+1)+' OF '+order.length+'</div>'+
+      '<div class="drl-q">'+cur.q+'</div>'+
+      opts.map((o,i)=>'<button class="drl-o'+(chosen===null?'':(o===cur?' right':(o===chosen?' wrong':' muted')))+'" data-i="'+i+'"'+(chosen!==null?' disabled':'')+'>'+o.head+'</button>').join('')+
+      (chosen!==null?'<div class="'+(chosen===cur?'ok':'lzbad')+'" style="margin-top:12px">'+
+          (chosen===cur?'<b>Right.</b> ':'<b>Not that one.</b> ')+cur.head+(cur.rest?' '+cur.rest:'')+'</div>'+
+        '<button class="btn" id="drlNext" style="margin-top:12px">next scenario ▸</button>':'')+
+      '</div>';
+    host.querySelectorAll('.drl-o').forEach(b=>b.onclick=()=>{
+      if(chosen!==null) return;
+      chosen=opts[+b.dataset.i]; score[idx]=(chosen===cur); render();
+    });
+    const n=host.querySelector('#drlNext');
+    if(n) n.onclick=()=>{ idx++; chosen=null; if(idx<order.length) setOpts(); render(); };
+  }
+  build();
+})();
+
+
+/* --- SIM: which question went unanswered --- */
+(function(){
+  const pick=document.getElementById('gvWhyPick'), ctl=document.getElementById('gvWhyCtl'),
+        out=document.getElementById('gvWhyOut'), note=document.getElementById('gvWhyNote');
+  if(!pick) return;
+  const Q=[['who','who is this agent, really?'],['whose','whose authority is it using?'],
+           ['read','what did it just read?'],['prove','can we prove what happened?']];
+  const I=[
+    {k:'shared',label:'Ten agents, one shared account',right:'who',
+     story:'Something deleted three hundred customer records overnight. The audit log names the service account. Ten agents share it, and nobody can say which one acted.',
+     why:{who:'<b>Right.</b> A shared, long-lived identity means the audit trail records the account rather than the actor. Per-deployment identities would have named one agent in the first minute.',
+          whose:'The permissions were correct — that is why it was allowed. The problem is that you cannot tell who used them.',
+          read:'Possibly relevant to <em>why</em> it happened, and it does not help you find out which agent it was.',
+          prove:'Close. You do have a log, and it records the wrong subject — which is an identity problem rather than an observability one.'}},
+    {k:'mailbox',label:'An assistant showed the wrong mailbox',right:'whose',
+     story:'A support agent summarising email showed one user content from a colleague’s mailbox. The agent had a permission to read mail. All of it.',
+     why:{whose:'<b>Right.</b> The agent used its own authority instead of borrowing the user’s, so the mail system had no way to apply that person’s permissions and returned the maximal view to everybody.',
+          who:'Its identity was fine and correctly attributed. The problem is whose authority it acted with.',
+          read:'Nothing malicious was read. The agent did exactly what it was permitted to do.',
+          prove:'It was provable afterwards, which is how you found out. Proving it does not prevent it.'}},
+    {k:'doc',label:'A document told the agent to email the customer list',right:'read',
+     story:'A customer uploaded a warranty claim. Inside it, in white text, an instruction. The agent retrieved the document, read it, and acted on it.',
+     why:{read:'<b>Right.</b> Nobody attacked the network and no credential was stolen. The payload arrived through a channel built on purpose, and only inspecting what the agent is about to send catches it.',
+          who:'Its identity was correct and correctly attributed throughout.',
+          whose:'It used exactly the authority it was meant to. That is what made the instruction executable.',
+          prove:'You could reconstruct it afterwards, in detail. That is an investigation, not a prevention.'}},
+    {k:'quiet',label:'Nobody could explain a decision three weeks later',right:'prove',
+     story:'A customer disputes a refusal. The agent refused; nobody can reconstruct why, which tool it called, or what came back.',
+     why:{prove:'<b>Right.</b> Without one trace spanning every hop — with the parent of each step — the answer to “why did it do that?” is a shrug, and a shrug is not an answer you can give a regulator.',
+          who:'Identity was fine. You know which agent; you do not know what it did.',
+          whose:'Authority was correct too.',
+          read:'Nothing malicious happened at all. This one is purely about being unable to reconstruct an ordinary decision.'}}
+  ];
+  let cur='doc', chosen=null;
+  function render(){
+    pick.innerHTML=I.map(i=>'<button class="seg'+(cur===i.k?' on':'')+'" data-k="'+i.k+'" style="text-align:left">'+i.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;chosen=null;render();});
+    ctl.innerHTML=Q.map(([k,l])=>'<button class="seg'+(chosen===k?' on':'')+'" data-q="'+k+'" style="text-align:left">'+l+'</button>').join('');
+    ctl.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{chosen=b.dataset.q;render();});
+    const inc=I.find(x=>x.k===cur);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">WHAT HAPPENED</div>'+
+      '<div class="plain-line">'+inc.story+'</div>';
+    note.innerHTML = !chosen
+      ? '<div class="simnote">Pick the question that went unanswered.</div>'
+      : '<div class="'+(chosen===inc.right?'ok':'note')+'" style="margin-bottom:10px">'+inc.why[chosen]+'</div>'+
+        '<div class="simnote" style="margin-top:8px"><b>Notice that in three of the four, every permission was correct.</b> That is the uncomfortable finding underneath this whole lab — an agent is usually <em>allowed</em> to do the thing that goes wrong, because being allowed is why you built it. The four questions exist because “was it permitted?” stops being the interesting question.</div>';
+  }
+  render();
+})();
+
 </script>
 </body>
 </html>
