@@ -486,6 +486,7 @@
     <button class="tab" data-pane="nginx" role="tab">NGINX</button>
     <button class="tab" data-pane="iam" role="tab">IAM &amp; policy</button>
     <button class="tab" data-pane="cheat" role="tab">SAP-C02 cheatsheet</button>
+    <button class="tab" data-pane="pca" role="tab">GCP Architect exam</button>
     <button class="tab" data-pane="apptier" role="tab">Pools, timeouts &amp; MVC</button>
     <button class="tab" data-pane="pillars" role="tab">Architect pillars</button>
     <button class="tab" data-pane="dr" role="tab">DR simulator</button>
@@ -779,6 +780,67 @@
     </div>
 
     <div id="sec-vd5"></div>
+  </section>
+
+  <!-- ================= GCP PCA ================= -->
+  <section class="pane" id="pane-pca">
+    <div id="sec-pca1"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; sort a case study into what actually binds you</h2>
+      <div class="plain-line"><b>Try this:</b> twelve lines lifted from a case study. Only some of them are requirements. Sorting them is the skill the exam is really testing, because an answer that is excellent and breaks one stated constraint is still wrong.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Reading a job advert. Most of it is about the company's exciting culture. Two lines say “must have a driving licence” and “office-based five days a week”, and those are the only ones that decide whether you can take it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>sort the line about the operations team having no Kubernetes experience — it reads like background and it is not.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>case study</b> a long company scenario the exam publishes in advance</span><span class="sp-w"><b>business requirement</b> something the company wants to achieve, in business terms</span><span class="sp-w"><b>constraint</b> something that rules options out — a law, a deadline, a skill the team lacks</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="pcaTriageOut"></div></div>
+        <div><div id="pcaTriageNote" class="cidr-out"></div>
+          <button class="btn" id="pcaTriageReset" style="margin-top:12px;width:100%">start again</button></div>
+      </div>
+    </div>
+
+    <div id="sec-pca2"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; work a case end to end</h2>
+      <div class="plain-line"><b>Try this:</b> a complete fictional case, with the requirements it states. Choose an architecture, then see which requirements your choices satisfy and which they quietly break &mdash; scored against what the case said, not against general good practice.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing a car for someone else. The fastest one is not the answer if they told you it has to fit three child seats and cost under fifteen thousand.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>Rewritten as containers on Cloud Run</b> for the monolith and read why the better answer is the wrong one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>Pub/Sub</b> a durable queue for messages that must not be lost</span><span class="sp-w"><b>Bigtable</b> a store built for enormous write volumes looked up by key</span><span class="sp-w"><b>BigQuery</b> a warehouse for asking questions across huge history</span><span class="sp-w"><b>organisation policy</b> a rule set company-wide that no project can override</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="pcaCaseOut"></div></div>
+        <div><div id="pcaCaseCtl"></div>
+          <div id="pcaCaseNote" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-pca3"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; the option that works and is still wrong</h2>
+      <div class="plain-line"><b>Try this:</b> six questions where more than one answer would function. Only one survives what the scenario actually said. This is the single commonest way marks are lost on this exam.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A pub quiz where three of the four answers are true statements and only one answers the question asked.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read each scenario twice before looking at the options, and note the word that disqualifies.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scales to zero</b> costs nothing when nobody is using it</span><span class="sp-w"><b>Spot VM</b> a cheap machine the cloud may take back at any moment</span><span class="sp-w"><b>committed use discount</b> a lower rate in exchange for committing to a year or three</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="pcaDistOut"></div></div>
+        <div><div id="pcaDistNote" class="cidr-out"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-pca4"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; trigger phrases, one at a time</h2>
+      <div class="plain-line"><b>Try this:</b> the same drill shape as the AWS tab, in Google&rsquo;s vocabulary. A card only clears after two clean passes, so recognising it once does not count.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards for a language you half know. Recognising a word on the page is not the same as producing it in conversation, which is why one pass does not clear a card.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer out loud before you press <b>show the answer</b>. Thinking “I knew that” after seeing it is the trap this drill exists to close.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>trigger phrase</b> the wording in a question that points at one particular service</span><span class="sp-w"><b>Shared VPC</b> one team owns the network, many projects deploy into it</span><span class="sp-w"><b>VPC Service Controls</b> a boundary data may not cross, whoever is asking</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="pcaDrillCard"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn" id="pcaDrillReveal">show the answer</button>
+            <button class="btn" id="pcaDrillGot">I had it</button>
+            <button class="btn" id="pcaDrillMiss">I did not</button>
+            <button class="btn" id="pcaDrillReset">start again</button>
+          </div></div>
+        <div><div id="pcaDrillScore" class="cidr-out"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-pca5"></div>
   </section>
 
   <!-- ================= NGINX ================= -->
@@ -4627,6 +4689,429 @@ document.getElementById('sec-vd5').innerHTML=`
   <div class="exam-line"><b>&ldquo;When is a transit hub worth it over peering?&rdquo;</b> &rarr; Above three or four networks. Ten meshed networks need forty-five connections; through a hub, ten.</div>
   <div class="exam-line"><b>&ldquo;How is multi-region different on Google Cloud?&rdquo;</b> &rarr; The VPC is global with regional subnets, so crossing a region does not need peering. On AWS and Azure the network is regional and multi-region multiplies the networks.</div>
   <div class="exam-line"><b>&ldquo;How do we avoid needing NAT at all?&rdquo;</b> &rarr; Private endpoints for cloud services. If nothing needs the public internet, the gateway and the per-gigabyte charge both disappear.</div>
+</div>`;
+
+
+/* ================= GCP PROFESSIONAL CLOUD ARCHITECT ================= */
+document.getElementById('sec-pca1').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A different exam, rewarding a different skill</h2>
+  <div class="plain-line"><b>In plain English:</b> the AWS professional exam mostly asks &ldquo;given this situation, which service?&rdquo; &mdash; a phrase in the scenario points at an answer, and the tab next door drills exactly that. Google&rsquo;s architect exam asks something else: <b>&ldquo;given everything this company has told you, which of these four defensible answers is the one they can actually accept?&rdquo;</b></div>
+  <div class="plain-line">That difference has a consequence worth internalising early. <b>Several options will work.</b> They are not wrong architectures. They are ruled out by something the case said &mdash; a budget, a compliance boundary, a team with no Kubernetes experience, a stated preference for managed services, a migration that must happen without downtime. <b>Picking the technically best answer instead of the one that fits the stated constraints is the commonest way marks are lost.</b></div>
+  <table class="osi"><thead><tr><th></th><th>The AWS professional exam</th><th>The Google architect exam</th></tr></thead><tbody>
+  <tr><td><b>Question shape</b></td><td>A situation, four services</td><td>A situation, four <em>architectures</em>, several of which work</td></tr>
+  <tr><td><b>What decides it</b></td><td>A trigger phrase pointing at a capability</td><td>A stated requirement that eliminates the others</td></tr>
+  <tr><td><b>Case studies</b></td><td>None</td><td><b>Published in advance</b>, and a substantial share of questions reference them</td></tr>
+  <tr><td><b>Non-technical marks</b></td><td>Some, mostly cost and operations</td><td><b>Many.</b> Business requirements, stakeholder concerns, team capability and cost pressure all decide answers</td></tr>
+  <tr><td><b>Best preparation</b></td><td>Service knowledge and trigger recognition</td><td>Service knowledge, plus <b>having read the case studies before the exam</b>. They are long, and reading one cold under time pressure is a bad trade</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>One practical note:</b> the published case studies have changed over the years, so the useful thing to learn is the <em>method</em> rather than any particular company&rsquo;s story. Everything below teaches the method on a fictional case; find whichever cases are current when you sit it and read them beforehand.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">A case study is three different kinds of sentence</h2>
+  <div class="plain-line"><b>In plain English:</b> these documents are written like a business brief, not a specification, and most of what is in them does not constrain your answer at all. Separating the sentences that bind you from the ones that are scene-setting is most of the work.</div>
+  <table class="osi"><thead><tr><th>Kind</th><th>How it reads</th><th>What it does to your answer</th></tr></thead><tbody>
+  <tr><td><b>Business requirement</b></td><td>&ldquo;Reduce time to market&rdquo;, &ldquo;cut operational costs by 30%&rdquo;, &ldquo;expand into two new regions&rdquo;</td><td><b>Eliminates options.</b> Usually the deciding factor when two designs are technically equal &mdash; and the one candidates skim past</td></tr>
+  <tr><td><b>Technical requirement</b></td><td>&ldquo;99.9% availability&rdquo;, &ldquo;sub-100ms latency for players&rdquo;, &ldquo;must not lose telemetry&rdquo;</td><td>Sets the floor. Anything not meeting it is out, regardless of how elegant it is</td></tr>
+  <tr><td><b>Constraint</b></td><td>&ldquo;No downtime during migration&rdquo;, &ldquo;data must stay in the EU&rdquo;, &ldquo;the team has no Kubernetes experience&rdquo;</td><td><b>The quiet killer.</b> Rules out otherwise excellent answers, and is often a single clause in a paragraph about something else</td></tr>
+  <tr><td><b>Scene-setting</b></td><td>Company history, the CEO&rsquo;s ambitions, what the industry is doing</td><td><b>Nothing.</b> It is there to make the case readable. Treating it as a requirement is how people talk themselves into the wrong answer</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The habit that pays:</b> read the case once for the story, then again with a pen, pulling out only the sentences that would let you rule an option out. On a long case that list is usually eight to twelve lines, and those lines answer most of the questions.</div>
+</div>`;
+
+/* --- SIM: requirement triage --- */
+(function(){
+  const out=document.getElementById('pcaTriageOut'), note=document.getElementById('pcaTriageNote'), rst=document.getElementById('pcaTriageReset');
+  if(!out) return;
+  const K=[['biz','business requirement'],['tech','technical requirement'],['con','constraint'],['none','scene-setting']];
+  const L=[
+    {k:'a',t:'“Founded in 2004, the company grew from a single warehouse to 300 sites.”',a:'none',
+     why:'History. It tells you the company is large and old, which you had already inferred, and it eliminates nothing.'},
+    {k:'b',t:'“All customer data must remain within the European Union.”',a:'con',
+     why:'<b>A constraint, and one of the sharpest.</b> It removes every multi-region option that spans continents, restricts which managed services you may use, and often decides the whole design on its own.'},
+    {k:'c',t:'“We want to reduce the time it takes to launch a new market from 6 months to 6 weeks.”',a:'biz',
+     why:'A business requirement. It will not appear in a technical answer directly and it is the tiebreaker between two designs that both work — the one that is faster to replicate wins.'},
+    {k:'d',t:'“The platform must sustain 99.99% availability for the payments path.”',a:'tech',
+     why:'A technical requirement, and a hard floor. Anything single-region or single-zone on that path is out, however cheap.'},
+    {k:'e',t:'“Our operations team is eight people and none of them have run Kubernetes.”',a:'con',
+     why:'<b>The one candidates most often ignore.</b> It rules out a self-managed cluster no matter how well it fits, and it points at the managed or serverless option every time.'},
+    {k:'f',t:'“The CTO believes machine learning will be central to the industry.”',a:'none',
+     why:'A belief, not a requirement. If they had said “we must be able to train models on this data”, that would be a requirement — the difference is whether anything is being asked for.'},
+    {k:'g',t:'“Migration must complete with no more than five minutes of downtime.”',a:'con',
+     why:'A constraint that eliminates any lift-and-shift with a long cutover, and points firmly at replication-based migration with a short switch at the end.'},
+    {k:'h',t:'“We currently spend $2.4M a year on data centre contracts expiring in 14 months.”',a:'biz',
+     why:'Business. It gives you a deadline and a budget to beat, and it is why a phased migration beats a perfect one that finishes late.'},
+    {k:'i',t:'“Telemetry from vehicles must not be lost, even during a regional outage.”',a:'tech',
+     why:'Technical, and specific enough to point at a durable, multi-region ingestion path rather than anything that buffers on one machine.'},
+    {k:'j',t:'“Analysts currently wait overnight for reports and would like them sooner.”',a:'biz',
+     why:'Business — expressed as a wish rather than a number, which is typical. It favours designs that make data queryable soon after arrival.'},
+    {k:'k',t:'“The existing application is a monolith written in Java 8.”',a:'con',
+     why:'A constraint on what is realistic in the timeframe. It does not forbid re-architecting; it makes an answer that requires a full rewrite implausible against a 14-month deadline.'},
+    {k:'l',t:'“Our competitors have recently moved to the cloud.”',a:'none',
+     why:'Context. It explains why the project exists and constrains nothing.'}
+  ];
+  const pick={};
+  function render(){
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TWELVE LINES FROM THE CASE — WHICH BIND YOU?</div>'+
+      L.map(l=>'<div style="margin-bottom:12px"><div style="font-size:12.5px;margin-bottom:5px">'+l.t+'</div>'+
+        '<div class="segmented">'+K.map(([v,lab])=>'<button class="seg'+(pick[l.k]===v?' on':'')+'" data-k="'+l.k+'" data-v="'+v+'">'+lab+'</button>').join('')+
+        '</div></div>').join('');
+    out.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.k]=b.dataset.v;render();});
+    const done=L.filter(l=>pick[l.k]), right=done.filter(l=>pick[l.k]===l.a).length;
+    let html;
+    if(!done.length) html='<div class="simnote">Sort the first line. Four of the twelve constrain nothing at all.</div>';
+    else html=done.map(l=>{const ok=pick[l.k]===l.a;
+      return '<div class="lzrow" style="margin-bottom:9px"><span class="lzmark" style="color:var('+(ok?'--green':'--red')+')">'+(ok?'✓':'✗')+'</span>'+
+      '<span><b>'+K.find(k=>k[0]===l.a)[1]+'.</b> '+l.why+'</span></div>';}).join('')+
+      '<div class="simnote" style="margin-top:10px"><b>'+right+' of '+done.length+' sorted correctly.</b></div>';
+    if(done.length===L.length) html+='<div class="'+(right>=10?'ok':'note')+'" style="margin-top:10px"><b>The two that decide the most</b> are the constraints — data residency and a team of eight with no Kubernetes. Neither is phrased as a requirement, both appear mid-paragraph, and each one removes options that are otherwise the best answer on the page. <b>Read for constraints first; they eliminate faster than anything else.</b></div>';
+    note.innerHTML=html;
+  }
+  rst.onclick=()=>{Object.keys(pick).forEach(k=>delete pick[k]);render();};
+  render();
+})();
+
+
+document.getElementById('sec-pca2').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The case, in full</h2>
+  <div class="note" style="margin-bottom:14px;padding:10px 12px;border-left:3px solid var(--amber);background:var(--panel2);border-radius:0 8px 8px 0">
+    <b>Fictional, deliberately.</b> The real exam publishes its own case studies and they change over time. This one is built to the same shape so the method transfers &mdash; find whichever are current when you sit it and read them beforehand.
+  </div>
+  <div class="plain-line"><b>Northwind Freight</b> runs 4,000 lorries across Europe. Every vehicle reports position, engine telemetry and driver hours every ten seconds. Today that lands in an on-premises database that analysts query the next morning. Two data-centre contracts expire in fourteen months.</div>
+  <table class="osi" style="margin-top:12px"><thead><tr><th>What they have told you</th><th>Kind</th></tr></thead><tbody>
+  <tr><td>Telemetry must not be lost, even if a region fails</td><td><b>technical</b></td></tr>
+  <tr><td>Analysts want yesterday&rsquo;s overnight reports available within minutes instead</td><td><b>business</b></td></tr>
+  <tr><td>Driver-hours data is personal and must remain in the EU</td><td><b>constraint</b></td></tr>
+  <tr><td>The operations team is nine people with no Kubernetes experience</td><td><b>constraint</b></td></tr>
+  <tr><td>The existing fleet application is a Java monolith that cannot be rewritten in the timeframe</td><td><b>constraint</b></td></tr>
+  <tr><td>Data-centre contracts expire in fourteen months and must not be renewed</td><td><b>business</b></td></tr>
+  <tr><td>They expect vehicle numbers to triple within three years</td><td><b>business</b></td></tr>
+  <tr><td>Fleet managers in six countries need a single view with sub-second queries</td><td><b>technical</b></td></tr>
+  </tbody></table>
+</div>`;
+
+/* --- SIM: case workbench --- */
+(function(){
+  const ctl=document.getElementById('pcaCaseCtl'), out=document.getElementById('pcaCaseOut'), note=document.getElementById('pcaCaseNote');
+  if(!ctl) return;
+  const D=[
+    {k:'ingest',q:'How does telemetry arrive?',
+     o:[['pubsub','Pub/Sub, then a streaming pipeline'],
+        ['vm','A fleet of VMs running a message broker you operate'],
+        ['direct','Vehicles write straight to the database']]},
+    {k:'store',q:'Where does telemetry live?',
+     o:[['bigtable','Bigtable for the raw stream, BigQuery for analysis'],
+        ['sql','Cloud SQL, like they have today'],
+        ['spanner','Spanner for everything']]},
+    {k:'app',q:'Where does the Java monolith run?',
+     o:[['gce','Compute Engine, lifted as it is'],
+        ['gke','A GKE cluster you build and operate'],
+        ['run','Rewritten as containers on Cloud Run']]},
+    {k:'analytics',q:'How do analysts get their numbers sooner?',
+     o:[['stream','Stream into BigQuery and query it directly'],
+        ['batch','Keep the overnight batch, run it twice a day'],
+        ['export','Export nightly to spreadsheets']]},
+    {k:'resid',q:'How is the EU requirement met?',
+     o:[['orgpolicy','EU regions only, enforced by an organisation policy'],
+        ['manual','A written standard that engineers follow'],
+        ['global','Multi-region worldwide for resilience']]},
+    {k:'migrate',q:'How do they get off the data centres in time?',
+     o:[['phased','Migrate in waves, telemetry first, monolith lifted late'],
+        ['big','One cutover weekend at month thirteen'],
+        ['rewrite','Re-architect everything, then move']]}
+  ];
+  const pick={ingest:null,store:null,app:null,analytics:null,resid:null,migrate:null};
+  const REQ=[
+    {n:'Telemetry is never lost',
+     ok:a=>a.ingest==='pubsub',
+     good:'Pub/Sub is durable and replicated, so an outage delays delivery rather than dropping it.',
+     bad:a=>a.ingest==='vm'?'A broker you run on VMs is only as durable as the cluster you operate — and this team is nine people with no appetite for that.'
+                            :'Writing straight to a database means any outage or slow query loses vehicle messages outright. This is the requirement the case states first.'},
+    {n:'Analysts get numbers in minutes',
+     ok:a=>a.analytics==='stream',
+     good:'Streaming into BigQuery makes rows queryable within seconds of arrival, which is exactly the stated business requirement.',
+     bad:a=>a.analytics==='batch'?'Twice a day is faster than overnight and still hours, not minutes. It does not meet what they asked for.'
+                                 :'Nightly exports are what they are trying to get away from.'},
+    {n:'Driver-hours data stays in the EU',
+     ok:a=>a.resid==='orgpolicy',
+     good:'An organisation policy restricting resource locations enforces this centrally, so no project can create a resource outside the EU — even by mistake.',
+     bad:a=>a.resid==='manual'?'A written standard is not enforcement. It works until somebody in a hurry creates something in the wrong region, and nothing stops them.'
+                              :'Worldwide multi-region directly breaks a stated legal constraint. It is more resilient and it is disqualifying.'},
+    {n:'The nine-person team can actually run it',
+     ok:a=>!!a.app&&!!a.ingest&&a.app!=='gke'&&a.ingest!=='vm',
+     good:'Every piece chosen is managed, which is what a team of nine with no Kubernetes experience can operate.',
+     bad:a=>a.app==='gke'?'A cluster you build and operate, run by nine people who have never used Kubernetes. The case tells you this in one clause and it eliminates the option outright.'
+                         :'Operating a message broker yourself adds a system this team has no capacity to run.'},
+    {n:'The monolith moves without a rewrite',
+     ok:a=>a.app==='gce',
+     good:'Lifting it onto Compute Engine moves it in the time available. Modernising it later is a separate project, and the case does not ask for it now.',
+     bad:a=>a.app==='run'?'Cloud Run is the better destination eventually, and the case says the rewrite cannot happen in the timeframe. Right answer, wrong question.'
+                         :'A cluster does not remove the rewrite problem; it adds an operations problem on top of it.'},
+    {n:'Out of the data centres within fourteen months',
+     ok:a=>a.migrate==='phased',
+     good:'Waves deliver value early and de-risk the deadline. Telemetry moves first because it is greenfield; the monolith is lifted late because lifting is quick.',
+     bad:a=>a.migrate==='big'?'A single cutover at month thirteen leaves no room for anything to go wrong, and something will.'
+                             :'Re-architecting first guarantees missing the deadline, which is a business requirement with a contract behind it.'},
+    {n:'It still works at three times the vehicles',
+     ok:a=>a.store==='bigtable'&&a.ingest==='pubsub',
+     good:'Bigtable is built for exactly this — enormous volumes of time-series writes keyed by vehicle — and Pub/Sub absorbs the growth in front of it.',
+     bad:a=>a.store==='sql'?'Cloud SQL is a single primary. It is what they are on today and the reason the overnight batch exists; tripling the fleet makes it worse.'
+                           :a.store==='spanner'?'Spanner would hold it. It is priced for globally consistent relational workloads, and vehicle telemetry is neither relational nor in need of global consistency — an expensive answer to a question nobody asked.'
+                           :'The write path has to absorb the growth before the store can.'},
+    {n:'Fleet managers get a single sub-second view',
+     ok:a=>a.store==='bigtable'||a.store==='spanner',
+     good:'Single-key lookups by vehicle return in milliseconds, which is what a live fleet view needs.',
+     bad:a=>'A single relational primary serving six countries will not hold sub-second queries at this volume.'}
+  ];
+  function render(){
+    ctl.innerHTML=D.map(d=>'<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12.5px;margin-bottom:5px">'+d.q+'</div>'+
+      '<div class="segmented" style="flex-direction:column;align-items:stretch">'+
+      d.o.map(([v,l])=>'<button class="seg'+(pick[d.k]===v?' on':'')+'" data-k="'+d.k+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('')+
+      '</div></div>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.k]=b.dataset.v;render();});
+    const answered=Object.values(pick).filter(Boolean).length;
+    const rows=REQ.map(r=>({n:r.n, ok:r.ok(pick), why:r.ok(pick)?r.good:r.bad(pick)}));
+    const met=rows.filter(r=>r.ok).length;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">SCORED AGAINST WHAT THE CASE SAID</div>'+
+      rows.map(r=>'<div class="lzhop" style="display:block;border-left-color:'+(r.ok?'var(--green)':'var(--red)')+';padding:10px 12px">'+
+        '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">'+
+        '<b style="font-size:12.5px">'+r.n+'</b>'+
+        '<span style="font-family:var(--mono);font-size:10px;color:'+(r.ok?'var(--green)':'var(--red)')+'">'+(r.ok?'MET':'NOT MET')+'</span></div>'+
+        (answered?'<small style="display:block;color:var(--muted);font-size:11.5px;margin-top:4px">'+r.why+'</small>':'')+
+        '</div>').join('')+
+      '<div class="bar" style="height:14px;margin-top:14px"><i style="display:block;height:100%;width:'+(met/REQ.length*100)+'%;background:'+
+        (met===REQ.length?'var(--green)':met>=5?'var(--amber)':'var(--red)')+'"></i></div>'+
+      '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;margin-top:6px">'+
+        '<span class="dim">requirements met</span><b>'+met+' of '+REQ.length+'</b></div>';
+    let html='';
+    if(!answered) html='<div class="simnote">Six decisions. Each one is scored against the eight things the case told you, not against whether it is a good architecture.</div>';
+    else if(met===REQ.length) html='<div class="ok" style="margin-bottom:10px"><b>All eight.</b> Notice that none of these choices is the most sophisticated available — a lifted monolith on virtual machines is nobody&rsquo;s idea of modern. It is the answer this company can accept, which is what the exam is asking.</div>';
+    else html='<div class="lzwarn" style="margin-bottom:10px"><b>'+met+' of eight.</b> Read the ones marked not met — in every case the choice is defensible in the abstract and collides with something the case stated.</div>';
+    if(pick.app==='run') html+='<div class="note" style="margin-bottom:10px"><b>The Cloud Run answer is the instructive one.</b> It is the better long-term destination and it would score well on any general question. Here it fails a single clause: the rewrite cannot happen in the timeframe. <b>That is the exam in one decision.</b></div>';
+    if(pick.store==='spanner') html+='<div class="note" style="margin-bottom:10px"><b>Spanner is not wrong, it is unjustified.</b> It meets the technical requirements and costs far more than the workload needs, and nothing in the case asks for global strong consistency. Reaching for the most capable service is a reliable way to lose marks.</div>';
+    if(pick.resid==='global') html+='<div class="lzbad" style="margin-bottom:10px"><b>Worldwide multi-region is disqualifying, not merely suboptimal.</b> One clause about personal data eliminates it however good the availability story is — and this is exactly the sentence people skim.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The method, once more:</b> list the constraints before you look at the options. Then eliminate. What survives is usually one answer, and it is frequently the least impressive one on the page.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+
+document.getElementById('sec-pca3').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The Google-shaped answer patterns</h2>
+  <div class="plain-line"><b>In plain English:</b> once several options work, the exam has a consistent set of preferences. Knowing them turns a coin flip into a decision.</div>
+  <table class="osi"><thead><tr><th>When two options both work</th><th>The exam usually wants</th><th>Why</th></tr></thead><tbody>
+  <tr><td>Managed against self-operated</td><td><b>Managed</b>, unless the case says otherwise</td><td>Nearly every case mentions a small team or a cost pressure, and both point the same way</td></tr>
+  <tr><td>A policy against a written standard</td><td><b>The enforced policy</b> &mdash; an organisation policy constraint rather than a guideline</td><td>&ldquo;Prevent&rdquo; and &ldquo;ensure nobody can&rdquo; are enforcement words. A standard people follow is not enforcement</td></tr>
+  <tr><td>Where to put a control</td><td><b>As high in the hierarchy as it belongs</b> &mdash; organisation, then folder, then project</td><td>Inheritance means one binding at the right level replaces hundreds, and central teams ask for exactly that</td></tr>
+  <tr><td>Granting access</td><td><b>A predefined role on a group</b>, at the narrowest scope that works</td><td>Primitive roles are almost always the wrong answer; custom roles are right only when no predefined role fits</td></tr>
+  <tr><td>Joining networks</td><td><b>Shared VPC</b> when one team should own the network for many projects</td><td>Peering is non-transitive and multiplies; a shared network is the Google-shaped answer to central control</td></tr>
+  <tr><td>Reaching a Google service privately</td><td><b>Private Google Access or Private Service Connect</b></td><td>It removes the need for external addresses entirely, which is usually what the scenario is hinting at</td></tr>
+  <tr><td>Moving a monolith under time pressure</td><td><b>Lift onto Compute Engine now</b>, modernise later</td><td>The exam rewards meeting the deadline the case states over arriving somewhere better, late</td></tr>
+  <tr><td>Cutting compute cost</td><td><b>Committed use discounts</b> for steady load, <b>Spot</b> for interruptible work</td><td>Two different questions: predictable baseline against work that can be restarted</td></tr>
+  <tr><td>Anything touching regulated data</td><td><b>The option that constrains location and access</b>, even at a cost</td><td>A compliance clause outranks elegance and cost every single time</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>And the pattern behind the patterns:</b> the exam consistently prefers <em>less operational burden</em>. If one answer means somebody has to run something and another does not, and nothing in the case argues for control, the second one is usually right.</div>
+</div>`;
+
+/* --- SIM: the option that works and is still wrong --- */
+(function(){
+  const out=document.getElementById('pcaDistOut'), note=document.getElementById('pcaDistNote');
+  if(!out) return;
+  const Q=[
+    {k:'q1',s:'A retailer must guarantee that no team can create resources outside the EU. An engineer proposes documenting the rule in the platform handbook and reviewing quarterly.',
+     o:[['policy','An organisation policy constraint restricting resource locations'],
+        ['doc','The handbook and quarterly review, as proposed'],
+        ['iam','An IAM role that only permits EU regions'],
+        ['audit','An alert when a resource appears outside the EU']],
+     a:'policy',
+     why:{policy:'<b>Right.</b> “Guarantee that no team can” is enforcement language. Only a policy constraint makes it impossible rather than discouraged.',
+          doc:'It will work until somebody in a hurry does not follow it, and nothing stops them. The word “guarantee” rules this out.',
+          iam:'Plausible and not how it works — IAM grants permissions on resources, it does not constrain which regions a permitted action may target.',
+          audit:'Detection after the fact. The requirement was prevention, and the difference between the two is the whole question.'}},
+    {k:'q2',s:'A team of six with no container experience must deploy a stateless HTTP API that scales to zero overnight and handles bursts during the day.',
+     o:[['run','Cloud Run'],['gke','GKE Standard with cluster autoscaling'],
+        ['mig','A managed instance group with autoscaling'],['ae','App Engine flexible environment']],
+     a:'run',
+     why:{run:'<b>Right.</b> Scales to zero, no cluster to operate, and a team of six can run it. Every clause in the question points here.',
+          gke:'It would work and it hands six people with no container experience a cluster to operate. The team detail is the eliminator.',
+          mig:'Instance groups do not scale to zero — you keep at least one machine running overnight, which the question rules out.',
+          ae:'Flexible does not scale to zero either; it keeps an instance warm. Close enough to be tempting, and it fails the stated requirement.'}},
+    {k:'q3',s:'Vehicle telemetry arrives at 500,000 writes per second, keyed by vehicle and timestamp, and is queried by vehicle for the last hour.',
+     o:[['bigtable','Bigtable'],['spanner','Spanner'],['sql','Cloud SQL with read replicas'],['bq','BigQuery']],
+     a:'bigtable',
+     why:{bigtable:'<b>Right.</b> Enormous write throughput, key-based lookups, time-series shaped. This is the workload Bigtable exists for.',
+          spanner:'It would hold the writes and costs far more, and nothing here needs global strong consistency or relational joins. Capable, unjustified.',
+          sql:'A single primary will not take 500,000 writes per second. Read replicas help reads, and the problem is writes.',
+          bq:'Excellent for analysing this data later and the wrong tool for the serving path — it is a warehouse, not a low-latency key-value store.'}},
+    {k:'q4',s:'Compute costs must fall. The workload is a batch rendering job that runs nightly, takes four hours, and can be restarted from a checkpoint.',
+     o:[['spot','Spot VMs'],['cud','A three-year committed use discount'],
+        ['right','Smaller machine types'],['sus','Rely on sustained use discounts']],
+     a:'spot',
+     why:{spot:'<b>Right.</b> Interruptible and restartable is exactly the Spot profile, and the saving is far larger than anything else on the list.',
+          cud:'Commitments suit a steady baseline. Committing three years to a job that runs four hours a night pays for twenty hours of idle.',
+          right:'Sensible housekeeping, and a fraction of the saving available from the interruptibility the question went out of its way to mention.',
+          sus:'They apply automatically to sustained running. A four-hour nightly job barely triggers them.'}},
+    {k:'q5',s:'A bank must migrate a database with no more than five minutes of downtime. The source is MySQL and the target is Cloud SQL.',
+     o:[['dms','Database Migration Service with continuous replication, then a short cutover'],
+        ['dump','Export a dump overnight and import it'],
+        ['snap','Snapshot the disk and restore it'],
+        ['app','Write to both databases from the application during a transition period']],
+     a:'dms',
+     why:{dms:'<b>Right.</b> Replicate continuously while the source stays live, then switch. The outage is the switch, which is minutes.',
+          dump:'A dump and import of a bank database is hours, and the question gave you five minutes.',
+          snap:'Restores a point in time, so everything written after the snapshot is lost — and the source is live.',
+          app:'Dual writes would work and require changing the application, reconciling conflicts and testing it — a project, when a managed service does this.'}},
+    {k:'q6',s:'Analysts need to query five years of history alongside data arriving now. Nothing may be lost, and reports currently take a full night to produce.',
+     o:[['stream','Stream into BigQuery and query history and live data together'],
+        ['fast','Re-run the nightly batch every hour'],
+        ['bt','Serve everything from Bigtable'],
+        ['dw','Keep the warehouse on-premises and replicate nightly']],
+     a:'stream',
+     why:{stream:'<b>Right.</b> Rows are queryable within seconds of arrival and sit beside five years of history in the same place.',
+          fast:'Hourly is better than overnight and still not “now”, and it does nothing about combining history with live data.',
+          bt:'Bigtable serves key lookups superbly and is not a query engine — analysts asking ad-hoc questions across five years need a warehouse.',
+          dw:'Nightly replication is the problem they described, moved to a different building.'}}
+  ];
+  const pick={};
+  function render(){
+    out.innerHTML=Q.map(q=>'<div style="margin-bottom:16px"><div class="plain-line" style="margin-bottom:8px">'+q.s+'</div>'+
+      '<div class="segmented" style="flex-direction:column;align-items:stretch">'+
+      q.o.map(([v,l])=>'<button class="seg'+(pick[q.k]===v?' on':'')+'" data-k="'+q.k+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('')+
+      '</div></div>').join('');
+    out.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.k]=b.dataset.v;render();});
+    const done=Q.filter(q=>pick[q.k]), right=done.filter(q=>pick[q.k]===q.a).length;
+    let html;
+    if(!done.length) html='<div class="simnote">Answer the first one. In every question here, at least two options would function.</div>';
+    else html=done.map(q=>{const ok=pick[q.k]===q.a;
+      return '<div class="lzrow" style="margin-bottom:10px"><span class="lzmark" style="color:var('+(ok?'--green':'--red')+')">'+(ok?'✓':'✗')+'</span>'+
+      '<span>'+q.why[pick[q.k]]+'</span></div>';}).join('')+
+      '<div class="simnote" style="margin-top:10px"><b>'+right+' of '+done.length+' right.</b></div>';
+    if(done.length===Q.length) html+='<div class="'+(right>=5?'ok':'note')+'" style="margin-top:10px"><b>Read the wrong answers you were tempted by.</b> Almost none of them is a bad idea — they are ruled out by one clause: “guarantee”, “no container experience”, “scales to zero”, “restartable”, “five minutes”. <b>The eliminating word is usually the least technical one in the question.</b></div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+document.getElementById('sec-pca4').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Numbers and boundaries that settle questions</h2>
+  <table class="osi"><thead><tr><th>Signal in the question</th><th>Where it points</th><th>The boundary that decides it</th></tr></thead><tbody>
+  <tr><td>Relational, global, strongly consistent, horizontal scale</td><td><b>Spanner</b></td><td>Reach for it when a single primary genuinely cannot hold the write volume &mdash; not merely because the data is relational</td></tr>
+  <tr><td>Relational, one region, familiar engine</td><td><b>Cloud SQL</b></td><td>The default for MySQL, PostgreSQL and SQL Server. AlloyDB when PostgreSQL needs far more performance</td></tr>
+  <tr><td>Huge write throughput, key lookups, time series</td><td><b>Bigtable</b></td><td>Wide-column and no joins. Ideal above roughly a terabyte and heavy sustained writes</td></tr>
+  <tr><td>Ad-hoc analytics over very large history</td><td><b>BigQuery</b></td><td>A warehouse, not a serving database. Streaming inserts make rows queryable within seconds</td></tr>
+  <tr><td>Documents, mobile and web clients, offline sync</td><td><b>Firestore</b></td><td>The client-sync requirement is usually the tell</td></tr>
+  <tr><td>Sub-millisecond cache</td><td><b>Memorystore</b></td><td>Managed Redis or Memcached</td></tr>
+  <tr><td>&ldquo;Interruptible&rdquo;, &ldquo;restartable&rdquo;, &ldquo;batch&rdquo;, &ldquo;fault-tolerant&rdquo;</td><td><b>Spot VMs</b></td><td>The largest compute saving available, and the workload must tolerate being stopped</td></tr>
+  <tr><td>&ldquo;Steady&rdquo;, &ldquo;predictable&rdquo;, &ldquo;always on&rdquo;</td><td><b>Committed use discounts</b></td><td>One or three years. Sustained use discounts apply automatically and need no commitment</td></tr>
+  <tr><td>Data accessed less than once a month</td><td><b>Nearline</b></td><td>Thirty-day minimum storage duration &mdash; deleting sooner still costs thirty days</td></tr>
+  <tr><td>Quarterly access</td><td><b>Coldline</b></td><td>Ninety-day minimum</td></tr>
+  <tr><td>Archive, retrieved rarely if ever</td><td><b>Archive</b></td><td>365-day minimum. Retrieval is priced per byte, so &ldquo;cheap&rdquo; storage can be an expensive restore</td></tr>
+  <tr><td>&ldquo;Private, dedicated, consistent bandwidth to our data centre&rdquo;</td><td><b>Dedicated Interconnect</b></td><td>Partner Interconnect when you cannot reach a colocation facility; HA VPN when the internet is acceptable</td></tr>
+  <tr><td>&ldquo;One team owns the network, many teams deploy&rdquo;</td><td><b>Shared VPC</b></td><td>A host project owns the network; service projects use it. Peering is non-transitive and does not centralise anything</td></tr>
+  <tr><td>&ldquo;No external addresses&rdquo;</td><td><b>Private Google Access</b>, or <b>Private Service Connect</b></td><td>Instances reach Google services without a public IP at all</td></tr>
+  <tr><td>&ldquo;Prevent data leaving&rdquo;, &ldquo;even with valid credentials&rdquo;</td><td><b>VPC Service Controls</b></td><td>A service perimeter, enforced regardless of IAM. The phrase about credentials is the tell</td></tr>
+  <tr><td>&ldquo;Host maintenance must not restart the VM&rdquo;</td><td><b>Live migration</b></td><td>Compute Engine moves running instances during maintenance rather than rebooting them &mdash; a genuine Google-specific answer</td></tr>
+  </tbody></table>
+</div>`;
+
+
+/* --- SIM: GCP trigger drill --- */
+(function(){
+  const card=document.getElementById('pcaDrillCard'), score=document.getElementById('pcaDrillScore');
+  if(!card) return;
+  const T=[
+    ['identity','“Ensure nobody in any project can create a resource outside Europe”','An organisation policy constraint on resource locations','Enforcement, not guidance — and set at the organisation so no project can escape it.'],
+    ['identity','“Grant a contractor read access to one bucket, nothing else”','A predefined role, bound on that bucket, to a group','Narrowest scope that works. Primitive roles at project level are almost always the wrong answer.'],
+    ['identity','“Central team owns the network, twelve teams deploy into it”','Shared VPC — a host project with service projects','Peering is non-transitive and centralises nothing. This is the Google-shaped answer to central network control.'],
+    ['network','“Private, consistent bandwidth from our data centre”','Dedicated Interconnect','Partner Interconnect if they cannot reach a colocation facility. HA VPN only if the public internet is acceptable.'],
+    ['network','“Instances must reach Cloud Storage with no external IP”','Private Google Access','Removes the need for public addressing entirely rather than routing it through a gateway.'],
+    ['network','“Prevent data leaving, even if credentials are stolen”','VPC Service Controls','The clause about valid credentials is the tell — this is enforced at the perimeter, regardless of IAM.'],
+    ['compute','“Scales to zero, small team, stateless HTTP”','Cloud Run','No cluster to operate and genuinely zero when idle.'],
+    ['compute','“Lift a monolith quickly, cannot rewrite in time”','Compute Engine, then modernise later','Meeting the stated deadline outranks arriving somewhere better, late.'],
+    ['compute','“Host maintenance must not restart the instance”','Live migration on Compute Engine','Running instances are moved during maintenance rather than rebooted.'],
+    ['compute','“Interruptible batch, restartable from checkpoint”','Spot VMs','The largest compute saving available, and only for work that tolerates being stopped.'],
+    ['compute','“Steady, predictable, always-on capacity”','Committed use discounts','One or three years. Sustained use discounts apply on their own and need no commitment.'],
+    ['data','“500,000 writes a second, keyed lookups, time series”','Bigtable','Wide-column, no joins, built for sustained write volume.'],
+    ['data','“Relational, global, strongly consistent, must scale horizontally”','Spanner','Only when a single primary genuinely cannot hold it — otherwise it is an expensive answer to an easier question.'],
+    ['data','“Ad-hoc queries across five years of history”','BigQuery','A warehouse. Streaming inserts make new rows queryable within seconds.'],
+    ['data','“Mobile clients, offline sync, document shaped”','Firestore','The client-sync requirement is usually what decides it.'],
+    ['data','“Ingest telemetry that must never be lost”','Pub/Sub','Durable and replicated, so an outage delays delivery rather than dropping it.'],
+    ['data','“Transform the stream on the way in, one pipeline for batch and streaming”','Dataflow','The unified batch-and-streaming phrasing is the signal.'],
+    ['migrate','“Move a live database with minutes of downtime”','Database Migration Service, replicate then cut over','Continuous replication while the source stays live; the outage is the switch.'],
+    ['migrate','“Ship a petabyte where the network cannot carry it”','Transfer Appliance','Above roughly the point where the wire would take weeks, physical shipping wins.'],
+    ['migrate','“Recurring copy from another cloud into Cloud Storage”','Storage Transfer Service','Managed, scheduled and incremental, rather than a script somebody maintains.'],
+    ['ops','“Which change caused the latency rise, across services”','Cloud Trace','Distributed tracing shows where the time went; logs alone will not.'],
+    ['ops','“Find who deleted the bucket”','Cloud Audit Logs — admin activity','On by default. Data access logs are separate and are not.'],
+    ['ops','“One place to see findings across the whole organisation”','Security Command Center','The organisation-wide phrasing is the tell.'],
+    ['ops','“Only signed, approved images may run”','Binary Authorization','Deploy-time enforcement rather than a scanning report somebody reads.']
+  ];
+  const KEY='pca-drill-v1';
+  let state={};
+  try{ state=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ state={}; }
+  let cur=0, shown=false;
+  function due(){ return T.map((_,i)=>i).filter(i=>(state[i]||0)<2); }
+  function pickNext(){ const d=due(); cur = d.length ? d[Math.floor(Math.random()*d.length)] : -1; shown=false; }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+  function render(){
+    const done=T.length-due().length;
+    if(cur<0){
+      card.innerHTML='<div class="drl"><div style="font-family:var(--display);font-size:22px;margin-bottom:8px">All '+T.length+' cleared</div>'+
+        '<div class="plain-line">Each one twice, which is the point — recognising a phrase once is not the same as producing the answer under time pressure.</div></div>';
+    } else {
+      const t=T[cur];
+      card.innerHTML='<div class="drl">'+
+        '<div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">'+t[0]+'</div>'+
+        '<div class="drl-q" style="font-size:15px">'+t[1]+'</div>'+
+        (shown?'<div class="ok" style="margin-bottom:8px"><b>'+t[2]+'</b></div><div class="simnote">'+t[3]+'</div>'
+               :'<div class="simnote">Answer it out loud, then reveal.</div>')+
+        '</div>';
+    }
+    score.innerHTML='<div class="bar" style="height:14px"><i style="display:block;height:100%;width:'+(done/T.length*100)+'%;background:'+
+      (done===T.length?'var(--green)':'var(--amber)')+'"></i></div>'+
+      '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;margin-top:6px">'+
+      '<span class="dim">cleared, twice each</span><b>'+done+' of '+T.length+'</b></div>'+
+      '<div class="simnote" style="margin-top:10px"><b>Two clean passes to clear a card.</b> Getting it once means you recognised it; getting it twice, separated by other cards, means you can produce it. Progress is kept in this browser, so you can come back to it.</div>';
+  }
+  document.getElementById('pcaDrillReveal').onclick=()=>{ shown=true; render(); };
+  document.getElementById('pcaDrillGot').onclick=()=>{ if(cur>=0){ state[cur]=(state[cur]||0)+1; save(); } pickNext(); render(); };
+  document.getElementById('pcaDrillMiss').onclick=()=>{ if(cur>=0){ state[cur]=0; save(); } pickNext(); render(); };
+  document.getElementById('pcaDrillReset').onclick=()=>{ state={}; save(); pickNext(); render(); };
+  pickNext(); render();
+})();
+
+document.getElementById('sec-pca5').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The resource hierarchy, and why it decides so many questions</h2>
+  <div class="plain-line"><b>In plain English:</b> a great many answers turn on <em>where</em> a control belongs rather than which control it is. Policy set high applies to everything beneath it, so the exam repeatedly offers you the same control at four different levels and expects you to pick the right one.</div>
+  ${D('0 0 660 210','The Google resource hierarchy: organisation, folders, projects and resources, with what belongs at each level.',
+   `${box(14,22,632,34,'var(--violet)')}${tm(330,44,'Organisation  —  policy nobody below can override, and the billing root','var(--violet)')}
+    ${box(52,66,556,34,'var(--blue)')}${tm(330,88,'Folders  —  department or environment; where most inherited access belongs','var(--blue)')}
+    ${box(90,110,480,34,'var(--teal)')}${tm(330,132,'Projects  —  the isolation boundary, and what everything is billed to','var(--teal)')}
+    ${box(128,154,404,34,'var(--wire)')}${tm(330,176,'Resources  —  the instance, the bucket, the dataset','var(--dim)')}`,
+   'Permissions and policy flow downward. A binding at the top applies everywhere, which is exactly why the exam keeps asking which level you meant.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th>The question says</th><th>The level</th></tr></thead><tbody>
+  <tr><td>&ldquo;Across the entire company, nobody may&hellip;&rdquo;</td><td><b>Organisation policy</b> — the only level a member project cannot escape</td></tr>
+  <tr><td>&ldquo;Everyone in the data department needs&hellip;&rdquo;</td><td><b>A folder</b> — one binding covering every project in it, now and in future</td></tr>
+  <tr><td>&ldquo;This application&rsquo;s team needs&hellip;&rdquo;</td><td><b>A project</b> — the isolation boundary and the unit of billing</td></tr>
+  <tr><td>&ldquo;Read this one bucket and nothing else&rdquo;</td><td><b>The resource</b> — narrowest scope that does the job</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The distinction people lose marks on:</b> <b>IAM grants</b> what an identity may do; an <b>organisation policy</b> constrains what may exist at all. &ldquo;Nobody should be able to create a public bucket&rdquo; is not an IAM question, however tempting the IAM answers look &mdash; no permission can express it, and a policy constraint can.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">On the day</h2>
+  <div class="lzrow"><span class="lzmark">1</span><span><b>Read the case studies before you sit it.</b> They are published in advance, they are long, and reading one cold with a clock running is the worst trade available. Extract the constraints beforehand and take that list in your head.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>On a case question, re-read the constraints before the options.</b> The options are written to be individually attractive. Knowing what disqualifies before you read them stops you being sold one.</span></div>
+  <div class="lzrow"><span class="lzmark">3</span><span><b>Eliminate on the least technical word.</b> &ldquo;Guarantee&rdquo;, &ldquo;no downtime&rdquo;, &ldquo;small team&rdquo;, &ldquo;must remain in&rdquo;, &ldquo;without rewriting&rdquo;. These decide more questions than any service detail.</span></div>
+  <div class="lzrow"><span class="lzmark">4</span><span><b>When two survive, prefer less operational burden.</b> Managed over self-run, enforced over documented, existing over new. The exam is consistent about this.</span></div>
+  <div class="lzrow"><span class="lzmark">5</span><span><b>Do not reach for the most capable service.</b> Spanner and a global multi-region deployment are correct far less often than they are offered. Unjustified capability is a wrong answer, not a safe one.</span></div>
+  <div class="lzrow"><span class="lzmark">6</span><span><b>Flag and move at ninety seconds.</b> Marks are equal. A long case question is worth exactly as much as a short definitional one, and the short ones are quicker.</span></div>
+  <div class="plain-line" style="margin-top:12px"><b>The habit worth building while preparing:</b> after every practice question you get wrong, write one line saying <em>which clause</em> should have eliminated your answer. That list is worth more than any set of notes, because it is built from the way you personally misread things.</div>
 </div>`;
 
 
