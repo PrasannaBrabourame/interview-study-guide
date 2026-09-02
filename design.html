@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagram lab — drawing architecture that survives contact</title>
+<style>
+  /* self-hosted, same subsets the portfolio serves — no external requests */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
+  :root{
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-family:var(--display); font-size:clamp(26px,3.4vw,38px); font-weight:500; letter-spacing:-.018em; line-height:1.05}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
+  .wf{display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:11px}
+  .wf .row{display:grid; grid-template-columns:150px 1fr 62px; gap:8px; align-items:center}
+  .wf .lab{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf .track{position:relative; height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:4px}
+  .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
+  .wf .ms{text-align:right; color:var(--dim)}
+  .wf .row.err .lab{color:var(--red)}
+  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+
+  .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
+    padding:11px 12px; text-align:center; transition:border-color .3s, background .3s, opacity .3s}
+  .chasm .cpart b{display:block; font-size:13px; font-weight:500; color:var(--text)}
+  .chasm .cpart small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.4}
+  .chasm .cagent{grid-column:1/-1; border-color:var(--blue); background:var(--n-blue)}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:var(--amber); opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  /* the same class used inline: a chip on the line, not a panel */
+  span.code{display:inline; background:var(--sel); border:1px solid var(--line2); border-radius:5px;
+    padding:.5px 5px; margin:0; overflow:visible; font-family:var(--mono); font-size:.9em;
+    line-height:inherit; color:var(--text); overflow-wrap:break-word}
+  .code pre{margin:0}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- shared note / row utilities ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
+  .lztier{display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+    border:1px solid var(--line2); border-left-width:3px; border-radius:0 9px 9px 0; background:var(--panel2);
+    cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; transition:border-color .15s}
+  .lztier:hover{border-color:var(--teal)}
+  .lztier.on{border-color:var(--amber); background:var(--sel)}
+  .lztier b{font-size:12.5px; font-weight:600}
+  .lztier span{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto; white-space:nowrap}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- three-cloud service columns (shared markup with the cloud lab) ---- */
+  .svcgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  .svccol{display:flex; flex-direction:column; gap:5px}
+  .svccol>b{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    margin-bottom:2px; font-weight:500}
+  .svccol>b.aws{color:var(--awsorange)} .svccol>b.az{color:var(--azblue)} .svccol>b.gcp{color:var(--gcpblue)}
+  .svc{border:1px solid var(--line2); background:var(--panel2); border-radius:8px; padding:6px 9px;
+    font:inherit; font-size:11.5px; color:var(--text); text-align:left; cursor:pointer; line-height:1.35;
+    transition:border-color .15s,background .15s}
+  .svc:hover{border-color:var(--teal)}
+  .svc.on{border-color:var(--amber); background:var(--sel); color:var(--amber)}
+  .svc:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  @media (max-width:760px){.svcgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a>
+    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
+    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
+    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
+    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
+    <a href="evals.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◈ evals lab</a>
+    <a href="gemini.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◉ gemini lab</a>
+    <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
+    <div class="eyebrow">architecture diagrams · production grade</div>
+    <h1>A diagram is an argument, not a picture <span class="thin">— drawing systems people can act on</span></h1>
+    <p class="sub">Almost every architecture diagram is drawn for the person who drew it. It shows everything they were thinking about, at every level of detail at once, on the day it happened to be true. Then it is presented to four different audiences who each needed a different picture, reviewed by someone whose first five questions it cannot answer, and consulted at three in the morning by an on-call engineer who finds it is eleven months out of date. Eleven sections on drawing the other kind.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="start" role="tab">Who is it for</button>
+    <button class="tab" data-pane="levels" role="tab">One diagram, one level</button>
+    <button class="tab" data-pane="anatomy" role="tab">Anatomy</button>
+    <button class="tab" data-pane="notation" role="tab">Lines & boxes</button>
+    <button class="tab" data-pane="services" role="tab">What goes in the boxes</button>
+    <button class="tab" data-pane="missing" role="tab">What people leave out</button>
+    <button class="tab" data-pane="nfr" role="tab">The questions behind it</button>
+    <button class="tab" data-pane="review" role="tab">Surviving the review</button>
+    <button class="tab" data-pane="rot" role="tab">Keeping it true</button>
+    <button class="tab" data-pane="rules" role="tab">Do’s and don’ts</button>
+    <button class="tab" data-pane="board" role="tab">The whiteboard</button>
+  </div>
+
+  <section class="pane on" id="pane-start">
+    <div id="sec-start"></div>
+  </section>
+  <section class="pane" id="pane-levels">
+    <div id="sec-levels"></div>
+  </section>
+  <section class="pane" id="pane-anatomy">
+    <div id="sec-anatomy"></div>
+  </section>
+  <section class="pane" id="pane-notation">
+    <div id="sec-notation"></div>
+  </section>
+  <section class="pane" id="pane-services">
+    <div id="sec-services"></div>
+  </section>
+  <section class="pane" id="pane-missing">
+    <div id="sec-missing"></div>
+  </section>
+  <section class="pane" id="pane-nfr">
+    <div id="sec-nfr"></div>
+  </section>
+  <section class="pane" id="pane-review">
+    <div id="sec-review"></div>
+  </section>
+  <section class="pane" id="pane-rot">
+    <div id="sec-rot"></div>
+  </section>
+  <section class="pane" id="pane-rules">
+    <div id="sec-rules"></div>
+  </section>
+  <section class="pane" id="pane-board">
+    <div id="sec-board"></div>
+  </section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">learning guide</a> · <a href="cloud.html">cloud lab</a> · <a href="agentcore.html">agentcore lab</a> · <a href="agentbuild.html">agents lab</a> · <a href="adk.html">adk lab</a> · <a href="evals.html">evals lab</a> · <a href="gemini.html">gemini lab</a> · <a href="govern.html">govern lab</a>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
+
+
+
+
+
+
+
+
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+
+
+
+
+
+
+
+
+/* ================= 1 · WHO IS IT FOR ================= */
+document.getElementById('sec-start').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <div class="note" style="margin-bottom:14px;padding:10px 12px;border-left:3px solid var(--amber);background:var(--panel2);border-radius:0 8px 8px 0">
+    <b>A note on sourcing.</b> The other labs here are built from specific course material and say so. This one is not &mdash; it is a synthesis of practice, and everything in it is an argument you are free to disagree with rather than a fact somebody certified.
+  </div>
+  <h2 class="sec">The first question is not “what does the system do”</h2>
+  <div class="plain-line"><b>In plain English:</b> before a single box is drawn there is a question that decides everything else, and it is almost never asked: <b>who is going to look at this, and what decision are they trying to make?</b> A diagram is not a description of a system. It is <em>an argument aimed at somebody</em>. Change the somebody and you should be drawing a different picture.</div>
+  <div class="plain-line">The commonest failure in this whole discipline is one diagram trying to serve four audiences at once. It ends up with sixty boxes, every service anyone mentioned, three levels of detail on one page, and it serves none of them &mdash; the executive cannot find the point, the reviewer cannot find the boundaries, the engineer cannot find the configuration, and the person paged at three in the morning cannot find anything at all.</div>
+  ${D('0 0 700 200','Four audiences, each needing a different diagram of the same system.',
+   `${box(14,26,160,64,'var(--violet)')}${tm(94,50,'the sponsor','var(--violet)')}${tm(94,66,'what it does, what it','var(--dim)')}${tm(94,80,'costs, what the risk is','var(--dim)')}
+    ${box(188,26,160,64,'var(--blue)')}${tm(268,50,'the reviewer','var(--blue)')}${tm(268,66,'boundaries, failure','var(--dim)')}${tm(268,80,'modes, the trade-offs','var(--dim)')}
+    ${box(362,26,160,64,'var(--teal)')}${tm(442,50,'the engineer','var(--teal)')}${tm(442,66,'exact services, the','var(--dim)')}${tm(442,80,'settings that matter','var(--dim)')}
+    ${box(536,26,150,64,'var(--amber)')}${tm(611,50,'on call, 3am','var(--amber)')}${tm(611,66,'what talks to what,','var(--dim)')}${tm(611,80,'where to look first','var(--dim)')}
+    ${box(14,116,672,32,'var(--red)')}${tm(350,136,'one diagram trying to be all four is sixty boxes that answer nobody’s question','var(--red)')}
+    ${tm(350,176,'four diagrams of the same system is not duplication — it is four different arguments','var(--dim)')}`,
+   'Same system in every case. What changes is which facts are relevant, and that is a much bigger difference than it looks.')}
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; pick an audience and see what belongs on their page</h2>
+  <div class="plain-line"><b>Try this:</b> fourteen things you could put on a diagram of the same system. Choose who is looking at it, and see which of the fourteen earn their place &mdash; then read what showing the wrong ones does to that meeting.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Giving directions to your house. What you tell a taxi driver, a delivery van, a friend walking from the station and a plumber looking for the stopcock are four different sets of facts about the same house.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>The sponsor</b> and read the two lines at the bottom about what happens if you show them the wrong one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>audience</b> who is going to look at this and what they need to decide</span><span class="sp-w"><b>trust boundary</b> a point where something has to prove who it is</span><span class="sp-w"><b>dependency</b> something your system needs in order to work</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="audOut"></div></div>
+    <div><div class="segmented" id="audPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="audNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The question the diagram is answering, written down</h2>
+  <div class="plain-line"><b>In plain English:</b> the single cheapest improvement available to any diagram is a sentence at the top saying what question it answers. Not a title like &ldquo;Payments Architecture&rdquo;, which tells you the subject and nothing else &mdash; an actual question.</div>
+  <div class="vs2"><div class="col"><b>A TITLE</b>&ldquo;Payments Platform &mdash; Architecture&rdquo;<br><br>Tells you the subject. Tells you nothing about what you are supposed to conclude, so every reader invents their own purpose for it and half of them are disappointed.</div>
+  <div class="col"><b>A QUESTION</b>&ldquo;How does a card payment reach the ledger, and what happens to it when the ledger is down?&rdquo;<br><br>Now the diagram has a job. Anything that does not help answer it can come off the page &mdash; which is the only reliable way to decide what to leave out.</div></div>
+  <div class="plain-line" style="margin-top:12px"><b>That last sentence is the practical value.</b> &ldquo;What should I leave out?&rdquo; is unanswerable in the abstract and trivial once there is a question on the page. Everything that does not serve it goes, and you stop having the argument about whether the Redis cache deserves a box.</div>
+</div>`;
+
+/* --- SIM: audience --- */
+(function(){
+  const pick=document.getElementById('audPick'), out=document.getElementById('audOut'), note=document.getElementById('audNote');
+  if(!pick) return;
+  const EL=[
+    {n:'What the system is for, in one line',a:['spon','rev','eng','oc']},
+    {n:'The users and the systems outside it',a:['spon','rev']},
+    {n:'Roughly what it costs to run',a:['spon']},
+    {n:'The one risk worth knowing about',a:['spon','rev']},
+    {n:'Trust boundaries — where auth is required',a:['rev','eng']},
+    {n:'What happens when each dependency is down',a:['rev','oc']},
+    {n:'Synchronous or asynchronous, per hop',a:['rev','eng','oc']},
+    {n:'Which data is personal or regulated',a:['rev']},
+    {n:'The exact managed services, by name',a:['eng','oc']},
+    {n:'Configuration that changes behaviour',a:['eng']},
+    {n:'Version numbers and instance sizes',a:['eng']},
+    {n:'Which team owns each component',a:['rev','oc']},
+    {n:'Where the logs and dashboards are',a:['oc']},
+    {n:'What to check first when it is broken',a:['oc']}
+  ];
+  const A={
+    spon:{label:'The sponsor — signing it off',n:'sponsor',
+      want:'Whether this is worth doing, roughly what it costs, and what could go badly.',
+      wrong:'<b>Show them the engineer’s diagram</b> and the meeting becomes a discussion of instance sizes. They will not say they are lost — they will approve it and ask a different question next month, which is worse.'},
+    rev:{label:'The architecture reviewer',n:'reviewer',
+      want:'Boundaries, failure behaviour, trade-offs, and what you have deliberately not done.',
+      wrong:'<b>Show them the sponsor’s diagram</b> and you get an hour of questions the picture cannot answer, none of which is about architecture. The review does not conclude and you come back in two weeks.'},
+    eng:{label:'The engineer building it',n:'engineer',
+      want:'Exactly which services, wired how, with the settings that actually matter.',
+      wrong:'<b>Show them the reviewer’s diagram</b> and they will make forty decisions on your behalf, quietly, none of them written down. Every one of those is a thing you will discover in production.'},
+    oc:{label:'Somebody on call at three in the morning',n:'on-call engineer',
+      want:'What talks to what, in which direction, and where to look first.',
+      wrong:'<b>Show them anything with sixty boxes</b> and they will close it and start guessing. The diagram was there, it was accurate, and it did not help — which is how diagrams get a reputation.'}
+  };
+  let cur='rev';
+  function render(){
+    pick.innerHTML=Object.entries(A).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+v.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const inc=EL.filter(e=>e.a.includes(cur)), exc=EL.filter(e=>!e.a.includes(cur));
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">BELONGS ON THIS DIAGRAM</div>'+
+      inc.map(e=>'<div class="lzrow" style="margin-bottom:5px"><span class="lzmark" style="color:var(--green)">✓</span><span>'+e.n+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:16px 0 6px">LEAVE IT OFF — IT BELONGS ON A DIFFERENT PAGE</div>'+
+      exc.map(e=>'<div class="lzrow" style="margin-bottom:5px;opacity:.6"><span class="lzmark" style="color:var(--red)">✗</span><span>'+e.n+'</span></div>').join('')+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">on the page</span><b>'+inc.length+' of 14</b></div></div>';
+    note.innerHTML='<div class="lzrow"><span class="lzmark">?</span><span><b>What the '+A[cur].n+' is trying to decide.</b> '+A[cur].want+'</span></div>'+
+      '<div class="lzrow" style="margin-top:10px"><span class="lzmark" style="color:var(--red)">✗</span><span><b>Give them the wrong one.</b> '+A[cur].wrong+'</span></div>'+
+      '<div class="simnote" style="margin-top:10px"><b>Notice that no element appears on all four lists</b> except the one-line statement of what the system is for. That is not an accident — it is the reason a single diagram cannot do this job, and the reason drawing four is less work than it sounds. Each one is small.</div>';
+  }
+  render();
+})();
+/* ================= 2 · ONE DIAGRAM, ONE LEVEL ================= */
+document.getElementById('sec-levels').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Zoom is a setting, and you only get one per page</h2>
+  <div class="plain-line"><b>In plain English:</b> think about maps. A world map, a road atlas and a street plan describe the same planet and you would never combine them &mdash; a page showing continents, motorway junctions and individual front doors at once is unreadable, and nobody has to be told that. <b>Architecture diagrams break this rule constantly</b>, and the result is a page with a browser, a load balancer, a Kubernetes cluster and a Java class on it.</div>
+  <div class="plain-line">The fix is a rule with no exceptions: <b>one diagram, one level of zoom.</b> If something on the page is a level deeper than everything else, it belongs on a different page &mdash; and drawing that other page is usually five minutes.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; the same system at four zoom levels</h2>
+  <div class="plain-line"><b>Try this:</b> one payments system, drawn four ways, then drawn badly. The last option is what most real diagrams actually look like, and seeing it next to the others is the point of this simulation.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Maps. A world map, a road atlas and a street plan describe the same planet, and nobody would combine them onto one page.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>All of them at once</b> last, and look at the “kinds of thing mixed” count.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>context</b> your whole system as one box, and everything outside it</span><span class="sp-w"><b>container</b> each separately deployable piece — an app, a database, a queue</span><span class="sp-w"><b>component</b> the parts inside one of those pieces</span><span class="sp-w"><b>deployment view</b> where it all actually runs — regions, networks, cloud services</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="lvOut"></div></div>
+    <div><div class="segmented" id="lvPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="lvNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The four levels, and which ones you will actually draw</h2>
+  <table class="osi"><thead><tr><th>Level</th><th>What is a box</th><th>Draw it?</th></tr></thead><tbody>
+  <tr><td><b>1 · Context</b></td><td><b>Your whole system is one box.</b> Everything else on the page is a user or an external system</td><td><b>Always.</b> It takes ten minutes, it settles what is in scope, and it is the only diagram most stakeholders ever need</td></tr>
+  <tr><td><b>2 · Container</b></td><td>Each separately deployable thing: the web app, the API, the worker, the database, the queue</td><td><b>Always.</b> This is the workhorse — the one people mean by &ldquo;the architecture diagram&rdquo;</td></tr>
+  <tr><td><b>3 · Component</b></td><td>The pieces inside <em>one</em> container</td><td><b>Sometimes.</b> Worth it for the one or two containers that are genuinely complicated. Drawing it for all of them is how a diagram set dies</td></tr>
+  <tr><td><b>4 · Code</b></td><td>Classes and functions</td><td><b>Almost never.</b> It is out of date the day after it is drawn, and the code is right there</td></tr>
+  <tr><td><b>Deployment</b><br><span class="dim">a separate view, not a fifth level</span></td><td>Where the containers actually run: regions, zones, networks, the managed services</td><td><b>Always, for production.</b> This is where cloud service names belong, and keeping it separate is what stops level 2 filling up with vendor icons</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The separation that saves the most pain</b> is the last one. A container diagram says &ldquo;the API talks to the order database&rdquo;. A deployment diagram says &ldquo;the API runs on a managed container service in three zones and reaches a managed Postgres through a private endpoint&rdquo;. Both are true, both are useful, and putting them on one page is how you get a diagram nobody can read and nobody will update.</div>
+</div>`;
+
+/* --- SIM: levels --- */
+(function(){
+  const pick=document.getElementById('lvPick'), out=document.getElementById('lvOut'), note=document.getElementById('lvNote');
+  if(!pick) return;
+  const L={
+    ctx:{label:'Level 1 — Context',
+      boxes:[['Customer','person'],['Payments platform','you'],['Card network','ext'],['Core banking','ext'],['Fraud service','ext']],
+      cap:'Your whole system is one box. Everything else is somebody you talk to.',
+      v:['ok','<b>Five boxes, and it settles the argument about scope.</b> Anyone can read this, including people who do not work in technology — which is exactly who needs to agree what is in and out before anything is built.']},
+    cont:{label:'Level 2 — Container',
+      boxes:[['Web app','you'],['Payments API','you'],['Settlement worker','you'],['Payments database','store'],['Event queue','store'],['Card network','ext']],
+      cap:'Each separately deployable thing gets a box. Still no vendor names.',
+      v:['ok','<b>The workhorse.</b> This is what people mean when they say “the architecture diagram”. Note what is <em>not</em> here: no cloud services, no instance sizes, no classes. Those are other pages, and keeping them off this one is what makes it readable.']},
+    comp:{label:'Level 3 — Component, one container only',
+      boxes:[['Auth filter','you'],['Payment controller','you'],['Idempotency store','store'],['Ledger client','you'],['Card network client','you']],
+      cap:'Inside the Payments API, and nothing else.',
+      v:['note','<b>Only worth drawing for the container that is genuinely complicated.</b> Here it earns its place because idempotency is the hard part of payments and it deserves a picture. Drawing this for all six containers is how a diagram set becomes a burden and then a lie.']},
+    dep:{label:'Deployment view',
+      boxes:[['Global load balancer','svc'],['Managed containers, 3 zones','svc'],['Managed Postgres, multi-zone','svc'],['Managed queue','svc'],['Private endpoint','svc'],['Card network over private link','ext']],
+      cap:'Where it all actually runs. This is the page cloud service names belong on.',
+      v:['ok','<b>Separate on purpose.</b> Level 2 said “the API talks to the order database”. This says how that is actually achieved. Both are true; on one page they are unreadable, and the deployment view is the one that changes most often.']},
+    mess:{label:'All of them at once — the usual reality',
+      boxes:[['Customer','person'],['React SPA','you'],['Global load balancer','svc'],['Payments API','you'],['Auth filter','you'],['OrderRepository class','code'],['Managed Postgres db.r6g.xlarge','svc'],['Card network','ext'],['Redis','store'],['Settlement worker','you'],['Kafka topic payments.v2','store'],['Fraud service','ext']],
+      cap:'Twelve boxes spanning four levels of zoom. Nobody drew this deliberately.',
+      v:['lzbad','<b>This is what most real diagrams look like, and nobody chose it.</b> It happened one box at a time, each addition reasonable on the day. A class name sits beside a load balancer sits beside an external company. There is no zoom level at which all of this is the right amount of detail, so every reader is simultaneously overwhelmed and missing something.']}
+  };
+  const C={person:'var(--blue)',you:'var(--violet)',ext:'var(--wire)',store:'var(--teal)',svc:'var(--amber)',code:'var(--red)'};
+  const KIND={person:'a person',you:'yours',ext:'external',store:'data',svc:'cloud service',code:'code'};
+  let cur='cont';
+  function render(){
+    pick.innerHTML=Object.entries(L).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+v.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const l=L[cur];
+    const kinds=[...new Set(l.boxes.map(b=>b[1]))];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE PAGE</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:14px;border:1px dashed var(--line2);border-radius:11px;background:var(--panel2)">'+
+      l.boxes.map(([n,k])=>'<span style="border:1.5px solid '+C[k]+';color:'+C[k]+';border-radius:9px;padding:7px 12px;font-size:12px">'+n+'</span>').join('')+
+      '</div>'+
+      '<div class="simnote" style="margin-top:9px">'+l.cap+'</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:14px">'+
+      kinds.map(k=>'<span style="font-family:var(--mono);font-size:10.5px;color:'+C[k]+'"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+C[k]+';margin-right:5px"></span>'+KIND[k]+'</span>').join('')+
+      '</div>'+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">boxes on the page</span><b>'+l.boxes.length+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">kinds of thing mixed</span><b style="color:'+(kinds.length>3?'var(--red)':'var(--green)')+'">'+kinds.length+'</b></div></div>';
+    note.innerHTML='<div class="'+l.v[0]+'" style="margin-bottom:10px">'+l.v[1]+'</div>'+
+      '<div class="simnote"><b>The count at the bottom is the tell.</b> A diagram at one level mixes two or three kinds of thing. Once it is mixing five, no reader can hold the page in their head — and the fix is never to redraw it more neatly, it is to split it.</div>';
+  }
+  render();
+})();
+
+/* ================= 3 · ANATOMY ================= */
+document.getElementById('sec-anatomy').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Seven things every diagram needs, and six of them are free</h2>
+  <div class="plain-line"><b>In plain English:</b> most of what makes a diagram trustworthy is not the drawing. It is the small print around it &mdash; who owns it, when it was true, what it deliberately leaves out. All of it takes about two minutes and almost nobody does it, which is why almost no diagram is trusted.</div>
+  ${D('0 0 700 250','The parts of a well-formed architecture diagram: title question, date and owner, the drawing, the legend, boundaries and an out-of-scope note.',
+   `${box(14,20,672,44,'var(--violet)')}${tm(350,40,'the question this page answers — not a title, a question','var(--violet)')}${tm(350,56,'“how does a payment reach the ledger, and what happens when the ledger is down?”','var(--dim)')}
+    ${box(14,72,330,26,'var(--dim)')}${tm(179,90,'owner · team · contact','var(--dim)')}
+    ${box(356,72,330,26,'var(--dim)')}${tm(521,90,'last true on · version · where it lives','var(--dim)')}
+    ${box(14,106,470,96,'var(--teal)')}${tm(249,150,'the drawing itself','var(--teal)')}${tm(249,168,'boxes, arrows, boundaries','var(--dim)')}
+    ${box(496,106,190,96,'var(--amber)')}${tm(591,140,'the legend','var(--amber)')}${tm(591,158,'what a line means','var(--dim)')}${tm(591,174,'what a colour means','var(--dim)')}
+    ${box(14,210,672,30,'var(--red)')}${tm(350,230,'deliberately not shown: monitoring, CI/CD, the admin console','var(--red)')}`,
+   'Only the middle-left box is the diagram. Everything else around it is what makes the diagram usable by somebody who was not in the room when it was drawn.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th>Part</th><th>Why it matters</th><th>Missing it costs you</th></tr></thead><tbody>
+  <tr><td><b>The question</b></td><td>Says what you are supposed to conclude, and settles what can be left out</td><td>Every reader invents their own purpose, and half of them are disappointed</td></tr>
+  <tr><td><b>Owner and contact</b></td><td>Somebody to ask when it does not match reality</td><td>A stale diagram nobody will correct, because correcting somebody else&rsquo;s diagram feels rude</td></tr>
+  <tr><td><b>Date and version</b></td><td>Lets a reader judge how much to trust it</td><td><b>The single biggest cause of diagrams being ignored.</b> Undated means unknowable, and unknowable means treat as fiction</td></tr>
+  <tr><td><b>Where it lives</b></td><td>A link to the source, so the next person edits rather than redraws</td><td>Four versions of the same diagram in four documents, quietly disagreeing</td></tr>
+  <tr><td><b>The legend</b></td><td>Says what a line, a colour and a box shape mean <em>on this page</em></td><td>Every reader guesses. Most guess wrong, and none of them mention it</td></tr>
+  <tr><td><b>Boundaries</b></td><td>Account, network, region, trust &mdash; the crossings are where the interesting questions live</td><td>A reviewer cannot tell what is inside what, which is most of what they came to check</td></tr>
+  <tr><td><b>What is not shown</b></td><td>An explicit list of deliberate omissions</td><td>Twenty minutes of a review spent establishing scope, every time, with a different person</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; find what is wrong with this one</h2>
+  <div class="plain-line"><b>Try this:</b> a real-looking diagram with eight defects in it. Click anything you think is wrong. Nothing is a trick &mdash; every one of them is a mistake that appears in production documentation constantly.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Proofreading somebody else’s document. The spelling is fine and the facts are right; what is missing is a date, a name, and any indication of what it is for.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click the first item — the title — and read why a subject is not a question.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>legend</b> the key saying what a line, colour or shape means on this page</span><span class="sp-w"><b>boundary</b> a box drawn around other boxes: an account, a network, a region</span><span class="sp-w"><b>scope note</b> one line saying what you deliberately left out</span><span class="sp-w"><b>failure path</b> what happens when something does not answer</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="docOut"></div></div>
+    <div><div id="docNote" class="cidr-out"></div>
+      <button class="btn" id="docReset" style="margin-top:12px;width:100%">start again</button></div>
+  </div>
+</div>`;
+
+/* --- SIM: diagram doctor --- */
+(function(){
+  const out=document.getElementById('docOut'), note=document.getElementById('docNote'), rst=document.getElementById('docReset');
+  if(!out) return;
+  const D=[
+    {k:'title',label:'Payments Architecture',kind:'title',
+     bad:'A title, not a question. It names the subject and says nothing about what you are meant to conclude, so it cannot help anybody decide what to leave out.',
+     fix:'“How does a card payment reach the ledger, and what happens when the ledger is down?”'},
+    {k:'date',label:'no date, no owner, no version',kind:'meta',
+     bad:'Nothing says when this was true or who to ask. A reader has no way to judge whether to trust it, so the safe assumption is not to.',
+     fix:'Owner, team, last-updated date, and a link to the source it was generated from.'},
+    {k:'legend',label:'no legend',kind:'meta',
+     bad:'There are solid arrows and dashed arrows on this page and nothing says what the difference is. Every reader guesses, most guess wrong, and none of them will mention it.',
+     fix:'A legend saying what each line style, colour and box shape means on this page.'},
+    {k:'mix',label:'“OrderRepository” beside “Global load balancer”',kind:'box',
+     bad:'A class name and a piece of cloud infrastructure on the same page. Four levels of zoom at once — the map problem.',
+     fix:'The class belongs on a component diagram of one container, if it is worth drawing at all.'},
+    {k:'arrow',label:'unlabelled arrows',kind:'edge',
+     bad:'An arrow with no label could mean a request, a dependency, a data flow or a deployment. Six arrows, six guesses.',
+     fix:'Label every edge with the protocol and what it carries: “HTTPS · payment intent”.'},
+    {k:'happy',label:'no failure paths anywhere',kind:'edge',
+     bad:'Every arrow is the happy path. The diagram cannot answer the question anyone actually opens it to ask, which is what happens when something is down.',
+     fix:'Mark the retries, the timeouts, the fallbacks and the dead-letter path — at least on the critical route.'},
+    {k:'bound',label:'no boundaries drawn',kind:'box',
+     bad:'Nothing shows which things are in which account, network or region. The crossings are exactly where the security and latency questions live, and they are invisible.',
+     fix:'Draw the account, network and region boundaries as containers, and let the crossings be visible.'},
+    {k:'scope',label:'no “not shown” note',kind:'meta',
+     bad:'Monitoring, CI/CD and the admin console are all absent. A reader cannot tell whether they were forgotten or deliberately excluded, so they will ask — every reader, every time.',
+     fix:'One line at the bottom: “Not shown: monitoring, CI/CD, the internal admin console.”'}
+  ];
+  let found={};
+  function render(){
+    const n=Object.keys(found).length;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE DIAGRAM AS PRESENTED — CLICK ANYTHING WRONG</div>'+
+      '<div style="border:1px dashed var(--line2);border-radius:11px;padding:14px;background:var(--panel2)">'+
+      D.map(d=>'<button class="svc'+(found[d.k]?' on':'')+'" data-k="'+d.k+'" style="display:block;width:100%;margin-bottom:6px">'+
+        (found[d.k]?'✓ ':'')+d.label+'</button>').join('')+
+      '</div>'+
+      '<div class="bar" style="height:12px;margin-top:14px"><i style="display:block;height:100%;width:'+(n/D.length*100)+'%;background:'+
+        (n===D.length?'var(--green)':'var(--amber)')+'"></i></div>'+
+      '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-top:6px">'+
+        '<span class="dim">defects found</span><b>'+n+' of '+D.length+'</b></div>';
+    out.querySelectorAll('.svc').forEach(b=>b.onclick=()=>{found[b.dataset.k]=true;render();});
+    const last=Object.keys(found).slice(-1)[0];
+    let html;
+    if(!last) html='<div class="simnote">Eight things on that page are wrong. Click one.</div>';
+    else { const d=D.find(x=>x.k===last);
+      html='<div class="lzbad" style="margin-bottom:10px"><b>'+d.label+'</b><br>'+d.bad+'</div>'+
+           '<div class="ok" style="margin-bottom:10px"><b>Instead.</b> '+d.fix+'</div>'; }
+    if(Object.keys(found).length===D.length)
+      html+='<div class="ok" style="margin-bottom:10px"><b>All eight.</b> Notice that only three of them are about the drawing. The other five are the small print — the question, the date, the legend, the boundaries and the scope note — and every one of those takes under a minute.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The uncomfortable part:</b> a diagram with all eight of these defects can still be <em>accurate</em>. Every box correct, every line real. Accuracy is not the problem with most architecture diagrams and never has been — usability is.</div>';
+    note.innerHTML=html;
+  }
+  rst.onclick=()=>{found={};render();};
+  render();
+})();
+/* ================= 4 · LINES & BOXES ================= */
+document.getElementById('sec-notation').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">An arrow is the most overloaded symbol in engineering</h2>
+  <div class="plain-line"><b>In plain English:</b> draw an arrow from A to B and you have said something. The trouble is that nobody agrees what. It might mean A calls B, or A depends on B, or data flows from A to B, or A deploys to B &mdash; and those are <em>different and sometimes opposite</em>. A read from a database is a call from the app to the database and a flow of data from the database to the app. Same two boxes, opposite arrows, both correct.</div>
+  <div class="plain-line"><b>Pick one meaning and write it down.</b> The most useful convention is <b>the arrow points the way the request goes</b>, and the label says what is carried. Then a reader can work out data direction from the label, and there is never an ambiguous edge on the page.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; build the legend and watch the diagram change meaning</h2>
+  <div class="plain-line"><b>Try this:</b> the same six boxes and six arrows every time. Choose what your notation means and see how much the reader can work out &mdash; and which questions become answerable that were not before.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Road signs. The same junction with no markings, then with arrows, then with lane directions and destinations. Nothing about the road changed and everything about your ability to use it did.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>Solid is synchronous, dashed is asynchronous</b> on its own first — it does the most work of the four.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>synchronous</b> the caller waits for an answer</span><span class="sp-w"><b>asynchronous</b> the caller hands it over and carries on</span><span class="sp-w"><b>edge</b> a line between two boxes</span><span class="sp-w"><b>protocol</b> how two things talk — HTTPS, SQL, a message on a queue</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="ntOut"></div></div>
+    <div><div class="toggles" id="ntCtl"></div>
+      <div id="ntNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The conventions worth adopting, and why each earns its ink</h2>
+  <table class="osi"><thead><tr><th>Convention</th><th>What it buys</th></tr></thead><tbody>
+  <tr><td><b>Arrow direction = the request</b></td><td>One unambiguous meaning. Data direction is then readable from the label, which you were going to write anyway</td></tr>
+  <tr><td><b>Solid = synchronous, dashed = asynchronous</b></td><td><b>The highest-value distinction on the page.</b> It tells you which failures cascade immediately and which are absorbed by a queue &mdash; two completely different failure stories, visible at a glance</td></tr>
+  <tr><td><b>Label every edge with protocol and payload</b></td><td>&ldquo;HTTPS &middot; payment intent&rdquo; answers three questions at once: what carries it, what is on it, and roughly how big the coupling is</td></tr>
+  <tr><td><b>Boxes for things you build, a different shape for things you buy</b></td><td>The reader instantly knows what you control and what you merely depend on &mdash; which is most of the risk conversation</td></tr>
+  <tr><td><b>Boundaries as containers, not as colours</b></td><td>Nesting is unambiguous. A colour needs a legend and gets lost when somebody prints it in greyscale</td></tr>
+  <tr><td><b>Colour for one thing only</b></td><td>Data sensitivity, or ownership, or environment &mdash; pick one. Colour carrying two meanings carries none</td></tr>
+  <tr><td><b>Numbered steps on the critical path</b></td><td>Turns a picture into a narrative. The reader follows 1, 2, 3 instead of choosing their own route through your edges</td></tr>
+  <tr><td><b>Vendor icons as decoration, never as information</b></td><td>The label is the information. Icons help someone who already knows them and are noise to everyone else &mdash; and they are useless the moment somebody prints it</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The one to adopt first if you adopt nothing else</b> is solid against dashed. A page where you can see at a glance which calls block and which do not is a page that can answer &ldquo;what happens when this is slow?&rdquo; &mdash; and that is the question behind most production incidents.</div>
+</div>`;
+
+/* --- SIM: notation --- */
+(function(){
+  const ctl=document.getElementById('ntCtl'), out=document.getElementById('ntOut'), note=document.getElementById('ntNote');
+  if(!ctl) return;
+  const on={dir:false,sync:false,label:false,num:false};
+  const EDGES=[
+    {a:'Web app',b:'Payments API',sync:true,proto:'HTTPS · payment intent',n:1},
+    {a:'Payments API',b:'Fraud check',sync:true,proto:'gRPC · card + amount',n:2},
+    {a:'Payments API',b:'Payments DB',sync:true,proto:'SQL · write intent',n:3},
+    {a:'Payments API',b:'Event queue',sync:false,proto:'publish · payment.authorised',n:4},
+    {a:'Settlement worker',b:'Event queue',sync:false,proto:'subscribe',n:5},
+    {a:'Settlement worker',b:'Core banking',sync:true,proto:'SFTP · settlement file',n:6}
+  ];
+  function render(){
+    ctl.innerHTML=[['dir','<b>Arrow direction means the request</b>, not data flow'],
+                   ['sync','<b>Solid is synchronous, dashed is asynchronous</b>'],
+                   ['label','<b>Every edge labelled</b> with protocol and payload'],
+                   ['num','<b>Numbered steps</b> along the critical path']]
+      .map(([k,l])=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px">'+
+      '<input type="checkbox" data-k="'+k+'"'+(on[k]?' checked':'')+'><span>'+l+'</span></label>').join('');
+    ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{on[i.dataset.k]=i.checked;render();});
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE EDGES ON THE PAGE</div>'+
+      EDGES.map(e=>{
+        const dash = on.sync && !e.sync;
+        return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;font-size:12px">'+
+          (on.num?'<span class="n2" style="flex:none">'+e.n+'</span>':'<span style="width:19px;flex:none"></span>')+
+          '<span style="width:118px;text-align:right;color:var(--muted)">'+e.a+'</span>'+
+          '<span style="flex:1;position:relative;height:14px">'+
+            '<span style="position:absolute;left:0;right:0;top:6px;border-top:'+(dash?'1.6px dashed var(--teal)':'1.6px solid var(--violet)')+'"></span>'+
+            (on.dir?'<span style="position:absolute;right:-1px;top:1px;color:'+(dash?'var(--teal)':'var(--violet)')+';font-size:11px">▸</span>':'')+
+            (on.label?'<span style="position:absolute;left:50%;transform:translateX(-50%);top:-6px;background:var(--panel);padding:0 6px;font-family:var(--mono);font-size:9.5px;color:var(--muted);white-space:nowrap">'+e.proto+'</span>':'')+
+          '</span>'+
+          '<span style="width:118px;color:var(--muted)">'+e.b+'</span></div>';
+      }).join('')+
+      (on.sync?'<div style="display:flex;gap:16px;margin-top:14px;font-family:var(--mono);font-size:10.5px">'+
+        '<span style="color:var(--violet)">━━ synchronous — the caller waits</span>'+
+        '<span style="color:var(--teal)">╌╌ asynchronous — it does not</span></div>':'')+
+      '<div class="dim" style="font-size:11px;margin:18px 0 6px">WHAT A READER CAN NOW WORK OUT</div>'+
+      [['dir','which side initiates each conversation'],
+       ['sync','which failures cascade immediately and which a queue absorbs'],
+       ['label','what is actually carried, and how tightly coupled these are'],
+       ['num','the order things happen in, without choosing their own route']]
+      .map(([k,t])=>'<div class="lzrow" style="margin-bottom:4px"><span class="lzmark" style="color:var('+(on[k]?'--green':'--red')+')">'+(on[k]?'✓':'✗')+'</span><span'+(on[k]?'':' style="opacity:.5"')+'>'+t+'</span></div>').join('');
+    let html='';
+    const n=Object.values(on).filter(Boolean).length;
+    if(n===0) html='<div class="lzbad" style="margin-bottom:10px"><b>Six lines between six boxes, and that is all you have said.</b> A reader cannot tell who calls whom, what is carried, what blocks, or in what order. This is a picture of the fact that these things are connected — which almost nobody needed telling.</div>';
+    if(on.sync) html+='<div class="ok" style="margin-bottom:10px"><b>Solid against dashed is doing the heaviest lifting here.</b> You can now see that a slow fraud check stalls every payment, and a slow settlement worker does not — because a queue sits in between. That is two entirely different incident stories, readable at a glance.</div>';
+    if(on.label&&on.dir) html+='<div class="ok" style="margin-bottom:10px"><b>Direction plus labels removes the last ambiguity.</b> The API calls the database and the data comes back the other way — obvious from “SQL · write intent” without drawing a second arrow for it.</div>';
+    if(n===4) html+='<div class="ok" style="margin-bottom:10px"><b>Four conventions, and the page went from “these things are connected” to a story somebody can act on.</b> None of them changed a single box.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>Whatever you choose, put it in the legend.</b> These conventions are not standards — there is no universal meaning for a dashed line. They work because the page says what they mean, and a reader who guesses wrong will never tell you they did.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+/* ================= 5 · WHAT GOES IN THE BOXES ================= */
+document.getElementById('sec-services').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Boring by default</h2>
+  <div class="plain-line"><b>In plain English:</b> a diagram is a proposal, and every box in it is something a team will operate at three in the morning for the next four years. The bar for putting something interesting on the page should therefore be high, and the honest default is: <b>the most boring managed service that meets the requirement</b>, run by the fewest people, doing one job.</div>
+  <div class="plain-line">That is not conservatism for its own sake. Every additional distinct technology on a diagram costs you a body of expertise, an upgrade path, a set of failure modes nobody has seen yet, and one more thing to check during an incident. <b>If something exotic is on the page, the diagram should say why in writing</b> &mdash; and if you cannot write that sentence, it should come off.</div>
+  <div class="vs2"><div class="col"><b>REACH FOR MANAGED</b>Somebody else patches it, scales it and gets paged for it at four in the morning.<br><br><b>The trade:</b> less control, a pricing model you did not design, and a limit you will one day discover.<br><br><b>The default answer</b> unless there is a stated reason otherwise.</div>
+  <div class="col"><b>REACH FOR SELF-RUN</b>You need something the managed version cannot do, or you have a portability requirement somebody has written down.<br><br><b>The trade:</b> you own patching, scaling, backups, upgrades and the pager.<br><br><b>Needs a sentence on the page</b> saying which requirement forced it.</div></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; fill the boxes for a real requirement</h2>
+  <div class="plain-line"><b>Try this:</b> eight requirements from an ordinary production system. For each, see the boring default in all three clouds, the tempting alternative, and the question that decides between them.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing a van for a business. There is a sensible one that everyone can drive and the garage knows, and there is a fascinating one. The second needs a reason written down.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>Store transactional data</b> and read the question that decides it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>managed service</b> one the cloud provider runs, patches and gets paged for</span><span class="sp-w"><b>self-run</b> one you install, patch, scale and carry the pager for</span><span class="sp-w"><b>operational load</b> the ongoing human cost of keeping something alive</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svOut"></div></div>
+    <div><div class="segmented" id="svPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The questions that actually pick the service</h2>
+  <div class="lzrow"><span class="lzmark">1</span><span><b>Does the team already run one of these?</b> The strongest argument in the room, and the one most often left out of the design document. A slightly worse technology your people already understand beats a slightly better one they do not.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>What is the failure behaviour, and can we live with it?</b> Not the uptime figure &mdash; what actually happens to <em>your</em> users during the failure, and how long it lasts.</span></div>
+  <div class="lzrow"><span class="lzmark">3</span><span><b>What does it cost at ten times this volume?</b> Some services are cheap until a threshold and then are not. Worth knowing before it is on a diagram somebody approved.</span></div>
+  <div class="lzrow"><span class="lzmark">4</span><span><b>How would we get off it?</b> Not because you plan to, but because the answer tells you how much you are betting. &ldquo;Rewrite six services&rdquo; and &ldquo;change a connection string&rdquo; are very different bets.</span></div>
+  <div class="lzrow"><span class="lzmark">5</span><span><b>Who gets paged, and do they know?</b> A box on a diagram is a future on-call rota entry. If nobody has agreed to own it, it is not a design, it is a wish.</span></div>
+  <div class="plain-line" style="margin-top:12px"><b>Notice that only one of those five is about the technology.</b> Most service selection arguments are actually arguments about operational capacity, and they go better when named as such.</div>
+</div>`;
+
+/* --- SIM: service picker --- */
+(function(){
+  const pick=document.getElementById('svPick'), out=document.getElementById('svOut'), note=document.getElementById('svNote');
+  if(!pick) return;
+  const R=[
+    {k:'web',n:'Serve a web application to the public',
+     dull:{aws:'CloudFront + S3, or ALB + ECS Fargate',az:'Front Door + App Service or Container Apps',gcp:'Cloud CDN + Cloud Run'},
+     shiny:'Your own Kubernetes cluster with a service mesh',
+     q:'Do you have more than one team deploying more than a handful of services? If not, a cluster is a full-time job you have given somebody without telling them.'},
+    {k:'sql',n:'Store transactional data with relationships',
+     dull:{aws:'RDS or Aurora PostgreSQL',az:'Azure Database for PostgreSQL',gcp:'Cloud SQL or AlloyDB'},
+     shiny:'A distributed SQL database with global consistency',
+     q:'Do you genuinely need writes in more than one region at once? Almost nobody does, and the ones who do know it — the requirement is loud, not subtle.'},
+    {k:'queue',n:'Decouple two services so one can be slow',
+     dull:{aws:'SQS',az:'Azure Service Bus or Storage Queues',gcp:'Pub/Sub'},
+     shiny:'A self-run event streaming platform',
+     q:'Do you need replay, ordering and multiple independent consumers of the same stream? If it is really just “do this later”, a queue is a tenth of the operational weight.'},
+    {k:'file',n:'Store files users upload',
+     dull:{aws:'S3',az:'Blob Storage',gcp:'Cloud Storage'},
+     shiny:'A network file share, because the code expects a filesystem',
+     q:'This one is usually not a technology decision at all — it is whether you are willing to change the code. Object storage is cheaper, safer and more durable, and it is not a filesystem.'},
+    {k:'secret',n:'Hold credentials the application needs',
+     dull:{aws:'Secrets Manager or Parameter Store',az:'Key Vault',gcp:'Secret Manager'},
+     shiny:'Environment variables set at deploy time',
+     q:'Not really tempting, and extremely common. The question is whether you can rotate a credential without a deployment — if not, you will not rotate it.'},
+    {k:'batch',n:'Run something on a schedule every night',
+     dull:{aws:'EventBridge Scheduler + a container task',az:'Logic Apps or a Container Apps job',gcp:'Cloud Scheduler + Cloud Run job'},
+     shiny:'A workflow orchestrator with a DAG editor',
+     q:'How many jobs, and do they depend on each other? Three independent jobs do not need an orchestrator; thirty with dependencies genuinely do.'},
+    {k:'search',n:'Let users search a large catalogue',
+     dull:{aws:'OpenSearch Service',az:'Azure AI Search',gcp:'Vertex AI Search'},
+     shiny:'A vector database and your own embedding pipeline',
+     q:'Is a keyword search with filters actually insufficient? Try it first — it is a week of work, and it is frequently the answer.'},
+    {k:'cache',n:'Take read load off the database',
+     dull:{aws:'ElastiCache for Redis',az:'Azure Cache for Redis',gcp:'Memorystore'},
+     shiny:'A cache in the application process',
+     q:'This one inverts: the boring answer is the managed cache, and the tempting shortcut is in-process. In-process is faster and gives every instance a different answer — which is only fine until it is not.'}
+  ];
+  let cur='sql';
+  const CN={aws:'AWS',az:'Azure',gcp:'Google Cloud'};
+  function render(){
+    pick.innerHTML=R.map(r=>'<button class="seg'+(cur===r.k?' on':'')+'" data-k="'+r.k+'" style="text-align:left">'+r.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const r=R.find(x=>x.k===cur);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">THE REQUIREMENT</div>'+
+      '<div class="plain-line" style="margin-bottom:14px">'+r.n+'</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:6px">THE BORING DEFAULT</div>'+
+      '<div class="svcgrid" style="margin-bottom:14px">'+['aws','az','gcp'].map(c=>
+        '<div class="svccol"><b class="'+c+'">'+CN[c]+'</b><span class="svc" style="cursor:default">'+r.dull[c]+'</span></div>').join('')+'</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:6px">WHAT SOMEBODY WILL PROPOSE INSTEAD</div>'+
+      '<div style="border:1.5px solid var(--amber);color:var(--amber);border-radius:9px;padding:9px 12px;font-size:12.5px">'+r.shiny+'</div>';
+    note.innerHTML='<div class="lzrow"><span class="lzmark" style="color:var(--amber)">?</span><span><b>The question that decides it.</b> '+r.q+'</span></div>'+
+      '<div class="simnote" style="margin-top:10px"><b>The alternative is not wrong.</b> Every one of these is the right answer for somebody — the point is that it needs a stated reason on the page, and the boring option does not. Defaults should be free; departures should cost a sentence.</div>'+
+      '<div class="simnote" style="margin-top:8px"><b>And write the reason down where the diagram lives.</b> Not in a chat message and not in somebody’s head. In eighteen months the person asking “why on earth did we choose this?” will be you.</div>';
+  }
+  render();
+})();
+/* ================= 6 · WHAT PEOPLE LEAVE OUT ================= */
+document.getElementById('sec-missing').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The happy path is the one nobody needed a diagram for</h2>
+  <div class="plain-line"><b>In plain English:</b> almost every architecture diagram shows the system working. Request comes in, goes through four boxes, answer goes out. That is the version everyone already has in their head &mdash; nobody opens a diagram at three in the morning to find out how it works when it works. <b>They open it to find out what happens when one of the boxes is not answering</b>, and that is exactly what the page does not say.</div>
+  <div class="plain-line">Drawing the failure paths is more work, and it is the difference between a picture of a system and a document somebody can act on.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; break one dependency at a time</h2>
+  <div class="plain-line"><b>Try this:</b> a happy-path diagram, and a switch to break each dependency. Read what the user experiences, and then read what the diagram should have shown &mdash; because in every case there is a single annotation that would have answered it.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A fire drill. The building plan showing where the rooms are is not the same document as the one showing where to go when the alarm sounds — and only one of them is ever used under pressure.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>The event queue is unavailable</b> — the failure where the user sees nothing at all.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>dependency</b> something your system needs in order to work</span><span class="sp-w"><b>timeout</b> how long you wait before giving up on something</span><span class="sp-w"><b>retry</b> trying again after a failure</span><span class="sp-w"><b>retention</b> how long a queue can hold messages before dropping them</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="fpOut"></div></div>
+    <div><div class="segmented" id="fpPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="fpNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Seven things missing from most diagrams, in rough order of how much they cost</h2>
+  <table class="osi"><thead><tr><th>Missing</th><th>The question it would have answered</th><th>How to show it</th></tr></thead><tbody>
+  <tr><td><b>Failure behaviour</b></td><td>What happens when this dependency is down or slow?</td><td>Annotate each edge: retries, timeout, and what happens when it is exhausted. Just on the critical path is enough</td></tr>
+  <tr><td><b>Synchronous or not</b></td><td>Does this failure cascade to the user immediately?</td><td>Solid and dashed lines. Free, and the highest-value distinction on the page</td></tr>
+  <tr><td><b>Trust boundaries</b></td><td>Where does something have to prove who it is?</td><td>Draw the boundaries as containers and mark the crossings. The crossings are the security review</td></tr>
+  <tr><td><b>Data classification</b></td><td>Which of these lines carries personal or regulated data?</td><td>One colour, one meaning. This is the line a compliance reviewer traces with a finger</td></tr>
+  <tr><td><b>Ownership</b></td><td>Whose is this box when it breaks?</td><td>Team name in the corner of each box. It determines who is paged, which is not a detail</td></tr>
+  <tr><td><b>Volume and latency on the hot path</b></td><td>Which of these is the one that matters?</td><td>Annotate the busiest route with requests per second and a latency budget per hop</td></tr>
+  <tr><td><b>What is deliberately not shown</b></td><td>Did you forget monitoring, or leave it out on purpose?</td><td>One line at the bottom. Saves twenty minutes in every review, with every reviewer</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>You do not need all seven on one page</b> &mdash; that is how you get back to sixty boxes. Pick the ones that serve the question at the top. A diagram answering &ldquo;what happens when the ledger is down&rdquo; needs failure behaviour and sync-versus-async, and can leave data classification for the page that asks about compliance.</div>
+</div>`;
+
+/* --- SIM: failure paths --- */
+(function(){
+  const pick=document.getElementById('fpPick'), out=document.getElementById('fpOut'), note=document.getElementById('fpNote');
+  if(!pick) return;
+  const F=[
+    {k:'none',label:'Everything is working',
+     hops:[['Web app','ok'],['Payments API','ok'],['Fraud check','ok'],['Payments DB','ok'],['Event queue','ok'],['Settlement worker','ok']],
+     user:'The payment goes through in about 400 milliseconds.',
+     v:['ok','<b>This is the diagram everybody draws.</b> It is accurate and it answers a question nobody was asking, because this is the version already in their heads.']},
+    {k:'fraud',label:'The fraud service is slow',
+     hops:[['Web app','ok'],['Payments API','wait'],['Fraud check','slow'],['Payments DB','ok'],['Event queue','ok'],['Settlement worker','ok']],
+     user:'<b>Every payment hangs for thirty seconds and then fails.</b> Not just the fraudulent ones — all of them, because the call is synchronous and there is no timeout on the page.',
+     v:['lzbad','<b>A synchronous call to a third party with no stated timeout is the commonest way a whole product goes down.</b> The diagram showed the arrow and said nothing about what happens when the other end does not answer.'],
+     fix:'One annotation on that edge: <span class="code">timeout 2s · 1 retry · fail open to manual review</span>. Now the reader knows the blast radius before the incident, and so does whoever is designing it.'},
+    {k:'db',label:'The database fails over',
+     hops:[['Web app','ok'],['Payments API','wait'],['Fraud check','ok'],['Payments DB','down'],['Event queue','ok'],['Settlement worker','ok']],
+     user:'Payments fail for around forty seconds, then recover on their own.',
+     v:['lzwarn','<b>Survivable, and only if somebody knew.</b> Whether this is a shrug or an incident depends entirely on whether the diagram said the failover takes tens of seconds and the application retries.'],
+     fix:'Mark the store as multi-zone with an expected failover window, and mark the edge as retried. Two words that turn a forty-second outage from a surprise into a documented characteristic.'},
+    {k:'queue',label:'The event queue is unavailable',
+     hops:[['Web app','ok'],['Payments API','ok'],['Fraud check','ok'],['Payments DB','ok'],['Event queue','down'],['Settlement worker','idle']],
+     user:'<b>Nothing. Payments carry on working normally.</b> Settlement stops silently, and nobody finds out until the reconciliation the next morning.',
+     v:['lzwarn','<b>The most interesting failure on this page, precisely because the user sees nothing.</b> An asynchronous boundary absorbed the failure — which is what it is for — and in doing so hid it. This is the failure that is discovered by accounting rather than by monitoring.'],
+     fix:'Draw the dashed line so the absorption is visible, and annotate the consumer with what to alert on: queue depth, and age of the oldest unprocessed message. Silence is not success.'},
+    {k:'bank',label:'Core banking is down for four hours',
+     hops:[['Web app','ok'],['Payments API','ok'],['Fraud check','ok'],['Payments DB','ok'],['Event queue','build'],['Settlement worker','stuck']],
+     user:'Payments still work. The queue builds up for four hours and drains afterwards — <b>if</b> it can hold four hours of messages, which nothing on the diagram says.',
+     v:['lzbad','<b>The question the diagram cannot answer is the only one that matters here:</b> how long can the buffer hold? A queue with a message retention shorter than the outage does not delay the problem, it deletes it.'],
+     fix:'Annotate the queue with retention and expected drain rate. &ldquo;Holds 24h at peak&rdquo; converts an unbounded worry into a known limit, and tells whoever is on call when to escalate.'}
+  ];
+  const COL={ok:'var(--green)',wait:'var(--amber)',slow:'var(--red)',down:'var(--red)',idle:'var(--dim)',build:'var(--amber)',stuck:'var(--red)'};
+  const LBL={ok:'fine',wait:'blocked, waiting',slow:'slow',down:'down',idle:'idle — nothing arriving',build:'filling up',stuck:'cannot deliver'};
+  let cur='fraud';
+  function render(){
+    pick.innerHTML=F.map(f=>'<button class="seg'+(cur===f.k?' on':'')+'" data-k="'+f.k+'" style="text-align:left">'+f.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const f=F.find(x=>x.k===cur);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE SYSTEM, RIGHT NOW</div>'+
+      f.hops.map(([n,s])=>'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
+        '<span style="width:9px;height:9px;border-radius:50%;background:'+COL[s]+';flex:none"></span>'+
+        '<span style="flex:1;font-size:12.5px">'+n+'</span>'+
+        '<span style="font-family:var(--mono);font-size:10.5px;color:'+COL[s]+'">'+LBL[s]+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:16px 0 6px">WHAT THE USER EXPERIENCES</div>'+
+      '<div class="plain-line">'+f.user+'</div>';
+    note.innerHTML='<div class="'+f.v[0]+'" style="margin-bottom:10px">'+f.v[1]+'</div>'+
+      (f.fix?'<div class="ok" style="margin-bottom:10px"><b>What the diagram should have said.</b> '+f.fix+'</div>':'')+
+      '<div class="simnote" style="margin-top:8px"><b>Every one of these fixes is an annotation, not a redrawing.</b> The boxes and arrows were already right. What was missing was a handful of words on the edges — timeouts, retention, what happens when the retries run out — and those words are the entire difference between a picture and a document you can act on.</div>';
+  }
+  render();
+})();
+
+/* ================= 7 · THE QUESTIONS BEHIND IT ================= */
+document.getElementById('sec-nfr').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The diagram is the answer. These are the questions.</h2>
+  <div class="plain-line"><b>In plain English:</b> an architecture is a set of answers to questions about how well the thing has to work &mdash; how fast, how available, how much data you can lose, what it may cost, where it may live. Draw the diagram before answering them and you have guessed, and the guesses are invisible in the picture. <b>Every box on a page is an answer to a question somebody should have asked.</b></div>
+  <div class="plain-line">The useful thing about writing the questions down first is that most of them have a <em>cheap</em> answer and an <em>expensive</em> one, and the difference is usually a single sentence from somebody in the business who was never asked.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; answer eight questions and watch the architecture move</h2>
+  <div class="plain-line"><b>Try this:</b> the questions a reviewer will ask, in the order they will ask them. Answer each and see what it forces onto the page &mdash; and what it costs. Two of these change the design more than any technology choice you will make.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Specifying a house before it is built. How many bedrooms is a cheap question; whether it must survive a flood is an expensive one, and both are answered by somebody who is not the architect.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>5 minutes</b> and <b>zero</b> to the first two and read what that pair costs.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>RTO</b> how long you can be down before it really hurts</span><span class="sp-w"><b>RPO</b> how much recent data you can afford to lose</span><span class="sp-w"><b>residency</b> rules about which country the data may live in</span><span class="sp-w"><b>p99</b> the slowest one request in a hundred</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="nfOut"></div></div>
+    <div><div id="nfCtl"></div>
+      <div id="nfNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Where the answers belong</h2>
+  <div class="plain-line"><b>In plain English:</b> these answers should not live in the diagram. A picture is a bad container for numbers &mdash; they make it cluttered and they change on a different schedule from the boxes. They belong <em>next to</em> it, in a short table, in the same file.</div>
+  <div class="plain-line"><b>The exception worth making:</b> put the two or three that shape the drawing directly on the drawing. If the recovery objective is what forced a second region, write it beside the second region. A reader who can see <em>why</em> a box exists will not spend the review asking whether it is necessary.</div>
+  <div class="plain-line"><b>And record what you were told, not what you assumed.</b> &ldquo;Four hours, agreed with the payments product owner, March&rdquo; is a very different sentence from &ldquo;four hours&rdquo;, and only one of them survives being questioned eighteen months later by somebody who was not there.</div>
+</div>`;
+
+/* --- SIM: NFR --- */
+(function(){
+  const ctl=document.getElementById('nfCtl'), out=document.getElementById('nfOut'), note=document.getElementById('nfNote');
+  if(!ctl) return;
+  const Q=[
+    {k:'rto',q:'How long can it be down?',cheap:['4 hours','warm standby, restore from backup, one region',0],
+     dear:['5 minutes','a second region running hot, data replicated continuously, traffic steering',5]},
+    {k:'rpo',q:'How much recent data can you afford to lose?',cheap:['1 hour','scheduled snapshots',0],
+     dear:['zero','synchronous replication, and every write now pays the distance between the copies',4]},
+    {k:'load',q:'What is peak load, and what is the growth?',cheap:['200 requests a second, steady','one tier, modest instances',0],
+     dear:['200 average, 12,000 at peak, doubling yearly','autoscaling, a queue to absorb bursts, and load testing that proves it',3]},
+    {k:'lat',q:'What is the latency budget?',cheap:['under 2 seconds','no special measures needed',0],
+     dear:['p99 under 150ms','caching, connection pooling, a budget split per hop, and no chatty synchronous calls',3]},
+    {k:'geo',q:'Where may the data live?',cheap:['anywhere','one region, wherever is cheapest',0],
+     dear:['it must not leave the country','a regional deployment, regional backups, and a check on every managed service you wanted to use',4]},
+    {k:'sec',q:'What is the worst thing in the data?',cheap:['nothing sensitive','ordinary controls',0],
+     dear:['card data and personal information','encryption you manage, tokenisation, network isolation, audit, and a compliance scope you now own',4]},
+    {k:'ops',q:'Who runs it, and when?',cheap:['a team of eight, business hours','managed services, simple runbook',0],
+     dear:['two people, 24 hours','ruthlessly managed everything, automated recovery, and far fewer distinct technologies',3]},
+    {k:'cost',q:'What may it cost?',cheap:['no strong constraint','choose for simplicity',0],
+     dear:['under £4,000 a month at current volume','right-sizing, reserved capacity, and some of the answers above become unaffordable',2]}
+  ];
+  const ans={};
+  function render(){
+    ctl.innerHTML=Q.map(q=>'<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12.5px;margin-bottom:5px">'+q.q+'</div>'+
+      '<div class="segmented">'+
+      '<button class="seg'+(ans[q.k]==='c'?' on':'')+'" data-k="'+q.k+'" data-v="c">'+q.cheap[0]+'</button>'+
+      '<button class="seg'+(ans[q.k]==='d'?' on':'')+'" data-k="'+q.k+'" data-v="d">'+q.dear[0]+'</button>'+
+      '</div></div>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{ans[b.dataset.k]=b.dataset.v;render();});
+    const done=Q.filter(q=>ans[q.k]);
+    const forced=done.filter(q=>ans[q.k]==='d');
+    const weight=forced.reduce((a,q)=>a+q.dear[2],0);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">WHAT YOUR ANSWERS PUT ON THE PAGE</div>'+
+      (done.length?done.map(q=>{
+        const d=ans[q.k]==='d';
+        return '<div class="lzhop" style="display:block;border-left-color:'+(d?'var(--amber)':'var(--green)')+';padding:9px 12px">'+
+          '<div style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+q.q+'</div>'+
+          '<b style="font-size:12.5px">'+(d?q.dear[0]:q.cheap[0])+'</b>'+
+          '<small style="display:block;color:var(--muted);font-size:11.5px;margin-top:3px">'+(d?q.dear[1]:q.cheap[1])+'</small></div>';
+      }).join('') : '<div class="simnote">Answer the first question.</div>')+
+      (done.length?'<div class="bar" style="height:14px;margin-top:14px"><i style="display:block;height:100%;width:'+Math.min(100,weight/28*100)+'%;background:'+
+        (weight>14?'var(--red)':weight>6?'var(--amber)':'var(--green)')+'"></i></div>'+
+        '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-top:6px">'+
+        '<span class="dim">how much this architecture now has to do</span><b>'+weight+'</b></div>':'');
+    let html='';
+    if(!done.length) html='<div class="simnote">Eight questions. Two of them move the design more than any technology choice.</div>';
+    else {
+      if(ans.rto==='d'&&ans.rpo==='d') html+='<div class="lzbad" style="margin-bottom:10px"><b>Five minutes to recover and zero data loss together is the most expensive pair on this page.</b> It forces a second live region with synchronous replication, which means every single write now pays the speed of light between two places. That is not a cost line, it is a change to how the application behaves — and it is worth checking whether anyone actually asked for both.</div>';
+      else if(ans.rto==='d') html+='<div class="lzwarn" style="margin-bottom:10px"><b>Five minutes forces a second region running hot.</b> Roughly double the infrastructure, and a traffic-steering mechanism somebody has to test regularly. This one number decides more of the diagram than any technology choice on it.</div>';
+      if(ans.geo==='d') html+='<div class="lzwarn" style="margin-bottom:10px"><b>Residency is a constraint that arrives late and invalidates work.</b> It rules out managed services that are not available in the region and quietly removes several boxes you had already drawn. Ask it first, not last.</div>';
+      if(ans.ops==='d') html+='<div class="lzwarn" style="margin-bottom:10px"><b>Two people covering 24 hours is a design constraint, not a staffing detail.</b> It should remove technologies from the page — every distinct thing on the diagram is something both of them must know at four in the morning.</div>';
+      if(ans.cost==='d'&&weight>10) html+='<div class="lzbad" style="margin-bottom:10px"><b>A firm budget with these other answers is a contradiction, and better to find here than in month five.</b> Something has to give, and the useful move is to take the two most expensive answers back to whoever gave them and ask which one they actually meant.</div>';
+      if(!forced.length) html+='<div class="ok" style="margin-bottom:10px"><b>Every answer is the relaxed one, and the architecture is correspondingly small.</b> That is a completely legitimate outcome — most systems are like this, and over-engineering usually starts with nobody bothering to ask.</div>';
+    }
+    html+='<div class="simnote" style="margin-top:8px"><b>The point of asking before drawing:</b> each of these has a cheap answer and an expensive one, and the difference is a sentence from somebody in the business. Guess the expensive answer and you build twice what was needed. Guess the cheap one and you find out during an incident.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+/* ================= 8 · SURVIVING THE REVIEW ================= */
+document.getElementById('sec-review').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A review is not an exam, and it is not an ambush either</h2>
+  <div class="plain-line"><b>In plain English:</b> the point of an architecture review is not to prove your design is right. It is to find the thing you did not think of, cheaply, while it is still a drawing. Which means <b>the best possible outcome is somebody finding a problem</b> &mdash; and the instinct to defend the design is the instinct that wastes the meeting.</div>
+  <div class="plain-line">Reviewers ask a fairly predictable set of questions. Knowing them in advance is not gaming the process; it is preparing properly, and it changes the meeting from a defence into a conversation.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; present it and take the questions</h2>
+  <div class="plain-line"><b>Try this:</b> eight questions a reviewer will actually ask, and three ways of answering each. One is what you want to say, one is what you should say, and one ends the review early &mdash; not always in the way you expect.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A viva. You are not being tested on whether the work is perfect — you are being tested on whether you know which part of it is weakest, and whether you will say so.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick the fraud question and try the confident answer first, then the honest one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>review</b> a meeting where people try to find the problem before it is built</span><span class="sp-w"><b>bottleneck</b> the part that limits everything else</span><span class="sp-w"><b>canary</b> releasing a change to a small slice of traffic first</span><span class="sp-w"><b>rollback</b> going back to the previous version when a change goes wrong</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="rvOut"></div></div>
+    <div><div class="segmented" id="rvPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="rvNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">What to bring, and what to say in the first minute</h2>
+  <div class="lzrow"><span class="lzmark">1</span><span><b>The question the diagram answers, out loud, first.</b> Thirty seconds. It tells the room what to look at and stops three people reviewing three different things.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>The constraints you were given, and who gave them.</b> Recovery objectives, budget, residency, who runs it. Half of all review disagreements are actually disagreements about the requirement, and naming it early moves that argument to the right people.</span></div>
+  <div class="lzrow"><span class="lzmark">3</span><span><b>What you deliberately left out, and why.</b> Volunteering this is the single strongest thing you can do. It converts &ldquo;you forgot X&rdquo; into &ldquo;you considered X&rdquo;, and it stops the room hunting for gaps you already know about.</span></div>
+  <div class="lzrow"><span class="lzmark">4</span><span><b>The decision you are least sure about.</b> Say it before they find it. You get the room&rsquo;s help on the thing you actually need help with, rather than spending the hour defending the parts you are confident in.</span></div>
+  <div class="lzrow"><span class="lzmark">5</span><span><b>The alternative you rejected, and the reason.</b> Almost every reviewer arrives with a favourite alternative. Naming it first and saying why it lost is worth twenty minutes.</span></div>
+  <div class="plain-line" style="margin-top:12px"><b>And one thing not to bring:</b> a diagram you have not read since you drew it. Walk the critical path yourself the day before, out loud, and you will find two things wrong with it. Better you than the room.</div>
+</div>`;
+
+/* --- SIM: the review --- */
+(function(){
+  const pick=document.getElementById('rvPick'), out=document.getElementById('rvOut'), note=document.getElementById('rvNote');
+  if(!pick) return;
+  const Q=[
+    {k:'why',q:'“Why this and not the obvious alternative?”',
+     opts:[['def','It defends itself — this is industry standard.','lzbad','A non-answer, and the room hears it as one. &ldquo;Standard&rdquo; is not a reason, it is a way of avoiding giving one — and now the reviewer is curious rather than satisfied.'],
+           ['good','We considered it. It lost on operational load — nobody here runs one today.','ok','<b>The right shape:</b> name the alternative, name the criterion, name the verdict. It also shows you did the work, which buys you credibility on the next seven questions.'],
+           ['hon','I inherited this decision and have not revisited it.','note','Honest, and worth saying out loud rather than bluffing. Follow it with &ldquo;should we?&rdquo; and you have turned an awkward moment into a decision the room can make together.']]},
+    {k:'fail',q:'“What happens when the payment provider is down?”',
+     opts:[['def','It has 99.99% uptime.','lzbad','This answers a different question. Their uptime is not your failure behaviour — <b>what does your system do during those minutes?</b> Quoting somebody else’s number is the classic way of not having thought about it.'],
+           ['good','Two-second timeout, one retry, then we queue and tell the user we will confirm by email.','ok','A real answer with a real user experience attached. It also reveals whether the queue path has been built or merely imagined — which is the follow-up, and you should be ready for it.'],
+           ['hon','I do not know. It is not on the diagram and I have not tested it.','note','Better than inventing something. The right next sentence is &ldquo;I will find out and add it&rdquo; — and then actually do, because this is the question that becomes an incident.']]},
+    {k:'scale',q:'“What happens at ten times this volume?”',
+     opts:[['def','It scales horizontally.','lzbad','Almost nothing scales horizontally all the way through. There is a bottleneck — usually the database, sometimes a third party with a rate limit — and the reviewer is asking you to name it.'],
+           ['good','The API scales out; the database is the ceiling at roughly six times, and then we shard by merchant.','ok','<b>Naming your own bottleneck is the strongest answer available.</b> It shows you have looked, it gives the room something concrete to challenge, and it makes every other claim more believable.'],
+           ['hon','We have not load tested. Current peak is 200 a second and I am assuming linear.','note','Honest and useful, provided you say what would change your mind. An untested assumption stated as an assumption is fine; stated as a fact it is a problem.']]},
+    {k:'cost',q:'“What does this cost?”',
+     opts:[['def','It is serverless, so it scales to zero.','lzbad','Scaling to zero says something about the floor and nothing about the ceiling, which is what was asked. Serverless is frequently more expensive at steady high volume, and a reviewer who knows that now doubts the rest.'],
+           ['good','About £3,100 a month at current volume; the two biggest lines are the database and cross-zone traffic.','ok','A number, and the two things driving it. That second half matters more than the total — it tells the room where to push if the number is wrong.'],
+           ['hon','I have not costed it yet.','note','Acceptable early, and not at an approval. If money is being committed, this answer means the review should be rescheduled, and saying so yourself is better than being told.']]},
+    {k:'sec',q:'“Where does personal data cross a boundary?”',
+     opts:[['def','Everything is encrypted in transit and at rest.','lzbad','Answers a checkbox, not the question. <b>Where it crosses</b> determines who can see it, which jurisdictions are involved, and what a breach would cost — encryption is a control, not an answer.'],
+           ['good','Three places, all marked. One goes to a third party, and that is the one with a data processing agreement.','ok','Specific, traceable on the page, and it shows the diagram carries data classification. The follow-up will be about the third party, and you have already flagged it.'],
+           ['hon','I have not marked them. Let me add that and come back.','note','Reasonable, and this is one where coming back is genuinely better than answering from memory. Getting it wrong out loud in a review is worse than not knowing.']]},
+    {k:'ops',q:'“Who gets paged when this breaks?”',
+     opts:[['def','The platform team supports the infrastructure.','lzbad','Nobody has agreed to this, and the platform team is not in the room. This is the answer that becomes an argument in an incident, at the worst possible time.'],
+           ['good','Our team, and we have written the runbook for the three most likely failures.','ok','<b>The answer that separates a design from a proposal.</b> A box on a diagram is a future rota entry, and somebody has to have said yes.'],
+           ['hon','That has not been agreed. I should sort it before this ships.','note','Correct, and worth raising in the review specifically because the people who can settle it are usually the ones sitting there.']]},
+    {k:'simple',q:'“Could this be simpler?”',
+     opts:[['def','Every component is necessary.','lzbad','Almost never true, and it reads as defensiveness. This question is usually a genuine offer of help — treating it as an attack wastes it.'],
+           ['good','Probably. The cache is there for a latency budget I have not verified — if the budget is softer, it comes out.','ok','<b>Excellent.</b> You have named a candidate for removal and the condition under which it goes. That is exactly the conversation the review exists to have.'],
+           ['hon','Yes, and I am not sure where. What would you take out?','note','A completely legitimate move, and it uses the room properly. The risk is only that you have to mean it.']]},
+    {k:'change',q:'“How do you deploy a change safely?”',
+     opts:[['def','We have CI/CD.','lzbad','That is a pipeline, not a safety property. The question is what happens when a bad change reaches production — and &ldquo;we have CI/CD&rdquo; suggests nobody has thought past the pipeline.'],
+           ['good','Canary to 5%, automatic rollback on error rate, and the schema changes are backwards compatible for one release.','ok','Answers the real question: what happens when the change is wrong. The backwards-compatibility detail is the one most people forget and the one that makes rollback actually possible.'],
+           ['hon','Rollback is a redeploy of the previous version, and we have not tested it under load.','note','Honest, and it names a specific gap somebody can act on. Untested rollback is a common and completely fixable weakness.']]}
+  ];
+  let cur='fail', chosen={};
+  function render(){
+    pick.innerHTML=Q.map(q=>'<button class="seg'+(cur===q.k?' on':'')+'" data-k="'+q.k+'" style="text-align:left">'+q.q+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const q=Q.find(x=>x.k===cur);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">THE REVIEWER ASKS</div>'+
+      '<div class="plain-line" style="margin-bottom:14px">'+q.q+'</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:6px">HOW DO YOU ANSWER?</div>'+
+      '<div class="segmented" style="flex-direction:column;align-items:stretch">'+
+      q.opts.map(([k,txt])=>'<button class="seg'+(chosen[q.k]===k?' on':'')+'" data-o="'+k+'" style="text-align:left">'+txt+'</button>').join('')+
+      '</div>';
+    out.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{chosen[q.k]=b.dataset.o;render();});
+    const pickd=chosen[q.k];
+    let html;
+    if(!pickd) html='<div class="simnote">Pick an answer.</div>';
+    else { const o=q.opts.find(x=>x[0]===pickd);
+      html='<div class="'+o[2]+'" style="margin-bottom:10px">'+o[3]+'</div>'; }
+    const n=Object.keys(chosen).length, good=Object.entries(chosen).filter(([k,v])=>v==='good').length;
+    if(n>=4) html+='<div class="note" style="margin-bottom:10px"><b>'+good+' of '+n+' answered the question as asked.</b> Notice that the honest &ldquo;I do not know&rdquo; is never the worst option on this page. The worst is always the confident deflection — because it costs you the reviewer’s trust on everything you say afterwards.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The pattern across all eight:</b> the bad answer is always <em>true</em> and answers a different question. &ldquo;It has 99.99% uptime.&rdquo; &ldquo;It scales horizontally.&rdquo; &ldquo;We have CI/CD.&rdquo; Every one is a fact, and every one substitutes a general reassurance for a specific answer. Reviewers notice, and the substitution is what they remember.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+/* ================= 9 · KEEPING IT TRUE ================= */
+document.getElementById('sec-rot').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Every diagram starts lying, on a schedule</h2>
+  <div class="plain-line"><b>In plain English:</b> a diagram is true on the day it is drawn and gets less true every week. Not because anyone is careless &mdash; because the system changes and the picture does not. After about a year the gap is wide enough that people stop trusting the diagram, and once trust is gone nobody updates it either, because why maintain something nobody reads.</div>
+  <div class="plain-line">The failure is not that diagrams go stale. It is that <b>a stale diagram is worse than no diagram</b>: it sends an on-call engineer to a service that was decommissioned in March, at three in the morning, with confidence.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; run a year and see what happens to the picture</h2>
+  <div class="plain-line"><b>Try this:</b> twelve months of ordinary changes to an ordinary system. Compare a diagram drawn in a drawing tool with one kept as text alongside the code, and watch the gap open.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A recipe book in the kitchen against one in a drawer upstairs. Both start correct. Only one gets a note added when you change how you make the sauce.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run the drawing-tool version first and look at the two entries near the bottom — the incident and the new joiner.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>drift</b> the growing gap between the diagram and the real system</span><span class="sp-w"><b>repository</b> where the code lives, and where changes are reviewed</span><span class="sp-w"><b>pull request</b> a proposed change somebody else reads before it lands</span><span class="sp-w"><b>diagrams as code</b> writing the picture as text so it is rendered automatically</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="rtOut"></div></div>
+    <div><div class="segmented" id="rtPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="rtNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Diagrams as code &mdash; what it actually buys</h2>
+  <div class="plain-line"><b>In plain English:</b> write the diagram as text, in a file, next to the code it describes, and render it automatically. The drawing becomes a build artefact rather than a document.</div>
+  <pre class="code">${hl("graph LR\n  web[Web app] -->|HTTPS · payment intent| api[Payments API]\n  api -->|gRPC · 2s timeout, 1 retry| fraud[Fraud check]\n  api -->|SQL| db[(Payments DB)]\n  api -.->|publish · payment.authorised| q[[Event queue]]\n  q -.-> worker[Settlement worker]\n\n%% not shown: monitoring, CI/CD, the admin console\n%% owner: payments team · last reviewed 2026-08")}</pre>
+  <table class="osi" style="margin-top:14px"><thead><tr><th>What it buys</th><th>Why it matters more than the tidiness</th></tr></thead><tbody>
+  <tr><td><b>It sits next to the code</b></td><td>Somebody changing the system is looking at the file. That is the only moment they will ever update a diagram</td></tr>
+  <tr><td><b>It changes in the same pull request</b></td><td>The diagram becomes reviewable. &ldquo;You added a service and did not update the picture&rdquo; is now a review comment rather than a discovery in March</td></tr>
+  <tr><td><b>It has a history</b></td><td>You can see what the architecture looked like at the time of an incident, which is occasionally the whole investigation</td></tr>
+  <tr><td><b>Anybody can edit it</b></td><td>No licence, no proprietary file, no &ldquo;only Priya has the source&rdquo;. The most common reason a diagram is not updated is that the person who could is not there any more</td></tr>
+  <tr><td><b>It is diffable</b></td><td>A reviewer sees three lines changed rather than a new image and a guess about what moved</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The honest limitation:</b> automatic layout is worse than what you would draw by hand, and for a level-1 context diagram going in front of an executive that matters. Use a drawing tool for the two or three pictures that need to be beautiful, and text for the ones that need to be <em>true</em> &mdash; which is nearly all of them, and certainly every one an engineer will open under pressure.</div>
+  <div class="plain-line"><b>And put a review date on it regardless.</b> &ldquo;Last reviewed August 2026&rdquo; is not as good as being automatically correct, and it is enormously better than nothing: it lets a reader calibrate how much to believe, which is the whole thing being asked of a diagram.</div>
+</div>`;
+
+/* --- SIM: rot --- */
+(function(){
+  const pick=document.getElementById('rtPick'), out=document.getElementById('rtOut'), note=document.getElementById('rtNote');
+  if(!pick) return;
+  const EV=[
+    ['month 1','A caching layer is added in front of the database','both'],
+    ['month 3','The fraud service moves to a new provider','both'],
+    ['month 4','A second region is added for recovery','both'],
+    ['month 6','The settlement worker is split into two','both'],
+    ['month 8','The original author leaves the company','author'],
+    ['month 9','A queue is replaced with a managed alternative','both'],
+    ['month 11','An incident at 3am — somebody opens the diagram','incident'],
+    ['month 12','A new joiner is handed the diagram to get oriented','joiner']
+  ];
+  let cur='tool';
+  function render(){
+    pick.innerHTML=[['tool','Drawn in a drawing tool, kept in a shared document'],
+                    ['code','Written as text, in the repository, rendered automatically']]
+      .map(([k,l])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+l+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const code = cur==='code';
+    let drift=0;
+    const rows=EV.map(([m,e,t])=>{
+      let st, txt;
+      if(t==='author'){ st = code?'ok':'bad';
+        txt = code ? 'No impact — the file is in the repository and anybody can edit it.'
+                   : '<b>The source file was on their laptop.</b> From here the diagram can only be replaced, not updated.'; }
+      else if(t==='incident'){ st = drift>2?'bad':'ok';
+        txt = drift>2 ? '<b>The diagram sends them to a service that no longer exists.</b> Twenty minutes lost, at the worst possible time, and everyone now knows not to trust it.'
+                      : 'The diagram matches production. They find the dependency in under a minute.'; }
+      else if(t==='joiner'){ st = drift>2?'bad':'ok';
+        txt = drift>2 ? 'They learn an architecture that is <b>'+drift+' changes out of date</b>, and carry those wrong assumptions for months.'
+                      : 'They get an accurate picture on day one, which is exactly what the diagram was for.'; }
+      else { if(code){ st='ok'; txt='Updated in the same pull request as the change. A reviewer saw the diff.'; }
+             else { drift++; st='bad'; txt='The change ships. Updating the diagram is on somebody’s list. It stays there.'; } }
+      return [m,e,st,txt];
+    });
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TWELVE MONTHS OF ORDINARY CHANGES</div>'+
+      rows.map(([m,e,st,txt])=>'<div class="lzhop" style="display:block;border-left-color:'+
+        (st==='ok'?'var(--green)':'var(--red)')+';padding:9px 12px">'+
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+m+'</div>'+
+        '<b style="font-size:12.5px">'+e+'</b>'+
+        '<small style="display:block;color:var(--muted);font-size:11.5px;margin-top:3px">'+txt+'</small></div>').join('')+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">changes the diagram missed</span>'+
+        '<b style="color:'+(drift?'var(--red)':'var(--green)')+'">'+drift+' of 5</b></div></div>';
+    note.innerHTML = code
+      ? '<div class="ok" style="margin-bottom:10px"><b>Nothing dramatic happened, which is the point.</b> Each change updated the picture because the picture was in the file being changed, and a reviewer would have noticed if it had not. The author leaving was a non-event.</div>'+
+        '<div class="simnote"><b>The mechanism is not the file format.</b> It is that the diagram lives where the work happens and is reviewed with the work. A drawing tool with the same discipline would do as well — it just never has it, because opening a separate tool is a separate decision and separate decisions do not get made.</div>'
+      : '<div class="lzbad" style="margin-bottom:10px"><b>Five changes shipped and none reached the diagram.</b> No individual failure — every one was a reasonable afternoon in which updating a picture in another tool was the least urgent thing available.</div>'+
+        '<div class="lzbad" style="margin-bottom:10px"><b>Then the two moments the diagram existed for both arrive after it stopped being true.</b> The incident and the new joiner are the entire return on drawing it, and both landed on a document that was confidently wrong.</div>'+
+        '<div class="simnote"><b>This is why a stale diagram is worse than none.</b> With no diagram the on-call engineer knows they must go and look. With a wrong one they believe they already have, and act on it.</div>';
+  }
+  render();
+})();
+/* ================= 10 · DO'S AND DON'TS ================= */
+document.getElementById('sec-rules').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The whole thing, as a list you can check against</h2>
+  <div class="plain-line"><b>In plain English:</b> everything in this lab, condensed. Not rules for their own sake &mdash; each one is here because ignoring it costs something specific, and the cost is in the third column.</div>
+  <table class="osi"><thead><tr><th style="width:31%">Do</th><th style="width:31%">Don&rsquo;t</th><th>Because</th></tr></thead><tbody>
+  <tr><td>Write the <b>question</b> the diagram answers at the top</td><td>Give it a subject as a title and stop there</td><td>Without a question you cannot decide what to leave out, and that decision is the whole craft</td></tr>
+  <tr><td>Draw a <b>different diagram per audience</b></td><td>Make one picture serve four of them</td><td>Sixty boxes answers nobody&rsquo;s question. Four small diagrams is less work than one big one</td></tr>
+  <tr><td>Keep <b>one level of zoom per page</b></td><td>Put a class name beside a load balancer</td><td>There is no zoom at which both are the right detail, so every reader is overwhelmed and missing something at once</td></tr>
+  <tr><td>Keep the <b>deployment view separate</b></td><td>Fill the container diagram with vendor icons</td><td>They change on different schedules, and the combined page becomes unreadable and un-updateable</td></tr>
+  <tr><td>Put <b>date, owner and where it lives</b> on every page</td><td>Ship an undated diagram</td><td>Undated is unknowable, and unknowable gets treated as fiction &mdash; the commonest reason a correct diagram is ignored</td></tr>
+  <tr><td>Include a <b>legend</b> saying what your lines and colours mean</td><td>Assume dashed obviously means what you meant</td><td>There is no standard. Readers guess, most guess wrong, and none of them will mention it</td></tr>
+  <tr><td>Use <b>solid for synchronous, dashed for asynchronous</b></td><td>Draw every edge identically</td><td>It is the highest-value distinction available, free to add, and it makes the failure story visible at a glance</td></tr>
+  <tr><td><b>Label every edge</b> with protocol and payload</td><td>Leave bare arrows</td><td>An unlabelled arrow could mean four different things, two of which point the opposite way</td></tr>
+  <tr><td>Show <b>failure paths</b> on the critical route</td><td>Draw only the happy path</td><td>Nobody opens a diagram to find out how it works when it works</td></tr>
+  <tr><td>Draw <b>boundaries as containers</b> &mdash; account, network, region, trust</td><td>Imply them with colour alone</td><td>Nesting is unambiguous; colour needs a legend and disappears when printed</td></tr>
+  <tr><td>Mark <b>who owns each box</b></td><td>Leave ownership to be worked out during an incident</td><td>A box is a future on-call rota entry. If nobody has said yes, it is a wish rather than a design</td></tr>
+  <tr><td>State <b>what is deliberately not shown</b></td><td>Let readers guess whether you forgot it</td><td>One line at the bottom saves twenty minutes in every review, with every reviewer, forever</td></tr>
+  <tr><td>Annotate the <b>hot path</b> with volume and a latency budget</td><td>Treat every route as equally important</td><td>Most diagrams have one path that matters and twelve that do not, and the reader cannot tell which</td></tr>
+  <tr><td>Prefer the <b>boring managed service</b></td><td>Put something exotic on the page without a written reason</td><td>Every distinct technology is expertise, an upgrade path, and one more thing to check at four in the morning</td></tr>
+  <tr><td><b>Answer the non-functional questions first</b></td><td>Draw first and infer the requirements from the picture</td><td>Every box is an answer to a question. Guessing the expensive answer builds twice what was needed; guessing the cheap one is found during an incident</td></tr>
+  <tr><td>Keep it as <b>text, next to the code</b></td><td>Keep the only source in a drawing tool on one laptop</td><td>Diagrams are updated at the moment somebody changes the system, and only if the file is in front of them</td></tr>
+  <tr><td><b>Volunteer the weakest decision</b> in a review</td><td>Defend everything equally</td><td>You get the room&rsquo;s help on the thing you needed help with, instead of an hour defending the parts you were sure of</td></tr>
+  <tr><td><b>Delete diagrams you cannot maintain</b></td><td>Leave a stale one because it is better than nothing</td><td>It is not better than nothing. It sends somebody confidently to a service that was decommissioned in March</td></tr>
+  </tbody></table>
+</div>
+
+<div class="card">
+  <h2 class="sec">Five ways a diagram fails, and the tell for each</h2>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">1</span><span><b>It is beautiful and nobody uses it.</b> The tell: it lives in a slide deck. Usually drawn for one presentation, never opened again, and gorgeous.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>It is complete and unreadable.</b> The tell: it has a scroll bar, or somebody has printed it on A3. Completeness is not the goal &mdash; answering the question is.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">3</span><span><b>It is accurate and useless.</b> The tell: it shows only the happy path. Every box correct, and it cannot answer the question anyone actually opens it to ask.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">4</span><span><b>It is out of date and trusted.</b> The tell: no date on it. The most expensive failure on this list, because it is acted upon.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">5</span><span><b>It is right and unreviewed.</b> The tell: one author, no comments, no history. It may well be correct. Nobody else has tested that, and the first test will be production.</span></div>
+</div>`;
+
+/* ================= 11 · THE WHITEBOARD ================= */
+document.getElementById('sec-board').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Drawing under time pressure, with somebody watching</h2>
+  <div class="plain-line"><b>In plain English:</b> a system design interview is not a test of whether you can draw the right architecture. Nobody can, in forty minutes, with a two-sentence brief. It is a test of <b>whether you ask before you draw, whether you name your own trade-offs, and whether you can be wrong gracefully</b> &mdash; which happens to be exactly what the job requires.</div>
+  <div class="plain-line">The commonest failure is starting to draw in the first minute. It looks decisive and it is the opposite: you have just committed to an architecture for a system whose requirements you do not know, and every question afterwards is you defending a guess.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The first ten minutes, in order</h2>
+  <div class="lzrow"><span class="lzmark">1</span><span><b>Restate the problem in your own words.</b> Thirty seconds. It catches the misunderstanding immediately rather than in minute thirty, and it is the cheapest insurance available.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>Ask the scale question.</b> How many users, how much data, how much of it is reads. The answer changes the design more than any technology you will name, and asking is not a stalling tactic &mdash; not asking is the mistake.</span></div>
+  <div class="lzrow"><span class="lzmark">3</span><span><b>Ask what must not fail, and what may be slow.</b> Two sentences that eliminate half the design space. Most systems have one thing that must be correct and a great deal that can be eventually consistent.</span></div>
+  <div class="lzrow"><span class="lzmark">4</span><span><b>Say what you are excluding, out loud.</b> &ldquo;I am not going to design the admin console.&rdquo; It shows you can scope, and it stops you being asked about it later.</span></div>
+  <div class="lzrow"><span class="lzmark">5</span><span><b>Draw the context diagram &mdash; one box, and who talks to it.</b> Two minutes. It anchors everything after it and it is almost never wrong.</span></div>
+  <div class="lzrow"><span class="lzmark">6</span><span><b>Then the containers, and only then.</b> Now you are drawing an answer to a question rather than a system you have imagined.</span></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">What is actually being assessed</h2>
+  <table class="osi"><thead><tr><th>They are watching for</th><th>What it looks like when you have it</th><th>And when you do not</th></tr></thead><tbody>
+  <tr><td><b>Do you ask before you build?</b></td><td>Three or four questions before the pen moves</td><td>Boxes on the board in minute one, then thirty minutes defending them</td></tr>
+  <tr><td><b>Can you name a trade-off?</b></td><td>&ldquo;This is faster and it means we can lose the last few seconds of writes&rdquo;</td><td>Every choice presented as simply correct, with no cost attached</td></tr>
+  <tr><td><b>Do you know where it breaks?</b></td><td>You point at your own bottleneck before being asked</td><td>&ldquo;It scales horizontally&rdquo; &mdash; which is never true all the way through</td></tr>
+  <tr><td><b>Can you be wrong well?</b></td><td>&ldquo;Good point, that does not work &mdash; here is what I would change&rdquo;</td><td>Defending a broken idea past the moment it broke</td></tr>
+  <tr><td><b>Do you know what you do not know?</b></td><td>&ldquo;I have not run this at that scale; here is what I would measure first&rdquo;</td><td>Confident specifics about things nobody could know</td></tr>
+  <tr><td><b>Would you be useful in a room?</b></td><td>You think out loud and let them steer</td><td>Silence, then a finished answer nobody could contribute to</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The most useful sentence in a design interview</b> is &ldquo;<em>the thing I am least sure about here is…</em>&rdquo;. It is the same sentence that works in a real architecture review, for the same reason: it puts the conversation where the risk is, and it is the opposite of what the nervous version of you wants to do.</div>
+  <div class="plain-line"><b>And the same discipline as the rest of this lab applies to a whiteboard:</b> one level of zoom at a time, label the arrows, say what you are not covering, and name the failure behaviour before somebody asks. The reason it works in an interview is that it is what works on a real diagram &mdash; the interview is only noticing.</div>
+</div>`;
+/* ==== sections ==== */
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
+/* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
+(function(){
+  const open = id => {
+    const tab = document.querySelector(`.tab[data-pane="${id}"]`), pane = document.getElementById('pane-'+id);
+    if(!tab || !pane) return false;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    tab.classList.add('on'); pane.classList.add('on');
+    return true;
+  };
+  const fromHash = () => {
+    const m = (location.hash||'').match(/^#pane-([\w-]+)$/);
+    if (m) open(m[1]);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+  document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
+    history.replaceState(null,'','#pane-'+t.dataset.pane);
+  }));
+})();
+</script>
+</body>
+</html>
