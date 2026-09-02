@@ -37,12 +37,17 @@
 <button class="btn" id="palbtn" title="Jump to topic">⌘K</button>
 <span class="tstreak" id="tstreak" title="Study streak">🔥 0</span>
 <span class="oring" id="oring" title="Overall progress"></span>
-<a class="btn" href="cloud.html" title="Cloud visual lab — request journey, pillars, DR simulator, AWS ↔ GCP">☁ Cloud lab</a>
-<a class="btn" href="adk.html" title="ADK lab — agents, tools, state, orchestration, sandboxes, skills, deployment">◇ ADK lab</a>
-<a class="btn" href="evals.html" title="Evaluation lab — metrics, rubrics, trajectories, monitoring, hill climbing, cost">◈ Evals lab</a>
-<a class="btn" href="gemini.html" title="Gemini Enterprise lab — identity, federation, data stores, Model Armor, search, change management">◉ Gemini lab</a>
-<a class="btn" href="govern.html" title="Govern and secure lab — agent gateway, policy chain, agent identity, delegated access, threats, perimeters, audit">⬢ Govern lab</a>
-<a class="btn" href="design.html" title="Diagram lab — audiences, levels, notation, service choice, failure paths, review, diagram rot">▦ Diagram lab</a>
+<div class="labmenu"><button class="btn" id="labsBtn" aria-haspopup="true" aria-expanded="false">◈ Labs</button>
+<div class="labpop" id="labsPop" role="menu">
+  <a role="menuitem" href="cloud.html"><i>☁</i><span><b>Cloud lab</b><small>13 tabs · 24 sims</small></span></a>
+  <a role="menuitem" href="agentcore.html"><i>◆</i><span><b>AgentCore lab</b><small>9 tabs · 10 sims</small></span></a>
+  <a role="menuitem" href="agentbuild.html"><i>⬡</i><span><b>Agents building agents</b><small>9 tabs · 10 sims</small></span></a>
+  <a role="menuitem" href="adk.html"><i>◇</i><span><b>ADK lab</b><small>10 tabs · 11 sims</small></span></a>
+  <a role="menuitem" href="evals.html"><i>◈</i><span><b>Evaluation &amp; hill climbing</b><small>11 tabs · 14 sims</small></span></a>
+  <a role="menuitem" href="gemini.html"><i>◉</i><span><b>Gemini Enterprise</b><small>12 tabs · 14 sims</small></span></a>
+  <a role="menuitem" href="govern.html"><i>⬢</i><span><b>Govern &amp; secure agents</b><small>12 tabs · 12 sims</small></span></a>
+  <a role="menuitem" href="design.html"><i>▦</i><span><b>Architecture diagrams</b><small>11 tabs · 11 sims</small></span></a>
+</div></div>
 <button class="btn" id="theme" title="Toggle theme">🌙</button>
 <button class="btn" id="print" title="Print / PDF">🖨</button>
 </header>
@@ -175,5 +180,21 @@
 </main>
 <footer class="foot"><span class="by">Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a></span><br>Self-contained static site — no external libraries.<br>Keyboard: <b>/</b> search · <b>j/k</b> next/prev · <b>f</b> flashcards · <b>q</b> quiz · <b>d</b> dark mode · <b>esc</b> back · <b>⌘K</b> jump to topic</footer>
 <script src="assets/app.js" defer></script>
+<script>
+/* labs menu — one affordance for eight labs, instead of six buttons in the bar */
+(function(){
+  var btn=document.getElementById('labsBtn'), pop=document.getElementById('labsPop');
+  if(!btn||!pop) return;
+  function close(){ pop.classList.remove('on'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var open=!pop.classList.contains('on');
+    pop.classList.toggle('on',open); btn.setAttribute('aria-expanded',String(open));
+  });
+  document.addEventListener('click',function(e){ if(!pop.contains(e.target)) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+})();
+</script>
+
 </body>
 </html>
