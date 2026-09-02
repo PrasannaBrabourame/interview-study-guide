@@ -386,6 +386,7 @@
     <button class="tab" data-pane="osi" role="tab">OSI layers</button>
     <button class="tab" data-pane="netsim" role="tab">Network simulator</button>
     <button class="tab" data-pane="landing" role="tab">Landing zone</button>
+    <button class="tab" data-pane="vpcd" role="tab">VPC design</button>
     <button class="tab" data-pane="nginx" role="tab">NGINX</button>
     <button class="tab" data-pane="iam" role="tab">IAM &amp; policy</button>
     <button class="tab" data-pane="cheat" role="tab">SAP-C02 cheatsheet</button>
@@ -617,6 +618,71 @@
     </div>
 
     <div id="sec-lz6"></div>
+  </section>
+
+  <!-- ================= VPC DESIGN ================= -->
+  <section class="pane" id="pane-vpcd">
+    <div id="sec-vd1"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; how many networks should this estate have?</h2>
+      <div class="plain-line"><b>Try this:</b> five questions about what you are actually building. The recommendation at the end is not the interesting part &mdash; the trade-off underneath it is, because every one of these answers costs you something.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding how many buildings a company needs. One open-plan floor is cheap and means anyone can wander into payroll. Four buildings means somebody has to be let in — which is the whole point, and also four sets of keys.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>just production</b> to the first question and read the warning that appears.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>VPC</b> your own private network in the cloud</span><span class="sp-w"><b>environment</b> production, testing, sandbox — the same system at different stakes</span><span class="sp-w"><b>hub</b> one place all the networks attach to, instead of joining every pair</span><span class="sp-w"><b>blast radius</b> how much is affected when one thing goes wrong</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="vdCountOut"></div></div>
+        <div><div id="vdCountCtl"></div>
+          <div id="vdCountNote" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-vd2"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; audit what is sitting in the public subnet</h2>
+      <div class="plain-line"><b>Try this:</b> ten things somebody has put in a public subnet on a real estate. Decide which of them belong there. Most do not, and two of them are not the ones you would guess.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Walking round a building checking which rooms have a door onto the street. The reception should. The server cupboard should not, even if the door is currently locked.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>judge <b>the database, with public accessibility switched off</b> — it is the one people argue about.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>public subnet</b> a subnet whose route table has a way out to the internet</span><span class="sp-w"><b>private subnet</b> one that does not, so nothing can arrive from outside</span><span class="sp-w"><b>public IP</b> an address the internet can actually send to</span><span class="sp-w"><b>NAT</b> lets private machines reach out without being reachable</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="vdPubOut"></div></div>
+        <div><div id="vdPubNote" class="cidr-out"></div>
+          <button class="btn" id="vdPubReset" style="margin-top:12px;width:100%">start again</button></div>
+      </div>
+    </div>
+
+    <div id="sec-vd3"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; size the subnets before anything is built</h2>
+      <div class="plain-line"><b>Try this:</b> the sizing nobody does until it is too late. Set the shape of the estate and watch which tier runs out first &mdash; it is rarely the one people worry about.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Numbering the parking bays before the building opens. Twelve spaces for visitors and four hundred for staff is not tidy, and it is what the building actually needs.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag <b>private endpoints</b> up to 40 and watch which bar turns red first.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>subnet</b> a slice of the network with its own range of addresses</span><span class="sp-w"><b>/24, /28</b> how big a slice is — the bigger the number, the smaller the slice</span><span class="sp-w"><b>private endpoint</b> a private door to a cloud service, one address per zone</span><span class="sp-w"><b>headroom</b> spare addresses for growth you have not thought of yet</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="vdSizeOut"></div></div>
+        <div>
+          <label style="display:block;font-size:11px;color:var(--muted);margin:0 0 5px">availability zones: <b id="vdZv" style="font-family:var(--mono);color:var(--amber)">3</b></label>
+          <input type="range" id="vdZ" min="1" max="4" value="3" style="width:100%">
+          <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">app instances at peak: <b id="vdIv" style="font-family:var(--mono);color:var(--amber)">120</b></label>
+          <input type="range" id="vdI" min="4" max="2000" step="4" value="120" style="width:100%">
+          <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">private endpoints to cloud services: <b id="vdEv" style="font-family:var(--mono);color:var(--amber)">6</b></label>
+          <input type="range" id="vdE" min="0" max="60" value="6" style="width:100%">
+          <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">VPC block: /<b id="vdCv" style="font-family:var(--mono);color:var(--amber)">16</b></label>
+          <input type="range" id="vdC" min="16" max="24" value="16" style="width:100%">
+          <div id="vdSizeNote" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-vd4"></div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; do you actually need one of these?</h2>
+      <div class="plain-line"><b>Try this:</b> eight components people add because a reference architecture had one. For each, the question that decides it, and what it costs you if you add it anyway.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Buying tools for a new workshop. The catalogue photo has thirty of them on the wall. You need four, and the other twenty-six are things to store, maintain and trip over.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Bastion host</b> — it is the one most estates still have and most no longer need.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>NAT gateway</b> lets private machines reach out to the internet</span><span class="sp-w"><b>bastion</b> one hardened machine administrators log into</span><span class="sp-w"><b>firewall appliance</b> a device that inspects traffic in the path</span><span class="sp-w"><b>transit hub</b> one junction every network plugs into once</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="vdAdvOut"></div></div>
+        <div><div class="segmented" id="vdAdvPick" style="flex-direction:column;align-items:stretch"></div>
+          <div id="vdAdvNote" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+    </div>
+
+    <div id="sec-vd5"></div>
   </section>
 
   <!-- ================= NGINX ================= -->
@@ -2633,8 +2699,10 @@ function ngxMeters(){
   const s=ngxState, total=s.ok+s.r429+s.r502+s.r504;
   const hitRate = (s.hit+s.miss) ? Math.round(s.hit/(s.hit+s.miss)*100) : 0;
   const p50 = s.ms.length ? [...s.ms].sort((a,b)=>a-b)[Math.floor(s.ms.length/2)] : 0;
-  const bar=(label,v,max,colour)=>`<div class="gauge"><label>${label} <b>${v}</b></label>
-     <div class="bar"><i style="width:${max?Math.min(100,v/max*100):0}%;background:${colour}"></i></div></div>`;
+  // v may be a formatted string like "42%", so take the number out of it before doing arithmetic
+  const bar=(label,v,max,colour)=>{const n=typeof v==='number'?v:parseFloat(v)||0;
+    return `<div class="gauge"><label>${label} <b>${v}</b></label>
+     <div class="bar"><i style="width:${max?Math.min(100,n/max*100):0}%;background:${colour}"></i></div></div>`;};
   document.getElementById('ngxMeters').innerHTML=`<div class="gauges">
     ${bar('cache hit rate', hitRate+'%', 100, 'var(--teal)')}
     ${bar('200 OK', s.ok, Math.max(total,1), 'var(--green)')}
@@ -4087,6 +4155,364 @@ document.getElementById('sec-lz3b').innerHTML=`
   }
   render();
 })();
+
+
+/* ================= VPC DESIGN ================= */
+document.getElementById('sec-vd1').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A VPC is not a container. It is a decision about who can reach whom by accident.</h2>
+  <div class="plain-line"><b>In plain English:</b> people think of a VPC as a box you put things in, and choose the number of boxes on aesthetic grounds. It is better understood as one rule: <b>inside a VPC, everything can reach everything unless a rule says otherwise. Between two VPCs, nothing can reach anything unless somebody deliberately built a path.</b></div>
+  <div class="plain-line">That single asymmetry is the whole design question. Two things in the same VPC are one misconfigured security group away from talking to each other. Two things in different VPCs are one <em>deliberate act of engineering</em> away &mdash; a peering, an attachment, an endpoint &mdash; and that act is reviewable, visible and hard to do by accident.</div>
+  <div class="plain-line">So the question is never &ldquo;how many VPCs feels tidy&rdquo;. It is: <b>which things should be one mistake away from each other, and which should not?</b></div>
+  ${D('0 0 680 200','Inside one VPC everything is reachable by default; between two VPCs nothing is until a path is built.',
+   `${box(14,26,300,140,'var(--teal)')}${tm(164,48,'ONE VPC','var(--teal)')}
+    ${box(34,64,124,32,'var(--wire)')}${tm(96,84,'payments','var(--dim)')}
+    ${box(170,64,124,32,'var(--wire)')}${tm(232,84,'marketing site','var(--dim)')}
+    ${box(34,104,124,32,'var(--wire)')}${tm(96,124,'HR database','var(--dim)')}
+    ${box(170,104,124,32,'var(--wire)')}${tm(232,124,'a test box','var(--dim)')}
+    ${tm(164,154,'one wrong rule and any reaches any other','var(--red)')}
+    ${box(366,26,300,140,'var(--violet)')}${tm(516,48,'FOUR VPCs','var(--violet)')}
+    ${box(386,64,124,32,'var(--wire)')}${tm(448,84,'payments','var(--dim)')}
+    ${box(522,64,124,32,'var(--wire)')}${tm(584,84,'marketing site','var(--dim)')}
+    ${box(386,104,124,32,'var(--wire)')}${tm(448,124,'HR database','var(--dim)')}
+    ${box(522,104,124,32,'var(--wire)')}${tm(584,124,'a test box','var(--dim)')}
+    ${tm(516,154,'reaching any other takes a deliberate path','var(--green)')}`,
+   'Same four things either way. What changes is what a single mistake can do — and on the right, a mistake is not enough on its own.')}
+</div>
+
+<div class="card">
+  <h2 class="sec">The five axes people split on, and when each is the right one</h2>
+  <table class="osi"><thead><tr><th>Split by</th><th>You get</th><th>Right when</th><th>Costs you</th></tr></thead><tbody>
+  <tr><td><b>Environment</b><br><span class="dim">prod, non-prod, sandbox</span></td><td>Production cannot be reached from a test box, ever, by anyone</td><td><b>Almost always. This is the first split and usually the only one you need for a long time</b></td><td>Almost nothing. The environments were never meant to talk</td></tr>
+  <tr><td><b>Workload or team</b></td><td>One team&rsquo;s bad afternoon cannot become another team&rsquo;s</td><td>Several teams deploy independently and do not need to reach each other&rsquo;s internals</td><td>A hub to join them, and address planning that has to be right from the start</td></tr>
+  <tr><td><b>Data sensitivity</b></td><td>Regulated data physically separated from everything else</td><td>You hold card data, health records or anything with an auditor attached &mdash; it shrinks the compliance scope enormously</td><td>Every legitimate crossing becomes a designed, documented interface</td></tr>
+  <tr><td><b>Region</b></td><td>A geographic failure domain, and data that cannot leave a country</td><td>You have latency or residency requirements. <b>On AWS and Azure this is forced &mdash; the network is regional.</b> On Google it is a choice, because the VPC is global</td><td>Multi-region everything: deployment, data, and a much harder conversation about consistency</td></tr>
+  <tr><td><b>Connectivity need</b><br><span class="dim">internet-facing, corporate-facing</span></td><td>The internet edge is not one hop from the corporate network</td><td>You have both an internet presence and a link to offices or a data centre</td><td>A perimeter to route through, which you probably wanted anyway</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The one to do first is environment, and it is not close.</b> It is nearly free, nobody argues about it, and it removes the single most embarrassing category of incident &mdash; a test system reaching production data because somebody widened a rule at five o&rsquo;clock on a Friday.</div>
+  <div class="plain-line"><b>And the one to be careful with is workload.</b> One VPC per workload sounds disciplined and produces forty networks, forty address ranges, a hub, and a routing table that only two people understand. Do it when teams genuinely deploy independently &mdash; not because a diagram in a blog post had spokes.</div>
+</div>`;
+
+/* --- SIM: how many VPCs --- */
+(function(){
+  const ctl=document.getElementById('vdCountCtl'), out=document.getElementById('vdCountOut'), note=document.getElementById('vdCountNote');
+  if(!ctl) return;
+  const Q=[
+    {k:'env',q:'Do you have more than one environment?',a:['just production','production and non-production','several, including sandboxes']},
+    {k:'teams',q:'How many teams deploy independently?',a:['one','two or three','many, on their own schedules']},
+    {k:'reg',q:'Is any of the data regulated or restricted to a country?',a:['no','some of it','yes, and an auditor asks']},
+    {k:'geo',q:'How many regions?',a:['one','two','several']},
+    {k:'conn',q:'What does it connect to?',a:['the internet only','the internet and our offices','offices only — nothing public']}
+  ];
+  const ans={env:1,teams:0,reg:0,geo:0,conn:1};
+  function render(){
+    ctl.innerHTML=Q.map(q=>'<div style="margin-bottom:12px"><div style="font-weight:600;font-size:12.5px;margin-bottom:5px">'+q.q+'</div>'+
+      '<div class="segmented">'+q.a.map((l,i)=>'<button class="seg'+(ans[q.k]===i?' on':'')+'" data-k="'+q.k+'" data-v="'+i+'">'+l+'</button>').join('')+
+      '</div></div>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{ans[b.dataset.k]=+b.dataset.v;render();});
+    /* build the recommendation */
+    const envN = ans.env===0?1:ans.env===1?2:3;
+    const perTeam = ans.teams===2;
+    const sens = ans.reg===2;
+    const regions = ans.geo+1;
+    const perim = ans.conn===1;
+    let nets=[];
+    if(perim) nets.push(['Perimeter / shared services','var(--violet)','where inspection, outbound proxying and the link to your offices live']);
+    for(let e=0;e<envN;e++){
+      const name=['Production','Non-production','Sandbox'][e];
+      if(perTeam && e===0) nets.push([name+' — one per team (say 4)','var(--teal)','independent teams, joined through the hub, never to each other directly']);
+      else nets.push([name,'var(--teal)','one network for everything in this environment']);
+    }
+    if(sens) nets.push(['Regulated data','var(--red)','separated so the compliance scope is this network and not the whole estate']);
+    const total = nets.reduce((a,n)=>a+(n[0].includes('one per team')?4:1),0) * (regions>1 && !perim ? regions : 1)
+                + (regions>1 && perim ? (nets.length-1)*(regions-1) : 0);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE NETWORKS THIS ANSWERS TO</div>'+
+      nets.map(([n,c,d])=>'<div class="lzhop" style="display:block;border-left-color:'+c+';padding:10px 12px">'+
+        '<b style="font-size:12.5px">'+n+'</b><small style="display:block;color:var(--muted);font-size:11.5px;margin-top:3px">'+d+'</small></div>').join('')+
+      (regions>1?'<div class="lzhop" style="display:block;border-left-color:var(--amber);padding:10px 12px">'+
+        '<b style="font-size:12.5px">× '+regions+' regions</b><small style="display:block;color:var(--muted);font-size:11.5px;margin-top:3px">'+
+        'On AWS and Azure a network is regional, so this multiplies. On Google the VPC is global and this row largely disappears.</small></div>':'')+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">networks to build and address</span>'+
+        '<b style="color:'+(total>8?'var(--red)':total>4?'var(--amber)':'var(--green)')+'">'+Math.max(1,total)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">a hub to join them?</span><b>'+((total>2||perim)?'yes':'not yet')+'</b></div></div>';
+    let html='';
+    if(total<=2) html='<div class="ok" style="margin-bottom:10px"><b>Two networks, and that is a perfectly good answer.</b> Most systems never need more. Splitting further has a real cost and no benefit until one of the questions above changes.</div>';
+    else if(total<=5) html='<div class="ok" style="margin-bottom:10px"><b>A manageable estate.</b> Enough separation to matter, few enough that one person can hold the routing in their head — which is worth more than it sounds.</div>';
+    else html='<div class="lzwarn" style="margin-bottom:10px"><b>'+total+' networks is a platform, not a project.</b> It needs a hub, a written address plan, and somebody whose job includes it. That is fine if the answers above are genuinely true — and worth re-reading them to check that they are, rather than aspirational.</div>';
+    if(ans.env===0) html+='<div class="lzbad" style="margin-bottom:10px"><b>One environment is the answer that will hurt.</b> Whatever else you do, separating production from everything else is the cheapest security decision available and the one whose absence produces the most embarrassing incidents.</div>';
+    if(perTeam&&ans.env>0) html+='<div class="note" style="margin-bottom:10px"><b>One network per team multiplies with environments.</b> Four teams and two environments is eight networks before you have added a perimeter. Worth checking the teams really do need to be isolated from each other, rather than merely being different teams.</div>';
+    if(sens) html+='<div class="ok" style="margin-bottom:10px"><b>Separating regulated data is usually the highest-value split after environment.</b> It shrinks what an auditor has to look at from the whole estate to one network, and that reduction is measured in weeks of somebody&rsquo;s year.</div>';
+    if(regions>1) html+='<div class="note" style="margin-bottom:10px"><b>Regions multiply everything on AWS and Azure</b>, because the network itself is regional. On Google Cloud the VPC is global with regional subnets, so multi-region costs you subnets rather than whole networks — one of the few genuinely structural differences between the three.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The test for any split:</b> would these two things ever be one misconfigured rule away from each other, and would that matter? If the answer is no to either half, they can share a network and you have saved yourself a routing table.</div>';
+    note.innerHTML=html;
+  }
+  render();
+})();
+
+
+document.getElementById('sec-vd2').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Public and private &mdash; and the two things everybody gets backwards</h2>
+  <div class="plain-line"><b>In plain English:</b> a subnet is <b>public if and only if its route table has a route to the internet gateway</b>. That is the entire definition. It is not a setting called &ldquo;public&rdquo;, it is not about the addresses used, and nothing else about the subnet is different. One line in a routing table.</div>
+  <div class="plain-line">Two consequences follow, and they are the two things that confuse almost everyone:</div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--amber)">1</span><span><b>A public subnet does not mean a public address.</b> A machine in a public subnet with no public IP is not reachable from the internet at all &mdash; there is a route out, and nothing to route <em>to</em>. The subnet grants the possibility; the address grants the reachability.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--amber)">2</span><span><b>A private subnet cannot be reached even <em>with</em> a public address.</b> Attach one to a machine in a private subnet and it does nothing, because there is no path for the return traffic. People do this and then spend an afternoon on security groups.</span></div>
+  <div class="plain-line" style="margin-top:10px"><b>And the trap that undoes both:</b> a managed database has a <b>public accessibility</b> setting of its own. Turn it on and the cloud gives it a public address <em>and a path</em>, regardless of which subnet you carefully placed it in. Your private subnet did not save you, because that flag operates above it. This is the single most common way a database ends up on the internet.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The two questions, and the very short list they produce</h2>
+  ${D('0 0 660 216','Two questions produce four quadrants, with almost nothing landing in the public one.',
+   `${tm(330,24,'must the internet be able to reach it?','var(--dim)')}
+    ${tm(210,44,'NO','var(--muted)')}${tm(470,44,'YES','var(--muted)')}
+    ${tm(50,96,'must it','var(--dim)','start')}${tm(50,112,'reach out?','var(--dim)','start')}
+    ${tm(50,140,'NO','var(--muted)','start')}${tm(50,186,'YES','var(--muted)','start')}
+    ${box(140,58,180,70,'var(--teal)')}${t(230,84,'private, no route out',SANS)}${tm(230,104,'databases · caches','var(--teal)')}${tm(230,118,'the safest tier there is','var(--dim)')}
+    ${box(340,58,240,70,'var(--amber)')}${t(460,84,'private, outbound only',SANS)}${tm(460,104,'app servers · workers · most things','var(--amber)')}${tm(460,118,'via NAT, and a proxy in front of it','var(--dim)')}
+    ${box(140,140,180,62,'var(--violet)')}${t(230,166,'behind a load balancer',SANS)}${tm(230,186,'still not a public subnet','var(--violet)')}
+    ${box(340,140,240,62,'var(--red)')}${t(460,164,'public subnet',SANS)}${tm(460,182,'load balancers · NAT · proxies','var(--red)')}${tm(460,196,'almost never your own code','var(--dim)')}`,
+   'Three of the four quadrants are private. The bottom-right is the only public one, and the things in it are all infrastructure whose job is to be reached.')}
+  <table class="osi" style="margin-top:14px"><thead><tr><th>Goes in a public subnet</th><th>Why it has to</th></tr></thead><tbody>
+  <tr><td><b>Internet-facing load balancers</b></td><td>Being reached from the internet is the entire job</td></tr>
+  <tr><td><b>NAT gateways</b></td><td>They need a route out so that private subnets can borrow one</td></tr>
+  <tr><td><b>Outbound proxies, where you run your own</b></td><td>Same reason &mdash; they are the thing with the route</td></tr>
+  <tr><td><b>A bastion, only if no managed alternative exists</b></td><td>And if you are using a managed session service, it does not go here because it does not exist</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>That is the whole list.</b> Four kinds of thing, all of them plumbing. If something you wrote is in a public subnet, the question is not whether the security group is tight enough &mdash; it is why it is there at all.</div>
+</div>`;
+
+/* --- SIM: public subnet audit --- */
+(function(){
+  const out=document.getElementById('vdPubOut'), note=document.getElementById('vdPubNote'), rst=document.getElementById('vdPubReset');
+  if(!out) return;
+  const T=[
+    {k:'alb',n:'The internet-facing load balancer',ok:true,
+     why:'<b>Correct.</b> Being reachable from the internet is its whole purpose, and it is one of only four kinds of thing that belong here.'},
+    {k:'nat',n:'The NAT gateway',ok:true,
+     why:'<b>Correct.</b> It needs the route out so private subnets can borrow one. One per zone, or a zone failure takes outbound down for everything.'},
+    {k:'api',n:'The API servers, with public IPs',ok:false,
+     why:'<b>The commonest mistake on any estate.</b> They are reachable from the internet directly, so the load balancer, the WAF and every rule on it can simply be walked around by anyone who finds the address. Move them to a private subnet — they lose nothing, because the balancer was always the way in.'},
+    {k:'apinoip',n:'The API servers, with no public IP',ok:false,
+     why:'<b>The subtle one, and not actually dangerous today.</b> With no public address nothing can reach them, so this is not an exposure — it is an accident waiting for the day somebody attaches an address for debugging and forgets. The subnet should not permit it in the first place.'},
+    {k:'db',n:'The database, with public accessibility switched off',ok:false,
+     why:'<b>Not exposed, and still wrong.</b> The flag is off so nothing can reach it, which means the only thing standing between your database and the internet is one checkbox that somebody can tick during an incident at two in the morning. Put it in a private subnet and remove the possibility.'},
+    {k:'dbpub',n:'The database, with public accessibility switched on',ok:false,
+     why:'<b>This is the breach.</b> A public address and a path, straight to your data, and the tightest security group in the world is now the only control. This exact configuration is the most reported cloud data-exposure pattern there is.'},
+    {k:'bast',n:'A bastion host with SSH open to the world',ok:false,
+     why:'A permanently advertised login page, scanned within minutes of existing. Restricting the source to office ranges makes it survivable; a managed session service with <b>no inbound port at all</b> makes the question disappear.'},
+    {k:'redis',n:'The cache',ok:false,
+     why:'Nothing reaches it from outside, so this is not an exposure — it is an unnecessary one. A cache is talked to by the app tier and by nothing else, and it has no reason to sit anywhere with a route to the internet.'},
+    {k:'batch',n:'A batch worker that downloads files from a partner',ok:false,
+     why:'<b>The trap that catches good engineers.</b> &ldquo;It needs internet access&rdquo; is read as &ldquo;it needs a public subnet&rdquo;. It does not: reaching <em>out</em> is what NAT is for. A public subnet also makes it reachable, which is a thing nobody asked for.'},
+    {k:'proxy',n:'The outbound proxy',ok:true,
+     why:'<b>Correct.</b> It is the thing that holds the route out on everyone else&rsquo;s behalf, which is exactly what a public subnet is for.'}
+  ];
+  const pick={};
+  function render(){
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">CURRENTLY IN THE PUBLIC SUBNET — DOES IT BELONG?</div>'+
+      T.map(t=>'<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">'+
+        '<span style="flex:1;font-size:12.5px">'+t.n+'</span>'+
+        '<div class="segmented" style="flex:none">'+
+        '<button class="seg'+(pick[t.k]==='y'?' on':'')+'" data-k="'+t.k+'" data-v="y">belongs</button>'+
+        '<button class="seg'+(pick[t.k]==='n'?' on':'')+'" data-k="'+t.k+'" data-v="n">move it</button>'+
+        '</div></div>').join('');
+    out.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pick[b.dataset.k]=b.dataset.v;render();});
+    const done=T.filter(t=>pick[t.k]);
+    let right=done.filter(t=>(pick[t.k]==='y')===t.ok).length;
+    let html;
+    if(!done.length) html='<div class="simnote">Ten things. Four of them belong here — decide which.</div>';
+    else html=done.map(t=>{const ok=(pick[t.k]==='y')===t.ok;
+      return '<div class="lzrow" style="margin-bottom:9px"><span class="lzmark" style="color:var('+(ok?'--green':'--red')+')">'+(ok?'✓':'✗')+'</span>'+
+      '<span><b>'+t.n+'</b><br>'+t.why+'</span></div>';}).join('')+
+      '<div class="simnote" style="margin-top:10px"><b>'+right+' of '+done.length+' judged correctly.</b></div>';
+    if(done.length===T.length) html+='<div class="'+(right===T.length?'ok':'note')+'" style="margin-top:10px"><b>The pattern across all ten:</b> only four things belong, and every one of them is infrastructure whose job is to be reached. Notice also that <b>four of the six wrong ones are not actually exposed right now</b> — no public address, or the flag is off. They are wrong because they leave a door that only needs somebody to open it, usually during an incident, usually at night.</div>';
+    note.innerHTML=html;
+  }
+  rst.onclick=()=>{Object.keys(pick).forEach(k=>delete pick[k]);render();};
+  render();
+})();
+
+document.getElementById('sec-vd3').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Sizing &mdash; and the asymmetry nobody expects</h2>
+  <div class="plain-line"><b>In plain English:</b> people size subnets by splitting the network into equal pieces, because that is tidy. The actual requirements are wildly unequal, and the tier that runs out first is almost never the one anyone worried about.</div>
+  <table class="osi"><thead><tr><th>Tier</th><th>How many addresses it really needs</th><th>Sensible size</th></tr></thead><tbody>
+  <tr><td><b>Public / edge</b></td><td>A handful. A load balancer takes a few addresses per zone, a NAT gateway takes one. That is it</td><td><b>Tiny.</b> A /27 or /28 per zone is generous</td></tr>
+  <tr><td><b>App</b></td><td>One per instance or container, at <em>peak</em>, plus room for a deployment that runs old and new at once</td><td><b>Large.</b> This is where the space goes, and it should</td></tr>
+  <tr><td><b>Data</b></td><td>A few per database, plus read replicas</td><td>Small. Databases are not numerous</td></tr>
+  <tr><td><b>Endpoint</b></td><td><b>One address per private endpoint, per zone</b> &mdash; and the number of endpoints only ever grows</td><td><b>Bigger than feels necessary.</b> This is the one that runs out</td></tr>
+  <tr><td><b>Bastion / management</b></td><td>One or two, if it exists at all</td><td>Tiny</td></tr>
+  <tr><td><b>Firewall</b></td><td>Whatever the vendor requires, and they have minimums</td><td>As specified &mdash; Azure demands at least a /26 for its firewall subnet</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Remember what the cloud takes off the top.</b> AWS and Azure reserve five addresses in every subnet, Google reserves four. A /28 gives you eleven usable, not sixteen &mdash; and on a tier that autoscales, that shortfall arrives as an outage during your busiest hour rather than as an error at deployment.</div>
+  <div class="plain-line"><b>And the rule that makes all of this matter:</b> you can grow a VPC by adding a range later, on every cloud. <b>You cannot resize a subnet that has anything in it</b> &mdash; AWS never, Azure only while it is empty, Google can expand but never shrink. So a subnet that is too small is a migration, and a subnet that is too large costs you nothing but unused numbers.</div>
+</div>`;
+
+/* --- SIM: sizing --- */
+(function(){
+  const Z=document.getElementById('vdZ'), I=document.getElementById('vdI'), E=document.getElementById('vdE'),
+        C=document.getElementById('vdC'), out=document.getElementById('vdSizeOut'), note=document.getElementById('vdSizeNote');
+  if(!Z) return;
+  const sizeFor=n=>{ let p=32; while(p>16 && (Math.pow(2,32-p)-5) < n) p--; return p; };
+  function render(){
+    const zones=+Z.value, inst=+I.value, eps=+E.value, vpc=+C.value;
+    document.getElementById('vdZv').textContent=zones;
+    document.getElementById('vdIv').textContent=inst;
+    document.getElementById('vdEv').textContent=eps;
+    document.getElementById('vdCv').textContent=vpc;
+    const perZoneApp = Math.ceil(inst/zones*1.6);   /* headroom for a rolling deploy */
+    const TIERS=[
+      {n:'public / edge',need:6,c:'var(--red)'},
+      {n:'app',need:perZoneApp,c:'var(--amber)'},
+      {n:'data',need:8,c:'var(--teal)'},
+      {n:'endpoint',need:Math.max(4,eps*2),c:'var(--violet)'},
+      {n:'bastion',need:3,c:'var(--blue)'},
+      {n:'firewall',need:16,min:26,c:'var(--wire)'}
+    ].map(t=>{const p=Math.min(sizeFor(t.need), t.min||32); return {...t,p,addr:Math.pow(2,32-p),usable:Math.pow(2,32-p)-5};});
+    const totalAddr = TIERS.reduce((a,t)=>a+t.addr,0)*zones;
+    const vpcAddr = Math.pow(2,32-vpc);
+    const used = totalAddr/vpcAddr;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE SUBNET PER TIER PER ZONE — '+zones+' ZONE'+(zones>1?'S':'')+'</div>'+
+      TIERS.map(t=>{
+        const tight = t.usable < t.need*1.5;
+        return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">'+
+          '<span style="width:96px;text-align:right;font-size:11.5px;color:var(--muted)">'+t.n+'</span>'+
+          '<div style="flex:1;height:16px;background:var(--panel2);border-radius:4px;overflow:hidden">'+
+          '<div style="height:100%;width:'+Math.min(100,t.need/t.usable*100)+'%;background:'+(tight?'var(--red)':t.c)+';opacity:.8"></div></div>'+
+          '<span style="width:44px;font-family:var(--mono);font-size:11px;text-align:right">/'+t.p+'</span>'+
+          '<span style="width:104px;font-family:var(--mono);font-size:10.5px;color:'+(tight?'var(--red)':'var(--muted)')+';text-align:right">'+
+            t.need+' of '+t.usable+' used</span></div>';
+      }).join('')+
+      '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12.5px">'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">addresses allocated</span><b>'+totalAddr.toLocaleString()+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">the VPC holds</span><b>'+vpcAddr.toLocaleString()+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">of the block used</span><b style="color:'+(used>0.75?'var(--red)':used>0.4?'var(--amber)':'var(--green)')+'">'+Math.round(used*100)+'%</b></div></div>';
+    let html='';
+    const tightOnes=TIERS.filter(t=>t.usable<t.need*1.5).map(t=>t.n);
+    if(used>1) html+='<div class="lzbad" style="margin-bottom:10px"><b>This does not fit.</b> The tiers need more addresses than a /'+vpc+' contains. Take a larger block now — it costs nothing and it is the one thing you cannot fix later without a migration.</div>';
+    else if(used>0.75) html+='<div class="lzwarn" style="margin-bottom:10px"><b>'+Math.round(used*100)+'% allocated on day one.</b> There is no room for a tier nobody has thought of yet, and there always is one. Aim to leave at least half the block unallocated.</div>';
+    if(tightOnes.length) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Tight: '+tightOnes.join(', ')+'.</b> Under fifty per cent headroom on a tier that grows is a migration waiting to be scheduled. Round up a prefix &mdash; it doubles the space and costs nothing.</div>';
+    if(eps>20) html+='<div class="note" style="margin-bottom:10px"><b>'+eps+' private endpoints is where estates actually run out.</b> Each one takes an address <em>in every zone</em>, and nobody forecasts them because they arrive one project at a time. This is the tier to be most generous with.</div>';
+    if(inst>800) html+='<div class="note" style="margin-bottom:10px"><b>Note the deployment headroom in the app tier.</b> A rolling deployment runs old and new instances together, so peak capacity is not the peak address requirement — roughly 1.6× is a working assumption, and it is the reason app subnets look oversized until the day they are not.</div>';
+    if(!html) html='<div class="ok" style="margin-bottom:10px"><b>Comfortable.</b> Every tier has room to grow and most of the block is still unallocated, which is exactly the shape a plan should have on day one.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The asymmetry is the point.</b> The public tier needs a handful of addresses and people give it a quarter of the network out of tidiness. The endpoint tier needs an address per service per zone, grows forever, and gets a scrap. Size for what each tier actually does, not for a neat diagram.</div>';
+    note.innerHTML=html;
+  }
+  [Z,I,E,C].forEach(x=>x.oninput=render); render();
+})();
+
+
+document.getElementById('sec-vd4').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The rest of the components &mdash; and whether you need them</h2>
+  <div class="plain-line"><b>In plain English:</b> reference architectures are drawn for the largest plausible customer, and everything on them looks mandatory. Most of it is not. Every component you add is a thing to configure, pay for, monitor, patch and explain to the next person &mdash; so the useful question about each one is not &ldquo;is it good practice&rdquo; but <b>&ldquo;what specifically goes wrong for me without it?&rdquo;</b></div>
+  <div class="plain-line">If you cannot answer that in a sentence, you do not need it yet. That is not an argument against any of these &mdash; every one is right for somebody. It is an argument against copying a diagram.</div>
+</div>`;
+
+/* --- SIM: component advisor --- */
+(function(){
+  const pick=document.getElementById('vdAdvPick'), out=document.getElementById('vdAdvOut'), note=document.getElementById('vdAdvNote');
+  if(!pick) return;
+  const A=[
+    {k:'nat',n:'NAT gateway',
+     what:'Lets private machines reach out to the internet without being reachable themselves.',
+     q:'Does anything in a private subnet need to fetch something from the internet — patches, a partner API, a package registry?',
+     yes:'<b>Almost certainly yes.</b> The exception is genuinely worth checking: if everything it needs is a cloud service, private endpoints can remove the need entirely, and then you are not paying per gigabyte for traffic that never had to leave.',
+     cost:'Charged per hour <em>and</em> per gigabyte processed. One per zone for resilience, which triples that. It is quietly one of the larger network line items on most bills.',
+     skip:'Only if nothing private ever reaches outward. Rarer than it sounds — patching alone usually settles it.'},
+    {k:'bast',n:'Bastion host',
+     what:'One hardened machine that administrators log into, so nothing else has to accept logins.',
+     q:'Do people need shell access to machines at all, and does your cloud offer a managed session service?',
+     yes:'<b>Probably not, and this is the good news.</b> Every major cloud now has an audited session service with <b>no inbound port anywhere</b>. If one is available, a bastion is a machine to patch, an address to defend and a shared key to rotate, in exchange for nothing.',
+     cost:'A server, its patching, a login page permanently advertised to the internet, and a credential that gets shared and never rotated.',
+     skip:'Yes, wherever a managed session service exists. This is a component the industry has largely stopped needing.'},
+    {k:'fw',n:'A firewall appliance',
+     what:'Deep inspection of traffic, usually a third-party product in the traffic path.',
+     q:'Do you have a written requirement for inspection that security groups and a proxy cannot satisfy?',
+     yes:'<b>Only with that requirement in hand.</b> Regulated industries frequently have one and it is not negotiable. Everyone else is buying a device to inspect traffic between things they already control.',
+     cost:'Licences, a dedicated subnet per zone, routing that forces traffic through it, a throughput ceiling that becomes your ceiling, and a new thing that can be down.',
+     skip:'Yes for most estates. Stateful security groups plus an outbound proxy with an allow-list covers the great majority of what people buy this for.'},
+    {k:'ep',n:'Private endpoints to cloud services',
+     what:'A private door to object storage, a queue or a database, inside your own network.',
+     q:'Does traffic to cloud services currently leave through NAT and the internet?',
+     yes:'<b>Yes, and this is usually the highest-value item on the list.</b> It removes internet exposure and takes that traffic off NAT, which frequently pays for itself in the bill alone.',
+     cost:'An address per endpoint per zone, a DNS zone that must be associated with the network, and a subnet that grows faster than you expect.',
+     skip:'Only for a small estate with little traffic to cloud services. Even then the gateway-style endpoints for object storage are free and should be on by default.'},
+    {k:'hub',n:'A transit hub',
+     what:'One place every network attaches to, instead of peering each pair.',
+     q:'How many networks do you have, and do more than two of them need to reach each other?',
+     yes:'<b>Above three or four networks, yes.</b> Ten meshed networks need forty-five connections and forty-five sets of routes; through a hub it is ten. The saving is not the money, it is that ten paths can be reasoned about and forty-five cannot.',
+     cost:'Charged per attachment and per gigabyte, and it becomes a single point that everything depends on — so it needs the same care as anything else in the path.',
+     skip:'Yes for two or three networks. A couple of peerings is simpler and cheaper, and you can move to a hub later without redesigning anything.'},
+    {k:'proxy',n:'An outbound proxy',
+     what:'Checks where traffic is going before it leaves, against a list of permitted destinations.',
+     q:'Do you need to know, or control, what your workloads reach on the internet?',
+     yes:'<b>Yes if anything you run handles data worth taking.</b> This is the control that turns a compromised machine into a contained one — NAT lets anything out to anywhere and only hides the source address.',
+     cost:'Something to run and maintain, an allow-list that needs owning, and a real chance of blocking a legitimate integration on its first day.',
+     skip:'Defensible for a small estate with nothing sensitive. Start it in observe-only mode and read what it would have blocked before enforcing.'},
+    {k:'ipv6',n:'IPv6',
+     what:'The other address family, with effectively unlimited space.',
+     q:'Are you running out of private address space, or do you have a customer requirement?',
+     yes:'<b>Increasingly worth planning for and rarely urgent.</b> The real driver is usually address exhaustion in a large estate, or a regulator, rather than any technical preference.',
+     cost:'Everything on the path must support it — every appliance, every tool, every runbook — and dual-stack means two of every rule to get wrong.',
+     skip:'Yes for most estates today, and plan the address space as though you will want it. Retrofitting is the expensive path.'},
+    {k:'multi',n:'A second region',
+     what:'The whole estate again, somewhere else.',
+     q:'What is the recovery time objective, and who agreed it?',
+     yes:'<b>Only if the number genuinely requires it.</b> Under about an hour, a second region is hard to avoid. Above four hours, backups and a rebuild are usually enough — and enormously cheaper.',
+     cost:'Roughly double the infrastructure, data replication with all of its consistency questions, traffic steering, and a failover that must be tested regularly or it does not work.',
+     skip:'Yes for most systems. Multi-zone within one region already survives the failure people are actually imagining when they ask for this.'}
+  ];
+  let cur='nat';
+  function render(){
+    pick.innerHTML=A.map(a=>'<button class="seg'+(cur===a.k?' on':'')+'" data-k="'+a.k+'" style="text-align:left">'+a.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const a=A.find(x=>x.k===cur);
+    out.innerHTML='<div style="font-family:var(--display);font-size:19px;margin-bottom:4px">'+a.n+'</div>'+
+      '<div class="plain-line" style="margin-bottom:14px">'+a.what+'</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:6px">THE QUESTION THAT DECIDES IT</div>'+
+      '<div class="note" style="padding:10px 12px;border-left:2px solid var(--amber);background:var(--panel2);border-radius:0 8px 8px 0;font-size:13px">'+a.q+'</div>';
+    note.innerHTML='<div class="lzrow"><span class="lzmark" style="color:var(--green)">✓</span><span><b>When you need it.</b> '+a.yes+'</span></div>'+
+      '<div class="lzrow"><span class="lzmark" style="color:var(--amber)">£</span><span><b>What it costs you.</b> '+a.cost+'</span></div>'+
+      '<div class="lzrow"><span class="lzmark" style="color:var(--red)">✗</span><span><b>When to leave it out.</b> '+a.skip+'</span></div>'+
+      '<div class="simnote" style="margin-top:10px"><b>Notice how many of these say “probably not”.</b> That is the honest answer for a first production estate, and it is not a lower standard — an estate with four components you understand is safer than one with twelve that were copied from a diagram and are configured by default.</div>';
+  }
+  render();
+})();
+
+document.getElementById('sec-vd5').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A starting point that is defensible on day one</h2>
+  <div class="plain-line"><b>In plain English:</b> if you have to draw something this afternoon and the questions above have not been answered yet, this is a shape that is small, safe and does not have to be undone when the answers arrive.</div>
+  <table class="osi"><thead><tr><th>Decision</th><th>Start with</th><th>Change it when</th></tr></thead><tbody>
+  <tr><td><b>Networks</b></td><td>Two &mdash; production and non-production</td><td>A third team needs isolation, or regulated data arrives</td></tr>
+  <tr><td><b>Address block</b></td><td>A /16 per network from a written plan, with most of it left unallocated</td><td>Never, if you did this bit properly. This is the one that cannot be redone</td></tr>
+  <tr><td><b>Zones</b></td><td>Three, with one subnet per tier per zone</td><td>Only downward, and only if you have accepted a zone failure taking you offline</td></tr>
+  <tr><td><b>Public subnets</b></td><td>One tiny one per zone, holding a load balancer and a NAT gateway</td><td>Essentially never. The list of things that belong there does not grow</td></tr>
+  <tr><td><b>Private subnets</b></td><td>App, data and endpoint tiers per zone, sized generously</td><td>As tiers are added &mdash; which is why the block has room left</td></tr>
+  <tr><td><b>Internet access outward</b></td><td>NAT per zone, and private endpoints for cloud services from the start</td><td>Add a proxy when something you run handles data worth taking</td></tr>
+  <tr><td><b>Administrative access</b></td><td>A managed session service. No bastion</td><td>Only if no managed option exists on your platform</td></tr>
+  <tr><td><b>Joining networks</b></td><td>A peering between the two</td><td>Move to a hub at three or four networks &mdash; and it is not a redesign</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Everything in that table except the address block is reversible.</b> That is the actual design principle: get the addressing right, keep everything else as small as you can defend, and add components when you can name what goes wrong without them.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The exam and interview angle</h2>
+  <div class="exam-line"><b>&ldquo;What makes a subnet public?&rdquo;</b> &rarr; A route to the internet gateway in its route table. Nothing else &mdash; not a setting, not the addresses.</div>
+  <div class="exam-line"><b>&ldquo;An instance in a public subnet has no public IP. Is it reachable from the internet?&rdquo;</b> &rarr; No. The subnet provides the route; the address provides the reachability, and you need both.</div>
+  <div class="exam-line"><b>&ldquo;An instance in a private subnet has a public IP. Is it reachable?&rdquo;</b> &rarr; Still no. There is no route for the traffic to arrive by.</div>
+  <div class="exam-line"><b>&ldquo;A managed database is in a private subnet and is reachable from the internet.&rdquo;</b> &rarr; Public accessibility is switched on, which gives it an address and a path regardless of the subnet.</div>
+  <div class="exam-line"><b>&ldquo;A workload needs to download patches. Which subnet?&rdquo;</b> &rarr; Private, with NAT. Reaching out is not the same requirement as being reachable.</div>
+  <div class="exam-line"><b>&ldquo;How many VPCs should we have?&rdquo;</b> &rarr; Start from what should not be one misconfigured rule away from what. Environment separation first; workload separation only when teams genuinely deploy independently.</div>
+  <div class="exam-line"><b>&ldquo;Which subnet runs out of addresses first?&rdquo;</b> &rarr; Usually the endpoint tier. Each private endpoint takes an address in every zone, and the count only grows.</div>
+  <div class="exam-line"><b>&ldquo;A subnet is too small. What are the options?&rdquo;</b> &rarr; You cannot resize one that is in use. Add a new subnet from spare space, or a secondary range to the VPC, and migrate &mdash; which is why the plan leaves blocks unallocated.</div>
+  <div class="exam-line"><b>&ldquo;How many NAT gateways?&rdquo;</b> &rarr; One per availability zone. A single one is cheaper until its zone fails and takes outbound connectivity down for every zone.</div>
+  <div class="exam-line"><b>&ldquo;When is a transit hub worth it over peering?&rdquo;</b> &rarr; Above three or four networks. Ten meshed networks need forty-five connections; through a hub, ten.</div>
+  <div class="exam-line"><b>&ldquo;How is multi-region different on Google Cloud?&rdquo;</b> &rarr; The VPC is global with regional subnets, so crossing a region does not need peering. On AWS and Azure the network is regional and multi-region multiplies the networks.</div>
+  <div class="exam-line"><b>&ldquo;How do we avoid needing NAT at all?&rdquo;</b> &rarr; Private endpoints for cloud services. If nothing needs the public internet, the gateway and the per-gigabyte charge both disappear.</div>
+</div>`;
 
 
 /* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
