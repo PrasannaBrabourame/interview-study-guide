@@ -336,6 +336,34 @@
   .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
   @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
     .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- OSI service map ---- */
+  .svcgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  .svccol{display:flex; flex-direction:column; gap:5px}
+  .svccol>b{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    margin-bottom:2px; font-weight:500}
+  .svccol>b.aws{color:var(--awsorange)} .svccol>b.az{color:var(--azblue)} .svccol>b.gcp{color:var(--gcpblue)}
+  .svc{border:1px solid var(--line2); background:var(--panel2); border-radius:8px; padding:6px 9px;
+    font:inherit; font-size:11.5px; color:var(--text); text-align:left; cursor:pointer; line-height:1.35;
+    transition:border-color .15s,background .15s}
+  .svc:hover{border-color:var(--teal)}
+  .svc.on{border-color:var(--amber); background:var(--sel); color:var(--amber)}
+  .svc:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .svcnone{font-size:11px; color:var(--dim); font-style:italic; padding:6px 2px}
+  .svcdet{margin-top:12px; border:1px solid var(--line2); border-radius:11px; padding:13px 15px; background:var(--panel2)}
+  .svchead{display:flex; align-items:center; gap:9px; margin-bottom:10px}
+  .svchead b{font-size:15px; font-family:var(--display); font-weight:500}
+  .svctag{font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase;
+    border:1px solid currentColor; border-radius:99px; padding:2px 8px}
+  .svctag.aws{color:var(--awsorange)} .svctag.az{color:var(--azblue)} .svctag.gcp{color:var(--gcpblue)}
+  .svcpeer{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:10px;
+    padding-top:10px; border-top:1px solid var(--line)}
+  .svcrole{font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); margin-right:2px}
+  .svcp{border:1px solid var(--line2); border-radius:7px; padding:3px 9px; font-size:11.5px; background:var(--panel)}
+  .svcp i{font-style:normal; font-family:var(--mono); font-size:9.5px; letter-spacing:.06em;
+    text-transform:uppercase; margin-right:5px}
+  .svcp i.aws{color:var(--awsorange)} .svcp i.az{color:var(--azblue)} .svcp i.gcp{color:var(--gcpblue)}
+  @media (max-width:760px){.svcgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -2130,6 +2158,111 @@ function cidr(){
 slEl.addEventListener('input',cidr); ipEl.addEventListener('input',cidr); cidr();
 
 /* ================= OSI ================= */
+const OSISVC={
+7:[
+  {c:"aws",n:"Application Load Balancer",r:"l7lb",w:"Terminates the connection, reads the HTTP request, then picks a target.",y:"It parses method, path, host, headers and cookies. Path-based routing is impossible without opening the envelope \u2014 which is the definition of layer 7."},
+  {c:"az",n:"Application Gateway",r:"l7lb",w:"A regional load balancer that routes on URL path and host header.",y:"Same reason: it can only route on a path because it has read the request."},
+  {c:"gcp",n:"Global external Application Load Balancer",r:"l7lb",w:"One anycast address worldwide, routing by URL map.",y:"URL maps match on host and path, so it is reading the request before it forwards it."},
+  {c:"aws",n:"CloudFront",r:"cdn",w:"Caches responses at points of presence close to users.",y:"Cache keys are built from the URL and selected headers \u2014 it has to understand HTTP to know what is cacheable."},
+  {c:"az",n:"Azure Front Door",r:"cdn",w:"Global entry point combining caching, routing and WAF.",y:"It makes routing and caching decisions from the request itself."},
+  {c:"gcp",n:"Cloud CDN",r:"cdn",w:"Caching in front of the global load balancer.",y:"It varies on headers and query strings, which are layer-7 concepts."},
+  {c:"aws",n:"API Gateway",r:"apigw",w:"Managed API front door: throttling, keys, request validation, transformation.",y:"Validating a JSON body against a schema is only possible once you are reading the application payload."},
+  {c:"az",n:"API Management",r:"apigw",w:"API gateway with policies, products and a developer portal.",y:"Its policies rewrite headers and bodies \u2014 pure layer-7 work."},
+  {c:"gcp",n:"API Gateway and Apigee",r:"apigw",w:"Two products, same job: govern APIs rather than raw traffic.",y:"Quotas per API key and payload transformation both require reading the request."},
+  {c:"aws",n:"Route 53",r:"dns",w:"Authoritative DNS with health-based and geographic routing policies.",y:"DNS is an application protocol in its own right \u2014 a question and an answer, carried over UDP or TCP beneath it."},
+  {c:"az",n:"Azure DNS",r:"dns",w:"Authoritative DNS, public and private zones.",y:"Same: the query is the application payload."},
+  {c:"gcp",n:"Cloud DNS",r:"dns",w:"Authoritative DNS, with private zones for internal names.",y:"Private zones are what make private endpoints resolve internally \u2014 a layer-7 answer with layer-3 consequences."},
+  {c:"aws",n:"AWS WAF",r:"waf",w:"Rules matching injection attempts, bad bots and abusive patterns.",y:"Every rule it evaluates is about request content: a query string, a header, a body."},
+  {c:"az",n:"Azure Web Application Firewall",r:"waf",w:"Managed rule sets attached to Front Door or Application Gateway.",y:"It cannot exist below layer 7 \u2014 there is nothing to inspect."},
+  {c:"gcp",n:"Cloud Armor",r:"waf",w:"Rules and rate limits in front of the global load balancer.",y:"Its expressions read request attributes directly."}],
+6:[
+  {c:"aws",n:"AWS Certificate Manager",r:"cert",w:"Issues and auto-renews certificates for AWS endpoints.",y:"Certificates are how the presentation layer proves identity before encrypting."},
+  {c:"az",n:"Key Vault certificates",r:"cert",w:"Stores and rotates certificates used by Azure front ends.",y:"Same job: the material that makes encrypted encoding trustworthy."},
+  {c:"gcp",n:"Certificate Manager",r:"cert",w:"Google-managed certificates for load balancers.",y:"Same job, and the renewal is the part that matters \u2014 expired certificates are a layer-6 outage."},
+  {c:"aws",n:"TLS termination on ALB or CloudFront",r:"tlsterm",w:"The point where encrypted bytes become readable ones.",y:"This is layer 6 happening: undoing the encoding so layer 7 can read the request."},
+  {c:"az",n:"TLS on Application Gateway or Front Door",r:"tlsterm",w:"Where Azure decrypts before routing.",y:"Any layer-7 rule downstream depends on this having happened first."},
+  {c:"gcp",n:"TLS on the global load balancer",r:"tlsterm",w:"Decryption at the edge, close to the user.",y:"Terminating early shortens the encrypted leg and lengthens the internal one \u2014 a design decision, not a default."},
+  {c:"aws",n:"ALB security policies",r:"sslpol",w:"The named set of TLS versions and ciphers you accept.",y:"Choosing ciphers is choosing how the payload is encoded."},
+  {c:"az",n:"SSL policy on Application Gateway",r:"sslpol",w:"Predefined or custom cipher suites.",y:"Tighten it and an old client stops connecting \u2014 a handshake failure, not an application error."},
+  {c:"gcp",n:"SSL policies",r:"sslpol",w:"Minimum TLS version and cipher profile on the load balancer.",y:"Same trade: security against reachability for older clients."},
+  {c:"aws",n:"mTLS on API Gateway",r:"mtls",w:"The client presents a certificate too, not just the server.",y:"Still layer 6 \u2014 it is the handshake being extended, before any request is read."},
+  {c:"az",n:"Client certificate authentication",r:"mtls",w:"Front ends can require a client certificate.",y:"Identity established during the encoding negotiation, not from a header."},
+  {c:"gcp",n:"Mutual TLS on the load balancer",r:"mtls",w:"Client certificates validated at the edge.",y:"Rejecting a client here means the request never becomes layer-7 traffic at all."}],
+5:[
+  {c:"aws",n:"ALB stickiness cookies",r:"sticky",w:"A cookie pinning a user to one target for a period.",y:"A session is exactly what layer 5 names: state that spans several requests."},
+  {c:"az",n:"Cookie-based affinity",r:"sticky",w:"Application Gateway pins a client to one backend.",y:"Same mechanism, same reason \u2014 the conversation outlives the connection."},
+  {c:"gcp",n:"Backend service session affinity",r:"sticky",w:"Affinity by cookie, client IP or header.",y:"Turn it off with in-memory sessions and users are randomly logged out. Classic layer-5 symptom."},
+  {c:"aws",n:"Deregistration delay",r:"drain",w:"How long a target keeps serving open connections after removal.",y:"It manages the closing of conversations, which is a session-layer concern."},
+  {c:"az",n:"Connection draining",r:"drain",w:"Existing connections finish before an instance is removed.",y:"Set it to zero and every deployment cuts live users off mid-request."},
+  {c:"gcp",n:"Connection draining",r:"drain",w:"A grace period on the backend service.",y:"The number is your tolerance for interrupting somebody mid-upload."},
+  {c:"aws",n:"Site-to-Site VPN",r:"vpn",w:"An IPsec tunnel to your own data centre.",y:"The IKE negotiation that establishes and re-keys the tunnel is session-layer work."},
+  {c:"az",n:"VPN Gateway",r:"vpn",w:"IPsec tunnels between Azure and elsewhere.",y:"Same: the tunnel is a session that has to be set up, maintained and torn down."},
+  {c:"gcp",n:"Cloud VPN",r:"vpn",w:"HA VPN tunnels to your premises, with two interfaces for redundancy.",y:"Tunnels that flap are almost always a negotiation mismatch, not a routing problem."},
+  {c:"aws",n:"Session Manager",r:"shell",w:"A recorded shell on an instance with no inbound port.",y:"It opens an audited session \u2014 no listening port, so nothing to scan for."},
+  {c:"az",n:"Azure Bastion",r:"shell",w:"Browser-based RDP and SSH without public addresses.",y:"Same idea: the session is brokered rather than connected to directly."},
+  {c:"gcp",n:"IAP TCP forwarding",r:"shell",w:"Tunnelled, authorised access to a machine with no public IP.",y:"Access becomes an identity decision made when the session opens."}],
+4:[
+  {c:"aws",n:"Network Load Balancer",r:"l4lb",w:"Forwards TCP and UDP without reading the payload.",y:"It only handles addresses and ports, so it carries any protocol \u2014 including ones it has never heard of."},
+  {c:"az",n:"Azure Load Balancer",r:"l4lb",w:"Layer-4 distribution across a backend pool.",y:"Same: no idea what the bytes mean, which is why it is fast and protocol-agnostic."},
+  {c:"gcp",n:"Passthrough Network Load Balancer",r:"l4lb",w:"Forwards packets without terminating the connection.",y:"Passthrough means the backend sees the original client address \u2014 because nothing rewrote it."},
+  {c:"aws",n:"Security groups",r:"sgfw",w:"Allow rules on an instance\u2019s interface. Stateful.",y:"Stateful means allow it in and the reply leaves automatically. It works on ports, which is layer 4."},
+  {c:"az",n:"Network security groups",r:"sgfw",w:"Allow and deny rules, stateful, on a NIC or subnet.",y:"One control where AWS has two \u2014 Azure has no separate stateless layer."},
+  {c:"gcp",n:"VPC firewall rules",r:"sgfw",w:"Stateful rules applied by network tag or service account.",y:"Targeting by service account rather than address is the interesting difference."},
+  {c:"aws",n:"Network ACLs",r:"aclfw",w:"Subnet-level rules. <b>Stateless</b> \u2014 return traffic needs its own rule.",y:"The stateless part is the trap: allow inbound 443 and forget the ephemeral return range, and replies silently vanish."},
+  {c:"aws",n:"Global Accelerator",r:"accel",w:"Anycast addresses that pull traffic onto the AWS backbone early.",y:"It works on IP and port, not on requests, which is why it fronts non-HTTP protocols too."},
+  {c:"az",n:"Cross-region Load Balancer",r:"accel",w:"Global anycast in front of regional load balancers.",y:"Same idea at the same layer."},
+  {c:"gcp",n:"Global external proxy Network Load Balancer",r:"accel",w:"One anycast address worldwide for TCP traffic that is not HTTP.",y:"Global reach at layer 4 — it forwards connections without ever reading the payload."},
+  {c:"aws",n:"Target group health checks",r:"hc",w:"Probes deciding whether a target receives traffic.",y:"A TCP-level check proves something is listening; it says nothing about whether the app works."},
+  {c:"az",n:"Health probes",r:"hc",w:"TCP or HTTP probes on the backend pool.",y:"Probe at TCP and a wedged application stays in rotation, answering nothing."},
+  {c:"gcp",n:"Health checks",r:"hc",w:"Shared health-check resources used by load balancers.",y:"Choosing the protocol is choosing which layer you are actually testing."}],
+3:[
+  {c:"aws",n:"VPC",r:"vnet",w:"Your own isolated network, scoped to one region.",y:"Addresses and boundaries are the layer-3 questions, and this is the container for both."},
+  {c:"az",n:"Virtual Network",r:"vnet",w:"Your own isolated network, regional.",y:"Same shape as a VPC, same layer, different word."},
+  {c:"gcp",n:"VPC",r:"vnet",w:"<b>Global</b> \u2014 one network with subnets in many regions.",y:"The big structural difference: no peering needed to cross a region."},
+  {c:"aws",n:"Subnets",r:"subnet",w:"A slice of the VPC, tied to <b>one availability zone</b>.",y:"A routing and placement decision, not a security boundary."},
+  {c:"az",n:"Subnets",r:"subnet",w:"A slice of the VNet, spanning the region\u2019s zones.",y:"Because it is not zone-bound, high availability needs fewer of them."},
+  {c:"gcp",n:"Subnets",r:"subnet",w:"Regional, spanning the zones within a region.",y:"Same as Azure: one subnet per tier per region, not per zone."},
+  {c:"aws",n:"Route tables",r:"route",w:"What sends traffic where, per subnet.",y:"A subnet is public if and only if its route table has a route to the internet gateway. Nothing else about it differs."},
+  {c:"az",n:"Route tables (UDR)",r:"route",w:"User-defined routes overriding the defaults.",y:"Forcing traffic through an appliance is done here, by editing where packets go."},
+  {c:"gcp",n:"Routes",r:"route",w:"Routes with priorities and tags, including the default internet route.",y:"Removing the default route is how a subnet becomes genuinely private."},
+  {c:"aws",n:"NAT gateway",r:"nat",w:"Private machines reach out; nothing can reach in.",y:"It rewrites source addresses, which is layer-3 work \u2014 and it is not a firewall."},
+  {c:"az",n:"NAT Gateway",r:"nat",w:"Outbound-only address translation for a subnet.",y:"Same job. Same warning: it hides who is asking, not where they are going."},
+  {c:"gcp",n:"Cloud NAT",r:"nat",w:"Managed, regional, with no instances to run.",y:"Software-defined rather than an appliance in the path."},
+  {c:"aws",n:"Transit Gateway",r:"hub",w:"One attachment per network instead of a mesh of peerings.",y:"Ten networks meshed need forty-five links; through a hub, ten."},
+  {c:"az",n:"Virtual WAN hub",r:"hub",w:"A managed hub joining VNets, branches and users.",y:"Same shape, and the route tables on the hub are where \u201cdev may not reach prod\u201d becomes real."},
+  {c:"gcp",n:"Network Connectivity Center",r:"hub",w:"A hub-and-spoke model for joining networks.",y:"Or, on GCP, often not needed at all \u2014 the VPC is already global."},
+  {c:"aws",n:"VPC peering",r:"peer",w:"A direct link between two networks.",y:"It exposes <b>both entire address ranges</b>, which is why overlapping CIDRs make it impossible."},
+  {c:"az",n:"VNet peering",r:"peer",w:"Direct connection between two VNets.",y:"Same exposure, same address-planning constraint."},
+  {c:"gcp",n:"VPC Network Peering",r:"peer",w:"Direct connection between two VPCs.",y:"Non-transitive: peering A to B and B to C does not connect A to C."},
+  {c:"aws",n:"PrivateLink",r:"plink",w:"Exposes one service privately, without joining networks.",y:"The consumer gets an address in <b>their</b> network. Ranges never meet, so overlap stops mattering."},
+  {c:"az",n:"Private Link and Private Endpoint",r:"plink",w:"A private address in your VNet leading to one service.",y:"The reason it beats peering for partner access: one service exposed, not a whole network."},
+  {c:"gcp",n:"Private Service Connect",r:"plink",w:"Publish or consume one service over private addressing.",y:"Same principle: a service hatch instead of a doorway between buildings."}],
+2:[
+  {c:"aws",n:"Elastic network interface",r:"nic",w:"The virtual network card attached to an instance.",y:"Frames, MAC addresses and the local segment live here \u2014 mostly hidden from you."},
+  {c:"az",n:"Network interface",r:"nic",w:"The NIC resource attached to a VM.",y:"Accelerated networking bypasses the software switch, which is a layer-2 change."},
+  {c:"gcp",n:"vNIC",r:"nic",w:"The virtual interface on an instance.",y:"Multiple vNICs put one machine on several networks at once."},
+  {c:"aws",n:"Jumbo frames",r:"mtu",w:"Up to 9001 bytes inside a VPC; 1500 to the internet.",y:"The one layer-2 setting that will ruin a day: small requests work, large uploads hang forever."},
+  {c:"az",n:"MTU",r:"mtu",w:"1500 by default, with larger frames on some paths.",y:"Same failure signature, and it is almost never the application."},
+  {c:"gcp",n:"Per-network MTU",r:"mtu",w:"1460 by default, configurable up to 8896.",y:"Set per network rather than per interface \u2014 easy to forget when peering two networks that disagree."},
+  {c:"aws",n:"802.1Q VLANs on Direct Connect",r:"vlan",w:"Tagged virtual interfaces over a dedicated circuit.",y:"Tagging is a layer-2 mechanism, carrying separate layer-3 networks over one physical link."},
+  {c:"az",n:"VLANs on ExpressRoute",r:"vlan",w:"Private and Microsoft peerings over the same circuit.",y:"One cable, several logically separate segments."},
+  {c:"gcp",n:"VLAN attachments",r:"vlan",w:"Tagged attachments on a Cloud Interconnect.",y:"Same mechanism: separation without separate fibre."}],
+1:[
+  {c:"aws",n:"Availability Zone",r:"zone",w:"One or more data centres with independent power and cooling.",y:"This is the physical failure domain, and the reason your design spreads across several."},
+  {c:"az",n:"Availability Zone",r:"zone",w:"Physically separate locations within a region.",y:"Same concept, and support varies by service in a way worth checking."},
+  {c:"gcp",n:"Zone",r:"zone",w:"An isolated deployment area within a region.",y:"Same purpose: something you cannot fix, so you plan around it."},
+  {c:"aws",n:"Region",r:"region",w:"A geographic cluster of zones.",y:"Distance is physics \u2014 a round trip across an ocean has a floor you cannot optimise past."},
+  {c:"az",n:"Region",r:"region",w:"A geography containing zones and paired for recovery.",y:"Region pairing is an Azure-specific idea worth knowing about."},
+  {c:"gcp",n:"Region",r:"region",w:"A collection of zones in one geography.",y:"Because the VPC is global, multi-region is a smaller step here than elsewhere."},
+  {c:"aws",n:"Direct Connect",r:"xconnect",w:"A dedicated circuit from your premises into AWS.",y:"An actual cross-connect in an actual building \u2014 the most literal layer-1 product there is."},
+  {c:"az",n:"ExpressRoute",r:"xconnect",w:"A private circuit that does not touch the public internet.",y:"Consistent latency, because the path is not shared."},
+  {c:"gcp",n:"Cloud Interconnect",r:"xconnect",w:"Dedicated or Partner circuits into Google\u2019s network.",y:"Partner is a shared route to the same idea when you cannot reach a facility."},
+  {c:"aws",n:"Local Zones and Outposts",r:"edge",w:"AWS hardware close to users, or inside your own data centre.",y:"It moves the physical layer nearer the problem: latency and data residency."},
+  {c:"az",n:"Azure Local and Edge Zones",r:"edge",w:"Azure services running outside Azure regions.",y:"Same motivation: some workloads cannot leave the building."},
+  {c:"gcp",n:"Google Distributed Cloud",r:"edge",w:"Google infrastructure in your data centre or at the edge.",y:"Same again \u2014 the cloud brought to the physical constraint rather than the reverse."}],
+};
+const OSIROLE={"l7lb": "reads the HTTP request and routes on it","cdn": "caches content near the user","apigw": "a managed front door for APIs","dns": "answers name lookups","waf": "inspects requests for attacks","cert": "issues and renews certificates","tlsterm": "where encryption is undone","sslpol": "which ciphers are allowed","mtls": "checks the client’s own certificate","sticky": "keeps one user on one server","drain": "lets open conversations finish during a deploy","vpn": "an encrypted tunnel to your own premises","shell": "an audited way to log into a machine","l4lb": "forwards packets without reading them","sgfw": "a stateful firewall on the machine","aclfw": "a stateless firewall on the subnet","accel": "gets traffic onto the private backbone early","hc": "decides whether a target is alive","vnet": "your own private network","subnet": "a slice of it with its own routing","route": "the table saying where traffic goes","nat": "lets private machines reach out without being reachable","hub": "joins many networks through one place","peer": "joins two networks directly","plink": "exposes one service privately instead of joining networks","nic": "the virtual network card on a machine","mtu": "the largest frame allowed","vlan": "tagged segments on a dedicated circuit","zone": "one failure domain","region": "a geography of zones","xconnect": "a dedicated private circuit into the cloud","edge": "cloud hardware outside the cloud"};
+
 const OSI=[
 {n:7,name:'Application',sub:'the actual request',
  plain:'The conversation itself: a GET for a page, a gRPC call, a DNS lookup. This is the only layer your application code normally thinks about.',
@@ -2190,9 +2323,44 @@ function osiRender(i){
   detEl.innerHTML=`<div class="cat">layer ${l.n}</div><h3 style="font-size:18px;font-weight:600;margin-bottom:8px">${l.name}</h3>
     <div class="plain-line"><b>In plain English:</b> ${l.plain}</div>
     <h4>What you actually configure</h4><p style="font-size:13px;color:var(--muted);line-height:1.65">${l.touch}</p>
-    <div class="vs2"><div class="col aws"><b>AWS</b>${l.aws}</div><div class="col gcp"><b>GCP</b>${l.gcp}</div></div>
+    <h4>Cloud-native services that live here</h4>
+    <p class="simnote" style="margin:0 0 10px">Click any of them. You get what it is, why it belongs at this layer, and what does the same job in the other two clouds.</p>
+    <div id="osiSvc"></div>
+    <div id="osiSvcOut"></div>
     <h4>When it breaks</h4><p style="font-size:13px;color:var(--muted);line-height:1.65">${l.breaks}</p>
     <h4>How you prove it</h4><div class="cmd">${l.test}</div>`;
+  svcRender(l.n, null);
+}
+
+/* ---- the service map for one layer ---- */
+function svcRender(layer, sel){
+  const grid=document.getElementById('osiSvc'), out=document.getElementById('osiSvcOut');
+  if(!grid) return;
+  const list=OSISVC[layer]||[];
+  const CLOUD={aws:'AWS',az:'Azure',gcp:'Google Cloud'};
+  grid.innerHTML='<div class="svcgrid">'+['aws','az','gcp'].map(c=>
+    '<div class="svccol"><b class="'+c+'">'+CLOUD[c]+'</b>'+
+    list.filter(x=>x.c===c).map((x,i)=>{
+      const id=c+'-'+list.indexOf(x);
+      return '<button class="svc'+(sel===id?' on':'')+'" data-s="'+id+'">'+x.n+'</button>';
+    }).join('')+
+    (list.filter(x=>x.c===c).length?'':'<span class="svcnone">nothing at this layer</span>')+
+    '</div>').join('')+'</div>';
+  grid.querySelectorAll('.svc').forEach(b=>b.onclick=()=>svcRender(layer, b.dataset.s));
+  if(!sel){ out.innerHTML=''; return; }
+  const idx=Number(sel.split('-')[1]), x=list[idx];
+  const peers=list.filter(o=>o.r===x.r && o!==x);
+  const missing=['aws','az','gcp'].filter(c=>c!==x.c && !peers.some(p=>p.c===c));
+  out.innerHTML='<div class="svcdet">'+
+    '<div class="svchead"><span class="svctag '+x.c+'">'+CLOUD[x.c]+'</span><b>'+x.n+'</b></div>'+
+    '<div class="lzrow"><span class="lzmark">?</span><span><b>What it is.</b> '+x.w+'</span></div>'+
+    '<div class="lzrow"><span class="lzmark" style="color:var(--amber)">◎</span><span><b>Why it sits at layer '+layer+'.</b> '+x.y+'</span></div>'+
+    '<div class="svcpeer"><span class="svcrole">the same job elsewhere</span>'+
+      peers.map(p=>'<span class="svcp"><i class="'+p.c+'">'+CLOUD[p.c]+'</i> '+p.n+'</span>').join('')+
+      (missing.length?'<span class="svcp" style="border-style:dashed;color:var(--red)"><b>nothing equivalent in '+missing.map(c=>CLOUD[c]).join(' or ')+'</b></span>':'')+
+    '</div>'+
+    '<div class="simnote" style="margin-top:9px"><b>The role:</b> '+(OSIROLE[x.r]||'')+'.</div>'+
+    '</div>';
 }
 stackEl.addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) osiRender(Number(b.dataset.i));});
 osiRender(0);
