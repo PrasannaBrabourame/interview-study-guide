@@ -292,6 +292,19 @@
   .tk-s{color:var(--amber); font-style:normal}
   .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
     border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
 </style>
 </head>
 <body>
@@ -335,6 +348,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Cross the chasm — add one concern at a time</h2>
       <div class="plain-line"><b>Try this:</b> start with nothing and switch each piece on in order. Each one fixes a specific way the previous version was not production-ready. Turn one back off and the failure it prevented comes straight back.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A prototype car that drives beautifully round a car park. Turning it into something you can sell means brakes, seatbelts, a number plate and an MOT — none of which made it go any faster.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>start with everything off, then switch on the pieces one at a time and read what each was protecting you from.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prototype</b> something that works on one machine, for one person</span><span class="sp-w"><b>production</b> something a company can rely on, with everything that implies</span><span class="sp-w"><b>isolation</b> keeping one customer’s work away from another’s</span></span></div></div>
       <div class="sim-layout">
         <div><div class="chasm" id="acStage"></div>
           <div class="term" id="acTerm" role="log" aria-live="polite" style="height:170px;margin-top:12px"></div></div>
@@ -360,6 +374,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Session lifecycle — and what you are actually billed for</h2>
       <div class="plain-line"><b>Try this:</b> drag the timers and watch when the box is deleted. The billing line is the part people get wrong: <b>CPU is charged only while the agent is actually working</b>, not while it waits for the model to answer — but memory is charged the whole time the session is alive.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A hotel room billed by the hour. Checking out takes it off the bill; leaving the key in the door does not, and nobody comes to tidy up until long after you have gone.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag the idle timer down and watch when the deletion actually happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>session</b> one customer’s working space</span><span class="sp-w"><b>idle timeout</b> how long it sits doing nothing before being cleared up</span><span class="sp-w"><b>billed</b> what you pay for — usually the time it existed, not the time it was used</span></span></div></div>
       <div class="sim-layout">
         <div><div id="acLifeDiagram"></div></div>
         <div>
@@ -398,6 +413,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">One conversation, four strategies — see what each keeps</h2>
       <div class="plain-line"><b>Try this:</b> the same three sentences go into every strategy. What comes out is completely different, which is the clearest way to understand why picking the wrong one leaves your agent unable to do the thing you wanted.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Four people taking notes in the same meeting. One writes everything, one writes a summary, one writes only decisions, one writes only what is relevant to them. Later, they disagree about what was said.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read what each strategy kept, then look at what all four of them threw away.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>memory</b> what the agent still knows in a later conversation</span><span class="sp-w"><b>summarise</b> compressing what happened into fewer words</span><span class="sp-w"><b>extraction</b> pulling out particular facts and keeping only those</span></span></div></div>
       <div class="segmented" id="memConvo"></div>
       <div id="memExtract"></div>
     </div>
@@ -414,6 +430,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Watch one request become a trace</h2>
       <div class="plain-line"><b>Try this:</b> send a request and watch the spans arrive in real time, exactly as they would in a trace waterfall. Then break something and see which span turns red — that is the whole value of observability in one picture. A non-deterministic system you cannot see is a system you can only apologise for.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A parcel tracking page. Each scan tells you where it is and how long it sat there — and the delay you are complaining about turns out to be one depot, not the whole journey.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send one request and watch which bar is widest.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>trace</b> the record of one whole request</span><span class="sp-w"><b>span</b> one step inside it, with its own start and end time</span><span class="sp-w"><b>latency</b> how long something took</span></span></div></div>
       <div class="sim-layout">
         <div><div id="traceWall" style="min-height:250px"></div></div>
         <div><div class="toggles" id="traceOpts"></div>
@@ -426,6 +443,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Would this change pass the gate?</h2>
       <div class="plain-line"><b>Try this:</b> you have changed the prompt. Scores move. Decide whether it ships — then notice that an average can rise while the thing you care about falls.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A blood test with several numbers on it. One improved, one got worse, and whether that is good news is not something a single number can tell you.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>accept a change where one score went up and another went down, then read the verdict.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>eval</b> a set of test cases used to score a change</span><span class="sp-w"><b>gate</b> the rule that decides whether a change is allowed to ship</span><span class="sp-w"><b>regression</b> something that used to work and now works less well</span></span></div></div>
       <div class="sim-layout">
         <div><div id="gateOut"></div></div>
         <div><div class="toggles" id="gateOpts"></div><p class="simnote" id="gateNote"></p></div>
@@ -440,6 +458,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">What the anti-patterns actually cost, per request</h2>
       <div class="plain-line"><b>Try this:</b> start with everything wrong, then fix them one at a time and watch the token count and latency fall. These are not style preferences — each fix is measurable.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A house with the heating on and every window open. Each open window seems minor. The bill is the sum of all of them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>fix the most expensive one first and watch the per-request figure fall.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>anti-pattern</b> a common way of building something that quietly costs you</span><span class="sp-w"><b>per request</b> the cost of one user asking one thing</span><span class="sp-w"><b>context</b> everything sent to the model each time — the main thing you pay for</span></span></div></div>
       <div class="sim-layout">
         <div><div id="mtOut"></div></div>
         <div><div class="toggles" id="mtOpts"></div><p class="simnote" id="mtNote"></p></div>
@@ -448,6 +467,7 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Multi-agent — four patterns, and choosing between them</h2>
       <div class="plain-line"><b>Try this:</b> pick what you care about most. The honest answer is often that you do not need multiple agents at all — but when you do, the priority you choose rules out as much as it rules in.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Organising a team. One person doing everything, a manager handing out work, specialists in a line, or everyone in a group chat. Each is right for some jobs and a disaster for others.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>lowest latency</b> and see which pattern wins, then pick <b>easiest to debug</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>multi-agent</b> several agents working on one job between them</span><span class="sp-w"><b>supervisor</b> one agent handing work to others and collecting the results</span><span class="sp-w"><b>latency</b> how long the user waits</span><span class="sp-w"><b>hand-off</b> passing work from one agent to another, along with what it needs</span></span></div></div>
       <div class="segmented" id="acPatPri"></div>
       <div id="acPatterns"></div>
     </div>

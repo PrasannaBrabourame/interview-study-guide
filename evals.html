@@ -315,6 +315,19 @@
   .lztier.on{border-color:var(--amber); background:var(--sel)}
   .lztier b{font-size:12.5px; font-weight:600}
   .lztier span{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto; white-space:nowrap}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
 </style>
 </head>
 <body>
@@ -447,6 +460,7 @@ document.getElementById('sec-start').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; run the same input a hundred times</h2>
   <div class="plain-line"><b>Try this:</b> one input, many runs. Watch what a pass/fail test tells you about each system, and what it hides. Then move the quality dial and see how many runs it takes before you could honestly say the change helped.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Ask five colleagues to write the same short email and you get five different emails, all perfectly fine. Ask a vending machine for the same drink five times and you get five identical drinks. Software testing was invented for the vending machine.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag the <b>runs</b> slider down to 3, then up to 150, and watch the ± figure at the bottom change.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>runs</b> how many times we asked the identical question</span><span class="sp-w"><b>mean</b> the average score</span><span class="sp-w"><b>spread</b> how much the answers differ from each other</span><span class="sp-w"><b>margin of error</b> how wrong that average could be</span></span></div></div>
   <div class="sim-layout">
     <div><div id="detOut"></div></div>
     <div><div class="segmented" id="detKind" style="flex-direction:column;align-items:stretch"></div>
@@ -551,6 +565,7 @@ document.getElementById('sec-methods').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; the single ground truth trap</h2>
   <div class="plain-line"><b>Try this:</b> one reference answer, four candidates. String-similarity metrics like BLEU and ROUGE score by comparing words against that single reference. Read what they reward, and what they punish.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Marking an essay by counting how many words it shares with the model answer. A pupil who says the same thing in their own words scores badly; one who copies your vocabulary into gibberish scores well.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Right words, wrong meaning</b> and compare the two bars against each other.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>string similarity</b> how many words and phrases two pieces of text share</span><span class="sp-w"><b>BLEU / ROUGE</b> the standard ways of measuring that overlap</span><span class="sp-w"><b>rubric</b> a written marking scheme a person follows</span><span class="sp-w"><b>reference answer</b> the one answer somebody wrote down as correct</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gtOut"></div></div>
     <div><div class="segmented" id="gtPick" style="flex-direction:column;align-items:stretch"></div>
@@ -634,6 +649,7 @@ document.getElementById('sec-rubrics').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; calibrate an autorater and watch it drift</h2>
   <div class="plain-line"><b>Try this:</b> an autorater is a model doing the grading. It is only as good as the rubric it was given and the human labels it was checked against. Sharpen the rubric, add calibration examples, and see how close it gets to what your people actually think.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Bringing in a new marker. You give them the marking scheme and a stack of papers you already marked, then check whether their marks match yours. If your scheme only says “give it 5 if it is good”, they never will.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>leave the rubric on the vague setting and drag the calibration slider all the way right. Notice it stops climbing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>autorater</b> a model doing the marking instead of a person</span><span class="sp-w"><b>rubric</b> the written marking scheme</span><span class="sp-w"><b>calibration examples</b> papers a human already marked, used to check the machine</span><span class="sp-w"><b>agreement</b> how often the machine gives the mark a person would have</span></span></div></div>
   <div class="sim-layout">
     <div><div id="calOut"></div></div>
     <div>
@@ -738,6 +754,7 @@ document.getElementById('sec-traj').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; find the turn that actually broke</h2>
   <div class="plain-line"><b>Try this:</b> a three-turn support conversation that ends badly. Grade each turn on its own and every one looks acceptable. That is precisely why this class of failure survives single-turn evaluation &mdash; and why finding it means walking <em>backwards</em> to the turn that made the assumption.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A doctor who decides in the first minute that it is a chest infection. Everything afterwards is competent treatment of the wrong illness, and every individual step looks correct.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Grade the final answer only</b>, then <b>Grade the whole session</b>, and compare how much each one tells you.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>turn</b> one back-and-forth exchange</span><span class="sp-w"><b>session</b> the whole conversation</span><span class="sp-w"><b>trajectory</b> the steps taken along the way, not just the answer</span><span class="sp-w"><b>task success</b> did the conversation actually get the person what they came for</span></span></div></div>
   <div class="sim-layout">
     <div><div id="btOut"></div></div>
     <div><div class="segmented" id="btMode" style="flex-direction:column;align-items:stretch"></div>
@@ -748,6 +765,7 @@ document.getElementById('sec-traj').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; golden paths, and the false negatives they invent</h2>
   <div class="plain-line"><b>Try this:</b> a <b>golden path</b> is a recorded sequence of tool calls you expect the agent to make. Comparing against it is cheap and objective. The question is <em>how strictly</em> you compare &mdash; and the strict setting fails good work.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Marking a maths paper against one worked solution. A pupil who reaches the right answer by a different valid method gets a cross.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>leave it on <b>Exact match</b> and count how many boxes are red.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>golden path</b> one recorded correct sequence of steps</span><span class="sp-w"><b>tool call</b> the agent reaching out to a system to do something</span><span class="sp-w"><b>false negative</b> good work marked as broken</span><span class="sp-w"><b>regression test</b> a check that something which used to work still does</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpOut"></div></div>
     <div><div class="segmented" id="gpMode" style="flex-direction:column;align-items:stretch"></div>
@@ -914,6 +932,7 @@ document.getElementById('sec-onoff').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; run a simulated user against the agent</h2>
   <div class="plain-line"><b>Try this:</b> step the conversation forward one turn at a time. Watch the traces pile up into a session. Then swap the plan for a vague one and see what the generated data is worth.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Rehearsing an awkward phone call with a colleague playing the customer. How useful the rehearsal is depends entirely on how well you briefed them beforehand.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next turn</b> three times on the specific plan, then switch to the vague plan and do it again.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>user simulator</b> a model pretending to be a customer</span><span class="sp-w"><b>plan</b> the brief you give that pretend customer</span><span class="sp-w"><b>trace</b> the record of one exchange</span><span class="sp-w"><b>turn limit</b> the point at which you stop and call it a failure</span></span></div></div>
   <div class="sim-layout">
     <div><div id="usOut"></div></div>
     <div><div class="segmented" id="usPlan" style="flex-direction:column;align-items:stretch"></div>
@@ -1024,6 +1043,7 @@ document.getElementById('sec-geap').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; make continuous monitoring affordable</h2>
   <div class="plain-line"><b>Try this:</b> scoring every live trace means paying for a model call on every user interaction, forever. The dials are sampling rate and a hard cap. Move them and watch what you gain, what you pay, and what you stop being able to detect.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Quality control in a factory. Checking every single item is thorough and expensive; checking one in fifty tells you nearly as much for a fraction of the cost — until you check so few that you miss the fault.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag <b>sampling</b> down to 10% and watch the monthly cost and the ± figure move in opposite directions.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>trace</b> the record of one conversation with the agent</span><span class="sp-w"><b>sampling</b> what fraction of them you actually check</span><span class="sp-w"><b>cap</b> a hard maximum, so a busy day cannot produce a huge bill</span><span class="sp-w"><b>margin of error</b> how confident you can be in the score</span></span></div></div>
   <div class="sim-layout">
     <div><div id="monOut"></div></div>
     <div>
@@ -1042,6 +1062,7 @@ document.getElementById('sec-geap').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; triage failures by cluster, not one at a time</h2>
   <div class="plain-line"><b>Try this:</b> an evaluation run produced 47 failures. Reading them individually is a week of work and produces 47 small fixes. <b>Automatic Loss Analysis</b> groups them into semantic patterns first, so you are looking at four root causes instead. Pick a cluster and choose what to do about it.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Forty-seven customer complaints. Read one at a time it is forty-seven problems. Sorted into piles it is four — and one pile has nineteen letters in it, all about the same thing.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Incomplete Execution</b>, then choose the first of the three responses offered.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>failure cluster</b> a group of failures that share one underlying cause</span><span class="sp-w"><b>system instruction</b> the written brief the agent follows every time</span><span class="sp-w"><b>root cause</b> the single thing producing many different symptoms</span></span></div></div>
   <div class="sim-layout">
     <div><div id="clOut"></div></div>
     <div><div id="clList"></div>
@@ -1213,6 +1234,7 @@ document.getElementById('sec-adkeval').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; build a case and see what it can and cannot measure</h2>
   <div class="plain-line"><b>Try this:</b> switch fields on and off. The point is that <b>the case decides which metrics are even computable</b> &mdash; a beautifully written suite with no recorded tool calls simply cannot tell you anything about how the agent got there.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Marking an exam where the pupil wrote only the final answer. You can mark whether it is right. You cannot mark the working, because there is none to look at.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>untick <b>tool_uses</b> and read which lines disappear from the list on the left.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>eval case</b> one test question with the answer somebody agreed was correct</span><span class="sp-w"><b>tool_uses</b> the record of which systems it used, in order</span><span class="sp-w"><b>reference answer</b> the answer written down in advance as correct</span><span class="sp-w"><b>judge metric</b> a model marking the answer against a scheme</span></span></div></div>
   <div class="sim-layout">
     <div><div id="ecOut"></div></div>
     <div><div class="toggles" id="ecCtl"></div>
@@ -1320,6 +1342,7 @@ document.getElementById('sec-hill').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; climb the hill, three rounds</h2>
   <div class="plain-line"><b>Try this:</b> a support agent with four numbers you care about. Each round you may diagnose first or go straight to a change. Watch the metric you aimed at, and watch the other three &mdash; and keep an eye on the held-out set, which is the only honest number on the page.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Adjusting a recipe. Change one thing, taste it, keep it or undo it. Change three things at once and you will never know which one helped.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>diagnose first</b>, read what it found, then pick the change that matches what it said.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>diagnose</b> look at what actually went wrong before changing anything</span><span class="sp-w"><b>lap</b> one full cycle of change it, measure it, keep or undo</span><span class="sp-w"><b>regression</b> something you were not looking at got worse</span><span class="sp-w"><b>held-out set</b> questions you never tune against, kept aside to stay honest</span></span></div></div>
   <div class="sim-layout">
     <div><div id="hcOut"></div></div>
     <div><div id="hcCtl"></div>
@@ -1515,6 +1538,7 @@ document.getElementById('sec-perf').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; where the money actually goes</h2>
   <div class="plain-line"><b>Try this:</b> price one request, then a month of them. Two things surprise people every time: the cliff you fall off at the large-context threshold, and how completely agent step count dominates everything else.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A taxi fare. The rate per mile matters far less than how many detours the driver takes — and an agent decides its own number of detours.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag <b>agent steps</b> from 4 up to 20 and watch the monthly figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>token</b> roughly a word — the unit everything is priced in</span><span class="sp-w"><b>input / output</b> what you send in, and what comes back</span><span class="sp-w"><b>cache</b> re-using text you have already sent, at a discount</span><span class="sp-w"><b>steps</b> how many times the model is called to answer one question</span></span></div></div>
   <div class="sim-layout">
     <div><div id="coOut"></div></div>
     <div>
@@ -1546,6 +1570,7 @@ document.getElementById('sec-perf').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; reserved capacity against spiky traffic</h2>
   <div class="plain-line"><b>Try this:</b> reserved throughput is cheaper per unit and you pay for it whether or not you use it. Pay-as-you-go costs more per unit and only bills what you consume. Drag the reservation line through a week of real-looking traffic and watch both mistakes appear.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A gym membership versus paying per visit. The membership wins if you go often, pay-per-visit wins if you go rarely, and buying a membership sized for your busiest possible week wastes most of it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag the reservation line to 100% and look at what happens to the utilisation figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>reserved capacity</b> paid for in advance, whether or not you use it</span><span class="sp-w"><b>pay-as-you-go</b> billed only for what you actually use, at a higher rate</span><span class="sp-w"><b>utilisation</b> how much of what you paid for got used</span><span class="sp-w"><b>spillover</b> the traffic above your reservation, billed the other way</span></span></div></div>
   <div class="sim-layout">
     <div><div id="ptOut"></div></div>
     <div>
@@ -1677,6 +1702,7 @@ document.getElementById('sec-upgrade').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; take an inventory of what you owe</h2>
   <div class="plain-line"><b>Try this:</b> generative systems accumulate a specific kind of technical debt &mdash; accommodations for a model that is about to be replaced. Tick what is true of your system and see what an upgrade will do to it.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Sticky notes on an old machine telling you which button jams. Replace the machine and the notes are worse than useless — they now describe a fault that no longer exists.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>there is no evaluation suite</b> on its own and read what it says about the others.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>technical debt</b> shortcuts taken earlier that cost you later</span><span class="sp-w"><b>workaround</b> something added to get around a fault the old model had</span><span class="sp-w"><b>few-shot examples</b> examples put in the prompt to show the model what you want</span><span class="sp-w"><b>sampling settings</b> dials like temperature that change how varied the output is</span></span></div></div>
   <div class="sim-layout">
     <div><div id="tdOut"></div></div>
     <div><div class="toggles" id="tdCtl"></div>

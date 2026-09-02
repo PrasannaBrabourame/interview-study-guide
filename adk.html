@@ -296,6 +296,19 @@
   .tk-s{color:var(--amber); font-style:normal}
   .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
     border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
 </style>
 </head>
 <body>
@@ -503,6 +516,7 @@ document.getElementById('sec-tools').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — write the label, watch the model decide</h2>
   <div class="plain-line"><b>Try this:</b> the same working function, described three different ways. The code is identical every time. Flip the switches and watch whether the model chooses it, chooses the wrong tool, or gives up and answers from memory.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A wall of unlabelled light switches. The wiring behind each one is perfect. Nobody can use them, because the only thing you can see is the label on the front.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the docstring to <b>none at all</b> and read the score, then set it to the full version and read it again.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>function</b> a piece of code that does one job</span><span class="sp-w"><b>docstring</b> the note written just under the code saying what it is for</span><span class="sp-w"><b>type hints</b> saying whether something is a word or a number</span><span class="sp-w"><b>schema</b> the label the model is handed — built automatically from those three things</span></span></div></div>
   <div class="sim-layout">
     <div><div id="toolSchema"></div></div>
     <div>
@@ -622,6 +636,7 @@ document.getElementById('sec-state').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — file each note in the right drawer</h2>
   <div class="plain-line"><b>Try this:</b> four real things an agent needs to remember. Choose a drawer for each. The consequence of the wrong choice is spelled out &mdash; some are merely wasteful, one is a data breach.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding where to file a note. In your own diary, on the family calendar, or on the noticeboard at work. Putting someone’s home address on the noticeboard is not a filing error — it is an incident.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>file <b>the person’s preferred language</b> in the <b>app:</b> drawer and read what happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>state</b> the shared notebook the agent writes things into</span><span class="sp-w"><b>session</b> one conversation, from start to finish</span><span class="sp-w"><b>prefix</b> the few characters on the front of a name that decide who can read it</span><span class="sp-w"><b>temp:</b> scratch paper — guaranteed to be thrown away</span></span></div></div>
   <div class="sim-layout">
     <div><div id="scopeItems"></div></div>
     <div><div id="scopeOut" class="cidr-out"></div></div>
@@ -720,6 +735,7 @@ document.getElementById('sec-hooks').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — stand in the corridor and see what stops</h2>
   <div class="plain-line"><b>Try this:</b> install hooks and watch one request try to get through. A hook that returns nothing is a silent observer. A hook that returns a value is a barrier &mdash; and everything downstream of it simply does not happen.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Standing in a corridor as someone walks past. Say nothing and they carry on. Hand them something and they turn round — and everyone further down the corridor never sees them at all.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>before_agent: quota check</b> and notice how many of the later stages simply never run.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>callback</b> code of yours that runs at a fixed point in the process</span><span class="sp-w"><b>short-circuit</b> returning something, which cancels the step you were watching</span><span class="sp-w"><b>plugin</b> the same idea, but applied to every agent instead of one</span><span class="sp-w"><b>None</b> returning nothing, which means “carry on as normal”</span></span></div></div>
   <div class="sim-layout">
     <div><div id="hookFlow"></div></div>
     <div><div class="toggles" id="hookCtl"></div>
@@ -828,6 +844,7 @@ document.getElementById('sec-orch').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — arrange three agents and watch the clock</h2>
   <div class="plain-line"><b>Try this:</b> the same three sub-agents, arranged three ways. Watch the elapsed time, the token bill, and &mdash; in the parallel case &mdash; what happens when two of them write to the same place in the notebook.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Three people making a cup of tea, a sandwich and a phone call. Doing them one after another takes as long as all three added up. Doing them at once takes as long as the slowest one.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch to <b>ParallelAgent</b>, then tick the box about all three writing to the same place.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sub-agent</b> one of several agents working on part of the job</span><span class="sp-w"><b>sequential</b> one after another, each waiting for the last</span><span class="sp-w"><b>parallel</b> all at once, because none of them needs the others</span><span class="sp-w"><b>output_key</b> the name each one saves its answer under — share it and they overwrite each other</span></span></div></div>
   <div class="sim-layout">
     <div><div id="orchTime"></div></div>
     <div><div class="segmented" id="orchPick" style="flex-direction:column;align-items:stretch"></div>
@@ -936,6 +953,7 @@ document.getElementById('sec-ground').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — send four questions to the wrong place on purpose</h2>
   <div class="plain-line"><b>Try this:</b> pick a source for each question and read what actually comes back. One of the wrong answers is obviously wrong. One is the dangerous kind &mdash; well written, well structured, and untrue.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Asking four people a question: someone with a good memory, someone with today’s newspaper, someone with your company’s filing cabinet, and someone who can look it up in the live system. Three of them will answer anyway.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send <b>“Where is order A-4417?”</b> to <b>no grounding</b> and read the answer it invents.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>grounding</b> tying the answer to a real source instead of the model’s memory</span><span class="sp-w"><b>retrieval</b> fetching the documents that might contain the answer</span><span class="sp-w"><b>structured data</b> rows and columns, where there is one right answer</span><span class="sp-w"><b>unstructured data</b> documents and prose, where the wrong one can look right</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gndQ"></div></div>
     <div><div id="gndOut" class="cidr-out"></div></div>
@@ -1040,6 +1058,7 @@ document.getElementById('sec-exec').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — run cells in a sandbox and find its edges</h2>
   <div class="plain-line"><b>Try this:</b> run the cells in any order. The sandbox behaves like a notebook &mdash; variables from one call are still there in the next. Two of these cells will not work, and <em>why</em> they do not work is the whole point of the design.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A locked workshop with good tools and no windows or doors to the outside. You can build anything in there. You cannot fetch anything from outside, and if you wreck the place they hand you another one.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run <b>use a variable from the last cell</b> before running the load cell, and read why it failed.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sandbox</b> an isolated machine that runs code the model wrote</span><span class="sp-w"><b>stateful</b> it remembers what happened in the previous instruction</span><span class="sp-w"><b>TTL</b> how long it lives before being cleaned up automatically</span><span class="sp-w"><b>blast radius</b> the most damage something can do if it goes wrong</span></span></div></div>
   <div class="sim-layout">
     <div><div id="sbxOut"></div></div>
     <div><div id="sbxCells"></div>
@@ -1137,6 +1156,7 @@ document.getElementById('sec-skills').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — watch the context bill for forty manuals versus an index</h2>
   <div class="plain-line"><b>Try this:</b> give the agent some skills, then ask it something. Compare what it costs to load them on demand against the obvious alternative &mdash; pasting all of it into the instruction and hoping the model sorts it out.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A reference shelf. You read the spines every time you walk past; you only take a book down when you actually need it. Photocopying all forty books and carrying them everywhere is the alternative.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>ask it <b>“Hello.”</b> and compare the two totals at the bottom of the chart.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>skill</b> a written method the agent can pick up when the work calls for it</span><span class="sp-w"><b>description</b> the one line that is always loaded — the spine of the book</span><span class="sp-w"><b>context</b> everything the model has to read before it can answer</span><span class="sp-w"><b>progressive disclosure</b> only opening what you actually need</span></span></div></div>
   <div class="sim-layout">
     <div><div id="skBudget"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:6px">SKILLS INSTALLED</div>
@@ -1250,6 +1270,7 @@ document.getElementById('sec-deploy').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — deploy with four plausible mistakes in place</h2>
   <div class="plain-line"><b>Try this:</b> each switch is a mistake people actually make, and each fails at a different point &mdash; one locally, one at deployment, one at start-up, and one that never fails at all and is the worst of the four.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Posting a letter with four possible mistakes. The wrong postcode is caught at the postbox. The wrong flat number is caught at the door. A perfectly addressed letter to someone who moved away is never caught by anyone.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick only the last option — the vague description — and notice that nothing fails.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>deploy</b> moving it from your laptop to somewhere the company can use it</span><span class="sp-w"><b>runtime</b> the managed service that runs it and handles the load</span><span class="sp-w"><b>requirements</b> the list of code libraries it needs to be given</span><span class="sp-w"><b>description</b> the sentence used to decide whether questions get sent to it at all</span></span></div></div>
   <div class="sim-layout">
     <div><div id="depSteps"></div></div>
     <div><div class="toggles" id="depCtl"></div>

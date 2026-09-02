@@ -292,6 +292,19 @@
   .tk-s{color:var(--amber); font-style:normal}
   .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
     border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
 </style>
 </head>
 <body>
@@ -435,6 +448,7 @@ document.getElementById('sec-spec').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — how much does the description actually matter?</h2>
   <div class="plain-line"><b>Try this:</b> the same intention, described three ways. Watch what comes back, and how many corrections it takes to reach the thing you meant.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Briefing a builder. “Build me a shed” gets you a shed. A drawing with dimensions, a materials list and where the door goes gets you the shed you had in mind.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read the one-line version, then the full specification, and compare the number of corrections underneath.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>specification</b> the written description the coding agent builds from</span><span class="sp-w"><b>corrections</b> how many times you had to go back and fix what it produced</span><span class="sp-w"><b>scaffold</b> the skeleton of a project, generated for you to fill in</span></span></div></div>
   <div class="sim-layout">
     <div><div id="specOut"></div></div>
     <div><div class="segmented" id="specPick" style="flex-direction:column;align-items:stretch"></div>
@@ -531,6 +545,7 @@ document.getElementById('sec-anti').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — watch the agent drift</h2>
   <div class="plain-line"><b>Try this:</b> turn the skills off and ask for a graph workflow. Then leave the session running long enough for the context to dilute. This is the most common failure in vibecoding and it never announces itself.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Asking someone who last read the manual two years ago. They answer confidently, using the version they remember, and everything they say was true at the time.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>turn the skills off, then read what it generates and what is actually wrong with it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>skill</b> up-to-date reference material the coding agent can consult</span><span class="sp-w"><b>drift</b> the gap between what the agent remembers and what is true now</span><span class="sp-w"><b>session</b> one working conversation with the coding agent</span></span></div></div>
   <div class="sim-layout">
     <div><div id="driftOut"></div></div>
     <div><div class="toggles" id="driftOpts"></div>
@@ -680,6 +695,7 @@ document.getElementById('sec-loop').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The loop, and what each step is for</h2>
   <div class="plain-line"><b>Try this:</b> step through it. Every command has a job, and skipping one produces a specific, recognisable failure later. Expect several laps between building and evaluating before scores settle.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Following a recipe where step three is “preheat the oven”. Skip it and everything still appears to work until the very end.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click through the steps in order, then read what the skipped one would have cost you.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>CLI</b> commands you type rather than buttons you click</span><span class="sp-w"><b>scaffold</b> the generated starting structure of the project</span><span class="sp-w"><b>verify</b> checking the thing you generated is actually what you asked for</span></span></div></div>
   <div class="sim-layout">
     <div><div class="jlist" id="loopList"></div></div>
     <div class="card jstep" id="loopDetail" style="margin:0"></div>
@@ -813,6 +829,7 @@ document.getElementById('sec-eval').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — iterate until the scores hold</h2>
   <div class="plain-line"><b>Try this:</b> fix an issue, then grade. Then notice what happens when you grade <em>without</em> regenerating first — the trap that makes people believe a fix worked when nothing has changed.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Marking your own homework using the questions you already know the answers to. The mark goes up and you have learned nothing about the rest of the exam.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>fix one issue and grade normally, then do it again grading on the cases you just fixed.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>eval</b> a set of test cases used to score the agent</span><span class="sp-w"><b>baseline</b> the score before you changed anything</span><span class="sp-w"><b>overfitting</b> getting better at the test rather than at the job</span></span></div></div>
   <div class="sim-layout">
     <div><div id="evalOut"></div><div class="term" id="evalTerm" role="log" aria-live="polite" style="height:160px"></div></div>
     <div><div class="toggles" id="evalFixes"></div>
@@ -925,6 +942,7 @@ client.interactions.create(agent="cymbal-merch-analyst", input="Umbrella sales d
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Build a definition — and see what it can reach</h2>
   <div class="plain-line"><b>Try this:</b> assemble the agent piece by piece. Watch the JSON build up, and watch the reachability panel — the point of this API is that what the agent can touch is a list you wrote, not a consequence of where it happens to run.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Filling in a form to hire a contractor: what they do, what they may touch, and how long they may stay. Every box you leave blank is a decision made for you by a default.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>add a tool and watch which new lines appear in the definition on the left.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>definition</b> the configuration file describing the whole agent</span><span class="sp-w"><b>tool</b> something the agent is allowed to use to get a job done</span><span class="sp-w"><b>scope</b> the boundary of what it may reach</span></span></div></div>
   <div class="sim-layout">
     <div><div id="defOut"></div></div>
     <div><div class="toggles" id="defOpts"></div><p class="simnote" id="defNote"></p></div>
@@ -1035,6 +1053,7 @@ document.getElementById('sec-sandbox').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — can the agent leak your data?</h2>
   <div class="plain-line"><b>Try this:</b> this is the question every enterprise customer asks, and the platform has a specific answer for each attempt. Turn the protections off one at a time and watch which line of defence was doing the work.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A contractor working in a locked room with no phone and no post. They can do the work. They cannot send anything out, however convincingly someone asks them to.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>turn the containment off first and see what leaves, then turn it back on.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sandbox</b> an isolated machine with nothing valuable in it</span><span class="sp-w"><b>exfiltration</b> data being sent somewhere it should not go</span><span class="sp-w"><b>egress</b> anything leaving — the direction that matters for a leak</span></span></div></div>
   <div class="sim-layout">
     <div><div class="term" id="leakTerm" role="log" aria-live="polite" style="height:260px"></div></div>
     <div><div class="toggles" id="leakOpts"></div>
@@ -1142,6 +1161,7 @@ run_id = run.id      # your only handle to the asynchronous run`)}</code></pre><
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Watch the reason-act loop, and the trap at the end of it</h2>
   <div class="plain-line"><b>Try this:</b> run it and watch the steps arrive. Then read the final answer — carefully, because <b>the very last step can be empty</b>, and code that trusts it returns nothing to your user.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Watching someone work through a problem out loud. The reasoning is sound the whole way, and the last sentence still does not answer what you asked.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>let it run to the end, then read the final answer twice before reading the note.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>reason-act loop</b> think, do something, look at the result, think again</span><span class="sp-w"><b>step</b> one cycle of that loop</span><span class="sp-w"><b>final answer</b> the bit the user actually sees — worth checking separately</span></span></div></div>
   <div class="sim-layout">
     <div><div id="loopStream"></div></div>
     <div><div class="toggles" id="loopOpts"></div>
@@ -1176,6 +1196,7 @@ for step in reversed(run.steps):
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it — what survives to the next turn?</h2>
   <div class="plain-line"><b>Try this:</b> two independent handles control what carries over. Drop either and something specific is lost. The classic mistake is asking for a fresh environment on turn two, which throws away the first turn's work <em>and</em> pays to provision a new sandbox.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A relay race with two things to pass on: the baton and the instructions shouted at you. Drop either and the next runner is missing something, and it is not obvious which.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>turn one handle off, run it, then turn that one back on and turn the other off.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>state</b> what the agent has written down and can read back</span><span class="sp-w"><b>context</b> what is actually put in front of the model this turn</span><span class="sp-w"><b>turn</b> one exchange in the conversation</span></span></div></div>
   <div class="sim-layout">
     <div><div id="stateOut"></div></div>
     <div><div class="toggles" id="stateOpts"></div><p class="simnote" id="stateNote"></p></div>
