@@ -55,6 +55,31 @@ function init(topics) {
   categories.forEach((c, i) => { if (!catHue.has(c)) { catHue.set(c, Math.round(i * 137.508) % 360); catFamily.set(c, "Other") } });
   const byCat = new Map(categories.map(c => [c, topics.filter(t => t.category === c)]));
 
+  /* ============ labs -> the topics they actually cover ============
+     Each hands-on lab is the practical half of a handful of these
+     categories. Without this map every lab card pointed at the same
+     undifferentiated pile of 267 topics, so finishing the Cloud lab and
+     wanting the cloud reading meant hand-picking fourteen tiles out of
+     forty-three. Categories listed here are the ones the lab genuinely
+     teaches — a lab that only brushes a subject is deliberately left out,
+     because a link that returns half the site is the problem, not the fix. */
+  const LABS = {
+    cloud: { name: "Cloud lab", hue: 212, cats: ["Cloud Architecture", "GCP", "Kubernetes", "Security", "Observability", "Infrastructure as Code", "DevOps", "Deployment", "FinOps", "Performance", "Event-Driven Architecture", "Production Readiness", "Production Operations", "Data & Databases"] },
+    agentcore: { name: "AgentCore lab", hue: 320, cats: ["AI Agents", "Agentic AI", "Agent Frameworks & Runtimes", "Model Context Protocol", "Observability", "Production Readiness"] },
+    agentbuild: { name: "Agents building agents", hue: 320, cats: ["AI Agents", "Agentic AI", "Agentic AI Scenarios", "Agent Frameworks & Runtimes", "AI & GenAI"] },
+    adk: { name: "ADK lab", hue: 320, cats: ["Agent Frameworks & Runtimes", "AI Agents", "Agentic AI", "Model Context Protocol"] },
+    evals: { name: "Evaluation & hill climbing", hue: 48, cats: ["Evaluation & Metrics", "LLMOps", "Observability", "Testing & Quality", "Production Readiness"] },
+    gemini: { name: "Gemini Enterprise rollout", hue: 212, cats: ["GCP", "Cloud Architecture", "Security", "Retrieval-Augmented Generation", "Data & Databases", "Data Engineering", "AI Governance", "Leadership"] },
+    govern: { name: "Govern & secure agents", hue: 352, cats: ["Security", "AI Governance", "Agentic AI", "AI Agents", "Agent Frameworks & Runtimes", "Model Context Protocol"] },
+    design: { name: "Architecture diagrams", hue: 250, cats: ["Software Architecture", "Production Readiness", "Candidate Validation", "Leadership"] },
+    pca: { name: "GCP Architect exam", hue: 212, cats: ["GCP", "Cloud Architecture", "Data", "Data & Databases", "Data Engineering", "Kubernetes", "Security", "Production Readiness", "FinOps"] },
+    sap: { name: "SAP-C02 cheatsheet", hue: 212, cats: ["Cloud Architecture", "Security", "Kubernetes", "Deployment", "Observability", "FinOps", "Performance", "Production Readiness"] }
+  };
+  /* drop any category the data no longer has, so a renamed category
+     shrinks a lab's list instead of silently counting zero */
+  for (const k in LABS) LABS[k].cats = LABS[k].cats.filter(c => byCat.has(c));
+  const labItems = k => topics.filter(t => LABS[k].cats.includes(t.category));
+
   /* ============ difficulty ============ */
   const DIFFS = ["Low", "Medium", "High", "Complex"];
   const DSLUG = { Low: "low", Medium: "med", High: "high", Complex: "cx" };
@@ -94,24 +119,54 @@ function init(topics) {
   const dash = $("#dash"), browse = $("#browse");
   let currentCat = null;
   function showDash() {
+    // drop a #lab= deep link on the way out, so reloading does not bounce
+    // straight back into the lab's list the reader just left
+    if (/^#lab=/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
     browse.hidden = true; dash.hidden = false;
     diffSel.value = "all"; stateSel.value = "all"; ms.value = "";
     renderTiles(); renderLegends(); updateCounters(true);
     scrollTo(0, 0);
   }
-  function showBrowse(cat) {
-    currentCat = cat;
+  /* `sel` is null (everything), a category name, or a lab key from LABS.
+     Everything downstream works off catSet, so one card and one tile take
+     exactly the same path. */
+  let currentSet = null;
+  const catSet = sel => sel == null ? null
+    : LABS[sel] ? new Set(LABS[sel].cats)
+      : new Set([sel]);
+  function showBrowse(sel) {
+    currentCat = sel; currentSet = catSet(sel);
     dash.hidden = true; browse.hidden = false;
-    $("#bname").textContent = cat || "All topics";
-    const items = cat ? byCat.get(cat) : topics;
+    const lab = LABS[sel];
+    $("#bname").textContent = lab ? lab.name : sel || "All topics";
+    $("#bsub").textContent = lab ? `topics behind this lab · ${lab.cats.length} categories` : "";
+    const items = currentSet ? topics.filter(t => currentSet.has(t.category)) : topics;
     const done = items.filter(t => studied.has(t.id)).length;
-    $("#bring").innerHTML = ring(done / items.length, !!cat);
-    if (cat) $("#bring").style.setProperty("--hue", catHue.get(cat)); else $("#bring").style.removeProperty("--hue");
+    $("#bring").innerHTML = ring(items.length ? done / items.length : 0, !!sel);
+    if (sel) $("#bring").style.setProperty("--hue", lab ? lab.hue : catHue.get(sel));
+    else $("#bring").style.removeProperty("--hue");
     filter();
     scrollTo(0, 0);
   }
   $("#back").onclick = showDash;
   $("#browseall").onclick = () => showBrowse(null);
+
+  /* ============ lab cards -> their own topics ============
+     Counts are read from the data, never typed into the markup, so a topic
+     added to data/topics.json shows up on the right card by itself. */
+  document.querySelectorAll(".ltopics").forEach(b => {
+    const k = b.dataset.lab, n = LABS[k] ? labItems(k).length : 0;
+    const c = b.querySelector(".ltc");
+    if (c) c.textContent = `${n} topic${n === 1 ? "" : "s"}`;
+    b.setAttribute("aria-label", `Browse the ${n} topics behind ${LABS[k] ? LABS[k].name : k}`);
+    b.onclick = () => { location.hash = `lab=${k}`; showBrowse(k) };
+  });
+  /* a lab page can link straight back at its own reading: index.html#lab=evals */
+  function openFromHash() {
+    const m = /^#lab=([a-z]+)$/.exec(location.hash);
+    if (m && LABS[m[1]]) showBrowse(m[1]);
+  }
+  addEventListener("hashchange", openFromHash);
 
   /* ============ dashboard tiles ============ */
   const tiles = $("#tiles");
@@ -265,7 +320,7 @@ function init(topics) {
     let n = 0;
     document.querySelectorAll(".card").forEach(c => {
       const okQ = !qWords.length || qWords.every(w => searchIndex.get(c.id).includes(w));
-      const okCat = !currentCat || c.dataset.cat === currentCat;
+      const okCat = !currentSet || currentSet.has(c.dataset.cat);
       const okState = sv === "all" || (sv === "studied" ? studied.has(c.id) : sv === "unstudied" ? !studied.has(c.id) : starred.has(c.id));
       const okDiff = dv === "all" || c.dataset.diff === dv;
       const show = okQ && okCat && okState && okDiff;
@@ -441,5 +496,5 @@ function init(topics) {
   });
 
   /* ============ boot ============ */
-  renderHeatmap(); showDash();
+  renderHeatmap(); showDash(); openFromHash();
 }

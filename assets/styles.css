@@ -124,6 +124,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;white-space:no
 .btitle{display:flex;gap:11px;align-items:center;min-width:0}
 .bring{width:34px;height:34px;flex:none}
 .btitle h2{margin:0;font-size:clamp(20px,3vw,27px);letter-spacing:-.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btxt{min-width:0}
+.bsub{display:block;margin-top:1px;font-family:var(--mono);font-size:11px;letter-spacing:.02em;color:var(--faint)}
+.bsub:empty{display:none}
 .bcount{color:var(--muted);font-size:13px;white-space:nowrap}
 .tools{position:sticky;top:64px;z-index:4;margin-bottom:18px;padding:10px;display:flex;gap:9px;flex-wrap:wrap;border:1px solid var(--line);border-radius:15px;background:var(--glass);backdrop-filter:blur(14px);box-shadow:var(--shadow)}
 .select{padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:var(--panel);color:var(--text);outline:none}
@@ -275,13 +278,30 @@ h1,h2.dtitle,.dwelcome h1,.btitle h2{font-family:var(--display);font-weight:500;
 
 /* ============ hands-on lab cards ============ */
 .labs{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:26px}
-.lab{position:relative;display:block;padding:20px 20px 18px;border:1px solid var(--line);border-radius:16px;
-  background:var(--panel);box-shadow:var(--shadow);text-decoration:none;color:inherit;overflow:hidden;
-  transition:translate .18s ease,border-color .18s ease}
+/* the card is a link plus a second, separate action, so it is two elements
+   in one shell rather than a nested (invalid) link inside a link */
+.labcell{position:relative;display:flex;flex-direction:column;border-radius:16px;
+  box-shadow:var(--shadow);transition:translate .18s ease}
+.labcell:hover{translate:0 -3px}
+.lab{position:relative;display:block;flex:1;padding:20px 20px 18px;border:1px solid var(--line);
+  border-radius:16px 16px 0 0;border-bottom:0;
+  background:var(--panel);text-decoration:none;color:inherit;overflow:hidden;
+  transition:border-color .18s ease}
 .lab::after{content:"";position:absolute;inset:0 0 auto 0;height:3px;
   background:linear-gradient(90deg,var(--accent),var(--accent2))}
-.lab:hover{translate:0 -3px;border-color:var(--accent)}
+.labcell:hover .lab,.labcell:hover .ltopics{border-color:var(--accent)}
 .lab:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+/* related-topics strip: opens the browse view filtered to this lab's categories */
+.ltopics{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  padding:10px 20px;border:1px solid var(--line);border-radius:0 0 16px 16px;
+  background:var(--soft);color:var(--muted);cursor:pointer;text-align:left;
+  font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+  transition:background .15s ease,color .15s ease,border-color .18s ease}
+.ltopics:hover{background:var(--accentsoft);color:var(--accent)}
+.ltopics:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ltopics .ltn::after{content:" \2192";opacity:.55}
+.ltopics .ltc{flex:none;font-weight:600;color:var(--text);opacity:.75}
+.ltopics:hover .ltc{color:var(--accent);opacity:1}
 .lab .licon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;margin-bottom:12px;
   background:var(--accentsoft);color:var(--accent);font-size:18px}
 .lab b{display:block;font-family:var(--display);font-size:19px;font-weight:500;letter-spacing:-.012em;margin-bottom:7px}
