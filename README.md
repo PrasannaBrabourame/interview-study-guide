@@ -55,6 +55,14 @@ govern.html       Govern & secure lab — the agent gateway on both sides, the
                   policy chain, private egress, agent identity, delegated
                   access, the threat landscape, boundaries and controls,
                   perimeters, the registry, tracing and audit
+rushhour.html     Rush Hour lab — one transit-crisis agent carried through the
+                  whole lifecycle: setup, build (tools, docstrings, reroute
+                  search), scale (sessions, Memory Bank, sandbox, the smoke
+                  test that saves the deploy), govern (Model Armor, least
+                  privilege), optimize (graded eval, LLM-as-judge), engage
+                  (publishing, and the session-id bug that only shows up
+                  there). Built from Google's public "Era of Agents · Rush
+                  Hour" workshop — see the sourcing note on the page
 design.html       Diagram lab — audiences, levels of zoom, anatomy, notation,
                   choosing services, what people leave out, the questions
                   behind the picture, surviving a review, diagram rot, the
