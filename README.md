@@ -79,6 +79,15 @@ and a short glossary of only the jargon that appears on that screen. The
 glossary is per-simulation rather than per-page, because someone lost in
 the middle of an interaction does not scroll away to look a word up.
 
+That last part is a checkable rule, not an aspiration: **every acronym,
+product name and piece of domain jargon that appears on a simulation's
+screen — including the text the simulation renders as you operate it — is
+defined in that simulation's own glossary.** The two exceptions are the
+scenario drill and the cloud-differences quiz, which replay other
+simulations' answers and are read by someone who has already passed those
+screens; glossing the whole page's vocabulary there buries the entries
+that matter.
+
 ## Labs and topics are linked
 
 Each hands-on lab card carries a **related-topics** strip showing how many of
