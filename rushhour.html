@@ -448,8 +448,7 @@
     
     <div class="eyebrow">build → scale → govern → optimize → engage</div>
     <h1>One agent, all the way through <span class="thin">— the six handoffs nobody shows you</span></h1>
-    <p class="sub">A signal failure at St&nbsp;Pancras has stopped the cross-border trains, and several hundred people want to know whether they will get home. A chatbot cannot answer that &mdash; not because it is not clever enough, but because it has no way to find out what is actually happening. This lab follows one agent from an empty console to something a non-technical colleague can chat with: six modules, in order, with the seams left visible. The interesting parts are the seams &mdash; that deploying is what registers an agent, that a wrapper you paste in at module two is what makes the thing publishable in module five, and that least-privilege is the one thing the platform does <em>not</em> hand you.</p>
-    <div class="note" style="margin-top:14px"><b>Where this comes from.</b> The workshop is Google&rsquo;s &mdash; <b>Era of Agents &middot; Rush Hour</b>, Track 2 of the Build with Gemini World Tour, published by kazunori279 &mdash; and the six module pages are public. This lab is a study companion to it: the same journey, rebuilt as things you can operate rather than commands to paste. Nothing here replaces running the real workshop against a real project, and the product surface it describes moves quickly, so treat the specifics as of the source rather than as current fact.</div>
+    <p class="sub">A signal failure at St&nbsp;Pancras has stopped the cross-border trains, and several hundred people want to know whether they will get home. A chatbot cannot answer that &mdash; not because it is not clever enough, but because it has no way to find out what is actually happening. This lab follows one agent from an empty console to something a colleague with no technical background can chat with. Six stages, in order. The interesting part is what happens <em>between</em> them &mdash; the places where one stage quietly sets something up that a later stage needs. Three are worth watching for. Deploying the agent is what puts it in the company catalogue, though nothing tells you so. A small file you paste in at stage two is the reason the thing can be published at stage five. And the permissions it ends up with are the one thing nobody hands you &mdash; you have to go and check those yourself.</p>
   </header>
 
   <div class="tabs" role="tablist">
@@ -479,7 +478,6 @@
   <footer class="lab-foot">
     Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
     · <a href="index.html">learning guide</a> · <a href="cloud.html">cloud lab</a> · <a href="agentcore.html">agentcore lab</a> · <a href="agentbuild.html">agents lab</a> · <a href="adk.html">adk lab</a> · <a href="evals.html">evals lab</a> · <a href="gemini.html">gemini lab</a> · <a href="govern.html">govern lab</a> · <a href="design.html">diagram lab</a>
-    <br>Built from the public &ldquo;Era of Agents &middot; Rush Hour&rdquo; workshop &mdash; Build with Gemini World Tour, Track 2.
   </footer>
 </div>
 
@@ -543,7 +541,8 @@ document.getElementById('sec-start').innerHTML=`
 
 <div class="card">
   <h2 class="sec">The five stages, and why the order is not negotiable</h2>
-  <div class="plain-line">The workshop carries <b>one</b> agent through five stages. That is the point &mdash; each stage quietly sets something up that a later stage depends on, and you only see the dependency when you skip it.</div>
+  <div class="plain-line"><b>In plain English:</b> building the agent is the easy part. Getting it somewhere other people can use it, safely, is four more stages &mdash; and they have to happen in order, because each one quietly leaves something behind that a later one needs.</div>
+  <div class="plain-line">This lab carries <b>one</b> agent through five stages. That is the point &mdash; each stage quietly sets something up that a later stage depends on, and you only see the dependency when you skip it.</div>
   <table class="osi"><thead><tr><th>Stage</th><th>What you do</th><th>What it silently sets up for later</th></tr></thead><tbody>
   <tr><td><b>M1 Build</b></td><td>Scaffold an ADK agent, three tools, a system instruction, run it locally</td><td>The project <em>shape</em>. The same layout deploys unmodified in M2 — that is what the scaffold is for</td></tr>
   <tr><td><b>M2 Scale</b></td><td>Deploy to Agent Runtime; add Sessions, Memory Bank, a code sandbox</td><td>Registration and an identity (M3 verifies them), and the session-id handling that makes M5&rsquo;s portal work at all</td></tr>
@@ -551,7 +550,7 @@ document.getElementById('sec-start').innerHTML=`
   <tr><td><b>M4 Optimize</b></td><td>Simulate the crisis at scale, then grade the agent with an LLM judge</td><td>A reusable regression suite. Also nothing later depends on it</td></tr>
   <tr><td><b>M5 Engage</b></td><td>Publish the M2 deployment to Gemini Enterprise</td><td>&mdash; the finish line. Note it publishes the <em>existing</em> deployment; there is no second deploy</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>Read the third column again.</b> Two of the five stages are load-bearing for the ones after them, and two are not. The workshop is explicit that you can run the core path M0&nbsp;&rarr;&nbsp;M1&nbsp;&rarr;&nbsp;M2&nbsp;&rarr;&nbsp;M5 in about an hour and still finish with a working, published agent. What you would be dropping is the part that checks whether the thing is safe and the part that checks whether it is any good &mdash; which is a fair description of how most demos become most production incidents.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Read the third column again.</b> Two of the five stages are load-bearing for the ones after them, and two are not. You can run the core path M0&nbsp;&rarr;&nbsp;M1&nbsp;&rarr;&nbsp;M2&nbsp;&rarr;&nbsp;M5 in about an hour and still finish with a working, published agent. What you would be dropping is the part that checks whether the thing is safe and the part that checks whether it is any good &mdash; which is a fair description of how most demos become most production incidents.</div>
 </div>`;
 
 /* --- SIM: take the tools away --- */
@@ -599,7 +598,7 @@ document.getElementById('sec-start').innerHTML=`
       '<div style="margin-top:12px"><span style="font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid '+badge[0]+';color:'+badge[0]+'">'+badge[1]+'</span></div>';
     note.innerHTML='<div class="simnote">'+why+'</div>'+
       (tag==='grounded'&&on.rr&&on.sched&&on.disr
-        ? '<div class="ok" style="margin-top:10px"><b>This is the whole thesis of the workshop in one answer.</b> Three ordinary functions and a join turned a plausible sentence into a verifiable one.</div>'
+        ? '<div class="ok" style="margin-top:10px"><b>This is the whole idea, in one answer.</b> Three ordinary functions and a join turned a plausible sentence into a verifiable one.</div>'
         : '<div class="note" style="margin-top:10px"><b>Notice what is missing from every failing answer:</b> hedging. None of them says &ldquo;I can&rsquo;t check that&rdquo;. A model with no tools does not experience the absence of tools as a limitation — which is why removing a data source almost never produces an error, only a worse answer that looks the same.</div>');
   }
   render();
@@ -611,11 +610,11 @@ document.getElementById('sec-m0').innerHTML=`
   <h2 class="sec">Twelve minutes that decide whether the next ninety work</h2>
   <div class="plain-line"><b>In plain English:</b> M0 builds nothing. It gets four things in place &mdash; a coding agent that can look up current documentation, a shared checklist, the data, and a screenshot of the empty console. Every one of them exists to stop a specific failure later, and skipping any of them costs more than the twelve minutes it saves.</div>
   <table class="osi"><thead><tr><th>Step</th><th>What it is</th><th>The failure it prevents</th></tr></thead><tbody>
-  <tr><td><b>1 · Developer Knowledge MCP</b></td><td>An MCP server that lets the coding agent read Google Cloud&rsquo;s actual documentation</td><td>The coding agent guessing at commands and API shapes. The workshop is blunt about this: it keeps M2 and M3 &ldquo;out of trial-and-error spirals&rdquo;</td></tr>
+  <tr><td><b>1 · Developer Knowledge MCP</b></td><td>An MCP server that lets the coding agent read Google Cloud&rsquo;s actual documentation</td><td>The coding agent guessing at commands and API shapes. It is what keeps the later stages out of trial-and-error spirals</td></tr>
   <tr><td><b>2 · Brief + <span class="k">plan.md</span></b></td><td>The scenario as context, plus a checklist of every module and step, each tagged as the agent&rsquo;s or yours</td><td>The coding agent running ahead and doing module four while you are still on module one</td></tr>
   <tr><td><b>3 · Verify the cockpit</b></td><td><span class="k">agents-cli setup</span> installs four skills: scaffold, deploy, eval, publish</td><td>Discovering halfway through M2 that the tool you are about to use is not installed</td></tr>
   <tr><td><b>4 · Download the data</b></td><td>A GTFS timetable bundle and a disruption file, with a mirror fallback if the live feed is down</td><td>An agent with tools and nothing to read</td></tr>
-  <tr><td><b>5 · The &ldquo;before&rdquo; shot</b></td><td>Two browser tabs on an empty console, left open</td><td>Nothing technical. It is there so the end of the workshop means something</td></tr>
+  <tr><td><b>5 · The &ldquo;before&rdquo; shot</b></td><td>Two browser tabs on an empty console, left open</td><td>Nothing technical. It is there so that finishing means something</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Step 1 deserves a second look</b>, because it is the one that seems most skippable and is not. You are handing the build to a coding agent. A coding agent with no access to current documentation writes plausible commands from training data &mdash; and the surface here is new enough that plausible and correct have drifted apart. The MCP is what makes the difference between the agent knowing an API and the agent remembering one.</div>
 </div>
@@ -646,7 +645,7 @@ document.getElementById('sec-m0').innerHTML=`
 (function(){
   const pick=document.getElementById('rhJnPick'), out=document.getElementById('rhJnOut'), note=document.getElementById('rhJnNote');
   if(!pick) return;
-  /* the workshop's disruption window is 15:00–19:30 at the St Pancras throat */
+  /* the disruption window is 15:00–19:30 at the St Pancras throat */
   const TRIPS=[
     {id:'9024', dep:'13:31', to:'Paris Gare du Nord',  route:'Eurostar', d:null},
     {id:'9031', dep:'15:31', to:'Paris Gare du Nord',  route:'Eurostar', d:{status:'cancelled', mins:0}},
@@ -687,7 +686,7 @@ document.getElementById('sec-m0').innerHTML=`
     note.innerHTML = hit
       ? '<div class="simnote"><b>The join found a row, so there is something to say.</b> Note that the schedule alone would have answered &ldquo;yes, it&rsquo;s in the timetable&rdquo; — the timetable is not wrong, it is just describing a plan that reality has stopped following.</div>'
       : '<div class="ok"><b>This is the case that separates a careful agent from an eager one.</b> The station is disrupted; this train is not. An agent that reasons &ldquo;St&nbsp;Pancras is disrupted, therefore your train is affected&rdquo; will confidently cancel a train that is running — a false positive that sends someone home who could have travelled.</div>'+
-        '<div class="simnote" style="margin-top:10px">The workshop tests exactly this as its third playground scenario, and it is the one worth stealing: <em>always include a case where nothing is wrong.</em> Systems that detect problems are easy to build and hard to trust, because the failure mode is invisible from the inside.</div>';
+        '<div class="simnote" style="margin-top:10px">This is the third case worth testing, and the one people leave out: <em>always include a case where nothing is wrong.</em> Systems that detect problems are easy to build and hard to trust, because the failure mode is invisible from the inside.</div>';
   }
   function addMins(hhmm,m){
     const [h,mi]=hhmm.split(':').map(Number);
@@ -717,7 +716,7 @@ document.getElementById('sec-m0').innerHTML=`
              ['Read-only steps stay yours','Steps tagged (user) — console clicks, reading sections — the agent leaves alone and you tick yourself.'],
              ['A timeout costs you nothing','Cloud Shell drops after ~20 idle minutes. plan.md survives in $HOME, so you resume with --continue and the agent still knows where it was.']],
       cost:['1 deploy','0 rework','state on disk'],
-      v:['ok','<b>The checklist is not project management, it is a gate.</b> It converts &ldquo;do the workshop&rdquo; into a sequence of individually-authorised steps, and it puts the shared state in a file that outlives the session — which is what makes an idle timeout an inconvenience rather than a restart.']}
+      v:['ok','<b>The checklist is not project management, it is a gate.</b> It converts &ldquo;do the whole thing&rdquo; into a sequence of individually-authorised steps, and it puts the shared state in a file that outlives the session — which is what makes an idle timeout an inconvenience rather than a restart.']}
   };
   let cur='off';
   function render(){
@@ -748,12 +747,14 @@ document.getElementById('sec-m1').innerHTML=`
   <tr><td><b>3 &middot; System instruction</b></td><td>Five rules written into the agent&rsquo;s <span class="k">instruction</span> field</td><td>Behaviour, as a reviewable artefact. M3 enforces it and M4 measures it &mdash; both of those need it to exist in words</td></tr>
   <tr><td><b>4 &middot; Playground</b></td><td><span class="k">adk web</span> &mdash; a local dev UI with a reasoning trace</td><td>Whether you will ever be able to answer &ldquo;why did it say that&rdquo;. The trace is the input to governance and evaluation later</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The five rules of the system instruction</b> are worth reading as a set, because each one is a failure mode someone has already had: <em>stay calm and factual</em>; <em>always reconcile schedule against disruptions before answering</em>; <em>never invent a train, platform, time or any detail a tool did not return &mdash; if you don&rsquo;t have it, say so</em>; <em>proactively compute reroutes when services are disrupted</em>; <em>end every response with one clear recommended action</em>. Rule three is the one M4 will catch it breaking.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The five rules of the system instruction</b> are worth reading as a set. Each one is a mistake somebody has already made.</div>
+  <div class="plain-line" style="padding-left:6px"><b>1.</b> Stay calm and factual.<br><b>2.</b> Always check the timetable against the disruption feed before answering.<br><b>3.</b> Never invent a train, a platform, a time, or any other detail a tool did not return &mdash; if you do not have it, say so.<br><b>4.</b> Work out a way round without being asked, whenever something is disrupted.<br><b>5.</b> End every answer with one clear recommended action.</div>
+  <div class="plain-line">Rule three is the one the scoring in M4 will catch it breaking.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; watch which tools fire, and in what order</h2>
-  <div class="plain-line"><b>Try this:</b> three questions from the workshop&rsquo;s own playground tests. The model chooses the tools; nobody scripted the order. Read the trace and check the last one especially &mdash; it is the question where the <em>right</em> behaviour is to call two tools and then do nothing.</div>
+  <div class="plain-line"><b>Try this:</b> three questions to put to it in the local playground. The model chooses the tools; nobody scripted the order. Read the trace and check the last one especially &mdash; it is the question where the <em>right</em> behaviour is to call two tools and then do nothing.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Watching someone answer a question at an information desk: which drawer they open, in what order, and whether they check the second thing before speaking.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick the <b>13:31 &mdash; will it run?</b> question and count the tool calls.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>trace</b> the recorded list of what the agent called and got back</span><span class="sp-w"><b>tool call</b> the model asking for a function to be run, with arguments</span><span class="sp-w"><b>proactive</b> doing the next useful thing without being asked for it</span><span class="sp-w"><b>trip_id</b> the identifier for one individual train service</span></span></div></div>
   <div class="sim-layout">
     <div><div id="rhTrOut"></div></div>
@@ -867,8 +868,8 @@ document.getElementById('sec-m1').innerHTML=`
       '<div class="'+m.verdict[0]+'" style="margin-top:12px;padding:11px 13px">'+m.verdict[1]+'</div>';
     note.innerHTML='<div class="simnote"><b>What you would actually observe:</b> '+m.sym+'</div>'+
       (cur==='none'
-        ? '<div class="note" style="margin-top:10px">The workshop lists this exact symptom in its troubleshooting table &mdash; <em>&ldquo;agent doesn&rsquo;t call tools &rarr; missing or bad docstrings and type hints&rdquo;</em>. It reads like a triviality until you have spent an hour debugging the model instead of the label.</div>'
-        : '<div class="note" style="margin-top:10px">The prompt in the workshop asks for &ldquo;clear docstrings and type hints so the model can call them correctly&rdquo;, and separately for <b>compact return values</b> &mdash; only what the model needs, no full per-stop dumps. Both are context-window economics: the description costs tokens on every turn, the return value costs tokens on every call.</div>');
+        ? '<div class="note" style="margin-top:10px">This is much the most common symptom there is: <em>&ldquo;agent doesn&rsquo;t call tools &rarr; missing or bad docstrings and type hints&rdquo;</em>. It reads like a triviality until you have spent an hour debugging the model instead of the label.</div>'
+        : '<div class="note" style="margin-top:10px">Ask for two things whenever you write a tool: clear docstrings and type hints, so the model can call it correctly, and separately <b>compact return values</b> &mdash; only what the model needs, no full per-stop dumps. Both are context-window economics: the description costs tokens on every turn, the return value costs tokens on every call.</div>');
   }
   render();
 })();
@@ -881,7 +882,7 @@ document.getElementById('sec-m1').innerHTML=`
   const N={ STP:{n:'St Pancras',x:75,y:42}, BRU:{n:'Brussels',x:300,y:42}, AMS:{n:'Amsterdam',x:520,y:42},
             LIL:{n:'Lille',x:185,y:150}, RTM:{n:'Rotterdam',x:430,y:118},
             CGN:{n:'Cologne',x:470,y:220}, PGN:{n:'Paris',x:185,y:248} };
-  /* the workshop's disruption: the direct Paris services are cancelled, Brussels is delayed */
+  /* the disruption: the direct Paris services are cancelled, Brussels is delayed */
   const E=[ {a:'STP',b:'PGN',m:140,s:'cancelled'}, {a:'STP',b:'LIL',m:82,s:'cancelled'},
             {a:'STP',b:'BRU',m:125,s:'delayed',d:30}, {a:'LIL',b:'PGN',m:62,s:'ok'},
             {a:'LIL',b:'BRU',m:38,s:'ok'}, {a:'BRU',b:'PGN',m:82,s:'ok'},
@@ -964,7 +965,7 @@ document.getElementById('sec-m1').innerHTML=`
     const direct=E.find(e=>(e.a==='STP'&&e.b===dest)||(e.b==='STP'&&e.a===dest));
     note.innerHTML='<div class="simnote"><b>Nothing here was written in advance.</b> The search runs over whatever links are currently up; change one and the answer changes with it. That is what &ldquo;deterministic tool&rdquo; buys you &mdash; the same disruptions always produce the same route, and you can check it by hand.</div>'+
       (direct&&direct.s==='cancelled'
-        ? '<div class="ok" style="margin-top:10px"><b>The direct service is cancelled and it still found a way through.</b> This is the answer the workshop is aiming at: not &ldquo;your train is cancelled&rdquo;, but &ldquo;your train is cancelled, <em>and here is the way round</em>&rdquo; &mdash; computed without the traveller having to ask a second question.</div>'
+        ? '<div class="ok" style="margin-top:10px"><b>The direct service is cancelled and it still found a way through.</b> This is the answer to aim at: not &ldquo;your train is cancelled&rdquo;, but &ldquo;your train is cancelled, <em>and here is the way round</em>&rdquo; &mdash; computed without the traveller having to ask a second question.</div>'
         : '<div class="note" style="margin-top:10px">Try cancelling the direct service to '+N[dest].n+'. The interesting behaviour only appears once the obvious answer is gone.</div>');
   }
   render();
@@ -982,7 +983,7 @@ document.getElementById('sec-m2').innerHTML=`
   <tr><td><b>Memory Bank</b></td><td>Long-term recall keyed to a user, <em>across</em> sessions</td><td>A database you would have built, plus the retrieval logic to use it</td></tr>
   <tr><td><b>Code execution</b></td><td>An isolated sandbox for model-written Python</td><td>Running generated code on your host, which you should never do</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>One detail here matters far more than it looks.</b> Step 1 has you replace the generated runtime entry point with a tested wrapper, and the workshop says plainly that the generated stub &ldquo;crashes on the deployed runtime&rdquo;. That wrapper does three things for the deploy &mdash; region-pinned session and memory services, a memory fallback, a fresh client per request &mdash; and a fourth thing that does not pay off until <b>M5</b>: it normalises the session id that Gemini Enterprise sends. Paste it now, publish successfully in ninety minutes. Skip it and the failure arrives three modules later, wearing a different name.</div>
+  <div class="plain-line" style="margin-top:12px"><b>One detail here matters far more than it looks.</b> Step 1 has you replace the generated runtime entry point with a tested wrapper, because the generated stub crashes on the deployed runtime. That wrapper fixes three things that only break once the agent is running in the cloud: it ties the session and memory services to a real region, copes gracefully when memory is unavailable, and builds a fresh connection for each request. Then it does a fourth thing that pays off nowhere until <b>M5</b> &mdash; it tidies up the session id that Gemini Enterprise sends. Paste it now, publish successfully in ninety minutes. Skip it and the failure arrives three modules later, wearing a different name.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
@@ -1001,7 +1002,7 @@ document.getElementById('sec-m2').innerHTML=`
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; what the ten-second test catches that the ten-minute deploy would have</h2>
-  <div class="plain-line"><b>Try this:</b> three real deploy-blockers from the workshop. Pick one, then choose whether you find it locally or in the cloud, and watch the clock. The bugs are identical; only the feedback loop changes.</div>
+  <div class="plain-line"><b>Try this:</b> three deploy-blockers that really happen. Pick one, then choose whether you find it locally or in the cloud, and watch the clock. The bugs are identical; only the feedback loop changes.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Checking a suitcase closes before you carry it downstairs, rather than after.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>Event loop is closed</b> and deploy without the smoke test. Watch how many rounds it takes.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>smoke test</b> a quick run that proves the thing starts and answers once</span><span class="sp-w"><b>entry point</b> the file the deployed container loads and calls</span><span class="sp-w"><b>event loop</b> the thing that runs asynchronous work; a closed one accepts nothing</span><span class="sp-w"><b>region-pinned</b> tied to a real region rather than left at a global default</span><span class="sp-w"><b>tool</b> an ordinary function the agent calls to get facts</span></span></div></div>
   <div class="sim-layout">
     <div><div id="rhSmOut"></div></div>
@@ -1080,10 +1081,10 @@ document.getElementById('sec-m2').innerHTML=`
     const survived = sessionN>1 && log.some(l=>l.role==='agent'&&/Paris Gare du Nord/.test(l.txt)&&log.indexOf(l)>log.findIndex(x=>x.role==='sys'));
     note.innerHTML = (sessionN>1
       ? (w.bank
-        ? '<div class="ok"><b>It remembered across a session boundary, and there is a row in the console to prove it.</b> That last part is the whole check — the workshop is explicit that if the agent &ldquo;remembers&rdquo; but no row ever appears, the recall came from conversation history and you have not tested what you think you tested.</div>'
+        ? '<div class="ok"><b>It remembered across a session boundary, and there is a row in the console to prove it.</b> That last part is the whole check. If the agent &ldquo;remembers&rdquo; but no row ever appears, the recall came from the conversation history &mdash; and you have not tested what you think you tested.</div>'
         : '<div class="lzbad"><b>Gone.</b> Session state does exactly what it says: it lasted as long as the session. Nothing was written against the user, so a new conversation starts from nothing — and note that the agent does not experience this as a failure, it simply has no home station.</div>')
       : '<div class="simnote">Both mechanisms look identical until the session ends. That is what makes this the easiest thing in the module to believe you have done.</div>')+
-      '<div class="note" style="margin-top:10px"><b>Why the workshop makes the agent grep its own code before claiming done:</b> writing to memory and reading it back are two separate pieces of wiring — an <span class="k">after_agent_callback</span> that calls <span class="k">add_session_to_memory</span>, and a <span class="k">PreloadMemoryTool</span> to load it at the start. Ship one without the other and same-session recall still works perfectly, which is precisely the trap.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Why it is worth making the agent check its own code before it says it is done:</b> writing to memory and reading it back are two separate pieces of wiring. One saves the conversation when the agent has finished replying; the other loads what was saved when a new conversation starts. Ship one without the other and recall <em>within</em> a conversation still works perfectly &mdash; which is precisely the trap.</div>'+
       '<div class="note" style="margin-top:10px"><b>And writes are asynchronous.</b> The memory is generated after the turn ends, so the row can take a few seconds to appear. Refresh before concluding anything.</div>';
   }
   render();
@@ -1158,7 +1159,7 @@ document.getElementById('sec-m2').innerHTML=`
   const pick=document.getElementById('rhCePick'), onEl=document.getElementById('rhCeOn'),
         out=document.getElementById('rhCeOut'), note=document.getElementById('rhCeNote');
   if(!pick) return;
-  /* the workshop's own numbers: 4 delayed trains at 45/30/15/15, 4 cancelled of 8 affected */
+  /* 4 delayed trains at 45/30/15/15, 4 cancelled of 8 affected */
   const ROWS=[['9031','cancelled',0],['9037','cancelled',0],['9112','delayed',45],['9204','delayed',30],
               ['9218','delayed',15],['9302','delayed',15],['9411','cancelled',0],['9433','cancelled',0]];
   const Q={
@@ -1193,7 +1194,7 @@ document.getElementById('sec-m2').innerHTML=`
     note.innerHTML = sandbox
       ? '<div class="ok"><b>The number was computed, so it is checkable.</b> The trace shows the code and its output, which means the arithmetic is reviewable in a way a sentence never is.</div>'+
         '<div class="simnote" style="margin-top:10px"><b>The security argument matters as much as the accuracy one.</b> This is model-written code. It runs in an ephemeral container with resource limits and no network route back &mdash; so a prompt that talks the model into writing something hostile gets a sandbox, not your environment.</div>'+
-        '<div class="note" style="margin-top:10px"><b>Two practical wrinkles from the workshop.</b> The built-in sandbox has no file access, so it computes over what the tools <em>returned</em> rather than reading <span class="k">data/gtfs/*</span> directly &mdash; for file-based work you want the managed sandbox instead, which lab projects block. And these queries are slow: a write-execute-analyse loop can take minutes on the deployed agent, and the first call may time out while the sandbox warms up.</div>'
+        '<div class="note" style="margin-top:10px"><b>Two practical wrinkles.</b> The built-in sandbox has no file access, so it computes over what the tools <em>returned</em> rather than reading <span class="k">data/gtfs/*</span> directly &mdash; for file-based work you want the managed sandbox instead, which lab projects block. And these queries are slow: a write-execute-analyse loop can take minutes on the deployed agent, and the first call may time out while the sandbox warms up.</div>'
       : '<div class="lzwarn"><b>'+q.note+'</b></div>'+
         '<div class="simnote" style="margin-top:10px">Language models are not calculators, and the failure is not that they are bad at arithmetic &mdash; it is that they are <em>plausible</em> at it. An answer that is 10% wrong and phrased identically to one that is right cannot be caught by reading.</div>';
   }
@@ -1205,7 +1206,7 @@ document.getElementById('sec-m3').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">What deploying gave you for free, and the one thing it did not</h2>
   <div class="plain-line"><b>In plain English:</b> the moment you deployed in M2, the platform registered the agent in a catalogue and gave it a runtime identity. You did not ask for either. M3 is mostly <em>verification</em> rather than configuration &mdash; go and look at what already happened, and check the one part that is not automatic.</div>
-  <div class="plain-line">That one part is <b>least privilege</b>. Registration is free, identity is free, and the set of permissions the deploy tooling handed the agent is almost certainly larger than what it needs &mdash; because scaffolds ship permissive defaults so that the first deploy works for everyone. The workshop is unusually honest about this: it tells you to expect roles like <span class="k">storage.admin</span>, <span class="k">bigquery.admin</span> and <span class="k">secretmanager.admin</span> on an agent whose data is a folder of text files bundled into its own container.</div>
+  <div class="plain-line">That one part is <b>least privilege</b>. Registration is free and identity is free. The permissions are not &mdash; or rather, they are handed out too generously. Project templates ship with wide defaults so that everybody&rsquo;s first deploy works, which means your agent almost certainly holds far more than it needs. Expect to find roles like <span class="k">storage.admin</span>, <span class="k">bigquery.admin</span> and <span class="k">secretmanager.admin</span> on an agent whose data is a folder of text files bundled into its own container.</div>
   <table class="osi"><thead><tr><th>Layer</th><th>Mechanism</th><th>The threat it answers</th></tr></thead><tbody>
   <tr><td><b>1 &middot; Agent Registry</b></td><td>Automatic catalogue of every deployed agent, its tools and its identity</td><td><b>Sprawl.</b> Nobody knows which agents exist or what they can call</td></tr>
   <tr><td><b>2 &middot; Agent Identity</b></td><td>A SPIFFE-attested workload identity with an auto-rotated certificate; mutual TLS and DPoP under Context-Aware Access</td><td><b>Token theft and impersonation.</b> A stolen token is useless without the attested context to go with it</td></tr>
@@ -1218,7 +1219,7 @@ document.getElementById('sec-m3').innerHTML=`
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; attack the shield</h2>
-  <div class="plain-line"><b>Try this:</b> send prompts at a Model Armor template and read the verdict and the filter that fired. Two of these are the workshop&rsquo;s own test cases; the rest are the ones worth thinking about, including two that pass and probably should not have.</div>
+  <div class="plain-line"><b>Try this:</b> send prompts at a Model Armor template and read the verdict and the filter that fired. Two of these are the standard test cases; the rest are the ones worth thinking about, including two that pass and probably should not have.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A postroom that opens every letter looking for particular things. It is very good at what is on the list, and a letter that is merely a terrible idea goes straight through.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try the <b>DAN jailbreak</b>, then the <b>polite booking request</b> — and notice which one gets through.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prompt injection</b> instructions smuggled in as data, to override the real ones</span><span class="sp-w"><b>jailbreak</b> talking a model out of its own rules</span><span class="sp-w"><b>PII</b> personal data — card numbers, names, addresses</span><span class="sp-w"><b>sanitize</b> screen a prompt and return a verdict, without changing anything</span><span class="sp-w"><b>Model Armor</b> the service that screens prompts and answers for these things</span></span></div></div>
   <div class="sim-layout">
     <div><div id="rhMaOut"></div></div>
@@ -1274,7 +1275,7 @@ document.getElementById('sec-m3').innerHTML=`
     note.innerHTML='<div class="simnote"><b>What one template buys you:</b> the same policy detects jailbreaks, PII, malicious URLs and abuse for every agent that sits behind it &mdash; so safety stops being something each agent re-implements slightly differently in its own prompt.</div>'+
       (cur==='polite'||cur==='indirect'
         ? '<div class="note" style="margin-top:10px"><b>Keep the four layers straight.</b> Model Armor screens <em>content</em>. Whether an agent may take an action is a different question, answered by semantic governance &mdash; and whether it <em>can</em> is answered by its IAM roles. Three separate mechanisms, and an incident review that reaches for the wrong one produces a control that would not have helped.</div>'
-        : '<div class="note" style="margin-top:10px">Both blocked verdicts here come from the workshop&rsquo;s own test set, run against a real template through the sanitize REST API. Worth noting it is a <em>regional</em> service reached through a regional endpoint &mdash; and that the template&rsquo;s region need not match the agent&rsquo;s.</div>');
+        : '<div class="note" style="margin-top:10px">Both blocked verdicts are what a real template returns through the sanitize REST API. Worth noting it is a <em>regional</em> service reached through a regional endpoint &mdash; and that the template&rsquo;s region need not match the agent&rsquo;s.</div>');
   }
   render();
 })();
@@ -1406,7 +1407,7 @@ document.getElementById('sec-m4').innerHTML=`
     note.innerHTML='<div class="simnote">'+c.note+'</div>'+
       (fixed
         ? '<div class="ok" style="margin-top:10px"><b>One clause moved one case from 0.50 to 1.00 and left the others where they were.</b> That is what a targeted fix looks like &mdash; and the reason you could target it is that the judge quoted the sentence rather than just scoring the case.</div>'+
-          '<div class="note" style="margin-top:10px"><b>Be honest about what this simulation smooths over.</b> The workshop stops at the measurement deliberately and says so: improvement is not guaranteed from one tweak, and the judge is non-deterministic, so in practice you re-run and compare rather than declaring victory. A single re-score that went up is a result; it is not yet evidence.</div>'
+          '<div class="note" style="margin-top:10px"><b>Be honest about what this simulation smooths over.</b> Stopping at the measurement is deliberate: improvement is not guaranteed from one tweak, and the judge is non-deterministic, so in practice you re-run and compare rather than declaring victory. A single re-score that went up is a result; it is not yet evidence.</div>'
         : '<div class="note" style="margin-top:10px"><b>Note the 0.92 case is <em>above</em> the threshold and still wrong.</b> A threshold is a triage tool, not a definition of correct &mdash; and the reassurance it let through is exactly the kind of sentence that makes an agent feel trustworthy while being unfounded.</div>');
   }
   render();
@@ -1418,7 +1419,7 @@ document.getElementById('sec-m5').innerHTML=`
   <h2 class="sec">Publishing is not deploying</h2>
   <div class="plain-line"><b>In plain English:</b> M5 takes the agent that has been running since M2 and registers it with Gemini Enterprise, so a non-technical colleague can find it in a list and chat with it. <b>There is no second deploy.</b> The thing being published is the deployment you already have.</div>
   <div class="plain-line">That is worth pausing on, because it inverts the usual shape. Publishing here is a <em>registration</em>: create or find the enterprise app, register the existing runtime against it with a display name, and confirm it from the CLI rather than by looking in a browser. The agent&rsquo;s logic does not change and its endpoint does not move.</div>
-  <div class="plain-line"><b>Which is why the wrapper from M2 Step 1 matters now.</b> Two things that were set up three modules ago are what make this work: the agent was deployed with a per-user identity, so personalisation is scoped to each business user rather than shared across everyone; and the runtime wrapper normalises the session id that Gemini Enterprise sends. Without the second one, the registration succeeds, the agent appears in the portal, and every chat fails.</div>
+  <div class="plain-line"><b>Which is why the wrapper from M2 Step 1 matters now.</b> Two things set up three stages ago are what make this work. The agent was deployed with a per-user identity, so what it remembers about one person stays with that person instead of leaking to everyone. And the runtime wrapper tidies up the session id that Gemini Enterprise sends. Without the second one, the registration succeeds, the agent appears in the portal, and every chat fails.</div>
 </div>
 
 <div class="card">
@@ -1473,7 +1474,7 @@ document.getElementById('sec-m5').innerHTML=`
           : '<b>The chat works.</b> The traveller&rsquo;s question reaches the agent, the tools run, and the answer comes back with a reroute.')+'</div>';
     note.innerHTML = fails
       ? '<div class="lzbad"><b>Everything you would check looks fine.</b> Deploy: green. Registry entry: present. Endpoint: answers the CLI. The one caller that fails is the only one that matters to the person you built this for &mdash; and it fails on a character in an identifier.</div>'+
-        '<div class="simnote" style="margin-top:10px">This is why the workshop hands you a tested wrapper at M2 Step 1 rather than letting the scaffold&rsquo;s stub through, and why it makes you <span class="k">grep</span> for a &ldquo;TESTED REFERENCE&rdquo; marker before deploying: re-running <span class="k">scaffold enhance</span> silently overwrites the file with the broken version.</div>'
+        '<div class="simnote" style="margin-top:10px">This is why you paste in a tested wrapper at M2 Step 1 rather than shipping the scaffold&rsquo;s stub, and why it is worth running <span class="k">grep</span> for a &ldquo;TESTED REFERENCE&rdquo; marker before deploying: re-running <span class="k">scaffold enhance</span> silently overwrites the file with the broken version.</div>'
       : (cur==='ge'
         ? '<div class="ok"><b>Three modules apart.</b> The paste at M2 Step 1 had no visible effect at the time &mdash; the smoke test passed either way, the deploy succeeded either way, the CLI worked either way. Its entire purpose was this moment.</div>'+
           '<div class="simnote" style="margin-top:10px"><b>The transferable shape:</b> a dependency between two stages with no feedback in between. Those are the ones worth writing down, because the person who hits the failure has no reason to look three steps back for the cause.</div>'
@@ -1486,6 +1487,7 @@ document.getElementById('sec-m5').innerHTML=`
 document.getElementById('sec-arc').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Two hours, five stages, and what each one leaves behind</h2>
+  <div class="plain-line"><b>In plain English:</b> this is the whole journey on one page. Read the last column &mdash; it is the list of things that exist afterwards which did not exist before, and it is the only honest measure of what a stage was for.</div>
   <div class="plain-line">The value of running these in order is not that the order is technically enforced &mdash; it mostly is not. It is that each stage produces an artefact the next one consumes, and you can see the handoff.</div>
   <div id="rhArcMap"></div>
   <table class="osi" style="margin-top:16px"><thead><tr><th>Module</th><th>Time</th><th>What exists afterwards that did not before</th></tr></thead><tbody>
@@ -1500,7 +1502,7 @@ document.getElementById('sec-arc').innerHTML=`
 
 <div class="card">
   <h2 class="sec">Try it &mdash; plan the run you actually have time for</h2>
-  <div class="plain-line"><b>Try this:</b> the workshop says you can skip M3 and M4 and finish in about an hour with a working, published agent. That is true. Build the shorter run and read what you are choosing not to know.</div>
+  <div class="plain-line"><b>Try this:</b> you can skip M3 and M4 and finish in about an hour with a working, published agent. That is true. Build the shorter run and read what you are choosing not to know.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Moving into a flat before the smoke alarms are fitted and the locks are changed. You do live there. Everything works. You have simply deferred the two things that only matter on a bad day.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drop <b>M3</b> and <b>M4</b> and read the right-hand column.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>core path</b> the minimum sequence that still produces a published agent</span><span class="sp-w"><b>load-bearing</b> a step something later actually depends on</span></span></div></div>
   <div class="sim-layout">
     <div><div id="rhTlOut"></div></div>
@@ -1575,8 +1577,8 @@ document.getElementById('sec-arc').innerHTML=`
     note.innerHTML=
       (dropped.length===0
         ? '<div class="simnote">Worth noticing which three modules you were not allowed to switch off. M0, M1, M2 and M5 are the ones with downstream dependencies; M3 and M4 have none, which is precisely why they are the skippable ones and precisely why they are the ones production needs.</div>'
-        : '<div class="simnote"><b>The shorter run is legitimate</b> &mdash; the workshop offers it explicitly, and it still builds, deploys and publishes a real agent. Just be clear that what you dropped is not &ldquo;advanced material&rdquo;. It is the security audit and the quality measurement, which are the two things that distinguish this from a demo.</div>')+
-      '<div class="note" style="margin-top:10px"><b>The pattern generalises past this workshop.</b> Stages that something later depends on get done, because skipping them breaks something visible. Stages nothing depends on get skipped, because skipping them breaks nothing you can see &mdash; until a bad day, when it turns out they were the ones about bad days.</div>';
+        : '<div class="simnote"><b>The shorter run is legitimate</b> &mdash; it still builds, deploys and publishes a real agent. Just be clear that what you dropped is not &ldquo;advanced material&rdquo;. It is the security audit and the quality measurement, which are the two things that distinguish this from a demo.</div>')+
+      '<div class="note" style="margin-top:10px"><b>The pattern generalises well past this.</b> Stages that something later depends on get done, because skipping them breaks something visible. Stages nothing depends on get skipped, because skipping them breaks nothing you can see &mdash; until a bad day, when it turns out they were the ones about bad days.</div>';
   }
   render();
 })();
@@ -1584,8 +1586,9 @@ document.getElementById('sec-arc').innerHTML=`
 /* ================= 9 · WHERE IT BREAKS ================= */
 document.getElementById('sec-traps').innerHTML=`
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">The failures the workshop stops to warn you about</h2>
-  <div class="plain-line">A workshop that has been run repeatedly accumulates a particular kind of knowledge: not how the thing works, but where people reliably fall over. These are worth reading on their own, because most of them are not specific to this platform.</div>
+  <h2 class="sec">The failures that catch people out</h2>
+  <div class="plain-line"><b>In plain English:</b> a list of things that go wrong, what each one is really caused by, and what it teaches. Most of them are not about this platform at all &mdash; they are the kind of mistake any system makes when the feedback takes too long to arrive.</div>
+  <div class="plain-line">Running this journey over and over produces a particular kind of knowledge: not how the thing works, but where people reliably fall over. These are worth reading on their own, because most of them are not specific to this platform.</div>
   <table class="osi"><thead><tr><th>Symptom</th><th>Actual cause</th><th>The general lesson</th></tr></thead><tbody>
   <tr><td>The agent never calls your tool</td><td>Missing or vague docstring, or no type hints</td><td>The model reads the label, not the code. An unlabelled tool does not exist</td></tr>
   <tr><td>The agent invents train times</td><td>The system instruction is not strict enough</td><td>&ldquo;Do not invent&rdquo; is weaker than &ldquo;if you do not have it, say you do not have it&rdquo; &mdash; the second gives it something to do instead</td></tr>
@@ -1604,8 +1607,9 @@ document.getElementById('sec-traps').innerHTML=`
 
 <div class="card">
   <h2 class="sec">Three things that are easy to believe and are not true</h2>
+  <div class="plain-line"><b>In plain English:</b> three sentences that sound like they mean you are safe, and do not. Each one is true as far as it goes, and each one stops well short of where people assume it stops.</div>
   <div class="plain-line"><b>&ldquo;It is registered, so it is governed.&rdquo;</b> Registration and identity arrive free at deploy. What they give you is discoverability and attribution &mdash; you can find the agent and prove which one acted. Neither of them narrows what it may do. The permissions it holds are whatever the deploy tooling granted, and in a lab that is likely to include admin on three services the agent never touches.</div>
-  <div class="plain-line" style="margin-top:12px"><b>&ldquo;Model Armor is on, so we are filtered.&rdquo;</b> Creating a template and calling the sanitize API proves detection works. Enforcement on live traffic is a separate step &mdash; attaching it to a gateway, or enabling it on the enterprise app. The workshop is explicit about the gap, and it is exactly the sort of gap that survives a review because the artefact exists.</div>
+  <div class="plain-line" style="margin-top:12px"><b>&ldquo;Model Armor is on, so we are filtered.&rdquo;</b> Creating a template and calling the sanitize API proves detection works. Enforcement on live traffic is a separate step &mdash; attaching it to a gateway, or enabling it on the enterprise app. It is exactly the sort of gap that survives a review, because the artefact exists and looks like protection.</div>
   <div class="plain-line" style="margin-top:12px"><b>&ldquo;The eval passed, so it does not hallucinate.&rdquo;</b> The gate is a threshold on one judge over four cases. The delay case scored 0.92 and still contained a sentence no tool supported. A threshold is triage &mdash; it tells you where to look first, not what is correct.</div>
 </div>
 
@@ -1704,6 +1708,7 @@ document.getElementById('sec-rhexam').innerHTML=`
 
 <div class="card">
   <h2 class="sec">The scenarios</h2>
+  <div class="plain-line"><b>In plain English:</b> a symptom on the left, and what is actually causing it on the right. These are phrased the way an interviewer or an exam would put them &mdash; a description of what you can see, with the cause left for you to name.</div>
   <div class="exam-line"><b>&ldquo;Our agent gives good answers in testing and invents details in production. What is the first thing to add?&rdquo;</b> &rarr; A graded eval with a reference-free grounding judge. You cannot fix a hallucination rate you have not measured, and reading answers does not measure it &mdash; the invented sentences read exactly like the grounded ones. <span class="code">hallucinations_v1</span> scores the fraction of sentences supported by tool output and quotes the ones that are not.</div>
   <div class="exam-line"><b>&ldquo;The agent works from the CLI and the console but every chat in the enterprise portal fails.&rdquo;</b> &rarr; The runtime is not normalising the session id. Gemini Enterprise passes it as a full resource path and the ADK session service rejects an id containing a slash. Every other caller sends a bare id, which is why nothing else showed it.</div>
   <div class="exam-line"><b>&ldquo;A deployed agent returns an empty reply after making some tool calls.&rdquo;</b> &rarr; An exception inside the deployed agent. Pull the reasoning-engine stdout and stderr from Cloud Logging &mdash; the traceback is there and nowhere else. An empty reply is the deployed failure mode; it is not a model problem.</div>
