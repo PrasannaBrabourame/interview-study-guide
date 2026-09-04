@@ -76,6 +76,7 @@ function init(topics) {
     gpu: { name: "The machine underneath", hue: 280, cats: ["Large Language Models", "Deep Learning & Neural Networks", "Performance", "LLMOps", "Math, Probability & Statistics"] },
     llm: { name: "One token at a time", hue: 280, cats: ["Large Language Models", "Deep Learning & Neural Networks", "Retrieval-Augmented Generation", "LLMOps", "Performance"] },
     serving: { name: "The engine, not the model", hue: 48, cats: ["Large Language Models", "LLMOps", "Performance", "Production Readiness", "Observability", "Multi-Tenancy"] },
+    fleet: { name: "Twenty engines, one endpoint", hue: 48, cats: ["Production Readiness", "Observability", "Performance", "LLMOps", "Kubernetes", "Software Architecture", "Production Operations"] },
     pca: { name: "GCP Architect exam", hue: 212, cats: ["GCP", "Cloud Architecture", "Data", "Data & Databases", "Data Engineering", "Kubernetes", "Security", "Production Readiness", "FinOps"] },
     sap: { name: "SAP-C02 cheatsheet", hue: 212, cats: ["Cloud Architecture", "Security", "Kubernetes", "Deployment", "Observability", "FinOps", "Performance", "Production Readiness"] }
   };
