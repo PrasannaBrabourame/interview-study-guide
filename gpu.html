@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPU lab — how a graphics processor actually runs your model</title>
+<style>
+  /* self-hosted, same subsets the portfolio serves — no external requests */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
+  :root{
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-family:var(--display); font-size:clamp(26px,3.4vw,38px); font-weight:500; letter-spacing:-.018em; line-height:1.05}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
+  .wf{display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:11px}
+  .wf .row{display:grid; grid-template-columns:150px 1fr 62px; gap:8px; align-items:center}
+  .wf .lab{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf .track{position:relative; height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:4px}
+  .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
+  .wf .ms{text-align:right; color:var(--dim)}
+  .wf .row.err .lab{color:var(--red)}
+  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+
+  .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
+    padding:11px 12px; text-align:center; transition:border-color .3s, background .3s, opacity .3s}
+  .chasm .cpart b{display:block; font-size:13px; font-weight:500; color:var(--text)}
+  .chasm .cpart small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.4}
+  .chasm .cagent{grid-column:1/-1; border-color:var(--blue); background:var(--n-blue)}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:var(--amber); opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  /* the same class used inline: a chip on the line, not a panel */
+  span.code{display:inline; background:var(--sel); border:1px solid var(--line2); border-radius:5px;
+    padding:.5px 5px; margin:0; overflow:visible; font-family:var(--mono); font-size:.9em;
+    line-height:inherit; color:var(--text); overflow-wrap:break-word}
+  .code pre{margin:0}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- shared note / row utilities ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
+  .lztier{display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+    border:1px solid var(--line2); border-left-width:3px; border-radius:0 9px 9px 0; background:var(--panel2);
+    cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; transition:border-color .15s}
+  .lztier:hover{border-color:var(--teal)}
+  .lztier.on{border-color:var(--amber); background:var(--sel)}
+  .lztier b{font-size:12.5px; font-weight:600}
+  .lztier span{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto; white-space:nowrap}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- scenario drill, built from the page's own exam lines ---- */
+  .drl{border:1px solid var(--line2); border-radius:11px; padding:14px 16px; background:var(--panel2)}
+  .drl-q{font-size:14px; line-height:1.6; margin-bottom:14px}
+  .drl-o{display:block; width:100%; text-align:left; border:1px solid var(--line2); background:var(--panel);
+    border-radius:9px; padding:9px 12px; margin-bottom:7px; font:inherit; font-size:12.5px; color:inherit;
+    cursor:pointer; line-height:1.45; transition:border-color .15s}
+  .drl-o:hover{border-color:var(--teal)}
+  .drl-o:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .drl-o.right{border-color:var(--green); color:var(--green)}
+  .drl-o.wrong{border-color:var(--red); color:var(--red)}
+  .drl-o.muted{opacity:.5}
+  .drl-bar{display:flex; gap:4px; margin-bottom:12px}
+  .drl-bar i{flex:1; height:5px; border-radius:99px; background:var(--line2)}
+  .drl-bar i.ok{background:var(--green)} .drl-bar i.no{background:var(--red)} .drl-bar i.now{background:var(--amber)}
+  /* ================= INTERFACE ================= */
+  /* one global motion guard rather than per-component handling */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important; scroll-behavior:auto !important}
+  }
+  html{scroll-behavior:smooth}
+
+  /* ---- reading progress ---- */
+  .rprog{position:fixed; inset:0 0 auto 0; height:2px; z-index:60; background:transparent; pointer-events:none}
+  .rprog i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--teal),var(--violet));
+    transition:width .12s linear}
+
+  /* ---- sticky, single-row tab bar ---- */
+  .tabwrap{position:sticky; top:0; z-index:50; margin:22px 0 20px;
+    background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); padding:9px 0 10px}
+  .tabwrap::before,.tabwrap::after{content:""; position:absolute; top:0; bottom:0; width:36px; pointer-events:none; z-index:2}
+  .tabwrap::before{left:0; background:linear-gradient(90deg,var(--bg),transparent)}
+  .tabwrap::after{right:0; background:linear-gradient(270deg,var(--bg),transparent)}
+  .tabs{display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+    scroll-snap-type:x proximity; padding:2px 30px; margin:0}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto; scroll-snap-align:center; cursor:pointer; font-family:var(--mono); font-size:12px;
+    color:var(--muted); background:transparent; border:1px solid transparent; border-radius:99px;
+    padding:7px 14px; transition:color .15s, background .15s, border-color .15s; white-space:nowrap}
+  .tab:hover{color:var(--text); background:var(--panel2)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .tab .tcount{display:inline-block; margin-left:7px; font-size:9.5px; opacity:.7;
+    border:1px solid currentColor; border-radius:99px; padding:0 5px; line-height:1.5}
+
+  /* ---- layout with the section rail ---- */
+  .labgrid{display:grid; grid-template-columns:minmax(0,1fr) 208px; gap:26px; align-items:start}
+  .railcol{position:sticky; top:72px; max-height:calc(100vh - 96px); overflow-y:auto; scrollbar-width:thin;
+    padding-right:2px}
+  .railhead{font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 10px 10px}
+  .rail{display:flex; flex-direction:column; gap:1px; border-left:1px solid var(--line); padding-left:0}
+  .rail a{display:flex; gap:7px; align-items:baseline; padding:5px 8px 5px 11px; margin-left:-1px;
+    border-left:2px solid transparent; font-size:11.5px; line-height:1.4; color:var(--muted);
+    text-decoration:none; transition:color .15s, border-color .15s}
+  .rail a:hover{color:var(--text)}
+  .rail a.on{color:var(--amber); border-left-color:var(--amber)}
+  .rail a i{flex:none; width:5px; height:5px; border-radius:50%; background:var(--teal); margin-top:6px; opacity:0}
+  .rail a.sim i{opacity:1}
+  .rail a:focus-visible{outline:2px solid var(--teal); outline-offset:-2px}
+  @media (max-width:1180px){.labgrid{grid-template-columns:minmax(0,1fr)} .railcol{display:none}}
+
+  /* ---- a simulation card should look like one ---- */
+  .card.issim{border-left:3px solid var(--teal); background:
+    linear-gradient(180deg, color-mix(in srgb, var(--teal) 4%, var(--panel)) 0 64px, var(--panel) 64px)}
+  .card.issim > h2.sec::before{content:"interactive"; display:inline-block; vertical-align:middle;
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal);
+    border:1px solid var(--teal); border-radius:99px; padding:2px 7px; margin-right:9px; transform:translateY(-2px)}
+
+  /* ---- command palette ---- */
+  .cmdk{position:fixed; inset:0; z-index:80; display:none; padding:12vh 16px 16px;
+    background:color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter:blur(6px)}
+  .cmdk.on{display:block; animation:cmdIn .16s ease}
+  @keyframes cmdIn{from{opacity:0} to{opacity:1}}
+  .cmdbox{max-width:620px; margin:0 auto; background:var(--panel); border:1px solid var(--line2);
+    border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.22); overflow:hidden}
+  .cmdbox input{width:100%; border:0; border-bottom:1px solid var(--line); background:transparent;
+    color:var(--text); font:inherit; font-size:15px; padding:15px 18px; outline:none}
+  .cmdlist{max-height:46vh; overflow-y:auto; padding:6px}
+  .cmdlist button{display:block; width:100%; text-align:left; border:0; background:transparent; color:inherit;
+    font:inherit; padding:9px 12px; border-radius:9px; cursor:pointer; line-height:1.4}
+  .cmdlist button .cmdtab{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:2px}
+  .cmdlist button .cmdname{font-size:13px}
+  .cmdlist button.on,.cmdlist button:hover{background:var(--panel2)}
+  .cmdlist button.on .cmdname{color:var(--amber)}
+  .cmdnone{padding:16px 18px; color:var(--muted); font-size:13px}
+  .cmdfoot{border-top:1px solid var(--line); padding:8px 14px; font-family:var(--mono); font-size:10px;
+    color:var(--dim); display:flex; gap:14px; flex-wrap:wrap}
+  .cmdfoot b{font-weight:400; color:var(--muted)}
+  .kbdhint{float:right; margin:6px 12px 0 0; font-family:var(--mono); font-size:10.5px; color:var(--dim);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px; cursor:default}
+  .kbdhint b{font-weight:400; color:var(--muted); margin-right:6px}
+  @media (max-width:760px){.kbdhint{display:none}}
+</style>
+</head>
+
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a><a href="index.html#lab=gpu" style="display:inline-block;margin-bottom:12px;margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--teal);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▤ related topics</a>
+    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
+    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
+    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
+    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
+    <a href="evals.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◈ evals lab</a>
+    <a href="gemini.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◉ gemini lab</a>
+    <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
+    <a href="design.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▦ diagram lab</a>
+    <a href="peakweek.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◐ peak week lab</a>
+    
+    <div class="eyebrow">threads · memory · arithmetic intensity · kernels</div>
+    <h1>The machine underneath <span class="thin">— what a GPU is actually doing while your model runs</span></h1>
+    <p class="sub">Almost everything else in this guide sits on top of this layer and never looks down at it. That is usually fine, right up until someone asks why inference gets cheaper per request when you batch it, why a model that &ldquo;fits in 40&nbsp;GB&rdquo; does not fit, or why the expensive card is idle 70% of the time. Those are all the same question, and it has one answer: a GPU is enormously fast at arithmetic and comparatively slow at fetching the numbers to do arithmetic on. Nine sections, plain English first, with the arithmetic worked on a named machine so you can check it.</p>
+    <div class="note" style="margin-top:14px"><b>The reference machine.</b> Where a number is needed, this lab uses an <b>NVIDIA A100 80&nbsp;GB (SXM)</b>: 108 streaming multiprocessors, 2.0&nbsp;TB/s of memory bandwidth, 19.5&nbsp;TFLOP/s of ordinary FP32 arithmetic and 312&nbsp;TFLOP/s of FP16 tensor-core arithmetic. Different cards move the numbers; none of them change the shape of the argument. Where a figure is approximate or varies by generation, it says so.</div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="start" role="tab">Start here</button>
+    <button class="tab" data-pane="gpexec" role="tab">Threads & warps</button>
+    <button class="tab" data-pane="mem" role="tab">The memory ladder</button>
+    <button class="tab" data-pane="roof" role="tab">Roofline</button>
+    <button class="tab" data-pane="coal" role="tab">Access patterns</button>
+    <button class="tab" data-pane="tile" role="tab">Tiling</button>
+    <button class="tab" data-pane="tc" role="tab">Tensor cores</button>
+    <button class="tab" data-pane="fuse" role="tab">Fusion & FlashAttention</button>
+    <button class="tab" data-pane="triton" role="tab">Triton & compile</button>
+    <button class="tab" data-pane="gpexam" role="tab">Exam angle</button>
+  </div>
+
+  <section class="pane on" id="pane-start"><div id="sec-start"></div></section>
+  <section class="pane" id="pane-gpexec"><div id="sec-gpexec"></div></section>
+  <section class="pane" id="pane-mem"><div id="sec-mem"></div></section>
+  <section class="pane" id="pane-roof"><div id="sec-roof"></div></section>
+  <section class="pane" id="pane-coal"><div id="sec-coal"></div></section>
+  <section class="pane" id="pane-tile"><div id="sec-tile"></div></section>
+  <section class="pane" id="pane-tc"><div id="sec-tc"></div></section>
+  <section class="pane" id="pane-fuse"><div id="sec-fuse"></div></section>
+  <section class="pane" id="pane-triton"><div id="sec-triton"></div></section>
+  <section class="pane" id="pane-gpexam"><div id="sec-gpexam"></div></section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">learning guide</a> · <a href="cloud.html">cloud lab</a> · <a href="agentcore.html">agentcore lab</a> · <a href="agentbuild.html">agents lab</a> · <a href="adk.html">adk lab</a> · <a href="evals.html">evals lab</a> · <a href="gemini.html">gemini lab</a> · <a href="govern.html">govern lab</a> · <a href="design.html">diagram lab</a> · <a href="peakweek.html">peak week lab</a>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
+
+
+
+
+
+
+
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+
+
+
+
+
+
+
+
+/* ================= 1 · START HERE ================= */
+document.getElementById('sec-start').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two machines built for opposite jobs</h2>
+  <div class="plain-line"><b>In plain English:</b> a CPU is built to finish <em>one</em> thing as fast as possible. A GPU is built to finish <em>an enormous number</em> of things per second, and does not much care how long any individual one takes. Both are reasonable designs. They are just answers to different questions.</div>
+  <div class="plain-line">A modern CPU spends most of its silicon on <b>making one instruction stream fast</b> &mdash; branch prediction, out-of-order execution, deep caches, high clock speeds. That machinery is expensive and it exists to hide the fact that memory is slow. A GPU spends almost none of its silicon on that. It spends it on <b>arithmetic units</b>, and hides slow memory a completely different way: by having so much other work queued up that it can switch to some of it whenever one piece stalls.</div>
+  <div class="plain-line"><b>The consequence you will meet constantly:</b> a GPU has far more arithmetic capacity than it has ability to feed itself. On the reference A100 the ratio is stark &mdash; 312&nbsp;TFLOP/s of tensor arithmetic against 2.0&nbsp;TB/s of memory bandwidth. Do the division and you get roughly <b>150 arithmetic operations for every byte you fetch</b>. If your work does less arithmetic per byte than that, the arithmetic units sit idle waiting, and the expensive part of the card is doing nothing. Most of this lab is about that one number.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; give the same job to both machines</h2>
+  <div class="plain-line"><b>Try this:</b> four jobs. Send each to a CPU and to a GPU, and read which one finishes first &mdash; then read <em>why</em>. Two of these the GPU wins by a mile. One it loses badly. One is a trap.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>One very fast courier on a motorbike, versus a fleet of two thousand cyclists. For a single urgent envelope the motorbike wins every time. For delivering a leaflet to every house in the city it is not close.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run <b>sort a list, then use the result</b> — the job where more workers cannot help.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>latency</b> how long one job takes end to end</span><span class="sp-w"><b>throughput</b> how many jobs finish per second</span><span class="sp-w"><b>parallel</b> the pieces can be done at the same time without waiting on each other</span><span class="sp-w"><b>serial</b> each step needs the answer from the one before</span><span class="sp-w"><b>core</b> one unit that executes instructions</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpCmpOut"></div></div>
+    <div><div class="segmented" id="gpCmpPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpCmpNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The vocabulary, once, so the rest of the lab reads easily</h2>
+  <table class="osi"><thead><tr><th>Word</th><th>What it actually is</th><th>Rough scale on the A100</th></tr></thead><tbody>
+  <tr><td><b>thread</b></td><td>One lane of work. Executes the same program as its neighbours, on its own data</td><td>You launch millions; they are almost free</td></tr>
+  <tr><td><b>warp</b></td><td>32 threads that move in lockstep. <b>The real unit of execution</b> &mdash; the hardware never schedules a single thread</td><td>Always 32 on NVIDIA hardware</td></tr>
+  <tr><td><b>block</b></td><td>A group of threads you define, which can share fast memory and wait for each other</td><td>Up to 1024 threads; you pick, usually 128&ndash;512</td></tr>
+  <tr><td><b>SM</b> (streaming multiprocessor)</td><td>One physical sub-processor. Runs many blocks at once and owns its own shared memory and registers</td><td>108 of them</td></tr>
+  <tr><td><b>kernel</b></td><td>The function you write that runs on the GPU. One launch, many threads</td><td>Launch overhead a few microseconds &mdash; which matters more than you would think</td></tr>
+  <tr><td><b>HBM</b> (high-bandwidth memory)</td><td>The card&rsquo;s main memory. Enormous bandwidth by CPU standards, and still the bottleneck</td><td>80&nbsp;GB at about 2.0&nbsp;TB/s</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>The one to hold onto is <em>warp</em>.</b> Almost every surprising GPU behaviour in this lab &mdash; why an <span class="k">if</span> statement can halve your speed, why reading memory in the wrong order costs 8&times;, why 33 threads cost the same as 64 &mdash; falls out of the fact that the hardware moves 32 lanes at a time and cannot move fewer.</div>
+</div>`;
+
+/* --- SIM: CPU vs GPU on four jobs --- */
+(function(){
+  const pick=document.getElementById('gpCmpPick'), out=document.getElementById('gpCmpOut'), note=document.getElementById('gpCmpNote');
+  if(!pick) return;
+  const J=[
+   {k:'add', n:'Add two lists of 100 million numbers',
+    cpu:['~90 ms','8 cores, each doing 12.5M additions in sequence'],
+    gpu:['~0.6 ms','100M threads, one addition each — but see the note'],
+    win:'gpu',
+    why:'<b>Perfectly parallel.</b> No element needs any other element&rsquo;s answer, so the work divides without argument. This is the case GPUs were built for.',
+    twist:'<b>And it is still memory-bound.</b> Two numbers in, one out, one addition &mdash; that is 12 bytes moved per FLOP, nowhere near the ~150 the card wants. The GPU wins easily and is <em>still</em> using a fraction of its arithmetic. Remember this when you get to the roofline.'},
+   {k:'sort', n:'Sort a list, then use the result',
+    cpu:['~1.2 s','A single strong core with good branch prediction and deep caches'],
+    gpu:['~4 s','Parallel sorts exist, but each stage waits for the previous one'],
+    win:'cpu',
+    why:'<b>Serial dependency.</b> Step two needs step one&rsquo;s answer. Two thousand slow cores cannot help you finish a chain of steps any faster than one fast one &mdash; they can only help if there are independent chains.',
+    twist:'<b>This is the case people forget when they buy hardware.</b> The question is never &ldquo;is this big?&rdquo;, it is &ldquo;how many independent pieces does it split into?&rdquo;. A big serial job is a CPU job no matter how big it gets.'},
+   {k:'matmul', n:'Multiply two 4096&times;4096 matrices',
+    cpu:['~2.1 s','Well-optimised, using all cores and vector instructions'],
+    gpu:['~0.9 ms','Tensor cores, and enough arithmetic per byte to keep them fed'],
+    win:'gpu',
+    why:'<b>The ideal case.</b> Every output element is independent, <em>and</em> each input value gets reused thousands of times &mdash; so once a number is loaded it does an enormous amount of work. That is the ratio the card is built for.',
+    twist:'<b>This is why matrix multiply is the unit of account in machine learning.</b> Not because it is mathematically special, but because it is the one common operation whose arithmetic-per-byte is high enough to actually use the hardware.'},
+   {k:'branch', n:'For each of a million items, run one of eight different routines',
+    cpu:['~40 ms','Branch prediction handles this well; each core follows its own path'],
+    gpu:['~180 ms','Threads in the same warp taking different branches are serialised'],
+    win:'cpu',
+    why:'<b>The trap.</b> It looks perfectly parallel &mdash; a million independent items. But a warp is 32 threads in lockstep, and if they need different code the hardware runs each path in turn with the other lanes switched off.',
+    twist:'<b>Worst case, eight routines means eight passes.</b> You get a fraction of the throughput and nothing about the code looks wrong. The fix is not &ldquo;remove the branch&rdquo;, it is <em>group the data so threads that travel together want the same branch</em> — sort by routine first, and the divergence disappears.'}
+  ];
+  let cur='add';
+  function render(){
+    pick.innerHTML=J.map(j=>'<button class="seg'+(cur===j.k?' on':'')+'" data-k="'+j.k+'" style="text-align:left;font-size:12px">'+j.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const j=J.find(x=>x.k===cur);
+    const row=(who,t,d,winner)=>'<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:'+
+      (winner?'var(--green)':'var(--wire)')+';opacity:'+(winner?1:.6)+'">'+
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">'+
+      '<b>'+who+'</b><span style="font-family:var(--mono);font-size:13px;color:'+(winner?'var(--green)':'var(--muted)')+'">'+t+'</span></div>'+
+      '<small>'+d+'</small></div>';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE JOB</div>'+
+      '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:var(--blue)"><b>'+j.n+'</b></div>'+
+      '<div style="margin-top:14px">'+row('CPU',j.cpu[0],j.cpu[1],j.win==='cpu')+row('GPU',j.gpu[0],j.gpu[1],j.win==='gpu')+'</div>'+
+      '<div class="'+(j.win==='gpu'?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+j.why+'</div>';
+    note.innerHTML='<div class="simnote">'+j.twist+'</div>'+
+      '<div class="note" style="margin-top:10px"><b>Timings are illustrative</b> &mdash; they are the right order of magnitude for the reference machine and the right way round, which is the part that matters. Your numbers will differ with sizes, library versions and how well the code is written.</div>';
+  }
+  render();
+})();
+
+/* ================= 2 · THREADS & WARPS ================= */
+document.getElementById('sec-gpexec').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The hardware moves 32 lanes at a time, and cannot move fewer</h2>
+  <div class="plain-line"><b>In plain English:</b> you write a program as though each thread runs on its own. It does not. The hardware bundles threads into groups of <b>32</b> called warps, and every thread in a warp executes the same instruction at the same moment. If your code asks two threads in one warp to do different things, the hardware does not run them side by side &mdash; it runs one group, switches off the other lanes, then runs the second group.</div>
+  <div class="plain-line">This is the single most useful fact about GPUs, because a surprising number of performance problems are it wearing a disguise. A branch that costs nothing on a CPU can halve your throughput here. Asking for 33 threads costs exactly what asking for 64 costs, because you cannot have one and a bit warps.</div>
+  <div id="gpWarpDiag"></div>
+  <div class="plain-line" style="margin-top:12px"><b>Why build it this way?</b> Because fetching and decoding an instruction is expensive silicon, and sharing that cost across 32 lanes means 32&times; more of the chip can be arithmetic instead. The lockstep is not a limitation someone forgot to fix &mdash; it is the trade that makes the arithmetic capacity possible.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; put an <span class="code">if</span> inside a warp</h2>
+  <div class="plain-line"><b>Try this:</b> the same branch, with the data arranged four different ways. Watch how many passes the hardware needs and how many lanes are switched off during each. The code is identical every time &mdash; only the arrangement of the data changes.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A rowing eight. They can go fast because everyone pulls together. Ask half of them to row and half to steer and you do not get both jobs at once &mdash; you get the boat doing one, then the other.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>alternating</b>, the arrangement that looks harmless and is the worst one here.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>warp</b> 32 threads the hardware moves in lockstep</span><span class="sp-w"><b>divergence</b> threads in one warp needing different code paths</span><span class="sp-w"><b>lane</b> one thread&rsquo;s slot within its warp</span><span class="sp-w"><b>predication</b> running an instruction with some lanes switched off</span><span class="sp-w"><b>pass</b> one trip through the branch with a subset of lanes active</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpDivOut"></div></div>
+    <div><div class="segmented" id="gpDivPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpDivNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; how much work can one SM hold at once</h2>
+  <div class="plain-line"><b>Try this:</b> an SM has a fixed budget of registers and shared memory, and every block you place on it takes a share. Move the sliders and watch how many blocks fit &mdash; because the number that fit is the number of warps available to hide memory latency, and hiding latency is the entire trick.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A kitchen with a fixed amount of bench space. Each chef needs a certain amount of it. Give every chef a huge workspace and only two fit; give them each a small one and you get twelve, and the kitchen never stands still waiting for one to finish.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>push <b>registers per thread</b> up to 64 and watch occupancy collapse.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>occupancy</b> how many warps are resident, as a share of the maximum</span><span class="sp-w"><b>register</b> the fastest storage there is, private to one thread</span><span class="sp-w"><b>shared memory</b> fast scratch space one block&rsquo;s threads can all read</span><span class="sp-w"><b>latency hiding</b> switching to other work while one warp waits for memory</span><span class="sp-w"><b>SM</b> one of the GPU&rsquo;s 108 sub-processors</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpOccOut"></div></div>
+    <div><div class="segmented" id="gpOccCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpOccNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- the warp diagram --- */
+(function(){
+  const h=document.getElementById('gpWarpDiag'); if(!h) return;
+  let b='';
+  b+=t(300,18,'one block of 128 threads = 4 warps',SANS);
+  for(let w=0;w<4;w++){
+    const y=34+w*40;
+    b+=box(52,y,496,30,'var(--wire)','var(--panel2)');
+    b+=tm(30,y+19,'w'+w,'var(--dim)');
+    for(let i=0;i<32;i++){
+      const x=60+i*15;
+      b+='<rect x="'+x+'" y="'+(y+7)+'" width="11" height="16" rx="2" style="fill:var(--n-blue);stroke:var(--blue);stroke-width:.7"/>';
+    }
+  }
+  b+=tm(300,208,'32 lanes per warp — the hardware issues one instruction to all of them at once','var(--muted)');
+  h.innerHTML=D('0 0 600 220','A block of 128 threads drawn as four rows of 32 lanes each',b,
+    'Each row is a warp. Every small box is one thread. The hardware fetches one instruction per row and applies it to all 32 lanes together &mdash; which is why a block of 128 threads costs four instruction issues rather than 128.');
+})();
+
+/* --- SIM: warp divergence --- */
+(function(){
+  const pick=document.getElementById('gpDivPick'), out=document.getElementById('gpDivOut'), note=document.getElementById('gpDivNote');
+  if(!pick) return;
+  const P={
+   none:{label:'All 32 take the same branch', fn:i=>0, paths:1,
+     why:'No divergence at all. One pass, 32 lanes active, full throughput. This is what the hardware is built for and it is worth arranging your data to get it.'},
+   half:{label:'First 16 one way, last 16 the other', fn:i=>i<16?0:1, paths:2,
+     why:'Two passes, 16 lanes active in each. You get half the throughput &mdash; but note it is exactly half, not worse, because there are only two paths.'},
+   alt:{label:'Alternating — even lanes one way, odd the other', fn:i=>i%2, paths:2,
+     why:'<b>Also two passes</b>, and also half throughput. The lesson is that <em>which</em> lanes diverge does not matter to the hardware &mdash; only how many distinct paths the warp has to walk. Alternating <em>looks</em> much worse than split-in-half and costs exactly the same.'},
+   four:{label:'Four different routines, by lane mod 4', fn:i=>i%4, paths:4,
+     why:'Four passes, 8 lanes active in each. A quarter of the throughput, from code that reads as a perfectly ordinary switch statement over independent items.'}
+  };
+  let cur='none';
+  function render(){
+    pick.innerHTML=Object.entries(P).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const p=P[cur];
+    const COL=['var(--blue)','var(--amber)','var(--violet)','var(--teal)'];
+    let rows='';
+    for(let pass=0;pass<p.paths;pass++){
+      let lanes='';
+      let active=0;
+      for(let i=0;i<32;i++){
+        const on=p.fn(i)===pass; if(on) active++;
+        lanes+='<span style="display:inline-block;width:11px;height:15px;margin-right:2px;border-radius:2px;background:'+
+          (on?COL[pass]:'var(--line2)')+';opacity:'+(on?1:.45)+'"></span>';
+      }
+      rows+='<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:'+COL[pass]+'">'+
+        '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:5px">PASS '+(pass+1)+
+        ' &mdash; '+active+' of 32 lanes doing useful work</div><div style="line-height:1">'+lanes+'</div></div>';
+    }
+    const eff=Math.round(100/p.paths);
+    out.innerHTML='<div class="code"><pre><code>'+hl('if (route[i] == 0) { path_a(i); }\nelse                { path_b(i); }   # same code every time')+'</code></pre></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 8px">WHAT THE HARDWARE ACTUALLY DOES</div>'+rows+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'+
+      [p.paths+' pass'+(p.paths===1?'':'es'), eff+'% of peak throughput']
+      .map(c=>'<span style="font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid '+
+        (p.paths===1?'var(--green)':p.paths===2?'var(--amber)':'var(--red)')+';color:'+
+        (p.paths===1?'var(--green)':p.paths===2?'var(--amber)':'var(--red)')+'">'+c+'</span>').join('')+'</div>';
+    note.innerHTML='<div class="'+(p.paths===1?'ok':p.paths===2?'lzwarn':'lzbad')+'">'+p.why+'</div>'+
+      '<div class="simnote" style="margin-top:10px"><b>The fix is almost never to delete the branch.</b> It is to <em>sort the work</em> so that threads travelling together want the same path &mdash; group by route, then launch. The branch is still there; it just stops diverging, because every warp now sees one answer.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Divergence only counts inside a warp.</b> Two different warps taking two different paths costs nothing at all &mdash; they were never going to be issued together. This is why the granularity is worth remembering as 32 rather than as &ldquo;the whole GPU&rdquo;.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: occupancy --- */
+(function(){
+  const ctl=document.getElementById('gpOccCtl'), out=document.getElementById('gpOccOut'), note=document.getElementById('gpOccNote');
+  if(!ctl) return;
+  /* A100 limits per SM: 65536 registers, 164 KB shared memory, 64 warps, 32 blocks */
+  const LIM={regs:65536, smem:164*1024, warps:64, blocks:32};
+  let threads=256, regs=32, smem=16;      /* smem in KB per block */
+  function calc(){
+    const warpsPerBlock=Math.ceil(threads/32);
+    const byReg=Math.floor(LIM.regs/(threads*regs));
+    const bySmem=smem>0?Math.floor(LIM.smem/(smem*1024)):LIM.blocks;
+    const byWarp=Math.floor(LIM.warps/warpsPerBlock);
+    const blocks=Math.max(0,Math.min(byReg,bySmem,byWarp,LIM.blocks));
+    const warps=blocks*warpsPerBlock;
+    const occ=warps/LIM.warps;
+    let binding='the warp budget';
+    if(byReg<=bySmem&&byReg<=byWarp&&byReg<LIM.blocks) binding='registers per thread';
+    else if(bySmem<=byReg&&bySmem<=byWarp&&bySmem<LIM.blocks) binding='shared memory per block';
+    return {warpsPerBlock,byReg,bySmem,byWarp,blocks,warps,occ,binding};
+  }
+  function slider(id,label,val,min,max,step,unit){
+    return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">'+label+'</span><span>'+val+unit+'</span></div>'+
+      '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" style="width:100%"></div>';
+  }
+  function render(){
+    ctl.innerHTML=slider('gpT','threads per block',threads,64,1024,64,'')+
+                  slider('gpR','registers per thread',regs,16,128,8,'')+
+                  slider('gpS','shared memory per block',smem,0,96,8,' KB');
+    const bind=(id,fn)=>{const e=document.getElementById(id); if(e) e.oninput=()=>{fn(+e.value); render();};};
+    bind('gpT',v=>threads=v); bind('gpR',v=>regs=v); bind('gpS',v=>smem=v);
+    const c=calc();
+    const bar=(label,v,max,col)=>'<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:3px">'+
+      '<span style="color:var(--muted)">'+label+'</span><span>'+v+'</span></div>'+
+      '<div style="height:7px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
+      Math.min(100,v/max*100)+'%;background:'+col+'"></i></div></div>';
+    const col=c.occ>=.5?'var(--green)':c.occ>=.25?'var(--amber)':'var(--red)';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE SM &mdash; WHAT FITS</div>'+
+      '<div class="lzhop" style="display:block;padding:12px 14px;border-left-color:'+col+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline"><b>Occupancy</b>'+
+      '<span style="font-family:var(--mono);font-size:20px;color:'+col+'">'+Math.round(c.occ*100)+'%</span></div>'+
+      '<small>'+c.blocks+' block'+(c.blocks===1?'':'s')+' resident &middot; '+c.warps+' of 64 warps available to hide memory latency</small></div>'+
+      '<div style="margin-top:14px">'+
+      bar('blocks allowed by registers',c.byReg,32,'var(--blue)')+
+      bar('blocks allowed by shared memory',c.bySmem>32?32:c.bySmem,32,'var(--violet)')+
+      bar('blocks allowed by the warp limit',c.byWarp,32,'var(--teal)')+'</div>'+
+      '<div class="'+(c.occ>=.5?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+
+      (c.blocks===0?'<b>Nothing fits.</b> One block alone exceeds a per-SM budget &mdash; this configuration will not launch.'
+       :'<b>The binding constraint is '+c.binding+'.</b> Everything else has room to spare, so that is the only number worth changing.')+'</div>';
+    note.innerHTML='<div class="simnote"><b>Why occupancy matters at all:</b> when a warp asks memory for something it waits hundreds of cycles. The SM covers that by running a different warp meanwhile. Few resident warps means nothing to switch to, so the arithmetic units idle through every fetch.</div>'+
+      '<div class="note" style="margin-top:10px"><b>And why chasing 100% is a mistake.</b> Occupancy is a means, not a goal. A kernel using lots of registers per thread often does more work per byte fetched &mdash; and a fast kernel at 25% occupancy beats a slow one at 75%. Raise occupancy when profiling shows the SM stalling with nothing to run, not because the number looks low.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Notice the register cliff.</b> Registers are allocated per thread, so the cost is multiplied by every thread in the block. Going from 32 to 40 registers can drop you a whole block, and the graph falls in steps rather than smoothly &mdash; which is why the fix is often to shave a couple of variables rather than to restructure anything.</div>';
+  }
+  render();
+})();
+
+/* ================= 3 · THE MEMORY LADDER ================= */
+document.getElementById('sec-mem').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Five kinds of memory, each about ten times slower than the one above</h2>
+  <div class="plain-line"><b>In plain English:</b> a GPU does not have &ldquo;memory&rdquo;. It has a ladder of five different memories, and the difference between the top and the bottom is not a few percent &mdash; it is a factor of several hundred. Almost all GPU optimisation is the same move repeated: <b>get the data one rung higher and use it more times while it is there</b>.</div>
+  <div id="gpMemDiag"></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; climb the ladder</h2>
+  <div class="plain-line"><b>Try this:</b> click a rung. Each one shows what it is, who can see it, how fast it is and what you would use it for &mdash; then, at the bottom, what happens to a single number that has to come all the way up from the bottom rung.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>What is in your hand, what is on your desk, what is on the shelf behind you, what is in the stockroom, and what is in a warehouse across town. Same object, wildly different cost to reach for.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>registers</b>, then <b>HBM</b>, and compare the two latency figures.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>latency</b> how long you wait for the value to arrive</span><span class="sp-w"><b>bandwidth</b> how many bytes per second can flow</span><span class="sp-w"><b>cycle</b> one tick of the clock — roughly a billionth of a second, a bit less</span><span class="sp-w"><b>scope</b> who can see this memory: one thread, one block, or everybody</span><span class="sp-w"><b>HBM</b> the card&rsquo;s main memory, physically stacked next to the chip</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpMemOut"></div></div>
+    <div><div class="segmented" id="gpMemPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpMemNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- the memory ladder diagram --- */
+(function(){
+  const h=document.getElementById('gpMemDiag'); if(!h) return;
+  const L=[['Registers','~1 cycle','256 KB / SM','var(--green)'],
+           ['Shared memory / L1','~30 cycles','164 KB / SM','var(--teal)'],
+           ['L2 cache','~200 cycles','40 MB on card','var(--blue)'],
+           ['HBM','~450 cycles','80 GB @ 2 TB/s','var(--amber)'],
+           ['Host RAM (PCIe)','~10 000 cycles','~64 GB/s','var(--red)']];
+  let b='';
+  L.forEach(([n,lat,cap,c],i)=>{
+    const y=16+i*40, w=180+i*56;                 /* max 404 wide, centred on 270 */
+    b+=box(270-w/2,y,w,30,c,'var(--panel2)');
+    b+=t(270-w/2+9,y+19,n,SANS,'start');
+    b+=tm(270+w/2-9,y+19,lat,c,'end');
+    b+=tm(486,y+19,cap,'var(--dim)','start');    /* capacities in their own column */
+  });
+  b+='<line x1="16" y1="22" x2="16" y2="196" style="stroke:var(--wire);stroke-width:1.5" marker-end="url(#ah)"/>';
+  b+=tm(34,212,'slower and larger','var(--dim)','start');
+  h.innerHTML=D('0 0 600 224','Five memory levels drawn as widening bars, fastest at the top',b,
+    'Each bar is one rung; wider means bigger and slower, with the capacity in the right-hand column. The latency figures are approximate and vary by generation &mdash; the ratios between them are the part that holds. Note the last rung: leaving the card at all costs roughly twenty times what reaching its own memory does.');
+})();
+
+/* --- SIM: the memory ladder --- */
+(function(){
+  const pick=document.getElementById('gpMemPick'), out=document.getElementById('gpMemOut'), note=document.getElementById('gpMemNote');
+  if(!pick) return;
+  const M=[
+   {k:'reg',n:'Registers',lat:'~1 cycle',cap:'256 KB per SM (65 536 32-bit registers)',scope:'One thread. Nobody else can see it.',
+    use:'Loop counters, accumulators, anything you touch repeatedly inside a thread.',
+    watch:'Use too many per thread and fewer blocks fit on the SM. Use far too many and the compiler spills them to HBM &mdash; a variable that looks local suddenly costs a main-memory trip.',col:'var(--green)'},
+   {k:'smem',n:'Shared memory / L1',lat:'~30 cycles',cap:'164 KB per SM, split between the two',scope:'One block. All its threads can read and write it.',
+    use:'The staging area for tiling: load a tile once from HBM, then let 256 threads read it many times.',
+    watch:'It is the reason tiling works at all. It is also a per-SM budget, so asking for a lot of it directly reduces how many blocks fit.',col:'var(--teal)'},
+   {k:'l2',n:'L2 cache',lat:'~200 cycles',cap:'40 MB, shared by the whole card',scope:'Every SM. Managed by the hardware, not by you.',
+    use:'You do not allocate it. It catches reuse across blocks that you did not arrange deliberately.',
+    watch:'Big enough to matter for medium working sets and easy to forget. Two kernels can be identical except one happens to fit in L2.',col:'var(--blue)'},
+   {k:'hbm',n:'HBM — the card&rsquo;s main memory',lat:'~450 cycles',cap:'80 GB at about 2.0 TB/s',scope:'Everything. This is where your weights and activations live.',
+    use:'Where data starts and ends. Every kernel reads from here and writes back to here.',
+    watch:'<b>This is the bottleneck for most real work.</b> 2 TB/s sounds enormous until you divide it by 312 TFLOP/s and find the card wants 150 operations per byte.',col:'var(--amber)'},
+   {k:'host',n:'Host RAM, over PCIe',lat:'~10 000 cycles',cap:'System memory, roughly 64 GB/s',scope:'The CPU&rsquo;s memory. Reaching it means leaving the card.',
+    use:'Loading weights at startup, returning results. Not somewhere to visit inside a loop.',
+    watch:'Roughly thirty times less bandwidth than HBM. A pipeline that accidentally round-trips through host memory each step will be slower than not using a GPU at all.',col:'var(--red)'}
+  ];
+  let cur='reg';
+  function render(){
+    pick.innerHTML=M.map(m=>'<button class="seg'+(cur===m.k?' on':'')+'" data-k="'+m.k+'" style="text-align:left">'+
+      '<b style="font-size:12.5px">'+m.n+'</b><br><small style="font-family:var(--mono);font-size:10.5px;color:'+m.col+'">'+m.lat+'</small></button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const m=M.find(x=>x.k===cur), i=M.indexOf(m);
+    const row=(k,v)=>'<div style="display:flex;gap:10px;margin-bottom:6px"><span style="font-family:var(--mono);font-size:10.5px;color:var(--muted);min-width:96px">'+k+'</span><span style="font-size:13px">'+v+'</span></div>';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">RUNG '+(i+1)+' OF 5</div>'+
+      '<div class="lzhop" style="display:block;padding:12px 14px;border-left-color:'+m.col+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px"><b style="font-size:15px">'+m.n+'</b>'+
+      '<span style="font-family:var(--mono);font-size:14px;color:'+m.col+'">'+m.lat+'</span></div>'+
+      row('capacity',m.cap)+row('who sees it',m.scope)+row('what for',m.use)+'</div>'+
+      '<div class="'+(i<2?'ok':i<4?'lzwarn':'lzbad')+'" style="margin-top:12px;padding:11px 13px">'+m.watch+'</div>'+
+      '<div class="dim" style="font-size:11px;margin:16px 0 6px">COST OF ONE VALUE, RELATIVE TO A REGISTER</div>'+
+      '<div style="display:flex;gap:5px;align-items:flex-end;height:70px">'+
+      M.map((x,j)=>{
+        const rel=[1,30,200,450,10000][j];
+        const hgt=Math.max(4,Math.log10(rel+1)/4*70);
+        return '<div style="flex:1;text-align:center"><div style="height:'+hgt+'px;background:'+x.col+';opacity:'+(j===i?1:.35)+';border-radius:3px 3px 0 0"></div>'+
+        '<div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px">'+(rel<1000?rel+'&times;':'10k&times;')+'</div></div>';
+      }).join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:4px">log scale &mdash; a linear one would make the last bar the only visible thing</div>';
+    note.innerHTML='<div class="simnote"><b>The whole of GPU optimisation, in one sentence:</b> move data up a rung and use it more times while it is there. Tiling does it, fusion does it, FlashAttention does it, and the KV cache is the same instinct applied to a different problem.</div>'+
+      (cur==='hbm'?'<div class="lzwarn" style="margin-top:10px"><b>Worth pausing here.</b> Everything downstream in this lab &mdash; the roofline, coalescing, tiling, fusion &mdash; exists because of the gap between this rung and the arithmetic units. If you remember one rung, remember this one and the 150-operations-per-byte number attached to it.</div>':'')+
+      (cur==='host'?'<div class="lzbad" style="margin-top:10px"><b>This is the rung people fall off without noticing.</b> A tensor that is not where you think it is, a <span class="k">.cpu()</span> inside a loop, a data loader that is not pinned &mdash; each of these silently inserts the slowest rung into your hot path, and the code reads perfectly normally.</div>':'')+
+      '<div class="note" style="margin-top:10px"><b>The cycle counts are approximate</b> and differ across generations and access patterns; treat them as orders of magnitude. The ordering and the rough ratios are what stay true.</div>';
+  }
+  render();
+})();
+
+/* ================= 4 · ROOFLINE ================= */
+document.getElementById('sec-roof').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">One number tells you which half of the machine you are wasting</h2>
+  <div class="plain-line"><b>In plain English:</b> every piece of work moves some bytes and does some arithmetic. Divide the second by the first and you get <b>arithmetic intensity</b> &mdash; operations per byte. The machine has its own number: the point where its arithmetic capacity and its memory bandwidth are exactly balanced. Compare the two and you know, before writing any code, whether you are limited by the maths or by the fetching.</div>
+  <div class="plain-line"><b>On the reference A100</b>, using tensor cores: 312&nbsp;TFLOP/s &divide; 2.0&nbsp;TB/s &asymp; <b>156 operations per byte</b>. Work with a lower intensity than that cannot use the arithmetic units fully no matter how good your code is, because the data cannot arrive fast enough. Work above it is limited by arithmetic and nothing else.</div>
+  <div class="plain-line"><b>Why this is the most useful idea in the lab:</b> it tells you which optimisations are pointless. If you are memory-bound, a faster maths routine changes nothing &mdash; and people spend weeks on that. The only things that help are moving fewer bytes or reusing each one more.</div>
+  <div class="code"><pre><code>${hl('attainable FLOP/s = min( peak FLOP/s ,  arithmetic intensity x memory bandwidth )\n\n# the ridge point — where the two terms are equal:\n#   ridge = peak FLOP/s / bandwidth = 312e12 / 2.0e12 = 156 FLOP per byte')}</code></pre></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; put a real operation on the roofline</h2>
+  <div class="plain-line"><b>Try this:</b> six operations you actually run. Each one shows the bytes it moves, the arithmetic it does, and where that lands. Watch how far to the left almost everything sits &mdash; and then look at what happens when the batch size changes.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A kitchen with one enormous oven and one small door. Whether you can cook faster depends entirely on whether you are oven-limited or door-limited, and no amount of extra oven helps if the ingredients cannot get in.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>adding two vectors</b>, the simplest possible operation, and look at how badly it uses the card.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>arithmetic intensity</b> operations performed per byte fetched</span><span class="sp-w"><b>FLOP</b> one floating-point operation, e.g. one multiply or one add</span><span class="sp-w"><b>memory-bound</b> waiting for data; the arithmetic units are idle</span><span class="sp-w"><b>compute-bound</b> the arithmetic units are the limit; memory is keeping up</span><span class="sp-w"><b>ridge point</b> the intensity at which the two are exactly balanced</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpRoofPlot"></div><div id="gpRoofOut" style="margin-top:12px"></div></div>
+    <div><div class="segmented" id="gpRoofPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpRoofNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: roofline --- */
+(function(){
+  const pick=document.getElementById('gpRoofPick'), plot=document.getElementById('gpRoofPlot'),
+        out=document.getElementById('gpRoofOut'), note=document.getElementById('gpRoofNote');
+  if(!pick) return;
+  const PEAK=312e12, BW=2.0e12, RIDGE=PEAK/BW;      /* 156 FLOP/byte */
+  const OPS=[
+   {k:'add',n:'Add two vectors (FP16)',ai:0.25,
+    detail:'Reads two values, writes one &mdash; 6 bytes for a single addition.',
+    fix:'Nothing will fix this operation on its own. The fix is to stop having it as its own operation: <b>fuse it</b> into whatever produced its input, so the values never go back to HBM at all.'},
+   {k:'norm',n:'LayerNorm over a row',ai:0.5,
+    detail:'Two passes over the row for mean and variance, then a scale. Almost all fetching.',
+    fix:'A classic fusion candidate &mdash; and the reason libraries ship fused LayerNorm kernels rather than composing it from primitives.'},
+   {k:'gemv',n:'Matrix &times; vector — decode, batch 1',ai:1.0,
+    detail:'Every weight is read once and used for exactly one multiply-add. No reuse whatsoever.',
+    fix:'<b>This is why single-request LLM decoding is so wasteful.</b> You read the entire weight matrix to produce one token. The arithmetic units are idle for essentially the whole kernel.'},
+   {k:'gemv32',n:'Matrix &times; 32 vectors — decode, batch 32',ai:29,
+    detail:'The same weights read once, now used for 32 columns of output.',
+    fix:'<b>Batching did not make the maths faster &mdash; it made the fetching count for more.</b> Each weight now does 32&times; the work per trip from HBM. This is the whole economic argument for continuous batching, and it is a roofline argument.'},
+   {k:'gemm',n:'Matrix &times; matrix, 4096&sup3;',ai:170,
+    detail:'Each input element participates in thousands of multiply-adds once tiled properly.',
+    fix:'Above the ridge point. Here, and essentially only here, does a faster arithmetic unit actually buy you anything.'},
+   {k:'attn',n:'Attention, unfused, long sequence',ai:2.5,
+    detail:'Writes the whole score matrix to HBM, reads it back for the softmax, reads it again for the weighted sum.',
+    fix:'The intensity is low because of the round-trips, not because of the maths. Fuse the three steps and keep the tile in shared memory and the same arithmetic becomes compute-bound &mdash; which is exactly what FlashAttention does.'}
+  ];
+  let cur='add';
+  function render(){
+    pick.innerHTML=OPS.map(o=>'<button class="seg'+(cur===o.k?' on':'')+'" data-k="'+o.k+'" style="text-align:left">'+
+      '<span style="font-size:12px">'+o.n+'</span><br><small style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+o.ai+' FLOP/byte</small></button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const o=OPS.find(x=>x.k===cur);
+    const att=Math.min(PEAK, o.ai*BW), pct=att/PEAK*100, bound=o.ai<RIDGE?'memory':'compute';
+    /* log-log plot, x from 0.1 to 1000 FLOP/byte */
+    const X=x=>60+(Math.log10(x)+1)/4*480, Y=f=>190-(Math.log10(f)-11)/2.6*160;
+    let b='';
+    b+='<line x1="60" y1="190" x2="556" y2="190" style="stroke:var(--wire)"/>';
+    b+='<line x1="60" y1="26" x2="60" y2="190" style="stroke:var(--wire)"/>';
+    /* the roof: slanted then flat */
+    b+='<path d="M '+X(0.1)+' '+Y(0.1*BW)+' L '+X(RIDGE)+' '+Y(PEAK)+' L '+X(1000)+' '+Y(PEAK)+'" style="fill:none;stroke:var(--blue);stroke-width:2"/>';
+    b+='<line x1="'+X(RIDGE)+'" y1="'+Y(PEAK)+'" x2="'+X(RIDGE)+'" y2="190" style="stroke:var(--violet);stroke-width:1;stroke-dasharray:4 3"/>';
+    b+=tm(X(RIDGE),204,'ridge 156','var(--violet)');
+    b+=tm(X(0.1),204,'0.1','var(--dim)')+tm(X(10),204,'10','var(--dim)')+tm(X(1000),204,'1000','var(--dim)');
+    b+=tm(300,218,'arithmetic intensity — FLOP per byte','var(--muted)');
+    b+=tm(60,18,'attainable FLOP/s','var(--muted)','start');
+    b+=tm(556,Y(PEAK)-8,'312 TFLOP/s peak','var(--blue)','end');
+    /* the point */
+    const px=X(o.ai), py=Y(att);
+    b+='<line x1="'+px+'" y1="190" x2="'+px+'" y2="'+py+'" style="stroke:var(--amber);stroke-dasharray:3 3"/>';
+    b+='<circle cx="'+px+'" cy="'+py+'" r="6" style="fill:var(--amber);stroke:var(--panel);stroke-width:2"/>';
+    plot.innerHTML=D('0 0 600 230','Roofline plot with the selected operation marked',b,
+      'The sloped line is what memory bandwidth allows; the flat line is what the arithmetic units allow. The corner where they meet is the ridge point. Anything to its left is limited by fetching, however good the code is.');
+    out.innerHTML='<div class="lzhop" style="display:block;padding:12px 14px;border-left-color:'+(bound==='memory'?'var(--red)':'var(--green)')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline"><b>'+o.n+'</b>'+
+      '<span style="font-family:var(--mono);font-size:13px;color:'+(bound==='memory'?'var(--red)':'var(--green)')+'">'+
+      bound.toUpperCase()+'-BOUND</span></div><small>'+o.detail+'</small></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'+
+      [o.ai+' FLOP/byte', (att/1e12).toFixed(1)+' TFLOP/s attainable', pct.toFixed(1)+'% of peak arithmetic']
+      .map(c=>'<span style="font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid '+
+        (pct>50?'var(--green)':pct>10?'var(--amber)':'var(--red)')+';color:'+(pct>50?'var(--green)':pct>10?'var(--amber)':'var(--red)')+'">'+c+'</span>').join('')+'</div>';
+    note.innerHTML='<div class="'+(bound==='memory'?'lzwarn':'ok')+'">'+o.fix+'</div>'+
+      (bound==='memory'
+        ? '<div class="simnote" style="margin-top:10px"><b>What is worth doing when you are here:</b> move fewer bytes (a smaller dtype, quantisation), or get more work out of each byte (batching, tiling, fusion). What is <em>not</em> worth doing: anything that makes the arithmetic faster. The arithmetic is already waiting.</div>'
+        : '<div class="simnote" style="margin-top:10px"><b>Here, and only here, the usual instincts apply.</b> Better arithmetic, tensor cores and lower precision all pay off, because the data is arriving fast enough to use them.</div>')+
+      '<div class="note" style="margin-top:10px"><b>Compare the two matrix-vector entries.</b> Same operation, same weights, same hardware &mdash; batch 1 sits at 1 FLOP/byte and batch 32 at 29. Nothing about the arithmetic changed. That gap is why serving engines go to such lengths to keep a batch full, and it is the clearest example of a roofline argument driving a real design.</div>';
+  }
+  render();
+})();
+
+/* ================= 5 · ACCESS PATTERNS ================= */
+document.getElementById('sec-coal').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Memory arrives in blocks whether you wanted the whole block or not</h2>
+  <div class="plain-line"><b>In plain English:</b> HBM cannot hand you four bytes. The smallest thing it will move is a <b>32-byte sector</b>, and a warp&rsquo;s request is served in units of those. So when 32 threads each ask for one 4-byte value, what matters is not how much data they want &mdash; it is how many separate sectors those 32 values are spread across.</div>
+  <div class="plain-line">If the values sit next to each other, the whole warp is served by <b>four sectors</b> and every byte fetched gets used. If they are scattered, the hardware fetches up to <b>32 sectors</b> to deliver the same 128 bytes of useful data &mdash; and throws most of it away. Identical arithmetic, identical amount of data wanted, up to 8&times; the memory traffic.</div>
+  <div class="plain-line"><b>The word for the good case is <em>coalesced</em>.</b> It is one of the highest-leverage things to get right, because it usually costs nothing &mdash; it is a choice about which thread reads which element, not about the algorithm.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; change who reads what</h2>
+  <div class="plain-line"><b>Try this:</b> the same 32 threads want 32 values, every time. Only the pattern changes. Watch the sector count and the wasted bytes &mdash; and note that the two-row stride case is not a made-up example, it is what you get by reading a matrix down a column.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A delivery van that only carries full pallets. Thirty-two items on one pallet is one trip. The same thirty-two items on thirty-two different pallets is thirty-two trips, carrying almost entirely air.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>consecutive</b> with <b>stride 32</b> and read the wasted-bytes figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>coalesced</b> the warp&rsquo;s reads fall into as few blocks as possible</span><span class="sp-w"><b>sector</b> the 32-byte unit memory is actually moved in</span><span class="sp-w"><b>stride</b> the gap between the addresses successive threads read</span><span class="sp-w"><b>row-major</b> a matrix stored one whole row after another</span><span class="sp-w"><b>transaction</b> one trip to memory</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpCoalOut"></div></div>
+    <div><div class="segmented" id="gpCoalPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpCoalNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: coalescing --- */
+(function(){
+  const pick=document.getElementById('gpCoalPick'), out=document.getElementById('gpCoalOut'), note=document.getElementById('gpCoalNote');
+  if(!pick) return;
+  const SECTOR=32, ELEM=4;                     /* bytes */
+  const P={
+   seq :{label:'Consecutive — thread i reads element i', idx:i=>i,
+     code:'val = data[base + tid];',
+     why:'<b>The good case.</b> 32 threads, 128 contiguous bytes, four sectors. Every byte fetched is a byte used.'},
+   s2  :{label:'Stride 2 — every other element', idx:i=>i*2,
+     code:'val = data[base + tid * 2];',
+     why:'Half of every sector is wasted. The read still works and nothing in the code looks wrong &mdash; you have simply doubled your memory traffic.'},
+   s32 :{label:'Stride 32 — reading down a matrix column', idx:i=>i*32,
+     code:'val = matrix[tid * ncols + col];   // row-major, walking a column',
+     why:'<b>The classic mistake, and it looks completely reasonable.</b> In a row-major matrix, consecutive threads reading down a column land one whole row apart. Every thread pulls its own sector and uses 4 of its 32 bytes.'},
+   rand:{label:'Scattered — gather through an index list', idx:i=>[7,19,3,28,11,0,24,15,31,5,22,9,17,2,26,13,30,8,21,1,25,12,18,4,29,16,6,23,10,27,14,20][i]*16,
+     code:'val = data[index[tid]];           // gather',
+     why:'Unavoidable in some algorithms &mdash; sparse work, embedding lookups, mixture-of-experts routing. Worth knowing the cost so you spend effort where it is forced rather than where it was an accident.'},
+   bcast:{label:'All 32 read the same address', idx:i=>0,
+     code:'val = data[0];                    // broadcast',
+     why:'<b>Also fine.</b> The hardware recognises this and broadcasts one fetched value to every lane. Same address is cheap; <em>nearly</em> the same address is what costs you.'}
+  };
+  let cur='seq';
+  function render(){
+    pick.innerHTML=Object.entries(P).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.label+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const p=P[cur];
+    const addrs=[...Array(32)].map((_,i)=>p.idx(i)*ELEM);
+    const sectors=new Set(addrs.map(a=>Math.floor(a/SECTOR)));
+    const fetched=sectors.size*SECTOR, useful=32*ELEM, waste=fetched-useful;
+    const eff=useful/fetched*100;
+    /* draw the sectors touched, capped for legibility */
+    const maxS=Math.max(...sectors)+1;
+    const show=Math.min(maxS,40);
+    let cells='';
+    for(let s=0;s<show;s++){
+      const hit=sectors.has(s);
+      cells+='<span title="sector '+s+'" style="display:inline-block;width:9px;height:20px;margin:0 2px 2px 0;border-radius:2px;background:'+
+        (hit?'var(--amber)':'var(--line2)')+';opacity:'+(hit?1:.35)+'"></span>';
+    }
+    if(maxS>show) cells+='<span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:4px">+'+(maxS-show)+' more</span>';
+    const col=eff>90?'var(--green)':eff>40?'var(--amber)':'var(--red)';
+    out.innerHTML='<div class="code"><pre><code>'+hl(p.code)+'</code></pre></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">32 THREADS ASK FOR 32 VALUES &mdash; 128 BYTES OF USEFUL DATA</div>'+
+      '<div class="dim" style="font-size:11px;margin:12px 0 6px">SECTORS THE HARDWARE ACTUALLY FETCHES</div>'+
+      '<div style="line-height:1">'+cells+'</div>'+
+      '<div style="margin-top:14px">'+
+      [['sectors fetched',sectors.size+' &times; 32 B'],['bytes moved',fetched+' B'],
+       ['bytes you wanted',useful+' B'],['wasted',waste+' B']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px;align-items:center">'+
+      '<span style="font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid '+col+';color:'+col+'">'+
+      eff.toFixed(0)+'% of fetched bytes used</span>'+
+      (sectors.size>4?'<span style="font-family:var(--mono);font-size:11.5px;color:var(--red)">'+(sectors.size/4).toFixed(0)+'&times; the traffic of the good case</span>':'')+'</div>';
+    note.innerHTML='<div class="'+(eff>90?'ok':eff>40?'lzwarn':'lzbad')+'">'+p.why+'</div>'+
+      (cur==='s32'
+        ? '<div class="simnote" style="margin-top:10px"><b>The fix is usually free.</b> Either swap which index the thread varies over, or stage the tile through shared memory &mdash; read it coalesced once, then let threads pick out whatever they need from the fast copy. That second move is exactly tiling, which is the next section.</div>'
+        : '<div class="simnote" style="margin-top:10px"><b>Note what is <em>not</em> the variable here.</b> Every pattern asks for the same 128 bytes and does the same arithmetic. The only thing that changed is which thread wanted which element, and it moved memory traffic by up to eight times.</div>')+
+      '<div class="note" style="margin-top:10px"><b>Sector size is a hardware fact, not a tunable.</b> It is 32 bytes on current NVIDIA parts, with a 128-byte cache line above it. You cannot ask for less, so the only lever you have is making sure the bytes that arrive alongside the one you wanted are ones you also wanted.</div>';
+  }
+  render();
+})();
+
+/* ================= 6 · TILING ================= */
+document.getElementById('sec-tile').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The same numbers, fetched once instead of a thousand times</h2>
+  <div class="plain-line"><b>In plain English:</b> matrix multiply has a lot of arithmetic in it, but written naively it also has an absurd amount of fetching. Every output element needs a whole row and a whole column, and the obvious implementation goes back to main memory for each one &mdash; so the same row gets read again for every output element along it.</div>
+  <div class="plain-line"><b>Tiling fixes it with one idea:</b> cut the matrices into small squares, load one square of each into shared memory, and let every thread in the block compute against the fast copy. A value fetched once from HBM now serves the whole tile instead of one thread. Nothing about the arithmetic changes &mdash; you do exactly the same multiplies and adds. Only the fetching changes, by a factor of the tile width.</div>
+  <div class="plain-line"><b>This is the roofline idea made concrete.</b> Naive matmul is memory-bound and hopeless; tiled matmul is compute-bound and reaches most of peak. Same maths, and the difference is entirely about how many times each byte crosses the slowest gap.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; count the trips to memory</h2>
+  <div class="plain-line"><b>Try this:</b> multiply two square matrices. Change the size and the tile width, and watch how many times each input value has to be read from HBM. The arithmetic count never moves.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Cooking from a recipe kept in another room. You can walk through for each ingredient as you need it, or carry the page in once and work from it. Same dish, wildly different number of trips.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>leave the size at 4096 and move the tile width from <b>1</b> (which is the naive version) up to <b>32</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tile</b> a small square of the matrix, small enough to hold in fast memory</span><span class="sp-w"><b>reuse</b> how many times each fetched value gets used before being discarded</span><span class="sp-w"><b>shared memory</b> the fast scratch space a block&rsquo;s threads share</span><span class="sp-w"><b>FLOP</b> one floating-point operation</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpTileOut"></div></div>
+    <div><div class="segmented" id="gpTileCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpTileNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: tiling --- */
+(function(){
+  const ctl=document.getElementById('gpTileCtl'), out=document.getElementById('gpTileOut'), note=document.getElementById('gpTileNote');
+  if(!ctl) return;
+  let N=4096, T=1, bytes=2;                      /* FP16 */
+  const BW=2.0e12, PEAK=312e12;
+  function calc(){
+    const flops=2*Math.pow(N,3);
+    /* naive (T=1): each output reads N of A and N of B. tiled: each value read N/T times */
+    const reads=2*Math.pow(N,3)/T;               /* element reads from HBM */
+    const bytesMoved=reads*bytes + N*N*bytes;    /* plus writing C */
+    const ai=flops/bytesMoved;
+    const att=Math.min(PEAK, ai*BW);
+    const secs=flops/att;
+    const smem=2*T*T*bytes;                      /* two tiles in shared memory */
+    return {flops,bytesMoved,ai,att,secs,smem,reuse:T};
+  }
+  function slider(id,label,val,min,max,step,fmt){
+    return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">'+label+'</span><span>'+fmt+'</span></div>'+
+      '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" style="width:100%"></div>';
+  }
+  const TILES=[1,2,4,8,16,32,64];
+  function render(){
+    const ti=TILES.indexOf(T)<0?0:TILES.indexOf(T);
+    ctl.innerHTML=slider('gpN','matrix size N (N&times;N)',Math.log2(N),9,13,1,N+' &times; '+N)+
+                  slider('gpTt','tile width',ti,0,TILES.length-1,1,T===1?'1 (naive — no tiling)':T+' &times; '+T);
+    const n=document.getElementById('gpN'); if(n) n.oninput=()=>{N=Math.pow(2,+n.value); render();};
+    const t2=document.getElementById('gpTt'); if(t2) t2.oninput=()=>{T=TILES[+t2.value]; render();};
+    const c=calc();
+    const fmtB=b=>b>1e12?(b/1e12).toFixed(1)+' TB':b>1e9?(b/1e9).toFixed(1)+' GB':(b/1e6).toFixed(0)+' MB';
+    const bound=c.ai<156?'memory':'compute';
+    const col=bound==='compute'?'var(--green)':c.ai>20?'var(--amber)':'var(--red)';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">MULTIPLYING TWO '+N+'&times;'+N+' FP16 MATRICES</div>'+
+      [['arithmetic to do',(c.flops/1e12).toFixed(1)+' TFLOP — fixed, never changes'],
+       ['each input value read',c.reuse===1?'N times (once per output along its row)':'N/'+T+' times'],
+       ['bytes moved from HBM',fmtB(c.bytesMoved)],
+       ['arithmetic intensity',c.ai.toFixed(1)+' FLOP/byte'],
+       ['shared memory per block',c.smem<1024?c.smem+' B':(c.smem/1024).toFixed(1)+' KB'],
+       ['estimated time',c.secs<1?(c.secs*1000).toFixed(1)+' ms':c.secs.toFixed(2)+' s']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+
+      '<div style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">of the card&rsquo;s peak arithmetic</span><span style="color:'+col+'">'+(c.att/PEAK*100).toFixed(1)+'%</span></div>'+
+      '<div style="height:9px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
+      (c.att/PEAK*100)+'%;background:'+col+'"></i></div></div>'+
+      '<div class="'+(bound==='compute'?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+
+      (bound==='compute'
+        ? '<b>Compute-bound.</b> Past the ridge point at 156 FLOP/byte, so the arithmetic units are the limit and the memory system is keeping up.'
+        : '<b>Memory-bound at '+c.ai.toFixed(1)+' FLOP/byte.</b> Below the ridge point of 156, so the arithmetic units spend most of their time waiting.')+'</div>';
+    note.innerHTML =
+      (T===1
+        ? '<div class="lzbad"><b>This is the naive version, and look at the traffic.</b> Every value of A is read once for every column of B. The arithmetic is unchanged and the card runs at a few percent of what it can do.</div>'
+        : '<div class="ok"><b>Reuse of '+T+'&times;.</b> Each value loaded into shared memory is now used by '+T+' threads before being discarded, so the HBM traffic falls by the same factor. The multiplies and adds are identical.</div>')+
+      (c.smem>48*1024
+        ? '<div class="lzwarn" style="margin-top:10px"><b>But this tile will not fit well.</b> '+(c.smem/1024).toFixed(0)+'&nbsp;KB of shared memory per block, against 164&nbsp;KB per SM, means barely any blocks fit and you lose the ability to hide latency. Bigger tiles are not monotonically better &mdash; there is a middle, and it is usually 32 or 64.</div>'
+        : '')+
+      '<div class="simnote" style="margin-top:10px"><b>The shape of the trade:</b> a wider tile means more reuse and less traffic, but also more shared memory per block and therefore fewer blocks resident. You are trading memory traffic against latency hiding, and the answer is in the middle rather than at either end.</div>'+
+      '<div class="note" style="margin-top:10px"><b>You will almost never write this yourself.</b> cuBLAS and CUTLASS have spent years on the tile shapes for each generation. It is worth understanding because it is the mechanism behind every &ldquo;fused&rdquo; kernel you will meet &mdash; and because when a matmul is unexpectedly slow, it is usually because the shapes stopped the library from tiling well.</div>';
+  }
+  render();
+})();
+
+/* ================= 7 · TENSOR CORES ================= */
+document.getElementById('sec-tc').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A second set of arithmetic units that only do one thing</h2>
+  <div class="plain-line"><b>In plain English:</b> alongside the ordinary arithmetic units, the card has dedicated hardware that does nothing but multiply small matrices and add the result to an accumulator. It is enormously faster at that one job &mdash; on the reference machine, 312&nbsp;TFLOP/s against 19.5 &mdash; and completely useless for anything else.</div>
+  <div class="plain-line"><b>The catch is precision.</b> Tensor cores want their inputs in a smaller number format &mdash; 16 bits rather than 32, or fewer. They accumulate in higher precision, which is what keeps the result usable, but the inputs are rounded. For neural network training and inference this turns out to be fine; for numerical work where small differences matter it is not.</div>
+  <div class="plain-line"><b>Two consequences worth carrying:</b> first, a huge fraction of the &ldquo;this card is N&times; faster&rdquo; number in any datasheet is a tensor-core number, achievable only on matrix work at low precision. Second, if your shapes do not line up with what the tensor cores want &mdash; multiples of 8 or 16 depending on format &mdash; the library quietly falls back and you get the small number instead of the big one.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; pick a number format and see what it buys and costs</h2>
+  <div class="plain-line"><b>Try this:</b> the same matrix multiply in five formats. Watch throughput, memory, and what happens to the numbers themselves &mdash; the last column is the one people discover late.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Measuring timber to the nearest millimetre or the nearest centimetre. The coarser measurement is quicker and lighter to record, and for a garden fence it makes no difference at all. For a violin it does.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>FP32</b> and <b>FP16 with tensor cores</b> — then read the range warning on FP16.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>precision</b> how finely a number can be represented</span><span class="sp-w"><b>range</b> the largest and smallest magnitudes a format can hold at all</span><span class="sp-w"><b>accumulate</b> add up many products; done at higher precision than the inputs</span><span class="sp-w"><b>mixed precision</b> low-precision inputs, higher-precision running total</span><span class="sp-w"><b>overflow</b> a value too large for the format, which becomes infinity</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpTcOut"></div></div>
+    <div><div class="segmented" id="gpTcPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpTcNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: number formats --- */
+(function(){
+  const pick=document.getElementById('gpTcPick'), out=document.getElementById('gpTcOut'), note=document.getElementById('gpTcNote');
+  if(!pick) return;
+  const F=[
+   {k:'fp32',n:'FP32',bits:32,tf:19.5,tc:false,mant:'24 bits of precision',range:'~1e±38',
+    use:'The safe default. Optimisers, loss scaling, anything where you are not sure.',
+    risk:'None numerically &mdash; and it leaves 94% of the card&rsquo;s arithmetic capacity unused, because it cannot touch the tensor cores at all.',col:'var(--blue)'},
+   {k:'tf32',n:'TF32',bits:32,tf:156,tc:true,mant:'11 bits of precision, FP32 range',
+    range:'~1e±38 — same as FP32',
+    use:'The quiet default on modern PyTorch for matmuls. Same range as FP32, less precision, 8&times; the throughput.',
+    risk:'Storage is still 32 bits, so it saves no memory at all &mdash; only time. Easy to assume it halved your footprint. It did not.',col:'var(--teal)'},
+   {k:'fp16',n:'FP16',bits:16,tf:312,tc:true,mant:'11 bits of precision',range:'~1e±5 — the narrow one',
+    use:'Inference, and training with loss scaling. Half the memory and 16&times; the arithmetic of FP32.',
+    risk:'<b>The range is the problem, not the precision.</b> Gradients smaller than about 6e-8 become zero, and values above 65 504 become infinity. This is why FP16 training needs loss scaling &mdash; multiply the loss up, do the backward pass, scale back down.',col:'var(--amber)'},
+   {k:'bf16',n:'BF16',bits:16,tf:312,tc:true,mant:'8 bits of precision',range:'~1e±38 — same as FP32',
+    use:'The format most large-model training has settled on. Same range as FP32, so no loss scaling needed.',
+    risk:'Less precision than FP16 &mdash; it traded mantissa bits for exponent bits. In practice that trade is the right way round for neural networks, which care about range far more than about the last digit.',col:'var(--green)'},
+   {k:'fp8',n:'FP8',bits:8,tf:624,tc:true,mant:'3 or 4 bits of precision',range:'narrow, and format-dependent',
+    use:'Inference on Hopper and later, and increasingly training with careful scaling per tensor.',
+    risk:'Needs scaling factors maintained per tensor to stay usable, and support is uneven across hardware and libraries. Real gains, real operational cost.',col:'var(--violet)'}
+  ];
+  let cur='fp32';
+  function render(){
+    pick.innerHTML=F.map(f=>'<button class="seg'+(cur===f.k?' on':'')+'" data-k="'+f.k+'" style="text-align:left">'+
+      '<b style="font-family:var(--mono);font-size:12px">'+f.n+'</b> <small style="color:var(--muted)">'+f.bits+'-bit'+(f.tc?' · tensor cores':'')+'</small></button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const f=F.find(x=>x.k===cur), base=F[0];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">4096&sup3; MATRIX MULTIPLY IN '+f.n+'</div>'+
+      '<div style="display:flex;gap:5px;align-items:flex-end;height:96px;margin-bottom:12px">'+
+      F.map(x=>{
+        const h=Math.max(5,x.tf/624*92);
+        return '<div style="flex:1;text-align:center">'+
+        '<div style="font-family:var(--mono);font-size:9.5px;color:'+(x.k===cur?x.col:'var(--dim)')+';margin-bottom:3px">'+x.tf+'</div>'+
+        '<div style="height:'+h+'px;background:'+x.col+';opacity:'+(x.k===cur?1:.3)+';border-radius:3px 3px 0 0"></div>'+
+        '<div style="font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:4px">'+x.n+'</div></div>';
+      }).join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-bottom:12px">peak TFLOP/s on the reference machine</div>'+
+      [['throughput',f.tf+' TFLOP/s &mdash; '+(f.tf/base.tf).toFixed(1)+'&times; FP32'],
+       ['memory for the weights',(f.bits/8*4096*4096/1e6).toFixed(0)+' MB per matrix &mdash; '+(f.bits/32).toFixed(2)+'&times; FP32'],
+       ['uses tensor cores',f.tc?'yes':'<b>no</b>'],
+       ['precision',f.mant],['range',f.range]]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+
+      '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:12px;border-left-color:'+f.col+'"><b>What it is for</b><small>'+f.use+'</small></div>';
+    note.innerHTML='<div class="'+(cur==='fp32'?'lzwarn':cur==='fp16'?'lzbad':'ok')+'">'+f.risk+'</div>'+
+      '<div class="simnote" style="margin-top:10px"><b>The comparison worth internalising is FP16 against BF16.</b> Same size, same speed, same tensor cores. FP16 spends its bits on precision and BF16 on range &mdash; and for neural networks range wins, which is why large-model training converged on BF16 and stopped needing loss scaling.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Shapes decide whether you get any of this.</b> Tensor cores work on fixed tile sizes, so dimensions that are not multiples of 8 or 16 make the library pad or fall back &mdash; and a fallback quietly gives you the FP32 number. A hidden size of 4096 is a good number for reasons that have nothing to do with modelling.</div>'+
+      '<div class="note" style="margin-top:10px"><b>And accumulation is not done in the input format.</b> Tensor cores multiply in low precision and add into a higher-precision accumulator, usually FP32. That is the design that makes the whole trade viable &mdash; without it, summing thousands of low-precision products would drift badly.</div>';
+  }
+  render();
+})();
+
+/* ================= 8 · FUSION & FLASHATTENTION ================= */
+document.getElementById('sec-fuse').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Every separate operation is a round trip to slow memory</h2>
+  <div class="plain-line"><b>In plain English:</b> when you write four operations in a row, you usually get four kernels. Each one reads its input from HBM, does a small amount of work, and writes its output back to HBM &mdash; where the next one immediately reads it again. For cheap operations the reading and writing <em>is</em> the cost; the arithmetic is a rounding error.</div>
+  <div class="plain-line"><b>Fusion means doing them in one kernel</b>, keeping the intermediate values in registers or shared memory and never sending them back down the ladder. The arithmetic is identical. You have simply stopped paying four times for something you can pay for once.</div>
+  <div class="plain-line">There is a second cost people forget: each kernel launch has fixed overhead of a few microseconds. When a model is a long chain of small operations, launch overhead alone can dominate &mdash; and it is why <span class="k">torch.compile</span> and CUDA graphs exist.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; fuse a chain and watch the traffic collapse</h2>
+  <div class="plain-line"><b>Try this:</b> a small chain of operations of the kind that appears everywhere in a transformer. Fuse them one at a time and watch the bytes moved, the kernel launches and the time.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Making a sandwich by fetching the bread, putting it back, fetching the butter, putting it back, fetching the filling. Or getting everything out once and assembling it on the counter.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>start with <b>nothing fused</b> and fuse one step at a time, watching the HBM figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>kernel</b> one function launched onto the GPU</span><span class="sp-w"><b>fusion</b> doing several operations inside one kernel</span><span class="sp-w"><b>intermediate</b> a value produced by one step purely to feed the next</span><span class="sp-w"><b>launch overhead</b> the fixed cost of starting any kernel at all</span><span class="sp-w"><b>elementwise</b> an operation applied to each value independently</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpFuseOut"></div></div>
+    <div><div class="segmented" id="gpFusePick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpFuseNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; the attention matrix that is never written down</h2>
+  <div class="plain-line"><b>Try this:</b> attention computed the obvious way builds an N&times;N score matrix in memory. Move the sequence length and watch that number grow quadratically &mdash; then switch to the tiled version and watch it stop existing.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Adding up a long column of figures. You can copy every subtotal onto a fresh sheet as you go, or keep a running total in your head and never write the intermediate steps at all.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the sequence length to <b>8192</b> with the standard version, and read the memory figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sequence length</b> how many tokens are being attended over</span><span class="sp-w"><b>score matrix</b> every token&rsquo;s relevance to every other token — N&times;N of them</span><span class="sp-w"><b>softmax</b> turns raw scores into weights that add to one</span><span class="sp-w"><b>online softmax</b> computing that running total without seeing all the scores at once</span><span class="sp-w"><b>quadratic</b> doubling the input makes it four times bigger</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpFlashOut"></div></div>
+    <div><div class="segmented" id="gpFlashCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpFlashNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: operator fusion --- */
+(function(){
+  const pick=document.getElementById('gpFusePick'), out=document.getElementById('gpFuseOut'), note=document.getElementById('gpFuseNote');
+  if(!pick) return;
+  const STEPS=[['matmul','the projection — this one is real work'],
+               ['add bias','one add per element'],
+               ['GeLU','an activation, elementwise'],
+               ['dropout','a mask, elementwise'],
+               ['residual add','add the input back, elementwise']];
+  const ELEMS=8192*4096, B=2;                       /* FP16 elements */
+  let fused=1;                                       /* how many steps share a kernel */
+  const LAUNCH=4e-6, BW=2.0e12;
+  function render(){
+    pick.innerHTML=[1,2,3,4,5].map(n=>'<button class="seg'+(fused===n?' on':'')+'" data-n="'+n+'" style="text-align:left;font-size:12px">'+
+      (n===1?'Nothing fused — 5 separate kernels':n===5?'All five in one kernel':'First '+n+' fused, rest separate')+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{fused=+b.dataset.n;render();});
+    const kernels=1+(5-fused);
+    /* each kernel reads its input and writes its output; fusing removes the intermediates */
+    const roundTrips=kernels*2;
+    const bytes=roundTrips*ELEMS*B;
+    const memTime=bytes/BW, launchTime=kernels*LAUNCH, total=memTime+launchTime;
+    let rows='';
+    STEPS.forEach(([n,d],i)=>{
+      const inFused=i<fused;
+      rows+='<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:'+(inFused?'var(--green)':'var(--amber)')+'">'+
+        '<div style="display:flex;justify-content:space-between;gap:8px"><span><b>'+n+'</b><small>'+d+'</small></span>'+
+        '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap;padding-top:2px">'+
+        (inFused?(i===0?'kernel 1':'&#8627; same kernel'):'kernel '+(2+i-fused))+'</span></div></div>';
+    });
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE TRANSFORMER SUBLAYER, 8192&times;4096 ACTIVATIONS</div>'+rows+
+      '<div style="margin-top:14px">'+
+      [['kernel launches',kernels],['HBM round trips',roundTrips],
+       ['bytes moved',(bytes/1e9).toFixed(2)+' GB'],
+       ['time in memory',(memTime*1e6).toFixed(0)+' µs'],
+       ['time in launch overhead',(launchTime*1e6).toFixed(0)+' µs'],
+       ['total',(total*1e6).toFixed(0)+' µs']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px"><span style="font-family:var(--mono);font-size:11.5px;padding:4px 10px;border-radius:8px;border:1px solid '+
+      (fused===5?'var(--green)':'var(--amber)')+';color:'+(fused===5?'var(--green)':'var(--amber)')+'">'+
+      (fused===5?'fully fused':(fused-1)+' intermediate'+(fused===2?'':'s')+' eliminated')+'</span></div>';
+    note.innerHTML=
+      (fused===1
+        ? '<div class="lzbad"><b>Five kernels, ten trips through HBM.</b> Four of those five operations do a single arithmetic operation per element &mdash; they exist almost entirely as memory traffic.</div>'
+        : fused===5
+        ? '<div class="ok"><b>One kernel, one trip in and one out.</b> The four cheap operations now happen on values sitting in registers, and the arithmetic is exactly what it always was.</div>'
+        : '<div class="lzwarn"><b>Partly fused.</b> Each fusion removes one write and one read of the full activation tensor.</div>')+
+      '<div class="simnote" style="margin-top:10px"><b>Notice which operation is not the problem.</b> The matmul is the only one doing real arithmetic, and it is the only one that would have been worth its own kernel. The other four are pure traffic &mdash; which is why every serious framework ships fused versions of exactly these chains.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Launch overhead only shows up when the work is small.</b> At this size it is a few percent. Take the same model down to batch 1 with short sequences and the arithmetic shrinks while the launch cost does not &mdash; which is when it starts to dominate, and when CUDA graphs start to matter.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: FlashAttention --- */
+(function(){
+  const ctl=document.getElementById('gpFlashCtl'), out=document.getElementById('gpFlashOut'), note=document.getElementById('gpFlashNote');
+  if(!ctl) return;
+  let N=2048, heads=32, d=128, tiled=false;
+  const B=2, BW=2.0e12;
+  const SEQ=[512,1024,2048,4096,8192,16384,32768];
+  function render(){
+    const si=SEQ.indexOf(N);
+    ctl.innerHTML='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">sequence length</span><span>'+N.toLocaleString()+' tokens</span></div>'+
+      '<input type="range" id="gpFN" min="0" max="'+(SEQ.length-1)+'" step="1" value="'+si+'" style="width:100%"></div>'+
+      [[false,'Standard — write the score matrix to HBM'],[true,'Tiled &amp; fused — never write it at all']]
+      .map(([v,n])=>'<button class="seg'+(tiled===v?' on':'')+'" data-v="'+v+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
+    const e=document.getElementById('gpFN'); if(e) e.oninput=()=>{N=SEQ[+e.value];render();};
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{tiled=b.dataset.v==='true';render();});
+    const scores=heads*N*N*B;                    /* the N x N matrix, per head */
+    const qkv=3*heads*N*d*B;
+    const bytes = tiled ? qkv*2 : qkv*2 + scores*3;   /* write, read for softmax, read for weighted sum */
+    const flops=4*heads*N*N*d;
+    const ai=flops/bytes;
+    const t=bytes/BW;
+    const col=tiled?'var(--green)':(scores>20e9?'var(--red)':'var(--amber)');
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ATTENTION OVER '+N.toLocaleString()+' TOKENS &middot; '+heads+' HEADS &middot; d='+d+'</div>'+
+      '<div class="lzhop" style="display:block;padding:12px 14px;border-left-color:'+col+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:baseline"><b>The N&times;N score matrix</b>'+
+      '<span style="font-family:var(--mono);font-size:17px;color:'+col+'">'+(tiled?'never exists':(scores/1e9).toFixed(1)+' GB')+'</span></div>'+
+      '<small>'+(tiled
+        ? 'Computed a tile at a time in shared memory, consumed immediately, and discarded. Only a running maximum and a running sum survive between tiles.'
+        : heads+' heads &times; '+N.toLocaleString()+'&sup2; scores &times; 2 bytes &mdash; written to HBM, read back for the softmax, read again for the weighted sum.')+'</small></div>'+
+      '<div style="margin-top:14px">'+
+      [['arithmetic',(flops/1e12).toFixed(1)+' TFLOP — identical either way'],
+       ['bytes moved',(bytes/1e9).toFixed(2)+' GB'],
+       ['arithmetic intensity',ai.toFixed(1)+' FLOP/byte'],
+       ['time in memory',(t*1000).toFixed(1)+' ms'],
+       ['fits in 80 GB?',(tiled||scores<70e9)?'yes':'<b style="color:var(--red)">no — out of memory</b>']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+'</div>'+
+      '<div style="margin-top:12px;display:flex;gap:5px;align-items:flex-end;height:60px">'+
+      SEQ.map(s=>{
+        const v=heads*s*s*B;
+        const h=Math.max(3,Math.min(58,v/1e9/40*58));
+        return '<div style="flex:1;text-align:center"><div style="height:'+(tiled?3:h)+'px;background:'+(s===N?col:'var(--line2)')+
+        ';border-radius:2px 2px 0 0"></div><div style="font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:3px">'+(s/1024)+'k</div></div>';
+      }).join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:3px">score-matrix memory as the sequence grows</div>';
+    note.innerHTML = tiled
+      ? '<div class="ok"><b>The memory stopped being quadratic.</b> Not because the arithmetic changed &mdash; it is exactly the same number of multiplies &mdash; but because the intermediate result is consumed where it is produced and never travels.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>The trick that makes it possible is the online softmax.</b> A softmax normally needs every score before it can normalise any of them, which is precisely why the matrix had to exist. Keeping a running maximum and a running sum, and rescaling the partial result as each new tile arrives, gives the same answer without ever holding the whole row.</div>'+
+        '<div class="note" style="margin-top:10px"><b>This is the same instinct as tiling and fusion, applied to attention.</b> Three sections of this lab are one idea: produce the value where you need it, use it, and do not send it down the ladder.</div>'
+      : '<div class="'+(scores>70e9?'lzbad':'lzwarn')+'"><b>The score matrix dominates everything.</b> It is written once, read twice, and grows with the square of the sequence &mdash; so doubling the context quadruples both the memory and the traffic.</div>'+
+        '<div class="simnote" style="margin-top:10px">Push the slider to 16k or 32k. The arithmetic is large but survivable; it is the <em>intermediate</em> that makes long context impossible, and it is an intermediate nobody actually wanted &mdash; it exists only to be consumed by the next step.</div>';
+  }
+  render();
+})();
+
+/* ================= 9 · TRITON & COMPILE ================= */
+document.getElementById('sec-triton').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Three ways to get a kernel, and what each one costs you</h2>
+  <div class="plain-line"><b>In plain English:</b> everything in this lab so far &mdash; tiling, coalescing, fusion &mdash; is real work that someone has to do. The question is who. You can write CUDA by hand and control every detail; you can write Triton and reason in tiles while the compiler handles threads; or you can write ordinary PyTorch and let <span class="k">torch.compile</span> find the fusions for you.</div>
+  <div class="plain-line">Most teams should be at the third level almost all of the time, drop to the second for the handful of kernels that actually matter, and reach the first roughly never. The useful skill is knowing which level a problem belongs at &mdash; and recognising when the automatic one has quietly given up.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; the same kernel at three levels</h2>
+  <div class="plain-line"><b>Try this:</b> one operation, written three ways. Compare what you write, what you control, and what you are trusting somebody else to get right.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Building a wall brick by brick, ordering prefabricated panels, or buying the shed ready-made. Each is correct for a different job, and the expensive mistake is laying bricks for something you could have bought.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>raw CUDA</b> first, then <b>Triton</b> — and notice what disappears.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>kernel</b> the function that runs on the GPU</span><span class="sp-w"><b>Triton</b> a language where you write per-tile, not per-thread</span><span class="sp-w"><b>torch.compile</b> a compiler that fuses ordinary PyTorch automatically</span><span class="sp-w"><b>autotuning</b> trying several configurations and keeping the fastest</span><span class="sp-w"><b>graph break</b> a point where the compiler gives up and falls back</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpLvlOut"></div></div>
+    <div><div class="segmented" id="gpLvlPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpLvlNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; find the graph break</h2>
+  <div class="plain-line"><b>Try this:</b> <span class="k">torch.compile</span> fuses whatever it can see as one graph. Certain things make it stop, split the region, and fall back to running eagerly &mdash; usually without an error. Pick a line and see whether it survives.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A conveyor belt that runs beautifully until someone needs to lift an item off, inspect it by hand, and put it back. The belt has to stop for that, and it is not obvious from the end of the line that it ever did.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try <b>print the tensor&rsquo;s mean</b> — a debugging line somebody left in.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>graph</b> the sequence of operations the compiler can see all at once</span><span class="sp-w"><b>graph break</b> a point where it must stop, run normally, and start again</span><span class="sp-w"><b>eager</b> ordinary PyTorch — each operation runs as it is reached</span><span class="sp-w"><b>recompile</b> building a new version because something changed shape or type</span><span class="sp-w"><b>guard</b> a check that decides whether the compiled version is still valid</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpBrkOut"></div></div>
+    <div><div class="segmented" id="gpBrkPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpBrkNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: three levels --- */
+(function(){
+  const pick=document.getElementById('gpLvlPick'), out=document.getElementById('gpLvlOut'), note=document.getElementById('gpLvlNote');
+  if(!pick) return;
+  const L=[
+   {k:'cuda',n:'Raw CUDA C++',lines:'~60 lines',
+    code:'__global__ void add_bias_gelu(half* x, const half* b, int n, int cols) {\n  int i = blockIdx.x * blockDim.x + threadIdx.x;   # you compute the index\n  if (i >= n) return;                              # you handle the tail\n  float v = __half2float(x[i]) + __half2float(b[i % cols]);\n  v = 0.5f * v * (1.0f + tanhf(0.7978845608f * (v + 0.044715f * v*v*v)));\n  x[i] = __float2half(v);                          # you manage precision\n}',
+    yours:['thread indexing and bounds','block and grid sizes','shared-memory layout','precision conversions','a separate launch configuration'],
+    theirs:['nothing — it is all yours'],
+    when:'Almost never. Reach for it when you need an instruction the higher levels cannot express, or you are writing the library everyone else uses.',
+    col:'var(--red)'},
+   {k:'triton',n:'Triton',lines:'~15 lines',
+    code:'@triton.jit\ndef add_bias_gelu(x_ptr, b_ptr, n, BLOCK: tl.constexpr):\n    pid  = tl.program_id(0)                          # one program per tile\n    offs = pid * BLOCK + tl.arange(0, BLOCK)\n    mask = offs < n                                  # masking, not branching\n    x = tl.load(x_ptr + offs, mask=mask)\n    b = tl.load(b_ptr + offs, mask=mask)\n    v = x + b\n    v = 0.5 * v * (1 + tl.math.tanh(0.7978846 * (v + 0.044715 * v * v * v)))\n    tl.store(x_ptr + offs, v, mask=mask)',
+    yours:['the tile size','which tiles exist','what each tile loads and stores'],
+    theirs:['thread assignment within the tile','coalescing','shared-memory staging','vectorisation','autotuning over configurations'],
+    when:'When a fused kernel you need does not exist and the automatic compiler will not produce it &mdash; custom attention variants, unusual quantisation, novel operators.',
+    col:'var(--amber)'},
+   {k:'compile',n:'torch.compile',lines:'1 line',
+    code:'model = torch.compile(model)\n\n# ...and then just write ordinary PyTorch:\nx = x + bias\nx = torch.nn.functional.gelu(x)',
+    yours:['the model, in ordinary PyTorch','deciding what to compile','keeping shapes stable enough not to recompile'],
+    theirs:['finding fusable regions','generating Triton kernels','choosing tile sizes','handling the tail','picking backends'],
+    when:'By default, for essentially everything. This is where you should start and mostly stay.',
+    col:'var(--green)'}
+  ];
+  let cur='cuda';
+  function render(){
+    pick.innerHTML=L.map(l=>'<button class="seg'+(cur===l.k?' on':'')+'" data-k="'+l.k+'" style="text-align:left">'+
+      '<b style="font-size:12.5px">'+l.n+'</b> <small style="font-family:var(--mono);font-size:10.5px;color:'+l.col+'">'+l.lines+'</small></button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const l=L.find(x=>x.k===cur);
+    const list=(t,a,c)=>'<div class="dim" style="font-size:11px;margin:14px 0 6px">'+t+'</div>'+
+      a.map(x=>'<div style="display:flex;gap:8px;font-size:12.5px;padding:3px 0"><span style="color:'+c+'">•</span><span>'+x+'</span></div>').join('');
+    out.innerHTML='<div class="code"><pre><code>'+hl(l.code)+'</code></pre></div>'+
+      list('WHAT YOU DECIDE',l.yours,l.col)+
+      list('WHAT SOMEONE ELSE DECIDES',l.theirs,'var(--muted)')+
+      '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:14px;border-left-color:'+l.col+'"><b>When to be here</b><small>'+l.when+'</small></div>';
+    note.innerHTML =
+      cur==='cuda' ? '<div class="lzwarn"><b>Look at how much of that is bookkeeping.</b> Index arithmetic, a bounds check, manual half-to-float conversion &mdash; none of it is the operation you wanted. Every line is somewhere to make a mistake that produces wrong numbers rather than an error.</div>'
+      : cur==='triton' ? '<div class="ok"><b>The shift is that you stopped thinking about threads.</b> You describe what one <em>tile</em> does; the compiler assigns lanes, coalesces the loads and can autotune the tile size. That is the right altitude for most people who need a custom kernel at all.</div>'
+      : '<div class="ok"><b>One line, and the compiler generates Triton for you.</b> For the overwhelming majority of work this is both the fastest thing to write and faster at runtime than anything you would have hand-written under time pressure.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>The honest ordering:</b> start at the top, profile, and only descend for the one or two kernels that a profile says are worth it. Descending on instinct is how teams end up maintaining hand-written CUDA that a compiler now beats.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: graph breaks --- */
+(function(){
+  const pick=document.getElementById('gpBrkPick'), out=document.getElementById('gpBrkOut'), note=document.getElementById('gpBrkNote');
+  if(!pick) return;
+  const C=[
+   {k:'ok',n:'Ordinary tensor maths',code:'x = self.norm(x)\nx = self.proj(x) + residual\nx = torch.nn.functional.gelu(x)',
+    breaks:false,why:'All tensor operations the compiler understands. It sees the whole region, fuses the elementwise chain, and emits one kernel.',
+    fix:''},
+   {k:'print',n:'Print the tensor&rsquo;s mean',code:'x = self.proj(x)\nprint(x.mean().item())          # debugging line, left in\nx = torch.nn.functional.gelu(x)',
+    breaks:true,why:'<b><span class="k">.item()</span> forces the value back to Python.</b> The compiler cannot continue without knowing it, so it stops, syncs the GPU, runs eagerly, and starts a new graph afterwards.',
+    fix:'Remove it, or guard it behind a flag that is off in production. This is the single most common cause &mdash; a debugging line nobody removed.'},
+   {k:'shape',n:'Branch on a tensor&rsquo;s contents',code:'if x.max() > threshold:        # depends on the data\n    x = x.clamp(max=threshold)',
+    breaks:true,why:'The branch depends on values only known at run time, so there is no single graph to compile &mdash; there are two, chosen by data.',
+    fix:'Express it as arithmetic instead: <span class="k">x = x.clamp(max=threshold)</span> unconditionally. Same result, no control flow, no break.'},
+   {k:'numpy',n:'Step out to NumPy',code:'arr = x.cpu().numpy()\narr = some_scipy_thing(arr)\nx = torch.from_numpy(arr).cuda()',
+    breaks:true,why:'Leaves the GPU entirely. Two graph breaks and two round trips over PCIe &mdash; the slowest rung of the memory ladder, in the middle of your hot path.',
+    fix:'Find or write the operation in torch. If it genuinely must be host-side, move it out of the per-step path altogether.'},
+   {k:'dyn',n:'Sequence length changes every batch',code:'# same code, but x.shape[1] is 512, then 384, then 601 ...',
+    breaks:false,why:'<b>Not a break &mdash; a recompile</b>, which is a different problem with similar symptoms. Each new shape can trigger compilation, so the first few hundred steps are slow and it never quite settles.',
+    fix:'Pad to buckets so only a handful of shapes are ever seen, or mark the dimension dynamic so one compiled version covers the range.'}
+  ];
+  let cur='ok';
+  function render(){
+    pick.innerHTML=C.map(c=>'<button class="seg'+(cur===c.k?' on':'')+'" data-k="'+c.k+'" style="text-align:left;font-size:12px">'+c.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const c=C.find(x=>x.k===cur);
+    const bad=c.breaks;
+    out.innerHTML='<div class="code"><pre><code>'+hl(c.code)+'</code></pre></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 8px">WHAT THE COMPILER DOES</div>'+
+      (bad
+        ? '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+
+          ['graph 1','<b style="color:var(--red)">BREAK</b>','eager','<b style="color:var(--red)">BREAK</b>','graph 2']
+          .map(x=>'<span style="font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:7px;border:1px solid '+
+          (x.includes('BREAK')?'var(--red)':'var(--line2)')+'">'+x+'</span>').join('<span style="color:var(--muted)">→</span>')+'</div>'
+        : cur==='dyn'
+        ? '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+
+          ['compile for 512','compile for 384','compile for 601','…']
+          .map(x=>'<span style="font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:7px;border:1px solid var(--amber)">'+x+'</span>').join('<span style="color:var(--muted)">→</span>')+'</div>'
+        : '<div style="display:flex;gap:6px;align-items:center"><span style="font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:7px;border:1px solid var(--green);color:var(--green)">one graph, one fused kernel</span></div>')+
+      '<div class="'+(bad?'lzbad':cur==='dyn'?'lzwarn':'ok')+'" style="margin-top:14px;padding:11px 13px">'+c.why+'</div>'+
+      (c.fix?'<div class="lzhop" style="display:block;padding:11px 13px;margin-top:10px;border-left-color:var(--green)"><b>The fix</b><small>'+c.fix+'</small></div>':'');
+    note.innerHTML='<div class="simnote"><b>The reason this matters more than it sounds:</b> a graph break is not an error. Nothing fails, nothing is logged by default, and the code produces exactly the right answer &mdash; just without most of the speedup you thought you were getting. It is the classic case of a performance bug that testing cannot catch.</div>'+
+      '<div class="note" style="margin-top:10px"><b>How you would actually find it:</b> run with <span class="k">TORCH_LOGS=graph_breaks</span> (or the equivalent explain tooling for your version) and it will tell you where and why. Worth doing once after any change to a compiled model, not just when something feels slow.</div>';
+  }
+  render();
+})();
+
+/* ================= 10 · EXAM ANGLE ================= */
+document.getElementById('sec-gpexam').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none is obviously wrong.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading feels like learning and mostly is not &mdash; recognising an answer and producing one are different skills.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> before reading the list below.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation phrased the way an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
+  <div id="drillHost"></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The scenarios</h2>
+  <div class="exam-line"><b>&ldquo;Our inference is slow and the GPU shows 100% utilisation. Where do we look?&rdquo;</b> &rarr; Not at the arithmetic. &ldquo;Utilisation&rdquo; on a GPU means <em>a kernel was resident</em>, not that the arithmetic units were busy &mdash; a fully memory-bound kernel reports 100% while the maths sits idle. Measure arithmetic intensity and achieved bandwidth instead.</div>
+  <div class="exam-line"><b>&ldquo;Why does batching make LLM decoding cheaper per request when the model is the same size?&rdquo;</b> &rarr; Because decoding at batch 1 reads every weight to produce one token &mdash; roughly one operation per byte, far below the ridge point. Batching reuses each fetched weight across every sequence in the batch, so arithmetic intensity rises with batch size while memory traffic stays flat.</div>
+  <div class="exam-line"><b>&ldquo;A kernel got 8&times; slower after we changed which index the thread varies over.&rdquo;</b> &rarr; Uncoalesced access. Consecutive threads now land far apart, so each warp needs many memory transactions instead of four, and most of every fetched sector is discarded. Stage the tile through shared memory, or swap the loop order back.</div>
+  <div class="exam-line"><b>&ldquo;We halved precision to FP16 and training diverged.&rdquo;</b> &rarr; Range, not precision. FP16 has about five decades of exponent, so small gradients underflow to zero and large values overflow to infinity. Either apply loss scaling, or move to BF16, which keeps FP32&rsquo;s range and spends the bits saved on exponent rather than mantissa.</div>
+  <div class="exam-line"><b>&ldquo;We raised occupancy from 30% to 90% and nothing got faster.&rdquo;</b> &rarr; Occupancy is a means of hiding memory latency, not a goal. If the kernel was already limited by bandwidth or by arithmetic, more resident warps give the scheduler more to choose from and nothing to gain. Raise it when the SM is stalling with nothing to run.</div>
+  <div class="exam-line"><b>&ldquo;Long-context attention runs out of memory well before the weights do.&rdquo;</b> &rarr; The N&times;N score matrix, which is an intermediate nobody wanted. It grows quadratically with sequence length and is written to HBM only to be read straight back. A tiled, fused attention with an online softmax removes it entirely without changing the arithmetic.</div>
+  <div class="exam-line"><b>&ldquo;Our model is a long chain of small elementwise operations and the GPU looks idle.&rdquo;</b> &rarr; Launch overhead and round trips. Each operation costs a few microseconds to launch and a full read and write of the tensor for one arithmetic operation per element. Fuse the chain, and use CUDA graphs if launches still dominate.</div>
+  <div class="exam-line"><b>&ldquo;A colleague wants to hand-write CUDA to speed up our training loop.&rdquo;</b> &rarr; Ask for the profile first. Almost always the answer is <span class="code">torch.compile</span>, then Triton for the one kernel that a profile shows matters. Hand-written CUDA is a maintenance liability that a compiler now frequently beats, and it should be the last resort rather than the first.</div>
+  <div class="exam-line"><b>&ldquo;We compiled the model and got a 5% speedup instead of the 40% we expected.&rdquo;</b> &rarr; Graph breaks. Something in the forward pass forces a return to Python &mdash; typically a leftover <span class="code">.item()</span>, a print, or a branch on tensor contents. It never errors and the results are correct, so only the logs will tell you.</div>
+  <div class="exam-line"><b>&ldquo;An <span class="code">if</span> statement in our kernel halved throughput. Should we remove the branch?&rdquo;</b> &rarr; Usually not &mdash; reorder the data instead. The cost is warp divergence: 32 threads in lockstep must walk each path in turn. Sort or group the work so the threads in a warp want the same branch, and the branch stops costing anything.</div>
+  <div class="exam-line"><b>&ldquo;The datasheet says 312 TFLOP/s but we measure 15.&rdquo;</b> &rarr; That figure is tensor cores at low precision on matrix work. In FP32 without tensor cores the peak is 19.5, and if the operation is memory-bound the achievable number is lower still. Compare against the roofline for your actual precision and intensity, not against the headline.</div>
+  <div class="exam-line"><b>&ldquo;Our matmul is slower than expected and the shapes are 4095 &times; 4095.&rdquo;</b> &rarr; Alignment. Tensor cores work on fixed tiles, so dimensions that are not multiples of 8 or 16 force padding or a fallback to slower paths. Rounding a hidden dimension up to a multiple of 64 or 128 often costs a little memory and buys a large speedup.</div>
+</div>`;
+
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
+/* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
+(function(){
+  const open = id => {
+    const tab = document.querySelector(`.tab[data-pane="${id}"]`), pane = document.getElementById('pane-'+id);
+    if(!tab || !pane) return false;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    tab.classList.add('on'); pane.classList.add('on');
+    return true;
+  };
+  const fromHash = () => {
+    const m = (location.hash||'').match(/^#pane-([\w-]+)$/);
+    if (m) open(m[1]);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+  document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
+    history.replaceState(null,'','#pane-'+t.dataset.pane);
+  }));
+})();
+
+/* ================= SCENARIO DRILL =================
+   Reads the page's own .exam-line entries at runtime, so it can never
+   drift from the content and a new scenario becomes a new question free.
+   Distractors are the answers to other scenarios on the same page, which
+   makes them plausible by construction rather than by invention. */
+(function(){
+  const host=document.getElementById('drillHost');
+  if(!host) return;
+  const src=[...document.querySelectorAll('.exam-line')].map(el=>{
+    const html=el.innerHTML;
+    /* .exam-line is also used for pillar notes, which are multi-fact and start differently.
+       A drillable scenario is authored as <b>“…”</b> → answer, so require that shape. */
+    if(!/^\s*<b>\s*&ldquo;/.test(html)) return null;
+    const i=html.indexOf('&rarr;')>=0?html.indexOf('&rarr;'):html.indexOf('→');
+    if(i<0) return null;
+    const q=html.slice(0,i).replace(/<\/?b>/g,'').replace(/&ldquo;|&rdquo;/g,'').trim();
+    const full=html.slice(i+6).trim();
+    /* the headline answer is the first sentence; the rest is the explanation */
+    const m=full.match(/^(.*?[.!?])(\s|$)([\s\S]*)$/);
+    const head=(m?m[1]:full).replace(/^\s+/,'');
+    return {q, head, rest:(m?m[3]:'').trim(), full};
+  }).filter(Boolean);
+  /* some pages author the same content as a three-column table instead of exam lines:
+     scenario | answer | because. Collect those too, so one engine serves both shapes. */
+  [...document.querySelectorAll('table')].forEach(tb=>{
+    const h=tb.innerHTML;
+    if(!/When the scenario says/i.test(h)) return;
+    const rows=h.match(/<tr>[\s\S]*?<\/tr>/g)||[];
+    rows.forEach(r=>{
+      const cells=(r.match(/<td[^>]*>([\s\S]*?)<\/td>/g)||[]).map(c=>c.replace(/^<td[^>]*>|<\/td>$/g,'').trim());
+      if(cells.length<2) return;
+      const q=cells[0].replace(/<\/?b>/g,'').trim();
+      const head=cells[1].replace(/<\/?b>/g,'').trim();
+      if(!q||!head) return;
+      src.push({q:'&ldquo;'+q+'&rdquo;', head, rest:(cells[2]||'').trim(), full:head});
+    });
+  });
+  if(src.length<4){ host.innerHTML='<div class="simnote">Not enough scenarios on this page to drill.</div>'; return; }
+
+  let order=[], idx=0, chosen=null, score=[], opts=[];
+  let seed=src.length*7919;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function shuffle(a){const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b;}
+  function build(){
+    order=shuffle(src.map((_,i)=>i)); idx=0; score=[]; chosen=null; setOpts(); render();
+  }
+  function setOpts(){
+    const cur=src[order[idx]];
+    const others=shuffle(src.filter(x=>x!==cur && x.head!==cur.head)).slice(0,3);
+    opts=shuffle([cur,...others]);
+  }
+  function render(){
+    const cur=src[order[idx]];
+    const done=idx>=order.length;
+    if(done){
+      const right=score.filter(Boolean).length;
+      host.innerHTML='<div class="drl">'+
+        '<div style="font-family:var(--display);font-size:22px;margin-bottom:8px">'+right+' of '+score.length+'</div>'+
+        '<div class="plain-line" style="margin-bottom:12px">'+
+          (right===score.length?'Every one. Worth re-running it — the questions come back in a different order and the wrong answers move around.'
+           :right/score.length>=0.7?'Solid. The ones you missed are the ones worth reading again, and they are the ones an interviewer will reach for.'
+           :'Worth another pass. These are not memory questions — each one has a reason underneath it, and the reason is what makes the next one answerable.')+
+        '</div><button class="btn" id="drlAgain">run it again</button></div>';
+      host.querySelector('#drlAgain').onclick=build; return;
+    }
+    host.innerHTML='<div class="drl">'+
+      '<div class="drl-bar">'+order.map((_,i)=>'<i class="'+(i<score.length?(score[i]?'ok':'no'):i===idx?'now':'')+'"></i>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:6px">SCENARIO '+(idx+1)+' OF '+order.length+'</div>'+
+      '<div class="drl-q">'+cur.q+'</div>'+
+      opts.map((o,i)=>'<button class="drl-o'+(chosen===null?'':(o===cur?' right':(o===chosen?' wrong':' muted')))+'" data-i="'+i+'"'+(chosen!==null?' disabled':'')+'>'+o.head+'</button>').join('')+
+      (chosen!==null?'<div class="'+(chosen===cur?'ok':'lzbad')+'" style="margin-top:12px">'+
+          (chosen===cur?'<b>Right.</b> ':'<b>Not that one.</b> ')+cur.head+(cur.rest?' '+cur.rest:'')+'</div>'+
+        '<button class="btn" id="drlNext" style="margin-top:12px">next scenario ▸</button>':'')+
+      '</div>';
+    host.querySelectorAll('.drl-o').forEach(b=>b.onclick=()=>{
+      if(chosen!==null) return;
+      chosen=opts[+b.dataset.i]; score[idx]=(chosen===cur); render();
+    });
+    const n=host.querySelector('#drlNext');
+    if(n) n.onclick=()=>{ idx++; chosen=null; if(idx<order.length) setOpts(); render(); };
+  }
+  build();
+})();
+
+
+/* ================= INTERFACE =================
+   Navigation and orientation only. Nothing here touches what a simulation does — and it is
+   wrapped so that if any of it fails, the content and the simulations still work. */
+(function(){
+ try{
+  const tabsEl=document.querySelector('.tabs');
+  if(!tabsEl||!tabsEl.parentNode) return;
+
+  /* --- sticky bar + reading progress --- */
+  const wrap=document.createElement('div'); wrap.className='tabwrap';
+  tabsEl.parentNode.insertBefore(wrap, tabsEl); wrap.appendChild(tabsEl);
+  const prog=document.createElement('div'); prog.className='rprog';
+  const progBar=document.createElement('i');
+  prog.appendChild(progBar);
+  document.body.appendChild(prog);
+  const onScroll=()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    progBar.style.width=(h>0?Math.min(100,window.scrollY/h*100):0)+'%';
+  };
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* --- count the simulations in each tab, and mark their cards --- */
+  const panes=[...document.querySelectorAll('.pane')];
+  /* mark the cards that contain a simulation, by looking down rather than up */
+  panes.forEach(p=>{
+    p.querySelectorAll('.card').forEach(c=>{
+      if(c.querySelectorAll('.simplain').length) c.classList.add('issim');
+    });
+  });
+  [...tabsEl.querySelectorAll('.tab')].forEach(t=>{
+    const p=document.getElementById('pane-'+t.dataset.pane);
+    if(!p) return;
+    const n=p.querySelectorAll('.simplain').length;
+    if(n) t.insertAdjacentHTML('beforeend','<span class="tcount">'+n+'</span>');
+  });
+
+  /* --- wrap the panes so a rail can sit beside them --- */
+  const first=panes[0]; if(!first) return;
+  const grid=document.createElement('div'); grid.className='labgrid';
+  const main=document.createElement('div');
+  first.parentNode.insertBefore(grid, first);
+  panes.forEach(p=>main.appendChild(p));
+  grid.appendChild(main);
+  const railCol=document.createElement('div'); railCol.className='railcol';
+  const railHead=document.createElement('div'); railHead.className='railhead'; railHead.textContent='on this tab';
+  const rail=document.createElement('nav'); rail.className='rail'; rail.id='labRail';
+  railCol.appendChild(railHead); railCol.appendChild(rail);
+  grid.appendChild(railCol);
+
+  let spy=null;
+  function buildRail(){
+    const pane=document.querySelector('.pane.on'); if(!pane) return;
+    /* walk cards rather than headings, so “is this section interactive?” is answered
+       by the card that owns the heading instead of by climbing the tree */
+    const rows=[];
+    pane.querySelectorAll('.card').forEach((c,i)=>{
+      const h=c.querySelector('h2.sec'); if(!h) return;
+      if(!h.id) h.id='s-'+pane.id.replace('pane-','')+'-'+i;
+      rows.push({id:h.id, sim:c.querySelectorAll('.simplain').length>0,
+                 txt:h.textContent.replace(/^Try it\s*[—–-]\s*/,'').trim()});
+    });
+    const heads=rows.map(r=>document.getElementById(r.id)).filter(Boolean);
+    rail.innerHTML=rows.map(r=>
+      '<a href="#'+r.id+'" data-t="'+r.id+'" class="'+(r.sim?'sim':'')+'"><i></i><span>'+r.txt+'</span></a>').join('');
+    rail.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{
+      e.preventDefault();
+      const el=document.getElementById(a.dataset.t);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84, behavior:'smooth'});
+    }));
+    if(spy) spy.disconnect();
+    if(typeof IntersectionObserver!=='undefined'&&heads.length){
+      spy=new IntersectionObserver(es=>{
+        es.forEach(en=>{
+          if(!en.isIntersecting) return;
+          rail.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.t===en.target.id));
+        });
+      },{rootMargin:'-84px 0px -70% 0px'});
+      heads.forEach(h=>spy.observe(h));
+    }
+    const f=rail.querySelector('a'); if(f) f.classList.add('on');
+  }
+
+  /* --- keep the active tab visible, and rebuild the rail on every switch --- */
+  function afterSwitch(){
+    const on=tabsEl.querySelector('.tab.on');
+    if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    buildRail();
+  }
+  tabsEl.addEventListener('click',e=>{ if(e.target.closest('.tab')) setTimeout(afterSwitch,0); });
+  buildRail();
+
+  function switchTo(pane){
+    const t=tabsEl.querySelector('.tab[data-pane="'+pane+'"]');
+    if(t){ t.click(); setTimeout(afterSwitch,0); }
+  }
+
+  /* --- command palette over every heading on the page --- */
+  const idx=[];
+  panes.forEach(p=>{
+    const label=(tabsEl.querySelector('.tab[data-pane="'+p.id.replace('pane-','')+'"]')||{}).textContent||'';
+    p.querySelectorAll('h2.sec').forEach((h,i)=>{
+      if(!h.id) h.id='s-'+p.id.replace('pane-','')+'-'+i;
+      idx.push({pane:p.id.replace('pane-',''), tab:label.replace(/\d+$/,'').trim(), id:h.id, name:h.textContent.trim()});
+    });
+  });
+  const pal=document.createElement('div'); pal.className='cmdk';
+  const box=document.createElement('div'); box.className='cmdbox';
+  box.setAttribute('role','dialog'); box.setAttribute('aria-label','Find a section');
+  const inp=document.createElement('input');
+  inp.id='cmdInput'; inp.placeholder='Find a section…';
+  inp.setAttribute('autocomplete','off'); inp.setAttribute('spellcheck','false');
+  const list=document.createElement('div'); list.className='cmdlist'; list.id='cmdList';
+  const foot=document.createElement('div'); foot.className='cmdfoot';
+  foot.innerHTML='<span><b>↑↓</b> move</span><span><b>↵</b> jump</span><span><b>esc</b> close</span>'+
+    '<span><b>← →</b> switch tab</span>';
+  box.appendChild(inp); box.appendChild(list); box.appendChild(foot);
+  pal.appendChild(box); document.body.appendChild(pal);
+  let hits=[], sel=0;
+  function draw(q){
+    const s=q.trim().toLowerCase();
+    hits=(s?idx.filter(x=>(x.name+' '+x.tab).toLowerCase().includes(s)):idx).slice(0,60);
+    sel=0;
+    list.innerHTML=hits.length
+      ? hits.map((h,i)=>'<button data-i="'+i+'" class="'+(i===0?'on':'')+'"><span class="cmdtab">'+h.tab+'</span><span class="cmdname">'+h.name+'</span></button>').join('')
+      : '<div class="cmdnone">Nothing matches that.</div>';
+    list.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.i)));
+  }
+  function go(i){
+    const h=hits[i]; if(!h) return;
+    close(); switchTo(h.pane);
+    setTimeout(()=>{ const el=document.getElementById(h.id);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84,behavior:'smooth'}); },60);
+  }
+  function open(){ pal.classList.add('on'); inp.value=''; draw(''); if(inp.focus) inp.focus(); }
+  function close(){ pal.classList.remove('on'); }
+  pal.addEventListener('click',e=>{ if(e.target===pal) close(); });
+  inp.addEventListener('input',()=>draw(inp.value));
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault(); if(!hits.length) return;
+      sel=(sel+(e.key==='ArrowDown'?1:-1)+hits.length)%hits.length;
+      list.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===sel));
+      const b=list.querySelectorAll('button')[sel]; if(b&&b.scrollIntoView) b.scrollIntoView({block:'nearest'});
+    } else if(e.key==='Enter'){ e.preventDefault(); go(sel); }
+    else if(e.key==='Escape'){ close(); }
+  });
+  draw('');
+
+  /* --- keyboard --- */
+  window.addEventListener('keydown',e=>{
+    const typing=/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||'');
+    if(e.key==='Escape'){ close(); return; }
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); open(); return; }
+    if(typing) return;
+    if(e.key==='/'){ e.preventDefault(); open(); return; }
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+      const all=[...tabsEl.querySelectorAll('.tab')];
+      const i=all.findIndex(t=>t.classList.contains('on'));
+      if(i<0) return;
+      const n=all[(i+(e.key==='ArrowRight'?1:-1)+all.length)%all.length];
+      n.click(); setTimeout(afterSwitch,0); n.focus&&n.focus();
+    }
+  });
+ }catch(err){ if(window.console) console.warn('interface enhancements unavailable:', err); }
+})();
+
+</script>
+</body>
+</html>
+
+
+</script>
+</body>
+</html>

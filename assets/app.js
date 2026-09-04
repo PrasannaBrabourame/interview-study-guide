@@ -73,6 +73,7 @@ function init(topics) {
     govern: { name: "Govern & secure agents", hue: 352, cats: ["Security", "AI Governance", "Agentic AI", "AI Agents", "Agent Frameworks & Runtimes", "Model Context Protocol"] },
     design: { name: "Architecture diagrams", hue: 250, cats: ["Software Architecture", "Production Readiness", "Candidate Validation", "Leadership"] },
     peakweek: { name: "Peak Week \u2014 one agent end to end", hue: 320, cats: ["Agent Frameworks & Runtimes", "AI Agents", "Agentic AI", "Evaluation & Metrics", "LLMOps", "Security", "Production Readiness", "GCP"] },
+    gpu: { name: "The machine underneath", hue: 280, cats: ["Large Language Models", "Deep Learning & Neural Networks", "Performance", "LLMOps", "Math, Probability & Statistics"] },
     pca: { name: "GCP Architect exam", hue: 212, cats: ["GCP", "Cloud Architecture", "Data", "Data & Databases", "Data Engineering", "Kubernetes", "Security", "Production Readiness", "FinOps"] },
     sap: { name: "SAP-C02 cheatsheet", hue: 212, cats: ["Cloud Architecture", "Security", "Kubernetes", "Deployment", "Observability", "FinOps", "Performance", "Production Readiness"] }
   };

@@ -55,6 +55,12 @@ govern.html       Govern & secure lab — the agent gateway on both sides, the
                   policy chain, private egress, agent identity, delegated
                   access, the threat landscape, boundaries and controls,
                   perimeters, the registry, tracing and audit
+gpu.html          GPU lab — the layer everything else sits on: why a GPU is
+                  shaped differently from a CPU, threads/warps/SMs and warp
+                  divergence, the five-rung memory ladder, the roofline model
+                  and arithmetic intensity, coalescing, tiling, tensor cores
+                  and number formats, operator fusion and FlashAttention,
+                  and Triton vs torch.compile (with graph breaks)
 peakweek.html     Peak Week lab — a sorter fails at a parcel hub on the
                   busiest night of the year, and one agent is carried through
                   the whole life of a system: groundwork, make it work (tools,
