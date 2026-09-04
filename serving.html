@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serving lab — what an inference engine does that a model does not</title>
+<style>
+  /* self-hosted, same subsets the portfolio serves — no external requests */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
+  :root{
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-family:var(--display); font-size:clamp(26px,3.4vw,38px); font-weight:500; letter-spacing:-.018em; line-height:1.05}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
+  .wf{display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:11px}
+  .wf .row{display:grid; grid-template-columns:150px 1fr 62px; gap:8px; align-items:center}
+  .wf .lab{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf .track{position:relative; height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:4px}
+  .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
+  .wf .ms{text-align:right; color:var(--dim)}
+  .wf .row.err .lab{color:var(--red)}
+  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+
+  .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
+    padding:11px 12px; text-align:center; transition:border-color .3s, background .3s, opacity .3s}
+  .chasm .cpart b{display:block; font-size:13px; font-weight:500; color:var(--text)}
+  .chasm .cpart small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.4}
+  .chasm .cagent{grid-column:1/-1; border-color:var(--blue); background:var(--n-blue)}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:var(--amber); opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  /* the same class used inline: a chip on the line, not a panel */
+  span.code{display:inline; background:var(--sel); border:1px solid var(--line2); border-radius:5px;
+    padding:.5px 5px; margin:0; overflow:visible; font-family:var(--mono); font-size:.9em;
+    line-height:inherit; color:var(--text); overflow-wrap:break-word}
+  .code pre{margin:0}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- shared note / row utilities ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
+  .lztier{display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+    border:1px solid var(--line2); border-left-width:3px; border-radius:0 9px 9px 0; background:var(--panel2);
+    cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; transition:border-color .15s}
+  .lztier:hover{border-color:var(--teal)}
+  .lztier.on{border-color:var(--amber); background:var(--sel)}
+  .lztier b{font-size:12.5px; font-weight:600}
+  .lztier span{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto; white-space:nowrap}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- scenario drill, built from the page's own exam lines ---- */
+  .drl{border:1px solid var(--line2); border-radius:11px; padding:14px 16px; background:var(--panel2)}
+  .drl-q{font-size:14px; line-height:1.6; margin-bottom:14px}
+  .drl-o{display:block; width:100%; text-align:left; border:1px solid var(--line2); background:var(--panel);
+    border-radius:9px; padding:9px 12px; margin-bottom:7px; font:inherit; font-size:12.5px; color:inherit;
+    cursor:pointer; line-height:1.45; transition:border-color .15s}
+  .drl-o:hover{border-color:var(--teal)}
+  .drl-o:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .drl-o.right{border-color:var(--green); color:var(--green)}
+  .drl-o.wrong{border-color:var(--red); color:var(--red)}
+  .drl-o.muted{opacity:.5}
+  .drl-bar{display:flex; gap:4px; margin-bottom:12px}
+  .drl-bar i{flex:1; height:5px; border-radius:99px; background:var(--line2)}
+  .drl-bar i.ok{background:var(--green)} .drl-bar i.no{background:var(--red)} .drl-bar i.now{background:var(--amber)}
+  /* ================= INTERFACE ================= */
+  /* one global motion guard rather than per-component handling */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important; scroll-behavior:auto !important}
+  }
+  html{scroll-behavior:smooth}
+
+  /* ---- reading progress ---- */
+  .rprog{position:fixed; inset:0 0 auto 0; height:2px; z-index:60; background:transparent; pointer-events:none}
+  .rprog i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--teal),var(--violet));
+    transition:width .12s linear}
+
+  /* ---- sticky, single-row tab bar ---- */
+  .tabwrap{position:sticky; top:0; z-index:50; margin:22px 0 20px;
+    background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); padding:9px 0 10px}
+  .tabwrap::before,.tabwrap::after{content:""; position:absolute; top:0; bottom:0; width:36px; pointer-events:none; z-index:2}
+  .tabwrap::before{left:0; background:linear-gradient(90deg,var(--bg),transparent)}
+  .tabwrap::after{right:0; background:linear-gradient(270deg,var(--bg),transparent)}
+  .tabs{display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+    scroll-snap-type:x proximity; padding:2px 30px; margin:0}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto; scroll-snap-align:center; cursor:pointer; font-family:var(--mono); font-size:12px;
+    color:var(--muted); background:transparent; border:1px solid transparent; border-radius:99px;
+    padding:7px 14px; transition:color .15s, background .15s, border-color .15s; white-space:nowrap}
+  .tab:hover{color:var(--text); background:var(--panel2)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .tab .tcount{display:inline-block; margin-left:7px; font-size:9.5px; opacity:.7;
+    border:1px solid currentColor; border-radius:99px; padding:0 5px; line-height:1.5}
+
+  /* ---- layout with the section rail ---- */
+  .labgrid{display:grid; grid-template-columns:minmax(0,1fr) 208px; gap:26px; align-items:start}
+  .railcol{position:sticky; top:72px; max-height:calc(100vh - 96px); overflow-y:auto; scrollbar-width:thin;
+    padding-right:2px}
+  .railhead{font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 10px 10px}
+  .rail{display:flex; flex-direction:column; gap:1px; border-left:1px solid var(--line); padding-left:0}
+  .rail a{display:flex; gap:7px; align-items:baseline; padding:5px 8px 5px 11px; margin-left:-1px;
+    border-left:2px solid transparent; font-size:11.5px; line-height:1.4; color:var(--muted);
+    text-decoration:none; transition:color .15s, border-color .15s}
+  .rail a:hover{color:var(--text)}
+  .rail a.on{color:var(--amber); border-left-color:var(--amber)}
+  .rail a i{flex:none; width:5px; height:5px; border-radius:50%; background:var(--teal); margin-top:6px; opacity:0}
+  .rail a.sim i{opacity:1}
+  .rail a:focus-visible{outline:2px solid var(--teal); outline-offset:-2px}
+  @media (max-width:1180px){.labgrid{grid-template-columns:minmax(0,1fr)} .railcol{display:none}}
+
+  /* ---- a simulation card should look like one ---- */
+  .card.issim{border-left:3px solid var(--teal); background:
+    linear-gradient(180deg, color-mix(in srgb, var(--teal) 4%, var(--panel)) 0 64px, var(--panel) 64px)}
+  .card.issim > h2.sec::before{content:"interactive"; display:inline-block; vertical-align:middle;
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal);
+    border:1px solid var(--teal); border-radius:99px; padding:2px 7px; margin-right:9px; transform:translateY(-2px)}
+
+  /* ---- command palette ---- */
+  .cmdk{position:fixed; inset:0; z-index:80; display:none; padding:12vh 16px 16px;
+    background:color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter:blur(6px)}
+  .cmdk.on{display:block; animation:cmdIn .16s ease}
+  @keyframes cmdIn{from{opacity:0} to{opacity:1}}
+  .cmdbox{max-width:620px; margin:0 auto; background:var(--panel); border:1px solid var(--line2);
+    border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.22); overflow:hidden}
+  .cmdbox input{width:100%; border:0; border-bottom:1px solid var(--line); background:transparent;
+    color:var(--text); font:inherit; font-size:15px; padding:15px 18px; outline:none}
+  .cmdlist{max-height:46vh; overflow-y:auto; padding:6px}
+  .cmdlist button{display:block; width:100%; text-align:left; border:0; background:transparent; color:inherit;
+    font:inherit; padding:9px 12px; border-radius:9px; cursor:pointer; line-height:1.4}
+  .cmdlist button .cmdtab{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:2px}
+  .cmdlist button .cmdname{font-size:13px}
+  .cmdlist button.on,.cmdlist button:hover{background:var(--panel2)}
+  .cmdlist button.on .cmdname{color:var(--amber)}
+  .cmdnone{padding:16px 18px; color:var(--muted); font-size:13px}
+  .cmdfoot{border-top:1px solid var(--line); padding:8px 14px; font-family:var(--mono); font-size:10px;
+    color:var(--dim); display:flex; gap:14px; flex-wrap:wrap}
+  .cmdfoot b{font-weight:400; color:var(--muted)}
+  .kbdhint{float:right; margin:6px 12px 0 0; font-family:var(--mono); font-size:10.5px; color:var(--dim);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px; cursor:default}
+  .kbdhint b{font-weight:400; color:var(--muted); margin-right:6px}
+  @media (max-width:760px){.kbdhint{display:none}}
+</style>
+</head>
+
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a><a href="index.html#lab=serving" style="display:inline-block;margin-bottom:12px;margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--teal);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▤ related topics</a>
+    <a href="gpu.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▮ gpu lab</a>
+    <a href="llm.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◫ llm lab</a>
+    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
+    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
+    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
+    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
+    <a href="evals.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◈ evals lab</a>
+    <a href="gemini.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◉ gemini lab</a>
+    <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
+    <a href="design.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▦ diagram lab</a>
+    <a href="peakweek.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◐ peak week lab</a>
+    
+    <div class="eyebrow">scheduling · caching · latency · the tail</div>
+    <h1>The engine, not the model <span class="thin">— why serving is a systems problem wearing a machine-learning hat</span></h1>
+    <p class="sub">You can run a model in about four lines of Python. Nobody serves one that way, and the gap between those four lines and a production endpoint is almost entirely systems work: deciding what to run each step, what to keep in memory, what to throw away, what to gamble on, and which of your users to make wait. This lab is that machinery &mdash; nine sections, each with something you can operate, and a running argument that <b>the number your users feel is not the number your dashboard shows</b>.</p>
+    <div class="note" style="margin-top:14px"><b>Where this sits.</b> The <a href="gpu.html">GPU lab</a> explains why moving bytes decides everything; the <a href="llm.html">LLM lab</a> explains which bytes. This one is about the machinery built to manage them. None is a prerequisite for the others, and the mechanisms here are described generally &mdash; vLLM, SGLang and TensorRT-LLM implement them differently, and are named where the difference matters.</div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="svstart" role="tab">Start here</button>
+    <button class="tab" data-pane="svphase" role="tab">Prefill vs decode</button>
+    <button class="tab" data-pane="svsched" role="tab">The scheduler</button>
+    <button class="tab" data-pane="svcache" role="tab">Prefix caching</button>
+    <button class="tab" data-pane="svspec" role="tab">Speculative decoding</button>
+    <button class="tab" data-pane="svgraph" role="tab">CUDA graphs</button>
+    <button class="tab" data-pane="svlora" role="tab">Multi-LoRA</button>
+    <button class="tab" data-pane="svdisagg" role="tab">Disaggregation</button>
+    <button class="tab" data-pane="svslo" role="tab">Metrics & SLOs</button>
+    <button class="tab" data-pane="svexam" role="tab">Exam angle</button>
+  </div>
+
+  <section class="pane on" id="pane-svstart"><div id="sec-svstart"></div></section>
+  <section class="pane" id="pane-svphase"><div id="sec-svphase"></div></section>
+  <section class="pane" id="pane-svsched"><div id="sec-svsched"></div></section>
+  <section class="pane" id="pane-svcache"><div id="sec-svcache"></div></section>
+  <section class="pane" id="pane-svspec"><div id="sec-svspec"></div></section>
+  <section class="pane" id="pane-svgraph"><div id="sec-svgraph"></div></section>
+  <section class="pane" id="pane-svlora"><div id="sec-svlora"></div></section>
+  <section class="pane" id="pane-svdisagg"><div id="sec-svdisagg"></div></section>
+  <section class="pane" id="pane-svslo"><div id="sec-svslo"></div></section>
+  <section class="pane" id="pane-svexam"><div id="sec-svexam"></div></section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">learning guide</a> · <a href="gpu.html">gpu lab</a> · <a href="llm.html">llm lab</a> · <a href="cloud.html">cloud lab</a> · <a href="agentcore.html">agentcore lab</a> · <a href="agentbuild.html">agents lab</a> · <a href="adk.html">adk lab</a> · <a href="evals.html">evals lab</a> · <a href="gemini.html">gemini lab</a> · <a href="govern.html">govern lab</a> · <a href="design.html">diagram lab</a> · <a href="peakweek.html">peak week lab</a>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
+
+
+
+
+
+
+
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+
+
+
+
+
+
+
+
+/* ================= 1 · START HERE ================= */
+document.getElementById('sec-svstart').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Four lines of Python, and everything they leave you to do</h2>
+  <div class="plain-line"><b>In plain English:</b> loading a model and calling it is genuinely easy. What is hard is doing it for a thousand people at once, on hardware you are paying for by the hour, with a latency target, while some requests want ten tokens and others want four thousand. An inference engine is the code that solves that, and essentially none of it is machine learning.</div>
+  <div class="plain-line">It is a scheduler, a memory allocator, a cache and an admission controller. If you have built a database or a job runner you will recognise every problem in this lab. That is the useful frame: <b>serving is a systems problem</b>, and the model is the workload rather than the subject.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; add the requirements one at a time</h2>
+  <div class="plain-line"><b>Try this:</b> start with a script that answers one request, then add a real requirement and see what the engine has to grow to satisfy it. Each step is a component you would otherwise be writing yourself.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Cooking dinner for one, then for a restaurant. The recipe is unchanged. Everything else &mdash; ordering, timing, holding, plating, who waits and how long &mdash; is a new job, and it is the whole job.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>add a requirement</b> repeatedly and watch the component list grow.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>inference engine</b> the server that runs a model for many users at once</span><span class="sp-w"><b>throughput</b> requests or tokens finished per second</span><span class="sp-w"><b>admission control</b> deciding whether to accept a request now or make it wait</span><span class="sp-w"><b>eviction</b> throwing something out of memory to make room</span><span class="sp-w"><b>tail latency</b> how slow the unlucky requests are, not the average</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svEngOut"></div></div>
+    <div><div class="segmented" id="svEngCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svEngNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: what an engine has to grow --- */
+(function(){
+  const ctl=document.getElementById('svEngCtl'), out=document.getElementById('svEngOut'), note=document.getElementById('svEngNote');
+  if(!ctl) return;
+  const R=[
+   {need:'One request at a time, no deadline',
+    comp:['a loop that calls the model'],
+    why:'This is the four lines. Perfectly correct, and it uses a fraction of the card because one request cannot supply enough work per byte to keep the arithmetic busy.'},
+   {need:'Several users at once',
+    comp:['a batcher, so one pass over the weights serves many requests'],
+    why:'The weights are read once per step whatever the batch size, so this is where nearly all the economics live. Everything after this is about keeping the batch full.'},
+   {need:'Requests of very different lengths',
+    comp:['iteration-level scheduling, so finished slots refill immediately'],
+    why:'Fixed batches wait for their slowest member. Making a scheduling decision every decode step rather than every request is the single biggest throughput change available.'},
+   {need:'Long conversations, limited memory',
+    comp:['a paged KV allocator with a block table'],
+    why:'The cache grows unpredictably per request. Contiguous allocation fragments; reserving the maximum wastes most of the card. Fixed blocks plus indirection is the answer, and it is the one operating systems reached decades ago.'},
+   {need:'More demand than the card can hold',
+    comp:['admission control, a queue, and a preemption policy'],
+    why:'Now you must decide who waits and who is evicted mid-generation &mdash; and whether an evicted request is recomputed from scratch or copied out to host memory. This is where tail latency is created.'},
+   {need:'Every request shares a long system prompt',
+    comp:['a prefix cache, with an eviction policy of its own'],
+    why:'Identical leading tokens produce identical keys and values, so recomputing them per request is waste. Sharing them is free throughput &mdash; and needs the paged allocator to be possible at all.'},
+   {need:'A latency target, not just throughput',
+    comp:['separate time-to-first-token and per-token budgets, and a policy that trades them'],
+    why:'<b>The two goals fight.</b> Bigger batches raise throughput and slow every individual token. Prioritising new requests improves first-token time and interrupts everyone already streaming. There is no setting that wins both; there is a choice.'},
+   {need:'Many customers, each with a fine-tuned variant',
+    comp:['adapter-aware batching, so one base model serves them all'],
+    why:'A full model copy per customer does not scale past a handful. Batching requests for different adapters together against shared base weights is what makes per-tenant tuning economic.'}
+  ];
+  let n=1;
+  function render(){
+    ctl.innerHTML='<button class="seg on" data-a="add" style="text-align:left"'+(n>=R.length?' disabled':'')+'>'+
+      (n>=R.length?'that is the engine':'add a requirement →')+'</button>'+
+      '<button class="seg" data-a="back" style="text-align:left"'+(n<=1?' disabled':'')+'>← remove one</button>'+
+      '<button class="seg" data-a="reset" style="text-align:left;margin-top:8px">start again</button>';
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a;
+      if(a==='add') n=Math.min(R.length,n+1); else if(a==='back') n=Math.max(1,n-1); else n=1;
+      render(); });
+    const cur=R[n-1];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">REQUIREMENT '+n+' OF '+R.length+'</div>'+
+      '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:var(--blue)"><b>'+cur.need+'</b></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT YOU NOW HAVE TO HAVE BUILT</div>'+
+      R.slice(0,n).map((r,i)=>'<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:'+
+        (i===n-1?'var(--teal)':'var(--wire)')+';opacity:'+(i===n-1?1:.6)+'">'+
+        '<div style="display:flex;gap:9px"><span class="n2">'+(i+1)+'</span><span>'+r.comp[0]+'</span></div></div>').join('')+
+      '<div class="'+(n>=R.length?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+cur.why+'</div>';
+    note.innerHTML =
+      n===1 ? '<div class="simnote">One request, no deadline, no neighbours. Everything from here is a consequence of somebody else also wanting an answer.</div>'
+      : n>=R.length ? '<div class="ok"><b>Count what is on that list.</b> A batcher, a scheduler, an allocator, an admission controller, a cache, a latency policy and adapter routing &mdash; and not one of them is machine learning. This is why serving engines are systems software written by systems people.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>And why you should not write your own.</b> Every item is individually reasonable and collectively a multi-year project that has already been done several times over. The value in understanding it is being able to diagnose it, choose between engines, and know which knob addresses which symptom.</div>'
+      : '<div class="simnote"><b>Notice that each requirement is ordinary product reality</b> &mdash; users at the same time, different lengths, a latency target. None of it is exotic, and each one adds a component that can fail on its own.</div>';
+  }
+  render();
+})();
+
+/* ================= 2 · PREFILL VS DECODE ================= */
+document.getElementById('sec-svphase').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">One request, two completely different workloads</h2>
+  <div class="plain-line"><b>In plain English:</b> answering a request has two phases with almost nothing in common. <b>Prefill</b> processes your whole prompt in one pass &mdash; every token at once, in parallel, with plenty of arithmetic per byte fetched. <b>Decode</b> then produces the answer one token at a time, and each of those steps reads the entire model to produce a single token.</div>
+  <div class="plain-line">Prefill is compute-bound and finishes fast. Decode is memory-bound and is where nearly all the wall-clock time of a long answer goes. They want opposite things from the hardware, and the fact that most systems run both on the same card at the same time is the root of a great deal of tail latency.</div>
+  <div id="svPhaseDiag"></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; split a request into its two halves</h2>
+  <div class="plain-line"><b>Try this:</b> move the prompt length and answer length and watch which phase dominates. Then watch what happens to somebody else&rsquo;s request when a very long prompt arrives.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Reading a letter, then writing a reply by hand. Reading is quick however long it is. Writing is slow and gets slower the more you have to say.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the prompt to 8 000 tokens and the answer to 50, then swap them.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prefill</b> processing the whole prompt in one parallel pass</span><span class="sp-w"><b>decode</b> generating the answer one token at a time</span><span class="sp-w"><b>TTFT</b> time to first token — how long before anything appears</span><span class="sp-w"><b>TPOT</b> time per output token — how fast it then streams</span><span class="sp-w"><b>compute-bound</b> limited by arithmetic, not by fetching</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svPhaseOut"></div></div>
+    <div><div id="svPhaseCtl"></div>
+      <div id="svPhaseNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- the phase diagram --- */
+(function(){
+  const h=document.getElementById('svPhaseDiag'); if(!h) return;
+  let b='';
+  b+=box(24,40,150,58,'var(--blue)','var(--n-blue)');
+  b+=t(99,62,'PREFILL',SANS); b+=tm(99,78,'whole prompt at once','var(--blue)'); b+=tm(99,91,'compute-bound','var(--dim)');
+  for(let i=0;i<8;i++) b+='<rect x="'+(196+i*36)+'" y="52" width="26" height="34" rx="4" style="fill:var(--n-teal);stroke:var(--teal)"/>';
+  b+=tm(340,104,'DECODE — one pass per token, each reading every weight','var(--teal)');
+  b+=tm(340,36,'8 steps, 8 full passes over the model','var(--dim)');
+  b+='<line x1="174" y1="69" x2="190" y2="69" style="stroke:var(--wire)" marker-end="url(#ah)"/>';
+  b+=tm(99,120,'one pass','var(--dim)');
+  h.innerHTML=D('0 0 560 132','Prefill as one wide block, decode as a row of eight narrow steps',b,
+    'The single wide block is prefill &mdash; all your prompt tokens processed together. Each narrow block is one decode step producing one token. The blocks are drawn the same height because each costs a full read of the weights; prefill amortises that across the whole prompt, decode does not amortise it at all.');
+})();
+
+/* --- SIM: phase split --- */
+(function(){
+  const ctl=document.getElementById('svPhaseCtl'), out=document.getElementById('svPhaseOut'), note=document.getElementById('svPhaseNote');
+  if(!ctl) return;
+  let promptLen=1024, ansLen=256;
+  const PL=[128,512,1024,2048,4096,8192,16384], AL=[16,50,128,256,512,1024,2048];
+  /* rough model: prefill ~ tokens * 0.06 ms, decode ~ 18 ms per token at moderate batch */
+  const PRE_PER=0.055, DEC_PER=18;
+  function render(){
+    const sl=(id,lab,val,arr,fmt)=>'<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">'+lab+'</span><span>'+fmt+'</span></div>'+
+      '<input type="range" id="'+id+'" min="0" max="'+(arr.length-1)+'" step="1" value="'+arr.indexOf(val)+'" style="width:100%"></div>';
+    ctl.innerHTML=sl('svPL','prompt length',promptLen,PL,promptLen.toLocaleString()+' tokens')+
+                  sl('svAL','answer length',ansLen,AL,ansLen.toLocaleString()+' tokens');
+    const a=document.getElementById('svPL'); if(a) a.oninput=()=>{promptLen=PL[+a.value];render();};
+    const c=document.getElementById('svAL'); if(c) c.oninput=()=>{ansLen=AL[+c.value];render();};
+    const pre=promptLen*PRE_PER, dec=ansLen*DEC_PER, tot=pre+dec;
+    const preShare=pre/tot*100;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE REQUEST, END TO END</div>'+
+      '<div style="height:30px;border-radius:6px;overflow:hidden;display:flex;background:var(--panel2)">'+
+      '<div style="width:'+preShare+'%;background:var(--blue);display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#fff">'+
+      (preShare>14?'prefill':'')+'</div>'+
+      '<div style="flex:1;background:var(--teal);display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#fff">'+
+      (preShare<86?'decode':'')+'</div></div>'+
+      '<div style="margin-top:14px">'+
+      [['prefill — all '+promptLen.toLocaleString()+' prompt tokens',pre.toFixed(0)+' ms'],
+       ['decode — '+ansLen.toLocaleString()+' tokens, one at a time',dec.toFixed(0)+' ms'],
+       ['time to first token (TTFT)',pre.toFixed(0)+' ms'],
+       ['time per output token (TPOT)',DEC_PER+' ms'],
+       ['end to end',(tot/1000).toFixed(2)+' s'],
+       ['share of time in decode',(100-preShare).toFixed(0)+'%']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div class="'+(preShare>50?'lzwarn':'ok')+'" style="margin-top:12px;padding:11px 13px">'+
+      (preShare>50
+        ? '<b>Prefill dominates.</b> A long prompt and a short answer &mdash; classification, extraction, retrieval-heavy work. The user waits for the first token and then it is over almost immediately.'
+        : '<b>Decode dominates.</b> The usual shape for chat. Time to first token is a small part of the wait; nearly everything is the serial grind of one token after another.')+'</div>';
+    note.innerHTML='<div class="simnote"><b>These two shapes want different things.</b> A prefill-heavy workload is compute-bound and benefits from bigger, better-utilised matrix work. A decode-heavy one is memory-bound and benefits from more concurrency and fewer bytes per weight. Tuning a system for the wrong shape is common and expensive.</div>'+
+      (promptLen>=8192
+        ? '<div class="lzbad" style="margin-top:10px"><b>And here is the interference problem.</b> That prefill occupies the card for '+pre.toFixed(0)+' ms in one go. Every other user currently streaming gets no token during it &mdash; so one person pasting a long document adds a visible stutter to everybody else. Chunked prefill and disaggregation both exist to attack exactly this.</div>'
+        : '<div class="note" style="margin-top:10px"><b>Push the prompt to 16 000 tokens</b> and think about what that single long pass does to everyone else on the card. That is the interference problem, and it is a scheduling question rather than a model question.</div>')+
+      '<div class="note" style="margin-top:10px"><b>The timings are illustrative</b> &mdash; a mid-sized model on one modern card at moderate batch. The ratio between the phases and the way it moves with the sliders is the part that transfers.</div>';
+  }
+  render();
+})();
+
+/* ================= 3 · THE SCHEDULER ================= */
+document.getElementById('sec-svsched').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A decision every step, not a decision every request</h2>
+  <div class="plain-line"><b>In plain English:</b> the scheduler is asked the same question thousands of times a second &mdash; <em>given what is running, what is queued and how much cache memory is free, what should the next step do?</em> It admits new requests, keeps existing ones going, and sometimes throws a running request out to make room.</div>
+  <div class="plain-line"><b>The constraint that drives everything is memory, not compute.</b> A request&rsquo;s cache grows with every token it generates, and nobody knows in advance how long it will be. So a batch that fitted comfortably ten steps ago may not fit now, and the scheduler has to do something about it mid-flight.</div>
+  <div class="plain-line"><b>When it runs out, there are two ways to make room</b>, and the choice has real consequences. <b>Recompute</b>: drop the request&rsquo;s cache entirely and redo its prefill when it resumes &mdash; cheap in memory, and it pays the prefill cost twice. <b>Swap</b>: copy the cache out to host memory and back &mdash; no recomputation, but it crosses the slowest link on the machine. Neither is free, and both land on one unlucky user.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; run the queue under pressure</h2>
+  <div class="plain-line"><b>Try this:</b> turn the arrival rate up until the engine cannot keep everyone resident, then choose what it should do about it. Watch where the pain goes &mdash; it never disappears, it only moves.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A hospital with a fixed number of beds. When they are full you can turn people away at the door, or move somebody out of a bed to make room. There is no third option, and both are decisions about who suffers.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>push the arrival rate past capacity with <b>queue at the door</b>, then switch to <b>preempt by recomputing</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>admission control</b> deciding whether to let a request start at all</span><span class="sp-w"><b>preemption</b> evicting a request that has already started</span><span class="sp-w"><b>recompute</b> discarding its cache and redoing prefill later</span><span class="sp-w"><b>swap</b> copying its cache out to host memory and back</span><span class="sp-w"><b>starvation</b> a request that keeps losing and never finishes</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svSchedOut"></div></div>
+    <div><div id="svSchedCtl"></div>
+      <div class="dim" style="font-size:11px;margin:14px 0 7px">WHEN MEMORY RUNS OUT</div>
+      <div class="segmented" id="svSchedPol" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svSchedNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: scheduler under pressure --- */
+(function(){
+  const ctl=document.getElementById('svSchedCtl'), pol=document.getElementById('svSchedPol'),
+        out=document.getElementById('svSchedOut'), note=document.getElementById('svSchedNote');
+  if(!ctl) return;
+  const CAP=16;                              /* concurrent requests the cache can hold */
+  let rate=12, policy='queue';
+  const P={
+   queue:{n:'Queue at the door',
+     desc:'Nothing already running is disturbed. New arrivals wait until a slot frees.',
+     ttft:r=>r<=CAP?120:120+(r-CAP)*260, tpot:()=>18, fair:'stable', evict:0,
+     why:'<b>Protects everybody already streaming</b> and puts the entire cost on people who have not started yet. Their first token gets steadily later as the queue grows, and from their side the service simply looks down.'},
+   recomp:{n:'Preempt by recomputing',
+     desc:'Evict the newest running request, discard its cache, and redo its prefill when it resumes.',
+     ttft:r=>r<=CAP?120:150+(r-CAP)*40, tpot:r=>r<=CAP?18:18+(r-CAP)*2.2, fair:'lumpy', evict:2,
+     why:'<b>Spreads the pain and wastes work.</b> More requests get started sooner, and the evicted ones pay their prefill twice. Cheap in memory, and it turns a queueing problem into a throughput problem.'},
+   swap:{n:'Preempt by swapping to host memory',
+     desc:'Copy the evicted request&rsquo;s cache over PCIe and bring it back when there is room.',
+     ttft:r=>r<=CAP?120:145+(r-CAP)*35, tpot:r=>r<=CAP?18:18+(r-CAP)*3.1, fair:'lumpy', evict:2,
+     why:'<b>No wasted computation, but the transfer is over the slowest link on the machine.</b> For a large cache the copy out and back can cost more than simply recomputing the prefill would have &mdash; which is why engines pick between the two by size rather than always preferring one.'}
+  };
+  function render(){
+    ctl.innerHTML='<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">requests arriving at once</span><span>'+rate+'</span></div>'+
+      '<input type="range" id="svR" min="4" max="40" step="2" value="'+rate+'" style="width:100%">'+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:4px">the cache holds '+CAP+' concurrently</div>';
+    const r=document.getElementById('svR'); if(r) r.oninput=()=>{rate=+r.value;render();};
+    pol.innerHTML=Object.entries(P).map(([k,v])=>'<button class="seg'+(policy===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.n+'</button>').join('');
+    pol.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{policy=b.dataset.k;render();});
+    const p=P[policy], over=rate>CAP;
+    const running=Math.min(rate,CAP), queued=Math.max(0,rate-CAP);
+    const ttft=p.ttft(rate), tpot=p.tpot(rate);
+    const evicted=over?Math.min(p.evict,queued):0;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">WHAT THE CARD IS HOLDING</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin-bottom:6px">'+
+      [...Array(CAP)].map((_,i)=>'<span style="height:22px;border-radius:3px;background:'+
+        (i<running-evicted?'var(--teal)':i<running?'var(--red)':'var(--line2)')+';opacity:'+(i<running?1:.3)+'"></span>').join('')+'</div>'+
+      '<div style="display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--muted);flex-wrap:wrap">'+
+      '<span><span style="display:inline-block;width:8px;height:8px;background:var(--teal);border-radius:2px"></span> generating</span>'+
+      (evicted?'<span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px"></span> evicted this step</span>':'')+
+      '<span><span style="display:inline-block;width:8px;height:8px;background:var(--line2);border-radius:2px"></span> free</span></div>'+
+      (queued?'<div class="dim" style="font-size:11px;margin:14px 0 6px">WAITING AT THE DOOR</div>'+
+        '<div style="display:flex;gap:3px;flex-wrap:wrap">'+[...Array(Math.min(queued,24))].map(()=>
+        '<span style="width:16px;height:16px;border-radius:3px;background:var(--amber);opacity:.7"></span>').join('')+
+        (queued>24?'<span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:4px">+'+(queued-24)+'</span>':'')+'</div>':'')+
+      '<div style="margin-top:14px">'+
+      [['resident',running+' of '+CAP],['queued',queued],
+       ['time to first token',ttft.toFixed(0)+' ms'],
+       ['time per output token',tpot.toFixed(1)+' ms'],
+       ['experience',over?p.fair:'stable']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div class="'+(over?'lzwarn':'ok')+'" style="margin-top:12px;padding:11px 13px">'+
+      (over?p.why:'<b>Under capacity.</b> Everything is resident, nothing is queued, and the policy makes no difference. Push the arrival rate past '+CAP+' to make the choice matter.')+'</div>';
+    note.innerHTML =
+      !over ? '<div class="simnote">Below capacity every policy looks identical, which is exactly why these decisions get made badly &mdash; they are invisible until the day they are not.</div>'
+      : '<div class="simnote"><b>Compare the three at the same arrival rate.</b> Queueing keeps per-token latency perfect and makes new users wait a very long time. Preemption gets more people started and makes everybody&rsquo;s stream lumpier. The total pain is roughly conserved; you are choosing who receives it.</div>'+
+        '<div class="note" style="margin-top:10px"><b>Which is right depends on what you promised.</b> A chat product usually protects the stream, because a stuttering answer reads as broken. A batch pipeline usually prefers throughput and does not care about lumpiness. Deciding this deliberately is most of what a serving SLO is for.</div>'+
+        (policy!=='queue'?'<div class="note" style="margin-top:10px"><b>And watch for starvation.</b> If eviction always takes the newest request, a long request can be repeatedly evicted and never finish. Real schedulers add priority or ageing precisely to stop that, and it is the kind of bug that only appears under sustained load.</div>':'');
+  }
+  render();
+})();
+
+/* ================= 4 · PREFIX CACHING ================= */
+document.getElementById('sec-svcache').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Everybody sends the same first two thousand tokens</h2>
+  <div class="plain-line"><b>In plain English:</b> keys and values depend only on a token and its position &mdash; not on anything after it. So if two requests begin with exactly the same text, the cache entries for that shared beginning are <em>identical</em>. Computing them separately for every request is pure waste, and in most production workloads that shared beginning is enormous: a system prompt, a tool schema, a few-shot preamble, a document everybody is asking about.</div>
+  <div class="plain-line"><b>Prefix caching keeps those blocks and lets requests point at them.</b> A new request hashes its leading blocks, finds the ones already present, and starts its prefill from wherever the match ran out. On a workload with a long fixed preamble this is often the single largest win available, and it costs nothing in quality because the numbers are bit-identical.</div>
+  <div class="plain-line"><b>Once conversations branch, a tree beats a list.</b> Several requests sharing a preamble and then diverging form a prefix tree, and organising the cache that way &mdash; matching the longest shared path, evicting least-recently-used leaves &mdash; is what SGLang calls RadixAttention. The idea is the same as any shared-prefix structure: store each distinct beginning once.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; share a preamble across requests</h2>
+  <div class="plain-line"><b>Try this:</b> set how much of each request is shared boilerplate, then compare cold and warm cache. The saving is in time-to-first-token, which is the number users actually feel.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A print shop asked for a hundred copies of the same twenty-page contract with a different final page. You typeset the twenty pages once.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the shared preamble to 2 000 tokens and toggle the cache off and on.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prefix</b> the leading tokens two requests have in common</span><span class="sp-w"><b>cache hit</b> finding those blocks already computed</span><span class="sp-w"><b>block</b> a fixed-size chunk of cache, matched by content hash</span><span class="sp-w"><b>eviction</b> discarding cached blocks to make room</span><span class="sp-w"><b>radix tree</b> a tree where shared beginnings are stored once</span><span class="sp-w"><b>deterministic</b> the same input always produces the same bytes, in the same order</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svPfxOut"></div></div>
+    <div><div id="svPfxCtl"></div>
+      <div class="segmented" id="svPfxMode" style="flex-direction:column;align-items:stretch;margin-top:12px"></div>
+      <div id="svPfxNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: prefix caching --- */
+(function(){
+  const ctl=document.getElementById('svPfxCtl'), mEl=document.getElementById('svPfxMode'),
+        out=document.getElementById('svPfxOut'), note=document.getElementById('svPfxNote');
+  if(!ctl) return;
+  let shared=2048, unique=300, warm=true;
+  const SH=[0,256,512,1024,2048,4096,8192];
+  const PRE_PER=0.055;
+  function render(){
+    ctl.innerHTML='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">shared preamble</span><span>'+shared.toLocaleString()+' tokens</span></div>'+
+      '<input type="range" id="svSh" min="0" max="'+(SH.length-1)+'" step="1" value="'+SH.indexOf(shared)+'" style="width:100%"></div>'+
+      '<div><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">unique part per request</span><span>'+unique+' tokens</span></div>'+
+      '<input type="range" id="svUq" min="50" max="1500" step="50" value="'+unique+'" style="width:100%"></div>';
+    const a=document.getElementById('svSh'); if(a) a.oninput=()=>{shared=SH[+a.value];render();};
+    const b=document.getElementById('svUq'); if(b) b.oninput=()=>{unique=+b.value;render();};
+    mEl.innerHTML=[[false,'Cold — nothing cached'],[true,'Warm — the preamble is already there']]
+      .map(([v,n])=>'<button class="seg'+(warm===v?' on':'')+'" data-v="'+v+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
+    mEl.querySelectorAll('.seg').forEach(x=>x.onclick=()=>{warm=x.dataset.v==='true';render();});
+    const total=shared+unique;
+    const computed=warm?unique:total;
+    const ttft=computed*PRE_PER+35;
+    const cold=total*PRE_PER+35;
+    const saved=(1-ttft/cold)*100;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE REQUEST&rsquo;S PROMPT</div>'+
+      '<div style="height:26px;border-radius:6px;overflow:hidden;display:flex;background:var(--panel2)">'+
+      (shared?'<div style="width:'+(shared/total*100)+'%;background:'+(warm?'var(--green)':'var(--amber)')+
+        ';display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#fff">'+
+        (shared/total>0.25?(warm?'cache hit':'recomputed'):'')+'</div>':'')+
+      '<div style="flex:1;background:var(--blue);display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#fff">unique</div></div>'+
+      '<div style="margin-top:14px">'+
+      [['prompt tokens',total.toLocaleString()],
+       ['tokens actually prefilled',computed.toLocaleString()],
+       ['tokens skipped',(total-computed).toLocaleString()],
+       ['time to first token',ttft.toFixed(0)+' ms'],
+       ['versus a cold cache',warm&&shared?'−'+saved.toFixed(0)+'%':'—']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">ACROSS 100 REQUESTS WITH THE SAME PREAMBLE</div>'+
+      '<div style="display:flex;gap:10px">'+
+      [['cold',(cold*100/1000).toFixed(1)+' s','var(--red)'],['warm',((unique*PRE_PER+35)*100/1000).toFixed(1)+' s','var(--green)']]
+      .map(([l,v,c])=>'<div style="flex:1;padding:10px 12px;border:1px solid '+c+';border-radius:8px;text-align:center">'+
+        '<div style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+l+'</div>'+
+        '<div style="font-family:var(--mono);font-size:16px;color:'+c+'">'+v+'</div></div>').join('')+'</div>';
+    note.innerHTML =
+      (shared===0
+        ? '<div class="note"><b>No shared preamble, so nothing to cache.</b> Push the slider up — most production workloads sit at one or two thousand shared tokens without anyone having counted.</div>'
+        : warm
+        ? '<div class="ok"><b>The preamble is computed once and reused.</b> Bit-identical results, no quality cost, and time-to-first-token falls by '+saved.toFixed(0)+'% &mdash; which is the number users actually perceive as speed.</div>'
+        : '<div class="lzwarn"><b>Every request re-does the same '+shared.toLocaleString()+' tokens.</b> The arithmetic is identical every time, and it is a large share of what you are paying for.</div>')+
+      '<div class="simnote" style="margin-top:10px"><b>Two things break it, and both are self-inflicted.</b> Putting anything variable at the <em>start</em> of the prompt &mdash; a timestamp, a request id, a user name &mdash; makes every prefix unique and the hit rate collapses to zero. And prompts assembled in a non-deterministic order (a dict iterated differently, tools listed in a varying sequence) look different byte for byte even when they mean the same thing.</div>'+
+      '<div class="note" style="margin-top:10px"><b>So the design rule is simple:</b> put everything stable at the front and everything variable at the back, and make prompt assembly deterministic. That is a prompt-engineering decision with a direct and large infrastructure consequence, which is a rare and useful thing to know.</div>';
+  }
+  render();
+})();
+
+/* ================= 5 · SPECULATIVE DECODING ================= */
+document.getElementById('sec-svspec').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Guess several tokens, then check them all in one pass</h2>
+  <div class="plain-line"><b>In plain English:</b> decoding is slow because each token needs its own full pass over the weights, and that pass is limited by reading them rather than by arithmetic &mdash; so most of the card is idle during it. Which means <em>checking</em> several candidate tokens costs almost the same as producing one.</div>
+  <div class="plain-line"><b>So: have something cheap guess ahead.</b> A small draft model proposes the next few tokens. The real model then verifies all of them in a single pass, and a simple rule accepts the longest correct prefix of the guess and rejects the rest. Everything accepted was free &mdash; you got several tokens for the price of one pass.</div>
+  <div class="plain-line"><b>The output is not an approximation.</b> With the standard acceptance rule the result is distributed identically to ordinary decoding &mdash; you are not trading quality for speed, you are exploiting spare capacity. What you are risking is <em>wasted work</em>: if the draft is usually wrong, you have paid for the drafting and thrown it away.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; tune the gamble</h2>
+  <div class="plain-line"><b>Try this:</b> change how many tokens are guessed and how often the draft is right. Watch the speedup rise and then fall &mdash; guessing further ahead is not monotonically better, and the point where it turns is the whole design question.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Finishing someone&rsquo;s sentence. Get it right and you have both saved time. Get it wrong and they have to stop, correct you, and start again — and you did the work of guessing for nothing.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set acceptance to 0.5 and walk the draft length from 1 to 8.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>draft model</b> a small, fast model that proposes candidate tokens</span><span class="sp-w"><b>target model</b> the real one, which verifies them</span><span class="sp-w"><b>acceptance rate</b> how often a proposed token is kept</span><span class="sp-w"><b>verify</b> one pass of the real model checking all the guesses at once</span><span class="sp-w"><b>rejection</b> discarding the guess and everything after it</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svSpecOut"></div></div>
+    <div><div id="svSpecCtl"></div>
+      <div id="svSpecNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: speculative decoding --- */
+(function(){
+  const ctl=document.getElementById('svSpecCtl'), out=document.getElementById('svSpecOut'), note=document.getElementById('svSpecNote');
+  if(!ctl) return;
+  let k=4, alpha=0.7, draftCost=0.18;
+  function render(){
+    const sl=(id,lab,val,min,max,step,fmt)=>'<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">'+lab+'</span><span>'+fmt+'</span></div>'+
+      '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" style="width:100%"></div>';
+    ctl.innerHTML=sl('svK','tokens guessed per round',k,1,10,1,k)+
+                  sl('svA','acceptance rate',alpha,0.1,0.95,0.05,(alpha*100).toFixed(0)+'%')+
+                  sl('svD','draft cost, share of a real pass',draftCost,0.05,0.5,0.01,(draftCost*100).toFixed(0)+'%');
+    const bind=(id,fn)=>{const e=document.getElementById(id); if(e) e.oninput=()=>{fn(+e.value);render();};};
+    bind('svK',v=>k=v); bind('svA',v=>alpha=v); bind('svD',v=>draftCost=v);
+    /* expected accepted tokens per round, plus the one the verify pass always gives you */
+    const exp=(1-Math.pow(alpha,k+1))/(1-alpha);
+    const cost=1+k*draftCost;                       /* one verify pass plus k draft passes */
+    const speed=exp/cost;
+    const col=speed>1.6?'var(--green)':speed>1.05?'var(--amber)':'var(--red)';
+    /* find the best k at this acceptance rate */
+    let bestK=1,bestS=0;
+    for(let kk=1;kk<=10;kk++){
+      const e=(1-Math.pow(alpha,kk+1))/(1-alpha), s=e/(1+kk*draftCost);
+      if(s>bestS){bestS=s;bestK=kk;}
+    }
+    let chain='';
+    for(let i=0;i<k;i++){
+      const p=Math.pow(alpha,i+1);
+      chain+='<div style="flex:1;text-align:center">'+
+        '<div style="height:'+Math.max(4,p*54)+'px;background:'+(p>0.5?'var(--green)':p>0.2?'var(--amber)':'var(--red)')+
+        ';border-radius:3px 3px 0 0"></div>'+
+        '<div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:3px">'+(i+1)+'</div></div>';
+    }
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE ROUND: DRAFT '+k+', VERIFY ONCE</div>'+
+      '<div style="display:flex;gap:3px;margin-bottom:10px">'+
+      [...Array(k)].map((_,i)=>'<span style="flex:1;height:20px;border-radius:3px;background:var(--n-violet);border:1px solid var(--violet)"></span>').join('')+
+      '<span style="width:34px;height:20px;border-radius:3px;background:var(--n-blue);border:1px solid var(--blue);display:grid;place-items:center;font-family:var(--mono);font-size:9px;color:var(--blue)">chk</span></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">PROBABILITY THE nTH GUESS SURVIVES</div>'+
+      '<div style="display:flex;gap:4px;align-items:flex-end;height:60px">'+chain+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:3px">each one needs every guess before it to have been right too</div>'+
+      '<div style="margin-top:14px">'+
+      [['expected tokens per round',exp.toFixed(2)],
+       ['cost per round, in real passes',cost.toFixed(2)],
+       ['effective speedup',speed.toFixed(2)+'×'],
+       ['best draft length at this acceptance',bestK+' token'+(bestK===1?'':'s')]]
+      .map(([kk,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+kk+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">speedup</span><span style="color:'+col+'">'+speed.toFixed(2)+'×</span></div>'+
+      '<div style="height:9px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
+      Math.min(100,speed/3*100)+'%;background:'+col+'"></i></div></div>'+
+      '<div class="'+(speed>1.05?'ok':'lzbad')+'" style="margin-top:12px;padding:11px 13px">'+
+      (speed>1.05?'<b>Worth doing.</b> The verify pass is nearly free relative to what it returns, so accepted guesses are genuine profit.'
+       :'<b>Slower than not bothering.</b> The drafting costs more than the accepted tokens are worth. This happens exactly when the draft model is poorly matched to the target.')+'</div>';
+    note.innerHTML =
+      k>bestK ? '<div class="lzwarn"><b>You are guessing too far ahead.</b> The '+k+'th guess only survives if all '+(k-1)+' before it did, so its chance is acceptance to the power of '+k+' &mdash; and you paid for it regardless. At this acceptance rate the best draft length is '+bestK+'.</div>'
+      : alpha<0.35 ? '<div class="lzbad"><b>The draft is wrong too often.</b> Below roughly 40% acceptance the arithmetic rarely works. Usually this means the draft model is too small, or trained on a different distribution from the target &mdash; matching them matters more than making the draft fast.</div>'
+      : '<div class="ok"><b>This is the regime it was designed for.</b> High acceptance, a cheap draft, and a modest look-ahead. Note the compounding: each further guess needs everything before it to be right, so returns diminish quickly however good the draft is.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>Where the acceptance rate actually comes from:</b> how well the draft imitates the target on <em>your</em> traffic. Formatted output, code and repetitive structure accept very well; open-ended prose accepts poorly. It is a property of your workload, not of the technique.</div>'+
+      '<div class="note" style="margin-top:10px"><b>And it helps least when you need it most.</b> The spare capacity being exploited only exists at small batch sizes. Under heavy load the batch is already full and there is nothing free to verify with &mdash; so speculative decoding improves latency for a lightly loaded endpoint, and can reduce throughput on a busy one.</div>';
+  }
+  render();
+})();
+
+/* ================= 6 · CUDA GRAPHS ================= */
+document.getElementById('sec-svgraph').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">When the paperwork costs more than the work</h2>
+  <div class="plain-line"><b>In plain English:</b> every operation the model performs is a separate instruction sent from the CPU to the GPU, and each one carries a fixed overhead of a few microseconds. A single decode step through a large model launches hundreds of them. When the actual work per step is small &mdash; which is exactly what decoding at low batch size is &mdash; that overhead stops being noise and becomes a real share of the time.</div>
+  <div class="plain-line"><b>A CUDA graph records the whole sequence once and replays it with a single call.</b> The launches happen inside the driver instead of being issued one by one from Python, and the per-launch cost largely disappears.</div>
+  <div class="plain-line"><b>The price is rigidity.</b> A recorded graph is fixed &mdash; same operations, same shapes, same memory addresses. Since batch size changes constantly in serving, engines capture graphs for a set of batch-size buckets and pad up to the nearest one. That padding is wasted work, so the bucket list is a genuine trade-off rather than a detail.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; find where the overhead starts to matter</h2>
+  <div class="plain-line"><b>Try this:</b> change the batch size and watch how much of each decode step is launch overhead rather than model work. Then turn graphs on and see what is left.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A form to be signed for every item you fetch from a warehouse. Fetching pallets, the paperwork is nothing. Fetching single screws, you spend the day signing forms.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set batch size to 1 with graphs <b>off</b> and read the overhead share.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>kernel launch</b> one instruction sent from CPU to GPU</span><span class="sp-w"><b>launch overhead</b> the fixed cost of sending it, whatever the work</span><span class="sp-w"><b>CUDA graph</b> a recorded sequence of launches replayed as one call</span><span class="sp-w"><b>capture</b> recording the sequence, once, in advance</span><span class="sp-w"><b>bucket</b> one of a few fixed batch sizes a graph was captured for</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svGrOut"></div></div>
+    <div><div id="svGrCtl"></div>
+      <div class="segmented" id="svGrMode" style="flex-direction:column;align-items:stretch;margin-top:12px"></div>
+      <div id="svGrNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: CUDA graphs --- */
+(function(){
+  const ctl=document.getElementById('svGrCtl'), mEl=document.getElementById('svGrMode'),
+        out=document.getElementById('svGrOut'), note=document.getElementById('svGrNote');
+  if(!ctl) return;
+  let batch=1, graphs=false;
+  const BUCKETS=[1,2,4,8,16,32,64,128,256];
+  const LAUNCHES=520, PER=3.2/1000;              /* ms per launch */
+  function render(){
+    ctl.innerHTML='<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">batch size</span><span>'+batch+'</span></div>'+
+      '<input type="range" id="svB" min="1" max="256" step="1" value="'+batch+'" style="width:100%">';
+    const b=document.getElementById('svB'); if(b) b.oninput=()=>{batch=+b.value;render();};
+    mEl.innerHTML=[[false,'No graphs — launch each kernel'],[true,'CUDA graphs — replay a recorded sequence']]
+      .map(([v,n])=>'<button class="seg'+(graphs===v?' on':'')+'" data-v="'+v+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
+    mEl.querySelectorAll('.seg').forEach(x=>x.onclick=()=>{graphs=x.dataset.v==='true';render();});
+    const bucket=BUCKETS.find(x=>x>=batch)||256;
+    const padded=graphs?bucket:batch;
+    const work=3.0+padded*0.055;                     /* ms of real model work */
+    const over=graphs?0.25:LAUNCHES*PER;
+    const total=work+over;
+    const share=over/total*100;
+    const waste=graphs?(bucket-batch)/bucket*100:0;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE DECODE STEP</div>'+
+      '<div style="height:30px;border-radius:6px;overflow:hidden;display:flex;background:var(--panel2)">'+
+      '<div style="width:'+(work/total*100)+'%;background:var(--teal);display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#fff">'+
+      (work/total>0.2?'model work':'')+'</div>'+
+      '<div style="flex:1;background:'+(share>30?'var(--red)':'var(--amber)')+';display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:#fff">'+
+      (share>18?'launch overhead':'')+'</div></div>'+
+      '<div style="margin-top:14px">'+
+      [['kernel launches per step',graphs?'1 graph replay':LAUNCHES.toLocaleString()],
+       ['model work',work.toFixed(2)+' ms'],
+       ['launch overhead',over.toFixed(2)+' ms'],
+       ['overhead as a share',share.toFixed(1)+'%'],
+       ['step time',total.toFixed(2)+' ms'],
+       ['tokens per second, per request',(1000/total).toFixed(0)]]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      (graphs?'<div class="dim" style="font-size:11px;margin:14px 0 6px">BUCKETS &mdash; A GRAPH IS CAPTURED FOR EACH</div>'+
+        '<div style="display:flex;gap:4px;flex-wrap:wrap">'+BUCKETS.map(x=>
+        '<span style="font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid '+
+        (x===bucket?'var(--teal)':'var(--line2)')+';color:'+(x===bucket?'var(--teal)':'var(--muted)')+'">'+x+'</span>').join('')+'</div>'+
+        (waste>0?'<div class="lzwarn" style="margin-top:10px;padding:10px 12px">Batch '+batch+' is padded up to '+bucket+
+          ' &mdash; <b>'+waste.toFixed(0)+'% of this step is computing padding</b>.</div>':''):'')+
+      '<div class="'+(share>25?'lzbad':share>8?'lzwarn':'ok')+'" style="margin-top:12px;padding:11px 13px">'+
+      (share>25?'<b>Most of the step is paperwork.</b> Hundreds of individually tiny launches, and the model work between them is smaller than the cost of asking for it.'
+       :share>8?'<b>Overhead is visible but not dominant.</b> Worth removing, and not where your biggest problem is.'
+       :'<b>Overhead is negligible here.</b> Either the batch is large enough that real work dominates, or graphs have removed it.')+'</div>';
+    note.innerHTML =
+      (!graphs&&batch<=4) ? '<div class="lzbad"><b>This is the case CUDA graphs exist for.</b> One user, streaming, low batch &mdash; exactly the interactive workload people care most about, and exactly where fixed per-launch cost hurts most.</div>'
+      : (graphs&&waste>25) ? '<div class="lzwarn"><b>And this is the cost of the fix.</b> Padding a batch of '+batch+' up to '+bucket+' means computing for requests that do not exist. More buckets reduces the waste and increases capture time and memory &mdash; that is the trade, and the bucket list is where you make it.</div>'
+      : graphs ? '<div class="ok"><b>Hundreds of launches become one replay.</b> The work is identical; you have simply stopped paying to ask for it several hundred times a step.</div>'
+      : '<div class="simnote"><b>At large batch the overhead washes out</b> because real work per step grows while launch cost does not. Which is why this optimisation looks pointless in a throughput benchmark and matters enormously to a single user watching text appear.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>What graphs demand in return:</b> static shapes and stable memory addresses. That is why they interact with everything else here &mdash; a scheduler that changes batch size every step has to pad, and any operation whose shape depends on the data cannot be captured at all.</div>';
+  }
+  render();
+})();
+
+/* ================= 7 · MULTI-LORA ================= */
+document.getElementById('sec-svlora').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Fifty customers, fifty fine-tunes, one set of weights</h2>
+  <div class="plain-line"><b>In plain English:</b> a low-rank adapter is a small pair of matrices that sits beside a large weight matrix and nudges its output. Fine-tuning trains only the adapter and leaves the base model frozen, so a customer-specific variant is a few tens of megabytes rather than a few tens of gigabytes.</div>
+  <div class="plain-line"><b>The obvious way to serve them wastes everything you just saved.</b> Merging each adapter into the base weights produces a complete separate model per customer &mdash; correct, and it means one card per tenant. <b>The serving answer is to keep them separate</b> and apply each request&rsquo;s adapter as it passes through, so requests for different customers sit in the same batch against the same base weights.</div>
+  <div class="plain-line"><b>What it costs:</b> a little arithmetic per token, and complexity in the scheduler, which now has to batch across adapters and swap them in and out of memory. What it buys is the difference between one tenant per card and hundreds.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; work out what per-tenant tuning actually costs</h2>
+  <div class="plain-line"><b>Try this:</b> pick a number of customers and a serving strategy. The cost gap opens almost immediately &mdash; and the third option shows the case where merging is still the right answer.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A tailor keeping one set of standard patterns and a small envelope of adjustments per client, rather than a complete separate pattern for each.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set customers to 50 and compare <b>merge</b> with <b>adapters at runtime</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>LoRA</b> a small trainable adapter placed beside a frozen weight matrix</span><span class="sp-w"><b>rank</b> how large the adapter is — higher means more capacity and more memory</span><span class="sp-w"><b>base model</b> the shared weights every tenant uses</span><span class="sp-w"><b>merge</b> folding an adapter permanently into the base weights</span><span class="sp-w"><b>tenant</b> one customer with their own tuned variant</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svLoraOut"></div></div>
+    <div><div id="svLoraCtl"></div>
+      <div class="segmented" id="svLoraMode" style="flex-direction:column;align-items:stretch;margin-top:12px"></div>
+      <div id="svLoraNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: multi-LoRA --- */
+(function(){
+  const ctl=document.getElementById('svLoraCtl'), mEl=document.getElementById('svLoraMode'),
+        out=document.getElementById('svLoraOut'), note=document.getElementById('svLoraNote');
+  if(!ctl) return;
+  let tenants=50, rank=16, mode='runtime';
+  const BASE=14e9;                       /* 7B in FP16 */
+  function adapterBytes(r){ return r*4096*2*32*2*2; }   /* rank x dim x (A and B) x layers x 2 matrices x fp16 */
+  function render(){
+    ctl.innerHTML='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">customers with their own tune</span><span>'+tenants+'</span></div>'+
+      '<input type="range" id="svT" min="1" max="200" step="1" value="'+tenants+'" style="width:100%"></div>'+
+      '<div><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">adapter rank</span><span>'+rank+'</span></div>'+
+      '<input type="range" id="svRk" min="4" max="64" step="4" value="'+rank+'" style="width:100%"></div>';
+    const a=document.getElementById('svT'); if(a) a.oninput=()=>{tenants=+a.value;render();};
+    const b=document.getElementById('svRk'); if(b) b.oninput=()=>{rank=+b.value;render();};
+    mEl.innerHTML=[['merge','Merge each adapter into its own copy'],['runtime','Keep them separate, apply at runtime'],
+                   ['single','One shared model, no tuning at all']]
+      .map(([k,n])=>'<button class="seg'+(mode===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
+    mEl.querySelectorAll('.seg').forEach(x=>x.onclick=()=>{mode=x.dataset.k;render();});
+    const ad=adapterBytes(rank);
+    const mem = mode==='merge' ? BASE*tenants : mode==='runtime' ? BASE+ad*tenants : BASE;
+    const cards=Math.ceil(mem/(80e9*0.8));
+    const gb=x=>x>=1e9?(x/1e9).toFixed(1)+' GB':(x/1e6).toFixed(0)+' MB';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">MEMORY FOR '+tenants+' CUSTOMER'+(tenants===1?'':'S')+'</div>'+
+      [['base model weights',gb(BASE)+(mode==='merge'?' × '+tenants+' copies':' — shared')],
+       ['per-customer adapter',mode==='single'?'—':gb(ad)],
+       ['all adapters',mode==='merge'?'merged in':mode==='single'?'—':gb(ad*tenants)],
+       ['total',gb(mem)],
+       ['80 GB cards needed',cards]]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">CARDS REQUIRED, AS CUSTOMERS GROW</div>'+
+      '<div style="display:flex;gap:3px;align-items:flex-end;height:64px">'+
+      [1,5,10,25,50,100,200].map(t=>{
+        const m = mode==='merge'?BASE*t:mode==='runtime'?BASE+ad*t:BASE;
+        const c=Math.ceil(m/(80e9*0.8));
+        return '<div style="flex:1;text-align:center">'+
+        '<div style="height:'+Math.max(3,Math.min(58,c/35*58))+'px;background:'+
+        (mode==='merge'?'var(--red)':mode==='runtime'?'var(--green)':'var(--blue)')+
+        ';opacity:'+(t===tenants?1:.4)+';border-radius:2px 2px 0 0"></div>'+
+        '<div style="font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:3px">'+t+'</div></div>';
+      }).join('')+'</div>'+
+      '<div class="'+(mode==='merge'&&tenants>2?'lzbad':mode==='single'?'lzwarn':'ok')+'" style="margin-top:12px;padding:11px 13px">'+
+      (mode==='merge'
+        ? '<b>A complete model per customer.</b> Correct, simple, and it means you are buying hardware in proportion to your customer count &mdash; which is not a business.'
+        : mode==='runtime'
+        ? '<b>One base model, '+tenants+' small adapters.</b> Every customer&rsquo;s requests can sit in the same batch, sharing one pass over the base weights, with their own adapter applied as it goes.'
+        : '<b>No per-customer tuning at all.</b> Cheapest by far, and you have given up the thing the customers were paying for. Worth pricing honestly before adding tuning &mdash; often prompting gets most of the benefit.')+'</div>';
+    note.innerHTML =
+      mode==='runtime' ? '<div class="ok"><b>The adapters are noise next to the base model.</b> At rank '+rank+' each is '+gb(ad)+
+        ' against '+gb(BASE)+' of shared weights &mdash; so the hundredth customer costs a rounding error rather than a card.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>What you pay instead is scheduler complexity.</b> Requests in one batch now need different adapters applied, which means either grouping by adapter (simpler, worse batching) or applying several within one batch (better batching, more intricate kernels). This is where multi-LoRA implementations differ from each other.</div>'
+      : mode==='merge' ? '<div class="lzbad"><b>Watch the bars.</b> Cost grows linearly with customers, and the base weights &mdash; identical in every copy &mdash; are almost all of it. You have taken a shared cost and made it a per-customer one.</div>'+
+        '<div class="note" style="margin-top:10px"><b>It is still right in one case:</b> a single very high-volume tenant who keeps a card busy on their own. Merging removes the runtime overhead entirely, and there is nobody to share with. The mistake is using it as the default.</div>'
+      : '<div class="lzwarn"><b>The honest baseline.</b> Before building adapter serving, check whether a good prompt gets you most of the way &mdash; per-tenant tuning has real operational cost, and quite often the answer is that it was not needed.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>Rank is the dial worth understanding.</b> Higher rank means more capacity to learn from and a larger adapter to store and load. Most production adapters are small &mdash; the point is a nudge to a very capable model, not a retraining of it.</div>';
+  }
+  render();
+})();
+
+/* ================= 8 · DISAGGREGATION ================= */
+document.getElementById('sec-svdisagg').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Stop making two different jobs share a card</h2>
+  <div class="plain-line"><b>In plain English:</b> prefill and decode want opposite things and, run together, they get in each other&rsquo;s way. One long prompt occupies the card for a burst and every user currently streaming pauses. That pause is invisible in an average and extremely visible to the person watching text stop.</div>
+  <div class="plain-line"><b>The first fix is chunking:</b> break a long prefill into pieces and interleave them with decode steps, so nobody waits for the whole thing. Cheap, effective, and it slows the prefill down a little.</div>
+  <div class="plain-line"><b>The bigger fix is to separate them entirely.</b> Run prefill on one pool of hardware and decode on another, and ship the KV cache between them when the phases change hands. Each pool can then be sized, and even hardware-matched, for one job. The price is a real transfer of a real amount of memory at the handover, and a much more complicated system.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; three ways to stop long prompts hurting everyone</h2>
+  <div class="plain-line"><b>Try this:</b> a stream of ordinary chat requests with an occasional very long prompt mixed in. Compare what each arrangement does to the person streaming and to the person who sent the long prompt.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A single till serving both a weekly shop and people buying a newspaper. You can interleave, or open a second till for big trolleys. Doing nothing means the newspaper queue is hostage to the trolleys.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>look at <b>everything on one pool</b> and read the stutter figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>interference</b> one request&rsquo;s work delaying another&rsquo;s</span><span class="sp-w"><b>chunked prefill</b> splitting a long prompt into pieces interleaved with decode</span><span class="sp-w"><b>disaggregation</b> running the two phases on separate hardware pools</span><span class="sp-w"><b>KV transfer</b> shipping a request&rsquo;s cache from one pool to the other</span><span class="sp-w"><b>stutter</b> a visible pause in a streaming answer</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svDisOut"></div></div>
+    <div><div class="segmented" id="svDisPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svDisNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: disaggregation --- */
+(function(){
+  const pick=document.getElementById('svDisPick'), out=document.getElementById('svDisOut'), note=document.getElementById('svDisNote');
+  if(!pick) return;
+  const M={
+   shared:{n:'Everything on one pool',
+     stutter:470, ttft:220, tpot:18, cards:'8 identical', complexity:'low',
+     pattern:[1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1],
+     why:'<b>Every long prompt stops the world.</b> The card is doing useful work throughout &mdash; it is simply doing somebody else&rsquo;s. Average latency looks acceptable and the experience does not.'},
+   chunk:{n:'Chunked prefill, still one pool',
+     stutter:60, ttft:290, tpot:20, cards:'8 identical', complexity:'moderate',
+     pattern:[1,1,1,0,1,1,0,1,1,0,1,1,0,1,1,1,0,1,1,0,1,1,0,1,1,1,0,1],
+     why:'<b>The pause is broken into pieces small enough not to notice.</b> The long prompt takes a little longer overall and everybody else keeps streaming. For most systems this is the right answer and the whole answer.'},
+   disagg:{n:'Separate prefill and decode pools',
+     stutter:10, ttft:250, tpot:17, cards:'3 prefill + 5 decode', complexity:'high',
+     pattern:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+     why:'<b>No interference at all, because the two jobs never share hardware.</b> Each pool is sized for its own bottleneck. You pay with a KV transfer at every handover and a system with two failure domains, a queue between them and a much harder capacity model.'}
+  };
+  let cur='shared';
+  function render(){
+    pick.innerHTML=Object.entries(M).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const m=M[cur];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE USER&rsquo;S STREAM &mdash; EACH CELL IS A DECODE STEP THEY DID OR DID NOT GET</div>'+
+      '<div style="display:flex;gap:2px;margin-bottom:6px">'+
+      m.pattern.map(v=>'<span style="flex:1;height:26px;border-radius:2px;background:'+
+        (v?'var(--teal)':'var(--red)')+';opacity:'+(v?1:.75)+'"></span>').join('')+'</div>'+
+      '<div style="display:flex;gap:12px;font-family:var(--mono);font-size:10px;color:var(--muted)">'+
+      '<span><span style="display:inline-block;width:8px;height:8px;background:var(--teal);border-radius:2px"></span> token delivered</span>'+
+      '<span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:2px"></span> stalled behind somebody&rsquo;s prefill</span></div>'+
+      '<div style="margin-top:14px">'+
+      [['longest visible stutter',m.stutter+' ms'],['time to first token',m.ttft+' ms'],
+       ['time per output token',m.tpot+' ms'],['hardware',m.cards],['operational complexity',m.complexity]]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div class="'+(cur==='shared'?'lzbad':cur==='chunk'?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+m.why+'</div>';
+    note.innerHTML =
+      cur==='shared' ? '<div class="lzbad"><b>Look at the gaps rather than the averages.</b> This is the failure mode that generates complaints no dashboard explains, because throughput is fine, utilisation is high and mean latency is acceptable throughout.</div>'
+      : cur==='chunk' ? '<div class="ok"><b>Note what it cost:</b> the long prompt&rsquo;s own time-to-first-token got slightly worse, and per-token latency rose a fraction. You moved a large pause off many users and onto one, in small pieces. That is usually a very good trade.</div>'
+      : '<div class="lzwarn"><b>Be honest about the complexity.</b> Two pools means two things to size, two to scale, a queue in between, and a KV transfer whose cost grows with prompt length. It is the right answer at large scale and a poor first move &mdash; try chunking before splitting the fleet.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>The reason separation works at all</b> is the point from the phases section: prefill is compute-bound and decode is memory-bound. Two pools can be sized, tuned and even bought differently &mdash; more compute for one, more memory bandwidth and capacity for the other.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Numbers here are illustrative</b> and depend heavily on how often long prompts arrive and how long they are. The ordering and the shape of each trade-off are what transfer.</div>';
+  }
+  render();
+})();
+
+/* ================= 9 · METRICS & SLOs ================= */
+document.getElementById('sec-svslo').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The number your users feel is not the number on your dashboard</h2>
+  <div class="plain-line"><b>In plain English:</b> &ldquo;latency&rdquo; is not one thing for a streaming model. A user experiences two separate delays: how long until <em>something</em> appears, and how fast it then arrives. They are produced by different parts of the system, they move in opposite directions when you tune, and reporting a single average hides both.</div>
+  <table class="osi"><thead><tr><th>Metric</th><th>What it measures</th><th>What the user feels</th></tr></thead><tbody>
+  <tr><td><b>TTFT</b></td><td>Time to first token &mdash; queueing plus prefill</td><td>&ldquo;Did it hear me?&rdquo; The pause before anything happens, which is where abandonment lives</td></tr>
+  <tr><td><b>TPOT</b></td><td>Time per output token, once streaming has begun</td><td>&ldquo;Is it thinking or stuck?&rdquo; Below about 30 ms it reads as fluent; above 80 ms it reads as laboured</td></tr>
+  <tr><td><b>End to end</b></td><td>TTFT + TPOT &times; tokens generated</td><td>The only number that matters for anything not streamed to a human</td></tr>
+  <tr><td><b>Throughput</b></td><td>Tokens per second across all requests</td><td>Nothing. It is what you are billed against, and it trades directly against both of the above</td></tr>
+  <tr><td><b>Goodput</b></td><td>Requests per second that met their latency target</td><td>The honest one &mdash; throughput that ignores whether anyone was served acceptably is a vanity figure</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>And report percentiles, not means.</b> A mean latency of 400 ms is consistent with everybody getting 400 ms and with 90% getting 200 ms while 10% get two seconds. Those are different products. The tail is not an outlier to be excluded &mdash; on a busy system it is a systematic consequence of queueing and preemption, and it is where your complaints come from.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; set a target and find the load that breaks it</h2>
+  <div class="plain-line"><b>Try this:</b> pick a latency target and turn the load up. Watch the mean stay reassuring while the tail leaves the building, and watch what raising the batch size does to each metric &mdash; it helps one and hurts the other, every time.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A restaurant reporting an average wait of twenty minutes. Most tables wait ten. A few wait ninety, and they are the ones writing the reviews.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>raise the load until the mean still looks fine and the 99th percentile has broken your target.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>percentile</b> the value below which that share of requests fall</span><span class="sp-w"><b>P99</b> the slowest 1% — one request in a hundred is worse than this</span><span class="sp-w"><b>SLO</b> the latency target you have committed to</span><span class="sp-w"><b>goodput</b> requests per second that actually met the target</span><span class="sp-w"><b>saturation</b> the point where arrivals exceed what capacity can absorb</span><span class="sp-w"><b>tool call</b> a request an agent makes automatically, with no human watching it stream</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svSloOut"></div></div>
+    <div><div id="svSloCtl"></div>
+      <div id="svSloNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: SLOs under load --- */
+(function(){
+  const ctl=document.getElementById('svSloCtl'), out=document.getElementById('svSloOut'), note=document.getElementById('svSloNote');
+  if(!ctl) return;
+  let load=60, maxBatch=32, target=1000;
+  function metrics(){
+    const cap=maxBatch*3.2;                        /* requests/s the pool can absorb */
+    const rho=Math.min(0.995,load/cap);
+    const queue=rho<1?(rho/(1-rho))*22:9000;       /* queueing delay grows sharply near saturation */
+    const prefill=90+maxBatch*1.1;
+    const ttft=prefill+queue;
+    const tpot=13+maxBatch*0.22;
+    const e2e=ttft+tpot*200;
+    /* a lognormal-ish spread that widens with utilisation */
+    const spread=1+rho*rho*5;
+    return {rho,ttft,tpot,e2e,cap,
+      p50:e2e, p90:e2e*(1+0.35*spread), p99:e2e*(1+1.3*spread),
+      tput:Math.min(load,cap)*200};
+  }
+  function render(){
+    const sl=(id,lab,val,min,max,step,fmt)=>'<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">'+lab+'</span><span>'+fmt+'</span></div>'+
+      '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" style="width:100%"></div>';
+    ctl.innerHTML=sl('svL','arriving requests per second',load,5,140,5,load+'/s')+
+                  sl('svMB','maximum batch size',maxBatch,4,128,4,maxBatch)+
+                  sl('svTg','end-to-end target',target,500,5000,250,(target/1000).toFixed(2)+' s');
+    const bind=(id,fn)=>{const e=document.getElementById(id); if(e) e.oninput=()=>{fn(+e.value);render();};};
+    bind('svL',v=>load=v); bind('svMB',v=>maxBatch=v); bind('svTg',v=>target=v);
+    const m=metrics();
+    const ok=x=>x<=target;
+    const row=(l,v,pass)=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+      '<span style="color:var(--muted)">'+l+'</span><span style="color:'+(pass===undefined?'inherit':pass?'var(--green)':'var(--red)')+'">'+v+'</span></div>';
+    const bar=(l,v,pass)=>'<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:3px">'+
+      '<span style="color:var(--muted)">'+l+'</span><span style="color:'+(pass?'var(--green)':'var(--red)')+'">'+(v/1000).toFixed(2)+' s</span></div>'+
+      '<div style="height:9px;background:var(--panel2);border-radius:99px;overflow:hidden;position:relative">'+
+      '<i style="display:block;height:100%;width:'+Math.min(100,v/(target*2)*100)+'%;background:'+(pass?'var(--green)':'var(--red)')+'"></i>'+
+      '<span style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--violet)"></span></div></div>';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">END-TO-END LATENCY DISTRIBUTION &mdash; PURPLE LINE IS YOUR TARGET</div>'+
+      bar('median (P50)',m.p50,ok(m.p50))+bar('P90',m.p90,ok(m.p90))+bar('P99',m.p99,ok(m.p99))+
+      '<div style="margin-top:14px">'+
+      row('utilisation',(m.rho*100).toFixed(0)+'%')+
+      row('time to first token',m.ttft.toFixed(0)+' ms')+
+      row('time per output token',m.tpot.toFixed(1)+' ms')+
+      row('throughput',(m.tput/1000).toFixed(1)+'k tokens/s')+
+      row('goodput — requests meeting the target',ok(m.p90)?'most':ok(m.p50)?'about half':'few',ok(m.p90))+'</div>'+
+      '<div class="'+(ok(m.p99)?'ok':ok(m.p50)?'lzwarn':'lzbad')+'" style="margin-top:12px;padding:11px 13px">'+
+      (ok(m.p99)?'<b>Everyone is inside the target, including the unlucky.</b> This is what a healthy system looks like &mdash; and note the utilisation, which is probably lower than you would like it to be.'
+       :ok(m.p50)?'<b>The median is fine and the tail is not.</b> Your dashboard is green. One request in ten or a hundred is having a bad time, and those are the ones that get reported to you.'
+       :'<b>Saturated.</b> Arrivals exceed what the pool can absorb, so the queue grows without bound and every percentile goes with it.')+'</div>';
+    note.innerHTML =
+      (!ok(m.p99)&&ok(m.p50))
+      ? '<div class="lzwarn"><b>This is the most important state to recognise.</b> Mean latency is a poor alarm because queueing delay is non-linear &mdash; it stays flat and then goes vertical. By the time the average moves, the tail has been broken for a while.</div>'
+      : m.rho>0.95 ? '<div class="lzbad"><b>Past about 90% utilisation, queueing delay grows faster than load does.</b> Running a latency-sensitive service at high utilisation is not efficiency, it is a decision to have a bad tail. Headroom is the product.</div>'
+      : '<div class="ok"><b>Comfortable.</b> Worth noticing what that costs: capacity sitting idle for the requests that have not arrived yet.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>Now move the batch-size slider and watch both directions at once.</b> Bigger batches raise throughput and raise per-token latency, because every request in the batch waits for the slowest part of a bigger step. There is no setting that improves both &mdash; there is only a choice about which one you are optimising, and it should be written down.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Which target to set depends on the product.</b> A streaming chat can tolerate a slow end-to-end if TTFT is short, because the user sees progress. A tool call inside an agent loop cannot &mdash; nobody is watching, and end-to-end is all that exists. The same endpoint often serves both, which is a good reason to separate them.</div>';
+  }
+  render();
+})();
+
+/* ================= 10 · EXAM ANGLE ================= */
+document.getElementById('sec-svexam').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios here.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Recognising an answer and producing one are different skills.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> before reading the list below.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation phrased the way an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
+  <div id="drillHost"></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The scenarios</h2>
+  <div class="exam-line"><b>&ldquo;Mean latency is well inside our SLO but users say the product is slow.&rdquo;</b> &rarr; Look at the tail and split the metric. Queueing delay is non-linear, so P99 breaks long before the mean moves &mdash; and &ldquo;slow&rdquo; usually means time-to-first-token rather than end-to-end. Report TTFT and TPOT at P50, P90 and P99 separately.</div>
+  <div class="exam-line"><b>&ldquo;Everyone&rsquo;s answer stutters whenever one customer pastes a long document.&rdquo;</b> &rarr; Prefill interference. That long prompt occupies the card in one burst and every streaming request pauses. Chunked prefill interleaves it with decode steps and usually fixes it outright; separating prefill and decode pools is the larger, later answer.</div>
+  <div class="exam-line"><b>&ldquo;We raised the batch size and throughput improved but users complained.&rdquo;</b> &rarr; Working as designed. Bigger batches amortise the weight read across more requests, raising throughput, and make every decode step longer, raising per-token latency. The two goals genuinely conflict; pick one deliberately and write it down.</div>
+  <div class="exam-line"><b>&ldquo;Our prefix cache hit rate is near zero despite every request sharing a system prompt.&rdquo;</b> &rarr; Something variable is at the front. A timestamp, a request id or a user name in the leading tokens makes every prefix unique. Non-deterministic prompt assembly does the same. Put everything stable first and everything variable last.</div>
+  <div class="exam-line"><b>&ldquo;Speculative decoding made our busy endpoint slower.&rdquo;</b> &rarr; It exploits spare capacity, and a saturated endpoint has none. Verification is nearly free only when the batch is not already full, so it helps a lightly loaded latency-sensitive service and can reduce throughput under load. Check acceptance rate on real traffic too &mdash; below roughly 40% the arithmetic does not work.</div>
+  <div class="exam-line"><b>&ldquo;We have fifty customers with fine-tuned models and are buying a card each.&rdquo;</b> &rarr; You are merging adapters. Keep them separate and apply them at runtime, so all fifty share one set of base weights and can occupy the same batch. Merging is right only for a single tenant with enough volume to fill a card alone.</div>
+  <div class="exam-line"><b>&ldquo;Latency is fine at batch 64 and terrible for a single user.&rdquo;</b> &rarr; Kernel launch overhead. Hundreds of small launches per decode step cost a fixed few microseconds each, which is invisible at large batch and dominant at batch 1. CUDA graphs replay the sequence as one call &mdash; at the cost of fixed shapes and padding to buckets.</div>
+  <div class="exam-line"><b>&ldquo;Requests are rejected while the GPU reports free memory.&rdquo;</b> &rarr; Fragmentation, or reservation. Either contiguous KV allocations have left unusable gaps, or the engine is reserving worst-case space per request. Paged allocation with a block table fixes both by removing the adjacency requirement.</div>
+  <div class="exam-line"><b>&ldquo;Some long requests never finish under sustained load.&rdquo;</b> &rarr; Starvation from the preemption policy. If eviction always takes the newest or the largest, the same request can be evicted repeatedly. Add ageing or priority so waiting time eventually wins &mdash; it only appears under sustained load, which is why testing misses it.</div>
+  <div class="exam-line"><b>&ldquo;Should we recompute an evicted request or swap its cache to host memory?&rdquo;</b> &rarr; Compare the two costs for that request. Recomputing pays the prefill again; swapping crosses PCIe twice, and for a large cache that can exceed the prefill. Good engines choose per request by size rather than fixing a policy.</div>
+  <div class="exam-line"><b>&ldquo;Utilisation is 95% and we are pleased with ourselves.&rdquo;</b> &rarr; Be careful. Past roughly 90%, queueing delay grows faster than load, so the tail deteriorates sharply for a small gain in efficiency. For a latency-sensitive service headroom is not waste, it is the thing you are selling.</div>
+  <div class="exam-line"><b>&ldquo;Which single metric should our serving dashboard lead with?&rdquo;</b> &rarr; Goodput &mdash; requests per second that met their latency target. Throughput alone rewards a system that serves everyone badly, and latency alone ignores how many were served. Goodput is the one that cannot be gamed by making the other worse.</div>
+</div>`;
+
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
+/* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
+(function(){
+  const open = id => {
+    const tab = document.querySelector(`.tab[data-pane="${id}"]`), pane = document.getElementById('pane-'+id);
+    if(!tab || !pane) return false;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    tab.classList.add('on'); pane.classList.add('on');
+    return true;
+  };
+  const fromHash = () => {
+    const m = (location.hash||'').match(/^#pane-([\w-]+)$/);
+    if (m) open(m[1]);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+  document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
+    history.replaceState(null,'','#pane-'+t.dataset.pane);
+  }));
+})();
+
+/* ================= SCENARIO DRILL =================
+   Reads the page's own .exam-line entries at runtime, so it can never
+   drift from the content and a new scenario becomes a new question free.
+   Distractors are the answers to other scenarios on the same page, which
+   makes them plausible by construction rather than by invention. */
+(function(){
+  const host=document.getElementById('drillHost');
+  if(!host) return;
+  const src=[...document.querySelectorAll('.exam-line')].map(el=>{
+    const html=el.innerHTML;
+    /* .exam-line is also used for pillar notes, which are multi-fact and start differently.
+       A drillable scenario is authored as <b>“…”</b> → answer, so require that shape. */
+    if(!/^\s*<b>\s*&ldquo;/.test(html)) return null;
+    const i=html.indexOf('&rarr;')>=0?html.indexOf('&rarr;'):html.indexOf('→');
+    if(i<0) return null;
+    const q=html.slice(0,i).replace(/<\/?b>/g,'').replace(/&ldquo;|&rdquo;/g,'').trim();
+    const full=html.slice(i+6).trim();
+    /* the headline answer is the first sentence; the rest is the explanation */
+    const m=full.match(/^(.*?[.!?])(\s|$)([\s\S]*)$/);
+    const head=(m?m[1]:full).replace(/^\s+/,'');
+    return {q, head, rest:(m?m[3]:'').trim(), full};
+  }).filter(Boolean);
+  /* some pages author the same content as a three-column table instead of exam lines:
+     scenario | answer | because. Collect those too, so one engine serves both shapes. */
+  [...document.querySelectorAll('table')].forEach(tb=>{
+    const h=tb.innerHTML;
+    if(!/When the scenario says/i.test(h)) return;
+    const rows=h.match(/<tr>[\s\S]*?<\/tr>/g)||[];
+    rows.forEach(r=>{
+      const cells=(r.match(/<td[^>]*>([\s\S]*?)<\/td>/g)||[]).map(c=>c.replace(/^<td[^>]*>|<\/td>$/g,'').trim());
+      if(cells.length<2) return;
+      const q=cells[0].replace(/<\/?b>/g,'').trim();
+      const head=cells[1].replace(/<\/?b>/g,'').trim();
+      if(!q||!head) return;
+      src.push({q:'&ldquo;'+q+'&rdquo;', head, rest:(cells[2]||'').trim(), full:head});
+    });
+  });
+  if(src.length<4){ host.innerHTML='<div class="simnote">Not enough scenarios on this page to drill.</div>'; return; }
+
+  let order=[], idx=0, chosen=null, score=[], opts=[];
+  let seed=src.length*7919;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function shuffle(a){const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b;}
+  function build(){
+    order=shuffle(src.map((_,i)=>i)); idx=0; score=[]; chosen=null; setOpts(); render();
+  }
+  function setOpts(){
+    const cur=src[order[idx]];
+    const others=shuffle(src.filter(x=>x!==cur && x.head!==cur.head)).slice(0,3);
+    opts=shuffle([cur,...others]);
+  }
+  function render(){
+    const cur=src[order[idx]];
+    const done=idx>=order.length;
+    if(done){
+      const right=score.filter(Boolean).length;
+      host.innerHTML='<div class="drl">'+
+        '<div style="font-family:var(--display);font-size:22px;margin-bottom:8px">'+right+' of '+score.length+'</div>'+
+        '<div class="plain-line" style="margin-bottom:12px">'+
+          (right===score.length?'Every one. Worth re-running it — the questions come back in a different order and the wrong answers move around.'
+           :right/score.length>=0.7?'Solid. The ones you missed are the ones worth reading again, and they are the ones an interviewer will reach for.'
+           :'Worth another pass. These are not memory questions — each one has a reason underneath it, and the reason is what makes the next one answerable.')+
+        '</div><button class="btn" id="drlAgain">run it again</button></div>';
+      host.querySelector('#drlAgain').onclick=build; return;
+    }
+    host.innerHTML='<div class="drl">'+
+      '<div class="drl-bar">'+order.map((_,i)=>'<i class="'+(i<score.length?(score[i]?'ok':'no'):i===idx?'now':'')+'"></i>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:6px">SCENARIO '+(idx+1)+' OF '+order.length+'</div>'+
+      '<div class="drl-q">'+cur.q+'</div>'+
+      opts.map((o,i)=>'<button class="drl-o'+(chosen===null?'':(o===cur?' right':(o===chosen?' wrong':' muted')))+'" data-i="'+i+'"'+(chosen!==null?' disabled':'')+'>'+o.head+'</button>').join('')+
+      (chosen!==null?'<div class="'+(chosen===cur?'ok':'lzbad')+'" style="margin-top:12px">'+
+          (chosen===cur?'<b>Right.</b> ':'<b>Not that one.</b> ')+cur.head+(cur.rest?' '+cur.rest:'')+'</div>'+
+        '<button class="btn" id="drlNext" style="margin-top:12px">next scenario ▸</button>':'')+
+      '</div>';
+    host.querySelectorAll('.drl-o').forEach(b=>b.onclick=()=>{
+      if(chosen!==null) return;
+      chosen=opts[+b.dataset.i]; score[idx]=(chosen===cur); render();
+    });
+    const n=host.querySelector('#drlNext');
+    if(n) n.onclick=()=>{ idx++; chosen=null; if(idx<order.length) setOpts(); render(); };
+  }
+  build();
+})();
+
+
+/* ================= INTERFACE =================
+   Navigation and orientation only. Nothing here touches what a simulation does — and it is
+   wrapped so that if any of it fails, the content and the simulations still work. */
+(function(){
+ try{
+  const tabsEl=document.querySelector('.tabs');
+  if(!tabsEl||!tabsEl.parentNode) return;
+
+  /* --- sticky bar + reading progress --- */
+  const wrap=document.createElement('div'); wrap.className='tabwrap';
+  tabsEl.parentNode.insertBefore(wrap, tabsEl); wrap.appendChild(tabsEl);
+  const prog=document.createElement('div'); prog.className='rprog';
+  const progBar=document.createElement('i');
+  prog.appendChild(progBar);
+  document.body.appendChild(prog);
+  const onScroll=()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    progBar.style.width=(h>0?Math.min(100,window.scrollY/h*100):0)+'%';
+  };
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* --- count the simulations in each tab, and mark their cards --- */
+  const panes=[...document.querySelectorAll('.pane')];
+  /* mark the cards that contain a simulation, by looking down rather than up */
+  panes.forEach(p=>{
+    p.querySelectorAll('.card').forEach(c=>{
+      if(c.querySelectorAll('.simplain').length) c.classList.add('issim');
+    });
+  });
+  [...tabsEl.querySelectorAll('.tab')].forEach(t=>{
+    const p=document.getElementById('pane-'+t.dataset.pane);
+    if(!p) return;
+    const n=p.querySelectorAll('.simplain').length;
+    if(n) t.insertAdjacentHTML('beforeend','<span class="tcount">'+n+'</span>');
+  });
+
+  /* --- wrap the panes so a rail can sit beside them --- */
+  const first=panes[0]; if(!first) return;
+  const grid=document.createElement('div'); grid.className='labgrid';
+  const main=document.createElement('div');
+  first.parentNode.insertBefore(grid, first);
+  panes.forEach(p=>main.appendChild(p));
+  grid.appendChild(main);
+  const railCol=document.createElement('div'); railCol.className='railcol';
+  const railHead=document.createElement('div'); railHead.className='railhead'; railHead.textContent='on this tab';
+  const rail=document.createElement('nav'); rail.className='rail'; rail.id='labRail';
+  railCol.appendChild(railHead); railCol.appendChild(rail);
+  grid.appendChild(railCol);
+
+  let spy=null;
+  function buildRail(){
+    const pane=document.querySelector('.pane.on'); if(!pane) return;
+    /* walk cards rather than headings, so “is this section interactive?” is answered
+       by the card that owns the heading instead of by climbing the tree */
+    const rows=[];
+    pane.querySelectorAll('.card').forEach((c,i)=>{
+      const h=c.querySelector('h2.sec'); if(!h) return;
+      if(!h.id) h.id='s-'+pane.id.replace('pane-','')+'-'+i;
+      rows.push({id:h.id, sim:c.querySelectorAll('.simplain').length>0,
+                 txt:h.textContent.replace(/^Try it\s*[—–-]\s*/,'').trim()});
+    });
+    const heads=rows.map(r=>document.getElementById(r.id)).filter(Boolean);
+    rail.innerHTML=rows.map(r=>
+      '<a href="#'+r.id+'" data-t="'+r.id+'" class="'+(r.sim?'sim':'')+'"><i></i><span>'+r.txt+'</span></a>').join('');
+    rail.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{
+      e.preventDefault();
+      const el=document.getElementById(a.dataset.t);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84, behavior:'smooth'});
+    }));
+    if(spy) spy.disconnect();
+    if(typeof IntersectionObserver!=='undefined'&&heads.length){
+      spy=new IntersectionObserver(es=>{
+        es.forEach(en=>{
+          if(!en.isIntersecting) return;
+          rail.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.t===en.target.id));
+        });
+      },{rootMargin:'-84px 0px -70% 0px'});
+      heads.forEach(h=>spy.observe(h));
+    }
+    const f=rail.querySelector('a'); if(f) f.classList.add('on');
+  }
+
+  /* --- keep the active tab visible, and rebuild the rail on every switch --- */
+  function afterSwitch(){
+    const on=tabsEl.querySelector('.tab.on');
+    if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    buildRail();
+  }
+  tabsEl.addEventListener('click',e=>{ if(e.target.closest('.tab')) setTimeout(afterSwitch,0); });
+  buildRail();
+
+  function switchTo(pane){
+    const t=tabsEl.querySelector('.tab[data-pane="'+pane+'"]');
+    if(t){ t.click(); setTimeout(afterSwitch,0); }
+  }
+
+  /* --- command palette over every heading on the page --- */
+  const idx=[];
+  panes.forEach(p=>{
+    const label=(tabsEl.querySelector('.tab[data-pane="'+p.id.replace('pane-','')+'"]')||{}).textContent||'';
+    p.querySelectorAll('h2.sec').forEach((h,i)=>{
+      if(!h.id) h.id='s-'+p.id.replace('pane-','')+'-'+i;
+      idx.push({pane:p.id.replace('pane-',''), tab:label.replace(/\d+$/,'').trim(), id:h.id, name:h.textContent.trim()});
+    });
+  });
+  const pal=document.createElement('div'); pal.className='cmdk';
+  const box=document.createElement('div'); box.className='cmdbox';
+  box.setAttribute('role','dialog'); box.setAttribute('aria-label','Find a section');
+  const inp=document.createElement('input');
+  inp.id='cmdInput'; inp.placeholder='Find a section…';
+  inp.setAttribute('autocomplete','off'); inp.setAttribute('spellcheck','false');
+  const list=document.createElement('div'); list.className='cmdlist'; list.id='cmdList';
+  const foot=document.createElement('div'); foot.className='cmdfoot';
+  foot.innerHTML='<span><b>↑↓</b> move</span><span><b>↵</b> jump</span><span><b>esc</b> close</span>'+
+    '<span><b>← →</b> switch tab</span>';
+  box.appendChild(inp); box.appendChild(list); box.appendChild(foot);
+  pal.appendChild(box); document.body.appendChild(pal);
+  let hits=[], sel=0;
+  function draw(q){
+    const s=q.trim().toLowerCase();
+    hits=(s?idx.filter(x=>(x.name+' '+x.tab).toLowerCase().includes(s)):idx).slice(0,60);
+    sel=0;
+    list.innerHTML=hits.length
+      ? hits.map((h,i)=>'<button data-i="'+i+'" class="'+(i===0?'on':'')+'"><span class="cmdtab">'+h.tab+'</span><span class="cmdname">'+h.name+'</span></button>').join('')
+      : '<div class="cmdnone">Nothing matches that.</div>';
+    list.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.i)));
+  }
+  function go(i){
+    const h=hits[i]; if(!h) return;
+    close(); switchTo(h.pane);
+    setTimeout(()=>{ const el=document.getElementById(h.id);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84,behavior:'smooth'}); },60);
+  }
+  function open(){ pal.classList.add('on'); inp.value=''; draw(''); if(inp.focus) inp.focus(); }
+  function close(){ pal.classList.remove('on'); }
+  pal.addEventListener('click',e=>{ if(e.target===pal) close(); });
+  inp.addEventListener('input',()=>draw(inp.value));
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault(); if(!hits.length) return;
+      sel=(sel+(e.key==='ArrowDown'?1:-1)+hits.length)%hits.length;
+      list.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===sel));
+      const b=list.querySelectorAll('button')[sel]; if(b&&b.scrollIntoView) b.scrollIntoView({block:'nearest'});
+    } else if(e.key==='Enter'){ e.preventDefault(); go(sel); }
+    else if(e.key==='Escape'){ close(); }
+  });
+  draw('');
+
+  /* --- keyboard --- */
+  window.addEventListener('keydown',e=>{
+    const typing=/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||'');
+    if(e.key==='Escape'){ close(); return; }
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); open(); return; }
+    if(typing) return;
+    if(e.key==='/'){ e.preventDefault(); open(); return; }
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+      const all=[...tabsEl.querySelectorAll('.tab')];
+      const i=all.findIndex(t=>t.classList.contains('on'));
+      if(i<0) return;
+      const n=all[(i+(e.key==='ArrowRight'?1:-1)+all.length)%all.length];
+      n.click(); setTimeout(afterSwitch,0); n.focus&&n.focus();
+    }
+  });
+ }catch(err){ if(window.console) console.warn('interface enhancements unavailable:', err); }
+})();
+
+</script>
+</body>
+</html>
+
+
+</script>
+</body>
+</html>
