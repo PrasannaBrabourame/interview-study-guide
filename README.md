@@ -72,6 +72,12 @@ serving.html      LLM serving lab — what an inference engine does that a model
                   preemption, prefix caching, speculative decoding, CUDA
                   graphs, multi-LoRA, prefill/decode disaggregation, and
                   TTFT/TPOT/tail-latency SLOs
+fleet.html        Fleet lab — the orchestration layer above one engine:
+                  discovery and readiness, KV-aware routing, moving KV state
+                  versus recomputing it, sizing disaggregated prefill and
+                  decode pools, planner control loops and why they oscillate,
+                  what a worker dying does to an in-flight stream, and
+                  capacity acceptance
 peakweek.html     Peak Week lab — a sorter fails at a parcel hub on the
                   busiest night of the year, and one agent is carried through
                   the whole life of a system: groundwork, make it work (tools,

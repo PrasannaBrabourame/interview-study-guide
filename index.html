@@ -54,6 +54,7 @@
   <a role="menuitem" href="gpu.html"><i>▮</i><span><b>The machine underneath</b><small>10 tabs · 13 sims</small></span></a>
   <a role="menuitem" href="llm.html"><i>◫</i><span><b>One token at a time</b><small>10 tabs · 15 sims</small></span></a>
   <a role="menuitem" href="serving.html"><i>◨</i><span><b>The engine, not the model</b><small>10 tabs · 10 sims</small></span></a>
+  <a role="menuitem" href="fleet.html"><i>◑</i><span><b>Twenty engines, one endpoint</b><small>9 tabs · 9 sims</small></span></a>
 </div></div>
 <button class="btn" id="theme" title="Toggle theme">🌙</button>
 <button class="btn" id="print" title="Print / PDF">🖨</button>
@@ -229,7 +230,7 @@
 </div>
 </div>
 
-<h2 class="dtitle">Under the hood <small>&mdash; 3 labs, in order</small></h2>
+<h2 class="dtitle">Under the hood <small>&mdash; 4 labs, in order</small></h2>
 <p class="dnote">The layers everything above is running on. Optional depth rather than a prerequisite &mdash; take it whenever you want to know why inference is priced the way it is, and read it in order.</p>
 <div class="labs">
   <div class="labcell">
@@ -273,6 +274,20 @@
       <span class="lmeta">10 tabs · 10 simulations · systems, not modelling</span>
     </a>
   <button class="ltopics" data-lab="serving" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="serving"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="fleet.html">
+      <span class="lstep">4</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>Twenty engines, one endpoint</b>
+      <small>An engine schedules its own GPU and cannot see the other nineteen. Which worker gets this request, does one already hold the prefix, is it cheaper to move that state or recompute it, and what does someone watching a stream see when its worker dies.</small>
+      <span class="lmeta">9 tabs · 9 simulations · above the engine</span>
+    </a>
+  <button class="ltopics" data-lab="fleet" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="fleet"></span></button>
 </div>
 </div>
 

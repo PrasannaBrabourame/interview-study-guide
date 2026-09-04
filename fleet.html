@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet lab — the orchestration layer above a single inference engine</title>
+<style>
+  /* self-hosted, same subsets the portfolio serves — no external requests */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+  @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(assets/fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
+  :root{
+    /* light — the portfolio's paper palette */
+    --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
+    --text:#14181C; --muted:#565C63; --dim:#63696F;
+    --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
+    --green:#2C6B52; --red:#A33A41; --orange:#A2551F;
+    --gcpblue:#2D6CB5; --awsorange:#96601C; --azblue:#0E7490;
+    --wire:#B5AFA4; --dot:#ECE8DF; --sel:#F4EDE0;
+    --n-blue:#EAF0F7; --n-violet:#F1EDF8; --n-teal:#E6F2F0; --n-amber:#F9F0E0;
+    --regA:#5E9C87; --regB:#7FA3C6;
+    --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
+    --display:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:'Inter','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;
+  }
+  :root[data-theme="dark"]{
+    --bg:#16191D; --panel:#1C2025; --panel2:#212529; --line:#2C3137; --line2:#3A4046;
+    --text:#E8E4DC; --muted:#A8ADB4; --dim:#8B9198;
+    --blue:#7FB0E0; --teal:#4BB3AC; --violet:#B49AE8; --amber:#DDA053;
+    --green:#6FBF95; --red:#E08A8A; --orange:#E5A173;
+    --gcpblue:#7FB0E0; --awsorange:#DDA053; --azblue:#6CC5E0;
+    --wire:#4E555C; --dot:#23272C; --sel:#2B2721;
+    --n-blue:#1E2630; --n-violet:#241F2E; --n-teal:#17282A; --n-amber:#2A2419;
+    --regA:#3F6F63; --regB:#3D5A74;
+    --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--text); font:15.5px/1.62 var(--sans); -webkit-font-smoothing:antialiased}
+  body{min-height:100vh; padding:28px 20px 60px;
+    background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
+  .wrap{max-width:1280px; margin:0 auto}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.22em; color:var(--violet); text-transform:uppercase; margin-bottom:8px}
+  h1{font-family:var(--display); font-size:clamp(26px,3.4vw,38px); font-weight:500; letter-spacing:-.018em; line-height:1.05}
+  h1 .thin{color:var(--muted); font-weight:400}
+  .sub{color:var(--muted); font-size:14px; margin-top:6px; max-width:80ch; line-height:1.6}
+
+  .tabs{display:flex; gap:8px; margin:22px 0 18px; flex-wrap:wrap}
+  .tab{cursor:pointer; font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:8px; padding:9px 16px; transition:.15s}
+  .tab:hover{color:var(--text); border-color:var(--muted)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .pane{display:none}
+  .pane.on{display:block; animation:fade .25s ease}
+  @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  h2.sec{font-size:12px; font-family:var(--mono); letter-spacing:.18em; text-transform:uppercase; color:var(--dim); margin-bottom:12px}
+
+  .profile-link{float:right; font-family:var(--mono); font-size:12px; color:var(--teal); text-decoration:none;
+    border:1px solid var(--line2); border-radius:7px; padding:6px 12px; margin-left:10px}
+  .profile-link:hover{border-color:var(--teal)}
+  .profile-link:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .lab-foot{margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); text-align:center}
+  .lab-foot a{color:var(--teal); text-decoration:none;
+    border-bottom:1px solid color-mix(in srgb, var(--teal) 40%, transparent)}
+  .lab-foot a:hover{border-bottom-color:var(--teal)}
+  .lab-foot a:focus-visible{outline:2px solid var(--teal); outline-offset:2px; border-radius:3px}
+
+  .wf{display:flex; flex-direction:column; gap:4px; font-family:var(--mono); font-size:11px}
+  .wf .row{display:grid; grid-template-columns:150px 1fr 62px; gap:8px; align-items:center}
+  .wf .lab{color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wf .track{position:relative; height:16px; background:var(--panel2); border:1px solid var(--line); border-radius:4px}
+  .wf .bar{position:absolute; top:0; bottom:0; border-radius:3px; transition:width .35s ease, left .35s ease}
+  .wf .ms{text-align:right; color:var(--dim)}
+  .wf .row.err .lab{color:var(--red)}
+  .wf .depth1 .lab{padding-left:12px} .wf .depth2 .lab{padding-left:24px}
+
+  .chasm{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+  .chasm .cpart{background:var(--panel); border:1.5px solid var(--line2); border-radius:9px;
+    padding:11px 12px; text-align:center; transition:border-color .3s, background .3s, opacity .3s}
+  .chasm .cpart b{display:block; font-size:13px; font-weight:500; color:var(--text)}
+  .chasm .cpart small{display:block; font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:4px; line-height:1.4}
+  .chasm .cagent{grid-column:1/-1; border-color:var(--blue); background:var(--n-blue)}
+
+  /* ---- pillars ---- */
+  .pillars-layout{display:grid; grid-template-columns:minmax(280px,1fr) minmax(0,1.7fr); gap:16px; align-items:start}
+  @media (max-width:900px){.pillars-layout{grid-template-columns:1fr}}
+  .pillar-list{display:flex; flex-direction:column; gap:8px}
+  .pillar{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); border-radius:8px;
+    padding:11px 14px; color:var(--text); font-family:inherit; font-size:14px; font-weight:500; transition:.15s;
+    display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pillar small{display:block; color:var(--muted); font-weight:400; font-size:11.5px; margin-top:2px}
+  .pillar .tag{font-family:var(--mono); font-size:10px; color:var(--dim); letter-spacing:.1em; flex:0 0 auto}
+  .pillar:hover{border-color:var(--teal)}
+  .pillar.on{border-color:var(--amber); background:var(--sel)}
+  .pillar:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .detail h3{font-family:var(--display); font-size:21px; font-weight:500; letter-spacing:-.012em; margin-bottom:4px}
+  .detail .cat{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:10px}
+  .detail p.lead{color:var(--muted); font-size:13.5px; line-height:1.65; margin-bottom:14px}
+  .detail h4{font-size:12px; font-family:var(--mono); letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin:16px 0 8px}
+  .kv{display:flex; flex-direction:column; gap:8px}
+  .kv .row{display:grid; grid-template-columns:170px 1fr; gap:12px; font-size:13px; line-height:1.55; padding:8px 10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px}
+  .kv .k{color:var(--teal); font-weight:500}
+  .kv .v{color:var(--muted)}
+  .kv .v b{color:var(--text); font-weight:500}
+  @media (max-width:640px){.kv .row{grid-template-columns:1fr}}
+  .exam-line{border-left:2px solid var(--orange); padding:8px 12px; margin-top:8px; font-family:var(--mono); font-size:12px; color:var(--exam-text); line-height:1.6; background:rgba(251,146,60,.05); border-radius:0 7px 7px 0}
+  .exam-line b{color:var(--orange); font-weight:500}
+  .plain-line{border-left:2px solid var(--teal); padding:9px 12px; margin:0 0 14px; font-size:13px; color:var(--plain-text); line-height:1.65; background:rgba(45,212,191,.05); border-radius:0 7px 7px 0}
+  .plain-line b{color:var(--teal); font-weight:500}
+  .plain-inline{display:block; margin-bottom:9px; padding:8px 11px; border-left:2px solid var(--teal); background:rgba(45,212,191,.05); border-radius:0 7px 7px 0; color:var(--plain-text)}
+
+  /* ---- DR ---- */
+  .dr-layout{display:grid; grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr); gap:16px; align-items:start}
+  @media (max-width:960px){.dr-layout{grid-template-columns:1fr}}
+  .strats{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  .strat{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:8px; padding:9px 11px; font-family:inherit; font-size:13px; font-weight:500; transition:.15s}
+  .strat small{display:block; color:var(--muted); font-weight:400; font-size:11px; margin-top:2px}
+  .strat:hover{border-color:var(--teal)}
+  .strat.on{border-color:var(--amber); background:var(--sel)}
+  .gauges{margin-top:14px; display:flex; flex-direction:column; gap:10px}
+  .gauge label{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.14em; display:flex; justify-content:space-between}
+  .gauge label b{color:var(--text); font-weight:500; letter-spacing:0}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; margin-top:5px; overflow:hidden}
+  .bar i{display:block; height:100%; border-radius:99px; transition:width .6s ease, background .3s}
+  .btn{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--text); background:transparent; border:1px solid var(--line2); border-radius:6px; padding:7px 14px}
+  .btn:hover{border-color:var(--muted)}
+  .btn.primary{border-color:var(--red); color:var(--red)}
+  .btn.primary:hover{background:rgba(248,113,113,.1)}
+  .drlog{font-family:var(--mono); font-size:12px; line-height:1.55; display:flex; flex-direction:column; gap:6px; margin-top:12px; max-height:190px; overflow-y:auto}
+  .drlog div{color:var(--muted); animation:fade .25s ease}
+  .drlog div.ok{color:var(--green)} .drlog div.bad{color:var(--red)} .drlog div b{color:var(--text)}
+  .rnode rect{transition:opacity .4s, stroke .4s}
+  .rnode text{transition:opacity .4s}
+  .dimmed{opacity:.22}
+  .halfdim{opacity:.55}
+  .flow{stroke-dasharray:6 6; animation:flowmove 1s linear infinite}
+  @keyframes flowmove{to{stroke-dashoffset:-24}}
+  @media (prefers-reduced-motion: reduce){.flow{animation:none}}
+
+  /* ---- translator ---- */
+  .search{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:8px;
+    font-family:var(--mono); font-size:13px; padding:10px 14px; margin-bottom:12px}
+  .search:focus{outline:2px solid var(--teal); outline-offset:1px}
+  .cats{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+  .catf{cursor:pointer; font-family:var(--mono); font-size:11px; color:var(--muted); background:var(--panel2);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px}
+  .catf.on{color:var(--teal); border-color:var(--teal)}
+  table.map{width:100%; border-collapse:collapse; font-size:13px}
+  table.map th{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line2)}
+  table.map td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.5}
+  table.map td.aws{color:var(--awsorange); font-weight:500; white-space:normal}
+  table.map td.gcp{color:var(--gcpblue); font-weight:500}
+  table.map td.az{color:var(--azblue); font-weight:500}
+  table.map td.note{color:var(--muted); font-size:12.5px}
+  table.map td.catcell{font-family:var(--mono); font-size:10.5px; color:var(--dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap}
+  @media (max-width:760px){ table.map td.catcell{display:none} table.map th.catcell{display:none} }
+
+  table.map td.trig{color:var(--text); font-weight:500}
+  table.map td.ans{color:var(--teal); font-weight:500}
+  .drill-q{font-family:var(--display); font-size:20px; font-weight:500; line-height:1.3; margin-bottom:10px}
+  .drill-a{border-left:2px solid var(--teal); background:var(--n-teal); padding:10px 13px; border-radius:0 7px 7px 0; margin-top:10px}
+  .drill-a b{color:var(--teal)}
+
+  /* ---- diffs ---- */
+  .diff-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(520px,1fr)); gap:12px}
+  .diff{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:15px 17px}
+  .diff h3{font-family:var(--display); font-size:17px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .diff .vs{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0}
+  @media (max-width:900px){.diff .vs{grid-template-columns:1fr}}
+  .diff .side{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 11px; font-size:12.5px; line-height:1.55; color:var(--muted)}
+  .diff .side b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:5px; font-weight:500}
+  .diff .side.aws b{color:var(--awsorange)} .diff .side.gcp b{color:var(--gcpblue)} .diff .side.az b{color:var(--azblue)}
+  .diff p.why{font-size:12.5px; color:var(--muted); line-height:1.6}
+  .diff p.why b{color:var(--text); font-weight:500}
+
+  /* ---- diagrams ---- */
+  .diagram{margin:2px 0 14px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px 12px 10px}
+  .diagram svg{width:100%; height:auto; display:block}
+  .diagcap{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line2)}
+  .diagcap b{color:var(--teal); font-weight:500}
+  .diff .diagram{margin:10px 0 12px; padding:10px}
+  .diff .diagcap{font-size:12px}
+
+  /* ---- journey ---- */
+  .jour-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(290px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.jour-layout{grid-template-columns:1fr}}
+  .jnode{cursor:pointer}
+  .jnode rect{transition:opacity .35s, stroke .35s}
+  .jnode.dim{opacity:.3}
+  .jnode.on rect{stroke:var(--amber); stroke-width:2.2}
+  .jwire{transition:opacity .35s, stroke .35s}
+  .jwire.lit{stroke:var(--amber); opacity:1}
+  #packet{transition:transform .7s cubic-bezier(.4,.1,.3,1)}
+  @media (prefers-reduced-motion: reduce){#packet{transition:none}}
+  .jstep .role{font-family:var(--mono); font-size:11px; color:var(--teal); letter-spacing:.14em; text-transform:uppercase; margin-bottom:7px}
+  .jstep h3{font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em; margin-bottom:8px}
+  .jstep p.say{font-size:13.5px; color:var(--plain-text); line-height:1.7; margin-bottom:11px}
+  .jstep p.tech{font-size:12.5px; color:var(--muted); line-height:1.6; margin-bottom:11px}
+  .jstep p.tech b{color:var(--text); font-weight:500}
+  .jstep .without{border-left:2px solid var(--red); background:rgba(248,113,113,.06); padding:8px 11px;
+    border-radius:0 7px 7px 0; font-size:12.5px; color:var(--alert-text); line-height:1.6}
+  .jstep .without b{color:var(--red); font-weight:500}
+  .jlist{display:flex; flex-direction:column; gap:6px}
+  .jitem{cursor:pointer; text-align:left; background:var(--panel2); border:1px solid var(--line2); color:var(--muted);
+    border-radius:7px; padding:8px 11px; font-family:inherit; font-size:12.5px; display:flex; gap:10px; align-items:baseline; width:100%}
+  .jitem .n{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 auto}
+  .jitem.on{border-color:var(--amber); color:var(--text); background:var(--sel)}
+  .jitem:hover{border-color:var(--teal)}
+  .jitem:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .prog{height:4px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:12px 0 0}
+  .prog i{display:block; height:100%; background:var(--amber); transition:width .45s ease}
+
+  /* ---- network simulator ---- */
+  .sim-layout{display:grid; grid-template-columns:minmax(0,1.75fr) minmax(285px,1fr); gap:16px; align-items:start}
+  @media (max-width:980px){.sim-layout{grid-template-columns:1fr}}
+  .segmented{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+  .seg{cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--muted);
+    background:var(--panel2); border:1px solid var(--line2); border-radius:7px; padding:7px 12px}
+  .seg:hover{border-color:var(--teal); color:var(--text)}
+  .seg.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .seg:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .scene{display:none} .scene.on{display:block}
+  .stage{position:relative; height:392px; background:var(--panel2); border:1px solid var(--line); border-radius:9px; overflow:hidden}
+  .nd{position:absolute; transform:translate(-50%,-50%); padding:8px 13px; border-radius:7px; text-align:center;
+    font-size:12.5px; font-weight:500; color:var(--text); background:var(--panel); border:1.5px solid var(--line2);
+    z-index:10; white-space:nowrap; transition:border-color .3s, box-shadow .3s}
+  .nd small{display:block; font-family:var(--mono); font-size:10px; color:var(--muted); font-weight:400; margin-top:2px}
+  .nd.net{border-color:var(--blue)} .nd.gw{border-color:var(--violet)} .nd.vm{border-color:var(--teal)}
+  .nd.nat{border-color:var(--amber)} .nd.db{border-color:var(--green)}
+  .nd.hit{box-shadow:0 0 0 3px var(--sel)}
+  .nd.deny{border-color:var(--red); box-shadow:0 0 0 3px rgba(248,113,113,.18)}
+  .zone{position:absolute; border:1.5px dashed var(--line2); border-radius:9px}
+  .zone.pub{border-color:var(--green)} .zone.priv{border-color:var(--red)} .zone.fw{border-color:var(--red)}
+  .zone .zl{position:absolute; top:-9px; left:12px; padding:0 6px; background:var(--panel2);
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .pkt{position:absolute; width:14px; height:14px; border-radius:50%; transform:translate(-50%,-50%);
+    background:var(--amber); box-shadow:0 0 10px var(--amber); z-index:60; opacity:0;
+    transition:left .65s linear, top .65s linear, background .25s, box-shadow .25s}
+  @media (prefers-reduced-motion: reduce){.pkt{transition:background .25s}}
+  .term{background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:12px;
+    font-family:var(--mono); font-size:11.5px; line-height:1.65; height:158px; overflow-y:auto; margin-top:12px}
+  .term div{margin-bottom:4px}
+  .term .ok{color:var(--green)} .term .no{color:var(--red)} .term .i{color:var(--muted)} .term b{color:var(--text); font-weight:500}
+  .toggles{display:flex; flex-direction:column; gap:9px; margin-bottom:6px}
+  .toggles label{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--muted); cursor:pointer}
+  .toggles input{accent-color:var(--amber); width:16px; height:16px}
+  .simnote{font-size:12.5px; color:var(--muted); line-height:1.6; margin-top:10px}
+  .simnote b{color:var(--teal); font-weight:500}
+  .cidr-out .r{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:13px; color:var(--muted)}
+  .cidr-out .r:last-child{border-bottom:0}
+  .cidr-out .r b{font-family:var(--mono); color:var(--text); font-weight:500}
+  input[type=range]{width:100%; accent-color:var(--amber)}
+  input.ip{width:100%; background:var(--panel2); border:1px solid var(--line2); color:var(--text); border-radius:7px;
+    font-family:var(--mono); font-size:13px; padding:9px 12px}
+  input.ip.bad{border-color:var(--red)}
+
+  /* ---- OSI ---- */
+  .osi-layout{display:grid; grid-template-columns:minmax(255px,1fr) minmax(0,1.65fr); gap:16px; align-items:start}
+  @media (max-width:980px){.osi-layout{grid-template-columns:1fr}}
+  .osi-stack{display:flex; flex-direction:column; gap:5px}
+  .osi-l{cursor:pointer; text-align:left; border:1px solid var(--line2); background:var(--panel2); color:var(--text);
+    border-radius:7px; padding:9px 12px; font-family:inherit; font-size:13px; font-weight:500; display:flex; gap:10px; width:100%}
+  .osi-l .lv{font-family:var(--mono); font-size:10.5px; color:var(--dim); flex:0 0 20px; padding-top:2px}
+  .osi-l small{display:block; color:var(--muted); font-size:11.5px; font-weight:400; margin-top:3px}
+  .osi-l:hover{border-color:var(--teal)}
+  .osi-l.on{border-color:var(--amber); background:var(--sel)}
+  .osi-l:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .vs2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0}
+  @media (max-width:600px){.vs2{grid-template-columns:1fr}}
+  .vs2 .col{background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:10px 12px;
+    font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .vs2 .col b{display:block; font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; margin-bottom:6px; font-weight:500}
+  .vs2 .col.aws b{color:var(--awsorange)} .vs2 .col.gcp b{color:var(--gcpblue)}
+  table.osi{width:100%; border-collapse:collapse; font-size:12.5px}
+  table.osi th{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--dim); text-align:left; padding:7px 9px; border-bottom:1px solid var(--line2)}
+  table.osi td{padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.55; color:var(--muted)}
+  table.osi td b{color:var(--text); font-weight:500}
+  table.osi tr:last-child td{border-bottom:0}
+  .code{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:12px; overflow-x:auto; margin-top:10px}
+  /* the same class used inline: a chip on the line, not a panel */
+  span.code{display:inline; background:var(--sel); border:1px solid var(--line2); border-radius:5px;
+    padding:.5px 5px; margin:0; overflow:visible; font-family:var(--mono); font-size:.9em;
+    line-height:inherit; color:var(--text); overflow-wrap:break-word}
+  .code pre{margin:0}
+  .code code{font-family:var(--mono); font-size:11.5px; line-height:1.75; color:var(--text); white-space:pre}
+  .tk-c{color:var(--dim); font-style:normal}
+  .tk-k{color:var(--teal); font-style:normal}
+  .tk-s{color:var(--amber); font-style:normal}
+  .cmd{font-family:var(--mono); font-size:12px; background:var(--panel2); border:1px solid var(--line);
+    border-left:2px solid var(--teal); border-radius:0 7px 7px 0; padding:8px 11px; color:var(--plain-text); margin-top:4px}
+  /* ---- shared note / row utilities ---- */
+  .lzok{color:var(--green); font-size:12.5px; line-height:1.65}
+  .lzbad{color:var(--red); font-size:12.5px; line-height:1.65}
+  .lzwarn{color:var(--amber); font-size:12.5px; line-height:1.65}
+  .lzrow{display:flex; gap:9px; align-items:flex-start; margin-bottom:8px; font-size:12.5px; line-height:1.6}
+  .lzrow .lzmark{flex:none; width:15px; font-weight:700; font-family:var(--mono); font-size:13px}
+  .lzhop{display:flex; gap:10px; align-items:flex-start; padding:9px 12px; margin-bottom:6px;
+    border-left:3px solid var(--teal); border-radius:0 9px 9px 0; background:var(--panel2)}
+  .lzhop .n2{flex:none; width:19px; height:19px; border-radius:50%; background:var(--sel); color:var(--amber);
+    font-family:var(--mono); font-size:10.5px; display:grid; place-items:center; margin-top:1px}
+  .lzhop b{font-size:12.5px; font-weight:600}
+  .lzhop small{display:block; color:var(--muted); font-size:11.5px; line-height:1.55; margin-top:2px}
+  .lztier{display:flex; align-items:center; gap:10px; padding:9px 12px; margin-bottom:6px;
+    border:1px solid var(--line2); border-left-width:3px; border-radius:0 9px 9px 0; background:var(--panel2);
+    cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; transition:border-color .15s}
+  .lztier:hover{border-color:var(--teal)}
+  .lztier.on{border-color:var(--amber); background:var(--sel)}
+  .lztier b{font-size:12.5px; font-weight:600}
+  .lztier span{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-left:auto; white-space:nowrap}
+  /* ---- plain-English on-ramp above every simulation ---- */
+  .simplain{border:1px dashed var(--line2); border-radius:11px; padding:12px 14px; margin:0 0 14px;
+    background:var(--panel2); font-size:12.5px; line-height:1.68}
+  .simplain .sp-row{display:flex; gap:10px; margin-bottom:8px}
+  .simplain .sp-row:last-child{margin-bottom:0}
+  .simplain .sp-k{flex:none; width:76px; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px; text-align:right}
+  .simplain .sp-words{display:flex; flex-wrap:wrap; gap:6px}
+  .simplain .sp-w{border:1px solid var(--line2); border-radius:7px; padding:2px 8px; font-size:11.5px;
+    background:var(--panel); color:var(--muted)}
+  .simplain .sp-w b{font-family:var(--mono); font-size:10.5px; color:var(--amber); font-weight:500}
+  @media (max-width:640px){.simplain .sp-row{flex-direction:column; gap:3px}
+    .simplain .sp-k{width:auto; text-align:left}}
+  /* ---- scenario drill, built from the page's own exam lines ---- */
+  .drl{border:1px solid var(--line2); border-radius:11px; padding:14px 16px; background:var(--panel2)}
+  .drl-q{font-size:14px; line-height:1.6; margin-bottom:14px}
+  .drl-o{display:block; width:100%; text-align:left; border:1px solid var(--line2); background:var(--panel);
+    border-radius:9px; padding:9px 12px; margin-bottom:7px; font:inherit; font-size:12.5px; color:inherit;
+    cursor:pointer; line-height:1.45; transition:border-color .15s}
+  .drl-o:hover{border-color:var(--teal)}
+  .drl-o:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .drl-o.right{border-color:var(--green); color:var(--green)}
+  .drl-o.wrong{border-color:var(--red); color:var(--red)}
+  .drl-o.muted{opacity:.5}
+  .drl-bar{display:flex; gap:4px; margin-bottom:12px}
+  .drl-bar i{flex:1; height:5px; border-radius:99px; background:var(--line2)}
+  .drl-bar i.ok{background:var(--green)} .drl-bar i.no{background:var(--red)} .drl-bar i.now{background:var(--amber)}
+  /* ================= INTERFACE ================= */
+  /* one global motion guard rather than per-component handling */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important; animation-iteration-count:1 !important;
+      transition-duration:.001ms !important; scroll-behavior:auto !important}
+  }
+  html{scroll-behavior:smooth}
+
+  /* ---- reading progress ---- */
+  .rprog{position:fixed; inset:0 0 auto 0; height:2px; z-index:60; background:transparent; pointer-events:none}
+  .rprog i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--teal),var(--violet));
+    transition:width .12s linear}
+
+  /* ---- sticky, single-row tab bar ---- */
+  .tabwrap{position:sticky; top:0; z-index:50; margin:22px 0 20px;
+    background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); padding:9px 0 10px}
+  .tabwrap::before,.tabwrap::after{content:""; position:absolute; top:0; bottom:0; width:36px; pointer-events:none; z-index:2}
+  .tabwrap::before{left:0; background:linear-gradient(90deg,var(--bg),transparent)}
+  .tabwrap::after{right:0; background:linear-gradient(270deg,var(--bg),transparent)}
+  .tabs{display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
+    scroll-snap-type:x proximity; padding:2px 30px; margin:0}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto; scroll-snap-align:center; cursor:pointer; font-family:var(--mono); font-size:12px;
+    color:var(--muted); background:transparent; border:1px solid transparent; border-radius:99px;
+    padding:7px 14px; transition:color .15s, background .15s, border-color .15s; white-space:nowrap}
+  .tab:hover{color:var(--text); background:var(--panel2)}
+  .tab.on{color:var(--amber); border-color:var(--amber); background:var(--sel)}
+  .tab:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .tab .tcount{display:inline-block; margin-left:7px; font-size:9.5px; opacity:.7;
+    border:1px solid currentColor; border-radius:99px; padding:0 5px; line-height:1.5}
+
+  /* ---- layout with the section rail ---- */
+  .labgrid{display:grid; grid-template-columns:minmax(0,1fr) 208px; gap:26px; align-items:start}
+  .railcol{position:sticky; top:72px; max-height:calc(100vh - 96px); overflow-y:auto; scrollbar-width:thin;
+    padding-right:2px}
+  .railhead{font-family:var(--mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--dim); margin:0 0 10px 10px}
+  .rail{display:flex; flex-direction:column; gap:1px; border-left:1px solid var(--line); padding-left:0}
+  .rail a{display:flex; gap:7px; align-items:baseline; padding:5px 8px 5px 11px; margin-left:-1px;
+    border-left:2px solid transparent; font-size:11.5px; line-height:1.4; color:var(--muted);
+    text-decoration:none; transition:color .15s, border-color .15s}
+  .rail a:hover{color:var(--text)}
+  .rail a.on{color:var(--amber); border-left-color:var(--amber)}
+  .rail a i{flex:none; width:5px; height:5px; border-radius:50%; background:var(--teal); margin-top:6px; opacity:0}
+  .rail a.sim i{opacity:1}
+  .rail a:focus-visible{outline:2px solid var(--teal); outline-offset:-2px}
+  @media (max-width:1180px){.labgrid{grid-template-columns:minmax(0,1fr)} .railcol{display:none}}
+
+  /* ---- a simulation card should look like one ---- */
+  .card.issim{border-left:3px solid var(--teal); background:
+    linear-gradient(180deg, color-mix(in srgb, var(--teal) 4%, var(--panel)) 0 64px, var(--panel) 64px)}
+  .card.issim > h2.sec::before{content:"interactive"; display:inline-block; vertical-align:middle;
+    font-family:var(--mono); font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--teal);
+    border:1px solid var(--teal); border-radius:99px; padding:2px 7px; margin-right:9px; transform:translateY(-2px)}
+
+  /* ---- command palette ---- */
+  .cmdk{position:fixed; inset:0; z-index:80; display:none; padding:12vh 16px 16px;
+    background:color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter:blur(6px)}
+  .cmdk.on{display:block; animation:cmdIn .16s ease}
+  @keyframes cmdIn{from{opacity:0} to{opacity:1}}
+  .cmdbox{max-width:620px; margin:0 auto; background:var(--panel); border:1px solid var(--line2);
+    border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,.22); overflow:hidden}
+  .cmdbox input{width:100%; border:0; border-bottom:1px solid var(--line); background:transparent;
+    color:var(--text); font:inherit; font-size:15px; padding:15px 18px; outline:none}
+  .cmdlist{max-height:46vh; overflow-y:auto; padding:6px}
+  .cmdlist button{display:block; width:100%; text-align:left; border:0; background:transparent; color:inherit;
+    font:inherit; padding:9px 12px; border-radius:9px; cursor:pointer; line-height:1.4}
+  .cmdlist button .cmdtab{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--dim); margin-bottom:2px}
+  .cmdlist button .cmdname{font-size:13px}
+  .cmdlist button.on,.cmdlist button:hover{background:var(--panel2)}
+  .cmdlist button.on .cmdname{color:var(--amber)}
+  .cmdnone{padding:16px 18px; color:var(--muted); font-size:13px}
+  .cmdfoot{border-top:1px solid var(--line); padding:8px 14px; font-family:var(--mono); font-size:10px;
+    color:var(--dim); display:flex; gap:14px; flex-wrap:wrap}
+  .cmdfoot b{font-weight:400; color:var(--muted)}
+  .kbdhint{float:right; margin:6px 12px 0 0; font-family:var(--mono); font-size:10.5px; color:var(--dim);
+    border:1px solid var(--line2); border-radius:99px; padding:4px 11px; cursor:default}
+  .kbdhint b{font-weight:400; color:var(--muted); margin-right:6px}
+  @media (max-width:760px){.kbdhint{display:none}}
+
+  /* ---- typography, aligned across every page ----
+     div.note and div.ok carried no size of their own, so they inherited the
+     body default and rendered larger and tighter than the callouts beside
+     them. .k holds inline code identifiers and was rendering in the body
+     face. Measured in a browser rather than assumed. */
+  div.note{font-size:12.5px; line-height:1.65; color:var(--muted)}
+  div.ok{font-size:12.5px; line-height:1.65}
+  .k{font-family:var(--mono); font-size:.94em}
+</style>
+</head>
+
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+    <path d="M0 0 L10 5 L0 10 z" style="fill:var(--wire)"/></marker>
+</defs></svg>
+<div class="wrap">
+  <header>
+    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
+    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
+    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a><a href="index.html#lab=fleet" style="display:inline-block;margin-bottom:12px;margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--teal);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▤ related topics</a>
+    <a href="gpu.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▮ gpu lab</a>
+    <a href="llm.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◫ llm lab</a>
+    <a href="serving.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◨ serving lab</a>
+    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
+    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
+    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
+    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
+    <a href="evals.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◈ evals lab</a>
+    <a href="gemini.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◉ gemini lab</a>
+    <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
+    <a href="design.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▦ diagram lab</a>
+    <a href="peakweek.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◐ peak week lab</a>
+    
+    <div class="eyebrow">discovery · routing · state transfer · control loops</div>
+    <h1>Twenty engines, one endpoint <span class="thin">— the layer that decides which of them gets your request</span></h1>
+    <p class="sub">The <a href="serving.html">serving lab</a> is about one engine replica deciding what to run this step. Everything changes at twenty replicas. Which worker gets this request? Does any of them already hold the first two thousand tokens of it? Is it cheaper to move that state across the network or recompute it? Do prefill and decode scale together, or separately? And when a worker dies mid-stream, what does the person watching the text actually see? None of that happens inside an engine, and all of it decides whether the fleet is affordable. Eight sections, each with something you can operate.</p>
+    <div class="note" style="margin-top:14px"><b>Where this sits.</b> Engines &mdash; vLLM, SGLang, TensorRT-LLM &mdash; schedule work <em>inside</em> one replica. This lab is the layer around them, the part usually called an inference gateway, router or orchestrator. The mechanisms are described generally; named systems appear where a concrete implementation makes the idea clearer.</div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-pane="flstart" role="tab">Start here</button>
+    <button class="tab" data-pane="fldisc" role="tab">Discovery</button>
+    <button class="tab" data-pane="flroute" role="tab">KV-aware routing</button>
+    <button class="tab" data-pane="flmove" role="tab">Moving KV</button>
+    <button class="tab" data-pane="fldisagg" role="tab">Disaggregated fleet</button>
+    <button class="tab" data-pane="flplan" role="tab">Planner & autoscaling</button>
+    <button class="tab" data-pane="flfail" role="tab">When a worker dies</button>
+    <button class="tab" data-pane="flcap" role="tab">Capacity acceptance</button>
+    <button class="tab" data-pane="flexam" role="tab">Exam angle</button>
+  </div>
+
+  <section class="pane on" id="pane-flstart"><div id="sec-flstart"></div></section>
+  <section class="pane" id="pane-fldisc"><div id="sec-fldisc"></div></section>
+  <section class="pane" id="pane-flroute"><div id="sec-flroute"></div></section>
+  <section class="pane" id="pane-flmove"><div id="sec-flmove"></div></section>
+  <section class="pane" id="pane-fldisagg"><div id="sec-fldisagg"></div></section>
+  <section class="pane" id="pane-flplan"><div id="sec-flplan"></div></section>
+  <section class="pane" id="pane-flfail"><div id="sec-flfail"></div></section>
+  <section class="pane" id="pane-flcap"><div id="sec-flcap"></div></section>
+  <section class="pane" id="pane-flexam"><div id="sec-flexam"></div></section>
+
+  <footer class="lab-foot">
+    Built by <a href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame</a>
+    · <a href="index.html">learning guide</a> · <a href="gpu.html">gpu lab</a> · <a href="llm.html">llm lab</a> · <a href="serving.html">serving lab</a> · <a href="cloud.html">cloud lab</a> · <a href="agentcore.html">agentcore lab</a> · <a href="agentbuild.html">agents lab</a> · <a href="adk.html">adk lab</a> · <a href="evals.html">evals lab</a> · <a href="gemini.html">gemini lab</a> · <a href="govern.html">govern lab</a> · <a href="design.html">diagram lab</a> · <a href="peakweek.html">peak week lab</a>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('pane-'+t.dataset.pane).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+}));
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ================= DIAGRAMS ================= */
+const MONO="font:10.5px ui-monospace,SFMono-Regular,Menlo,monospace", SANS="font:500 12px Inter,Helvetica,Arial,sans-serif";
+const D=(vb,label,body,cap)=>`<div class="diagram"><svg viewBox="${vb}" role="img" aria-label="${label}">${body}</svg><div class="diagcap"><b>How to read it:</b> ${cap}</div></div>`;
+const box=(x,y,w,hh,stroke,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="8" style="fill:${fill||'var(--panel2)'};stroke:${stroke}"/>`;
+const t=(x,y,s,style,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${style};fill:var(--text)">${s}</text>`;
+const tm=(x,y,s,fill,anchor)=>`<text x="${x}" y="${y}" text-anchor="${anchor||'middle'}" style="${MONO};fill:${fill||'var(--muted)'}">${s}</text>`;
+
+
+
+
+
+
+
+const escCode=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* one pass, so a rule can never match markup an earlier rule inserted */
+const HLRX=/(#[^\n]*)|("[^"\n]*")|(^[ \t]*)([a-z_]+)(?=[ ;{])/gm;
+const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
+  c ? `<i class="tk-c">${c}</i>`
+  : s ? `<i class="tk-s">${s}</i>`
+  : `${ws}<i class="tk-k">${k}</i>`);
+
+
+
+
+
+
+
+
+
+/* ================= 1 · START HERE ================= */
+document.getElementById('sec-flstart').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Everything an engine knows stops at its own memory</h2>
+  <div class="plain-line"><b>In plain English:</b> an inference engine is very good at one thing &mdash; deciding, thousands of times a second, what to run next on <em>its</em> GPU with <em>its</em> memory. It has no idea another replica exists. It cannot know that the worker next to it already holds the first two thousand tokens of the request you just sent, and it has no way to ask.</div>
+  <div class="plain-line">So the moment you run more than one replica, a set of questions appears that no engine can answer, and something has to own them. That something is the subject of this lab.</div>
+  <div id="flLayerDiag"></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; add replicas and watch the questions appear</h2>
+  <div class="plain-line"><b>Try this:</b> start with one engine and add replicas one at a time. Each step introduces a decision nothing inside an engine can make &mdash; and a component that has to exist to make it.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>One shop with one till needs no queue policy. Twenty tills need someone deciding who goes where, and that person is not a cashier &mdash; it is a different job with a different view of the room.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>add a replica</b> repeatedly and read what each step forces into existence.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>replica</b> one running copy of the engine, with its own GPU and memory</span><span class="sp-w"><b>fleet</b> all the replicas serving one model, taken together</span><span class="sp-w"><b>frontend</b> the single address clients talk to</span><span class="sp-w"><b>router</b> the component choosing which replica handles a request</span><span class="sp-w"><b>discovery</b> how the router learns which replicas are alive</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flScaleOut"></div></div>
+    <div><div class="segmented" id="flScaleCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="flScaleNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- the layer diagram --- */
+(function(){
+  const h=document.getElementById('flLayerDiag'); if(!h) return;
+  let b='';
+  b+=box(190,14,200,30,'var(--blue)','var(--n-blue)'); b+=t(290,33,'one endpoint for clients',SANS);
+  b+=box(112,62,356,34,'var(--violet)','var(--n-violet)');
+  b+=t(290,77,'router — discovery, routing, transfer, scaling',SANS);
+  b+=tm(290,90,'this lab','var(--violet)');
+  for(let i=0;i<4;i++){
+    const x=44+i*136;
+    b+=box(x-6,124,122,42,'var(--teal)','var(--panel2)');
+    b+=t(x+55,142,'engine '+(i+1),SANS);
+    b+=tm(x+55,157,'its own KV memory','var(--dim)');
+    b+='<line x1="290" y1="96" x2="'+(x+55)+'" y2="118" style="stroke:var(--wire);stroke-width:1.2" marker-end="url(#ah)"/>';
+  }
+  b+='<line x1="290" y1="44" x2="290" y2="56" style="stroke:var(--wire)" marker-end="url(#ah)"/>';
+  b+=tm(290,190,'each engine schedules perfectly, and none of them can see the other three','var(--muted)');
+  h.innerHTML=D('0 0 580 200','A single endpoint above a router above four independent engines',b,
+    'The teal boxes are what the serving lab is about &mdash; one engine, scheduling its own work. The violet band is this lab: everything that has to exist because there is more than one of them, and because none of them can see the others.');
+})();
+
+/* --- SIM: the questions that appear as you add replicas --- */
+(function(){
+  const ctl=document.getElementById('flScaleCtl'), out=document.getElementById('flScaleOut'), note=document.getElementById('flScaleNote');
+  if(!ctl) return;
+  const S=[
+   {n:1,q:'Nothing yet.',
+    comp:'the engine, on its own',
+    why:'One replica, one address. The engine schedules its own work and there is genuinely nothing above it to decide. Every deployment starts here and a surprising number never need to leave.'},
+   {n:2,q:'Which replica gets this request?',
+    comp:'a frontend and a router',
+    why:'The moment there are two, somebody must choose. Round-robin is the obvious answer and it is wrong more often than people expect &mdash; it ignores that requests are wildly different sizes and that replicas hold different cached state.'},
+   {n:3,q:'Which replicas are actually alive right now?',
+    comp:'service discovery',
+    why:'Workers restart, get rescheduled, run out of memory and come back. A hard-coded list is wrong within a day. Replicas have to announce themselves and be noticed when they stop.'},
+   {n:5,q:'Does any of them already hold this prompt&rsquo;s prefix?',
+    comp:'a KV index, fed by events from the workers',
+    why:'<b>This is where fleet routing stops being load balancing.</b> A worker that already holds your first 2 000 tokens can skip that prefill entirely. Routing there is worth far more than routing to whoever is least busy &mdash; but the router has to know, which means workers must publish what they hold.'},
+   {n:8,q:'Should this request follow the state, or should the state follow the request?',
+    comp:'a KV transfer path between workers',
+    why:'Sometimes the right worker is busy. Then you either recompute the prefix somewhere else or move the cached state across the network &mdash; and which is cheaper depends on the interconnect and the prefix length, not on preference.'},
+   {n:12,q:'Do prefill and decode need the same number of machines?',
+    comp:'separate pools, sized independently',
+    why:'They are different workloads with different bottlenecks. Once the fleet is large enough for the ratio to matter, running them together means over-provisioning one to satisfy the other.'},
+   {n:20,q:'Who decides there should be twenty rather than twelve?',
+    comp:'a planner, and a control loop',
+    why:'Something has to watch queueing and latency and change the shape of the fleet. That loop can oscillate, and a control loop that oscillates is worse than one that never runs.'},
+   {n:20,q:'What happens to an in-flight stream when its worker dies?',
+    comp:'health checks, retry policy, and an honest answer to the client',
+    why:'The KV state for that conversation was in that GPU. It is gone. Whether the client sees a retry, a truncated answer or an error is a decision somebody makes deliberately or accidentally.'}
+  ];
+  let i=0;
+  function render(){
+    ctl.innerHTML='<button class="seg on" data-a="f" style="text-align:left"'+(i>=S.length-1?' disabled':'')+'>'+
+      (i>=S.length-1?'that is the whole layer':'add a replica &rarr;')+'</button>'+
+      '<button class="seg" data-a="b" style="text-align:left"'+(i===0?' disabled':'')+'>&larr; step back</button>'+
+      '<button class="seg" data-a="r" style="text-align:left;margin-top:8px">start again</button>';
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a; i = a==='f'?Math.min(S.length-1,i+1) : a==='b'?Math.max(0,i-1) : 0; render(); });
+    const c=S[i];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+c.n+' REPLICA'+(c.n===1?'':'S')+'</div>'+
+      '<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:14px">'+
+      [...Array(Math.min(c.n,20))].map(()=>'<span style="width:15px;height:20px;border-radius:3px;background:var(--teal);opacity:.85"></span>').join('')+'</div>'+
+      '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:var(--amber)">'+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">THE NEW QUESTION</div><b>'+c.q+'</b></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT MUST NOW EXIST</div>'+
+      S.slice(0,i+1).map((x,j)=>'<div class="lzhop" style="display:block;padding:8px 12px;border-left-color:'+
+        (j===i?'var(--violet)':'var(--wire)')+';opacity:'+(j===i?1:.55)+'">'+
+        '<div style="display:flex;gap:9px"><span class="n2">'+(j+1)+'</span><span>'+x.comp+'</span></div></div>').join('')+
+      '<div class="'+(i===0?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+c.why+'</div>';
+    note.innerHTML =
+      i===0 ? '<div class="ok"><b>One replica is not a fleet, and does not need any of this.</b> Worth saying plainly, because a great deal of orchestration gets deployed in front of a single engine that would have been fine on its own.</div>'
+      : i>=S.length-1 ? '<div class="ok"><b>Count what is on that list.</b> A frontend, a router, discovery, a KV index, a transfer path, separate pools, a planner and a failure policy &mdash; and not one of them is a model or an engine. This is distributed systems work, and the model is the payload.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>The order matters as much as the list.</b> Each of these is worth adding only once the question it answers has actually appeared. Deploying KV-aware routing across three replicas that share no prefixes is cost with no return.</div>'
+      : '<div class="simnote"><b>Notice that none of these is an optimisation.</b> Each one is a question that has no answer until you build the thing that answers it &mdash; and until then the fleet is making the decision by accident.</div>';
+  }
+  render();
+})();
+
+/* ================= 2 · DISCOVERY ================= */
+document.getElementById('sec-fldisc').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A list of workers is wrong the moment you write it down</h2>
+  <div class="plain-line"><b>In plain English:</b> workers are not stable. They get rescheduled onto other machines, restart after an out-of-memory error, come up slowly while loading forty gigabytes of weights, and disappear when a node is drained. Any configuration file listing their addresses is a snapshot of a moment that has already passed.</div>
+  <div class="plain-line"><b>So workers announce themselves instead.</b> On start-up each one registers what it is &mdash; which model, which role, which endpoints it serves &mdash; in a shared registry, and refreshes that entry on a lease. Stop refreshing and the entry expires. The router watches the registry rather than a file, so the set of workers it will route to is whatever is currently alive.</div>
+  <div class="plain-line"><b>The subtle part is <em>ready</em> versus <em>alive</em>.</b> A worker that has registered but is still loading weights will accept a request and sit on it. A worker that is alive but has a full KV cache should not be sent more work. Health is not one bit, and treating it as one is behind a lot of mysterious latency.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; take workers away and see what the router believes</h2>
+  <div class="plain-line"><b>Try this:</b> four workers and a router. Kill one, start one, let one hang mid-load, and watch the gap between what is true and what the router has noticed &mdash; because that gap is where the failed requests live.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A taxi rank with a board showing which cars are free. The board is updated by the drivers. A driver who breaks down without telling anyone stays on the board, and the next passenger is sent to an empty space.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>kill worker 2</b> and watch what the router does with the next few requests before the lease expires.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>registry</b> the shared list workers write themselves into</span><span class="sp-w"><b>lease</b> a registration that expires unless refreshed</span><span class="sp-w"><b>heartbeat</b> the refresh that keeps a lease alive</span><span class="sp-w"><b>ready</b> loaded, warm and able to serve — not merely running</span><span class="sp-w"><b>drain</b> stop sending new work but let current work finish</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flDiscOut"></div></div>
+    <div><div class="segmented" id="flDiscCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="flDiscNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: discovery --- */
+(function(){
+  const ctl=document.getElementById('flDiscCtl'), out=document.getElementById('flDiscOut'), note=document.getElementById('flDiscNote');
+  if(!ctl) return;
+  const LEASE=3;                       /* ticks before a stale entry expires */
+  let W=[{id:1,state:'ready',last:0},{id:2,state:'ready',last:0},{id:3,state:'ready',last:0},{id:4,state:'ready',last:0}];
+  let tick=0, log=[], last='';
+  function step(){
+    tick++;
+    W.forEach(w=>{ if(w.state==='ready'||w.state==='loading') w.last=tick; });
+    W.forEach(w=>{ if(w.state==='loading'&&tick-w.born>=3) w.state='ready'; });
+    // route one request
+    const believed=W.filter(w=>tick-w.last<LEASE&&w.state!=='drain');
+    const pick=believed[tick%Math.max(1,believed.length)];
+    if(!pick) log.unshift({t:tick,r:'no worker available',ok:false});
+    else if(pick.state==='dead') log.unshift({t:tick,r:'sent to worker '+pick.id+' — timed out, worker is gone',ok:false});
+    else if(pick.state==='loading') log.unshift({t:tick,r:'sent to worker '+pick.id+' — queued behind a 40 GB weight load',ok:false});
+    else log.unshift({t:tick,r:'sent to worker '+pick.id+' — served',ok:true});
+    log=log.slice(0,7);
+  }
+  function render(){
+    ctl.innerHTML=[['t','advance one tick &rarr;'],['k2','kill worker 2'],['n','start a new worker'],['d3','drain worker 3'],['r','reset']]
+      .map(([k,n])=>'<button class="seg'+(k==='t'?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const k=b.dataset.k;
+      if(k==='t') step();
+      else if(k==='k2'){ const w=W.find(x=>x.id===2); if(w){w.state='dead'; last='worker 2 stopped without telling anyone';} }
+      else if(k==='n'){ W.push({id:Math.max(...W.map(x=>x.id))+1,state:'loading',last:tick,born:tick}); last='a new worker registered and began loading weights'; }
+      else if(k==='d3'){ const w=W.find(x=>x.id===3); if(w){w.state='drain'; last='worker 3 asked to drain — finish current work, take no more';} }
+      else { W=[{id:1,state:'ready',last:0},{id:2,state:'ready',last:0},{id:3,state:'ready',last:0},{id:4,state:'ready',last:0}]; tick=0; log=[]; last=''; }
+      render(); });
+    const COL={ready:'var(--green)',loading:'var(--amber)',dead:'var(--red)',drain:'var(--wire)'};
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TICK '+tick+' &mdash; WHAT IS ACTUALLY TRUE</div>'+
+      W.map(w=>'<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px">'+
+        '<span style="width:11px;height:11px;border-radius:50%;background:'+COL[w.state]+'"></span>'+
+        '<span style="font-family:var(--mono);font-size:11.5px;min-width:74px">worker '+w.id+'</span>'+
+        '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">'+w.state+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE ROUTER BELIEVES &mdash; LEASE EXPIRES AFTER '+LEASE+' MISSED TICKS</div>'+
+      W.map(w=>{
+        const age=tick-w.last, live=age<LEASE&&w.state!=='drain';
+        const wrong=(live&&(w.state==='dead'||w.state==='loading'));
+        return '<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px">'+
+        '<span style="width:11px;height:11px;border-radius:50%;background:'+(live?(wrong?'var(--red)':'var(--green)'):'var(--line2)')+'"></span>'+
+        '<span style="font-family:var(--mono);font-size:11.5px;min-width:74px">worker '+w.id+'</span>'+
+        '<span style="font-family:var(--mono);font-size:11px;color:'+(wrong?'var(--red)':'var(--muted)')+'">'+
+        (live?(wrong?'believed healthy — it is not':'routable'):'expired, removed')+'</span></div>';}).join('')+
+      (log.length?'<div class="dim" style="font-size:11px;margin:14px 0 7px">REQUESTS</div>'+
+        log.map(l=>'<div style="font-family:var(--mono);font-size:11px;padding:3px 0;color:'+(l.ok?'var(--muted)':'var(--red)')+'">t'+l.t+' &middot; '+l.r+'</div>').join(''):'')+
+      (last?'<div class="note" style="margin-top:12px">'+last+'</div>':'');
+    const stale=W.some(w=>tick-w.last<LEASE&&(w.state==='dead'||w.state==='loading'));
+    note.innerHTML = stale
+      ? '<div class="lzbad"><b>The router is confidently wrong.</b> A worker that stopped without warning keeps its lease until it expires, and every request routed there in the meantime fails or hangs. That window is the lease interval, and shortening it costs registry traffic &mdash; which is the actual trade, rather than a bug to fix.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>This is why <em>ready</em> has to mean more than <em>registered</em>.</b> A worker loading weights is running, reachable and useless. If it advertises itself before it can serve, the router will hand it work that sits in a queue behind a forty-gigabyte read.</div>'
+      : '<div class="simnote"><b>Advance a few ticks and then kill a worker.</b> The interesting part is not that the router notices &mdash; it is how long it takes, and what happens to the requests sent during the gap.</div>'+
+        '<div class="note" style="margin-top:10px"><b>Draining is the graceful case, and it is a different state.</b> The worker keeps serving what it has and stops being offered anything new. Without it, a routine deployment kills conversations mid-sentence &mdash; which is a rollout problem rather than a failure.</div>';
+  }
+  render();
+})();
+
+/* ================= 3 · KV-AWARE ROUTING ================= */
+document.getElementById('sec-flroute').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Routing to whoever is least busy throws away the most valuable thing you have</h2>
+  <div class="plain-line"><b>In plain English:</b> from the serving lab, a request whose prefix is already cached skips that prefill entirely &mdash; often most of its time-to-first-token. But the cache lives inside one replica&rsquo;s GPU. Send the request to a different replica and the saving evaporates, and you pay the prefill again on a machine that had no reason to hold it.</div>
+  <div class="plain-line"><b>So the router needs to know who holds what.</b> Each worker hashes its cached blocks and publishes events as blocks are added and evicted; the router keeps an index from block hash to worker. A new request is hashed the same way, and the router can see that worker 3 already holds 14 of its 16 leading blocks.</div>
+  <div class="plain-line"><b>Then it has to weigh two things that disagree.</b> The worker with the best prefix match may be the busiest. Routing purely on cache locality piles every request with a shared system prompt onto one machine while nineteen sit idle; routing purely on load throws the cache away. Every real router scores both and picks a balance, and where that balance sits is a decision with a number attached.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; move the dial between cache locality and load</h2>
+  <div class="plain-line"><b>Try this:</b> a stream of requests sharing prefixes to different degrees, and four workers holding different cached state. Move the weighting and watch cache hit rate and queueing pull against each other &mdash; then find the point where both are acceptable, which is not either end.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A hospital sending you to the doctor who already has your notes, or to whoever is free soonest. The one with your notes saves twenty minutes of history-taking, and if everybody insists on her, her waiting room is the bottleneck.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the dial to <b>pure cache locality</b> and look at the queue on the busiest worker.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>block hash</b> a fingerprint of a fixed chunk of tokens, used to match prefixes</span><span class="sp-w"><b>KV event</b> a worker announcing that it gained or lost a cached block</span><span class="sp-w"><b>overlap score</b> how many of a request&rsquo;s leading blocks a worker already holds</span><span class="sp-w"><b>hot spot</b> one worker attracting far more work than the others</span><span class="sp-w"><b>TTFT</b> time to first token — what the user feels as responsiveness</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flRouteOut"></div></div>
+    <div><div id="flRouteCtl"></div>
+      <div id="flRouteNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: KV-aware routing --- */
+(function(){
+  const ctl=document.getElementById('flRouteCtl'), out=document.getElementById('flRouteOut'), note=document.getElementById('flRouteNote');
+  if(!ctl) return;
+  let w=0.5;                                     /* 0 = pure load, 1 = pure cache */
+  const NW=4;
+  /* three tenants with different system prompts; traffic is skewed toward tenant A */
+  const REQS=[...Array(40)].map((_,i)=>({tenant: i%10<6?0 : i%10<9?1 : 2, id:i}));
+  function simulate(){
+    const holds=[new Set(),new Set(),new Set(),new Set()];   /* which tenants each worker has cached */
+    const load=[0,0,0,0], served=[];
+    let hits=0;
+    REQS.forEach(r=>{
+      const scores=holds.map((h,i)=>{
+        const overlap=h.has(r.tenant)?1:0;
+        const spare=1-Math.min(1,load[i]/8);
+        return w*overlap + (1-w)*spare;
+      });
+      let best=0; for(let i=1;i<NW;i++) if(scores[i]>scores[best]) best=i;
+      const hit=holds[best].has(r.tenant);
+      if(hit) hits++;
+      load[best]+= hit?1:3;                       /* a miss costs prefill */
+      holds[best].add(r.tenant);
+      if(holds[best].size>2){                     /* small cache: evict the oldest tenant */
+        const first=[...holds[best]][0]; holds[best].delete(first);
+      }
+      served.push({r,worker:best,hit});
+    });
+    const max=Math.max(...load), avg=load.reduce((a,b)=>a+b,0)/NW;
+    return {load,hits,served,imbalance:max/Math.max(1,avg),
+            ttft: 90 + (1-hits/REQS.length)*140 + Math.max(0,max-8)*26};
+  }
+  function render(){
+    ctl.innerHTML='<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">routing weight</span>'+
+      '<span>'+(w===0?'pure load':w===1?'pure cache':(w*100).toFixed(0)+'% cache')+'</span></div>'+
+      '<input type="range" id="flW" min="0" max="1" step="0.1" value="'+w+'" style="width:100%">'+
+      '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:3px">'+
+      '<span>balance the load</span><span>follow the cache</span></div>';
+    const e=document.getElementById('flW'); if(e) e.oninput=()=>{w=+e.value;render();};
+    const s=simulate();
+    const hitRate=s.hits/REQS.length*100;
+    const COL=['var(--blue)','var(--teal)','var(--violet)','var(--amber)'];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">40 REQUESTS FROM 3 TENANTS &mdash; WHERE EACH ONE WENT</div>'+
+      '<div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:12px">'+
+      s.served.map(x=>'<span title="worker '+(x.worker+1)+(x.hit?' — cache hit':' — cache miss')+
+        '" style="width:13px;height:17px;border-radius:2px;background:'+COL[x.worker]+';opacity:'+(x.hit?1:.32)+'"></span>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:14px">colour = worker · solid = prefix already cached there · faded = had to prefill</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:7px">LOAD PER WORKER</div>'+
+      s.load.map((l,i)=>'<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px">'+
+        '<span style="font-family:var(--mono);font-size:11px;min-width:62px;color:var(--muted)">worker '+(i+1)+'</span>'+
+        '<div style="flex:1;height:9px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
+        Math.min(100,l/Math.max(...s.load)*100)+'%;background:'+COL[i]+'"></i></div>'+
+        '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:26px;text-align:right">'+l+'</span></div>').join('')+
+      '<div style="margin-top:14px">'+
+      [['prefix cache hit rate',hitRate.toFixed(0)+'%'],
+       ['busiest worker vs average',s.imbalance.toFixed(2)+'×'],
+       ['estimated time to first token',s.ttft.toFixed(0)+' ms']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
+    note.innerHTML =
+      w>=0.9 ? '<div class="lzbad"><b>Every tenant pinned to one worker.</b> The cache hit rate is excellent and the busiest machine is carrying '+s.imbalance.toFixed(1)+'× the average while others idle. You optimised the metric and made the service slower.</div>'
+      : w<=0.1 ? '<div class="lzbad"><b>Perfectly balanced, and the cache is worthless.</b> Requests land wherever there is room, so a shared system prompt gets re-prefilled on whichever machine happens to be free. You are paying full prefill on traffic that did not need any.</div>'
+      : '<div class="ok"><b>Both acceptable, which is the whole point.</b> Enough cache affinity to skip most prefills, enough load awareness that no worker becomes the queue. The middle is not a compromise here &mdash; it is strictly better than either end on the metric that matters, which is time to first token.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>Watch the estimate as you sweep the dial.</b> It falls from both ends toward a minimum. That shape is why this is a weighting rather than a mode &mdash; and why a router with no load term and a router with no cache term are both misconfigured, not merely different.</div>'+
+      '<div class="note" style="margin-top:10px"><b>What makes it work at all is the events.</b> Workers publish block hashes as they cache and evict, so the router&rsquo;s index reflects reality within a round trip. Without that the router is guessing, and a stale index sends requests to a worker that evicted the prefix ten seconds ago.</div>';
+  }
+  render();
+})();
+
+/* ================= 4 · MOVING KV ================= */
+document.getElementById('sec-flmove').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Move the state, or do the work again</h2>
+  <div class="plain-line"><b>In plain English:</b> the worker holding your prefix is overloaded. You have two options and no third. Send the request there anyway and wait, send it elsewhere and recompute the prefill from scratch &mdash; or <b>copy the cached state across the network</b> to the worker that has room.</div>
+  <div class="plain-line">Copying is not obviously silly. KV cache is just bytes, and modern interconnects move bytes very fast. But it is a real amount of data &mdash; hundreds of megabytes for a long prefix &mdash; and whether the copy beats recomputation depends entirely on what the two machines are connected by.</div>
+  <div class="plain-line"><b>The comparison is arithmetic, not preference.</b> Recomputation costs prefill time, which scales with prefix length. Transfer costs bytes over bandwidth, which also scales with prefix length. Both are straight lines through the origin with different slopes, so one is always better and which one depends on the hardware. That is worth working out once rather than arguing about.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; find the crossover for your interconnect</h2>
+  <div class="plain-line"><b>Try this:</b> change the prefix length, the model shape and what the machines are wired together with. The bars are the two options; the note tells you which wins and by how much. The answer flips completely between a rack-internal link and ordinary datacentre Ethernet.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Posting a colleague your notes versus asking them to sit through the meeting again. If the post is fast enough the notes win; if you are sending them by mule, they should just attend.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the interconnect to <b>ordinary datacentre Ethernet</b> and see the recommendation invert.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>KV transfer</b> copying cached attention state from one worker to another</span><span class="sp-w"><b>RDMA</b> a network that writes straight into the other machine&rsquo;s memory</span><span class="sp-w"><b>NVLink</b> a very fast direct link between GPUs in one machine</span><span class="sp-w"><b>interconnect</b> whatever the two machines are wired together with</span><span class="sp-w"><b>recompute</b> discard the state and do the prefill again</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flMoveOut"></div></div>
+    <div><div id="flMoveCtl"></div>
+      <div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE MACHINES ARE WIRED WITH</div>
+      <div class="segmented" id="flMoveLink" style="flex-direction:column;align-items:stretch"></div>
+      <div id="flMoveNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: transfer vs recompute --- */
+(function(){
+  const ctl=document.getElementById('flMoveCtl'), lk=document.getElementById('flMoveLink'),
+        out=document.getElementById('flMoveOut'), note=document.getElementById('flMoveNote');
+  if(!ctl) return;
+  const LINKS={
+    nvl :{n:'NVLink, same machine',      bw:400e9, note:'GPUs in one chassis. The copy is almost free.'},
+    ib  :{n:'RDMA fabric, same rack',    bw: 50e9, note:'InfiniBand or RoCE, writing straight into the far memory.'},
+    eth :{n:'Ordinary datacentre Ethernet', bw: 3e9, note:'A normal 25 GbE NIC through the kernel network stack.'},
+    slow:{n:'Across availability zones', bw:1.2e9, note:'Higher latency and shared bandwidth. Rarely a good idea for this.'}
+  };
+  const MODELS={
+    gqa :{n:'8B, grouped-query (8 KV heads)', layers:32, kvh:8,  dim:128},
+    mha :{n:'7B, no GQA (32 KV heads)',       layers:32, kvh:32, dim:128},
+    big :{n:'70B, grouped-query',             layers:80, kvh:8,  dim:128}
+  };
+  let tokens=4096, link='ib', model='gqa', bytes=2;
+  const TOK=[512,1024,2048,4096,8192,16384,32768];
+  function render(){
+    ctl.innerHTML='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">prefix length</span><span>'+tokens.toLocaleString()+' tokens</span></div>'+
+      '<input type="range" id="flT" min="0" max="'+(TOK.length-1)+'" step="1" value="'+TOK.indexOf(tokens)+'" style="width:100%"></div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:7px">MODEL SHAPE</div>'+
+      '<div class="segmented" style="flex-direction:column;align-items:stretch">'+
+      Object.entries(MODELS).map(([k,v])=>'<button class="seg'+(model===k?' on':'')+'" data-m="'+k+'" style="text-align:left;font-size:11.5px">'+v.n+'</button>').join('')+'</div>';
+    const t=document.getElementById('flT'); if(t) t.oninput=()=>{tokens=TOK[+t.value];render();};
+    ctl.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{model=b.dataset.m;render();});
+    lk.innerHTML=Object.entries(LINKS).map(([k,v])=>'<button class="seg'+(link===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:11.5px">'+v.n+'</button>').join('');
+    lk.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{link=b.dataset.k;render();});
+    const m=MODELS[model];
+    const perTok=2*m.layers*m.kvh*m.dim*bytes;
+    const total=perTok*tokens;
+    const xfer=total/LINKS[link].bw*1000 + 1.2;          /* ms, plus a fixed setup cost */
+    const recomp=tokens*0.055*(m.layers/32);             /* ms of prefill */
+    const winner=xfer<recomp?'transfer':'recompute';
+    const max=Math.max(xfer,recomp);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">MOVING '+tokens.toLocaleString()+' TOKENS OF KV STATE</div>'+
+      [['KV bytes per token',(perTok/1024).toFixed(0)+' KB'],
+       ['total to move',total>1e9?(total/1e9).toFixed(2)+' GB':(total/1e6).toFixed(0)+' MB'],
+       ['link bandwidth',(LINKS[link].bw/1e9).toFixed(0)+' GB/s']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:16px 0 8px">THE TWO OPTIONS</div>'+
+      [['copy the state across',xfer,'var(--teal)'],['recompute the prefill',recomp,'var(--amber)']]
+      .map(([lab,v,c])=>'<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;margin-bottom:4px">'+
+        '<span'+(lab.startsWith(winner==='transfer'?'copy':'recompute')?' style="color:'+c+';font-weight:600"':' style="color:var(--muted)"')+'>'+lab+'</span>'+
+        '<span style="color:'+c+'">'+(v<1?v.toFixed(2):v.toFixed(0))+' ms</span></div>'+
+        '<div style="height:11px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
+        (v/max*100)+'%;background:'+c+'"></i></div></div>').join('')+
+      '<div class="'+(winner==='transfer'?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+
+      '<b>'+(winner==='transfer'
+        ? 'Move it. '+(recomp/xfer).toFixed(1)+'× faster than recomputing'
+        : 'Recompute. Moving it would be '+(xfer/recomp).toFixed(1)+'× slower')+'.</b> '+LINKS[link].note+'</div>';
+    note.innerHTML='<div class="simnote"><b>Both options scale with prefix length, so the winner does not change as you move that slider</b> &mdash; the lines have different slopes and never cross. What flips the answer is the <em>link</em>, and secondarily the model shape. Try switching interconnect with everything else fixed.</div>'+
+      (model==='mha'
+        ? '<div class="lzwarn" style="margin-top:10px"><b>Notice what no grouped-query attention does here.</b> Four times the KV bytes per token, so four times the transfer, while recomputation is unchanged. The same architectural choice that shrinks the cache also makes moving it viable.</div>'
+        : '<div class="note" style="margin-top:10px"><b>Switch the model shape to the one without grouped-query attention.</b> Four times the bytes to move, identical recomputation cost &mdash; the decision flips on a property of the model rather than of the fleet.</div>')+
+      '<div class="note" style="margin-top:10px"><b>And there is a third option this ignores.</b> Wait for the worker that already holds it. That costs queueing rather than bandwidth or compute, and a good router weighs all three &mdash; which is why routing and transfer are the same decision seen from two sides.</div>';
+  }
+  render();
+})();
+
+/* ================= 5 · DISAGGREGATED FLEET ================= */
+document.getElementById('sec-fldisagg').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two workloads, one ratio, and it is not one to one</h2>
+  <div class="plain-line"><b>In plain English:</b> the serving lab established that prefill and decode want opposite things and interfere when they share a card. At fleet scale that becomes a sizing question: if you run them in separate pools, <b>how many of each?</b></div>
+  <div class="plain-line">The answer comes from your traffic, not from taste. A workload with long prompts and short answers spends most of its work in prefill and needs prefill capacity. A chat workload with short prompts and long answers is almost all decode. Get the ratio wrong and one pool queues while the other idles &mdash; and because they are separate pools, the idle one cannot help.</div>
+  <div class="plain-line"><b>That is the trade you are buying.</b> Aggregated, every machine can do any work and prefill interferes with decode. Disaggregated, the interference is gone and you have to predict the mix. The moment your traffic shape shifts, a fixed ratio is wrong in a way that a shared pool never is.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; size the two pools against a traffic shape</h2>
+  <div class="plain-line"><b>Try this:</b> set what your traffic actually looks like, then split twelve machines between the two pools. Watch both queues. The correct split moves when the traffic does, which is the point.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A restaurant deciding how many chefs and how many waiters. Get it wrong either way and half the staff stand still while the other half drown, and a waiter cannot cook.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>choose <b>document analysis</b> and then <b>chat</b>, leaving the split alone. Watch which pool falls over.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>pool</b> a group of machines doing only one of the two phases</span><span class="sp-w"><b>input length</b> how many tokens arrive in the prompt</span><span class="sp-w"><b>output length</b> how many tokens get generated</span><span class="sp-w"><b>utilisation</b> the share of a pool&rsquo;s capacity actually in use</span><span class="sp-w"><b>aggregated</b> the alternative — every machine does both phases</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flPoolOut"></div></div>
+    <div><div class="dim" style="font-size:11px;margin-bottom:7px">WHAT YOUR TRAFFIC LOOKS LIKE</div>
+      <div class="segmented" id="flPoolMix" style="flex-direction:column;align-items:stretch"></div>
+      <div id="flPoolCtl" style="margin-top:12px"></div>
+      <div id="flPoolNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: pool sizing --- */
+(function(){
+  const mix=document.getElementById('flPoolMix'), ctl=document.getElementById('flPoolCtl'),
+        out=document.getElementById('flPoolOut'), note=document.getElementById('flPoolNote');
+  if(!mix) return;
+  const MIX={
+    chat:{n:'Chat — short prompts, long answers', isl:400, osl:600},
+    doc :{n:'Document analysis — long prompts, short answers', isl:12000, osl:180},
+    rag :{n:'Retrieval-augmented — big context, medium answers', isl:6000, osl:400},
+    agent:{n:'Agent loop — medium prompts, short bursts', isl:2500, osl:120}
+  };
+  const TOTAL=12;
+  let cur='chat', p=4, agg=false;
+  function render(){
+    mix.innerHTML=Object.entries(MIX).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:11.5px">'+v.n+'</button>').join('');
+    mix.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    ctl.innerHTML='<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">machines on prefill</span><span>'+p+' prefill / '+(TOTAL-p)+' decode</span></div>'+
+      '<input type="range" id="flP" min="1" max="'+(TOTAL-1)+'" step="1" value="'+p+'" style="width:100%"'+(agg?' disabled':'')+'>'+
+      '<div style="display:flex;gap:6px;margin-top:10px">'+
+      [[false,'Two pools'],[true,'One shared pool']].map(([v,n])=>
+        '<button class="seg'+(agg===v?' on':'')+'" data-a="'+v+'" style="flex:1;font-size:11px">'+n+'</button>').join('')+'</div>';
+    const e=document.getElementById('flP'); if(e) e.oninput=()=>{p=+e.value;render();};
+    ctl.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{agg=b.dataset.a==='true';render();});
+    const m=MIX[cur];
+    /* work units per request, roughly: prefill scales with input, decode with output */
+    const pw=m.isl*0.9/1000, dw=m.osl*7.5/1000;
+    const rate=6;                                  /* requests per second offered */
+    const pCap=agg?TOTAL*0.55:p, dCap=agg?TOTAL*0.55:TOTAL-p;
+    const pUse=rate*pw/pCap, dUse=rate*dw/dCap;
+    const q=x=>x<1?(x/(1-x))*40:2600;
+    const pQ=q(Math.min(0.985,pUse)), dQ=q(Math.min(0.985,dUse));
+    const ttft=70+pQ+(agg?m.isl*0.02:0), tpot=14+dQ/60+(agg?4:0);
+    const bar=(lab,use,c)=>'<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">'+lab+'</span><span style="color:'+(use>0.95?'var(--red)':use>0.8?'var(--amber)':'var(--green)')+'">'+(use*100).toFixed(0)+'% used</span></div>'+
+      '<div style="height:12px;background:var(--panel2);border-radius:99px;overflow:hidden;position:relative">'+
+      '<i style="display:block;height:100%;width:'+Math.min(100,use*100)+'%;background:'+(use>0.95?'var(--red)':use>0.8?'var(--amber)':c)+'"></i>'+
+      '<span style="position:absolute;left:95%;top:0;bottom:0;width:2px;background:var(--violet);opacity:.6"></span></div></div>';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+
+      m.isl.toLocaleString()+' TOKENS IN, '+m.osl.toLocaleString()+' OUT &middot; '+rate+' REQUESTS/S &middot; '+TOTAL+' MACHINES</div>'+
+      (agg
+        ? bar('every machine, both phases',(pUse+dUse)/2,'var(--blue)')
+        : bar('prefill pool — '+p+' machines',pUse,'var(--blue)')+bar('decode pool — '+(TOTAL-p)+' machines',dUse,'var(--teal)'))+
+      '<div style="margin-top:14px">'+
+      [['time to first token',ttft.toFixed(0)+' ms'],
+       ['time per output token',tpot.toFixed(1)+' ms'],
+       ['work split in this traffic',(pw/(pw+dw)*100).toFixed(0)+'% prefill / '+(dw/(pw+dw)*100).toFixed(0)+'% decode'],
+       ['machines that split implies',agg?'—':Math.max(1,Math.round(TOTAL*pw/(pw+dw)))+' prefill / '+(TOTAL-Math.max(1,Math.round(TOTAL*pw/(pw+dw))))+' decode']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+'</div>';
+    const ideal=Math.max(1,Math.round(TOTAL*pw/(pw+dw)));
+    note.innerHTML =
+      agg ? '<div class="lzwarn"><b>One pool, no ratio to get wrong &mdash; and prefill interferes with decode.</b> Every machine can take any work, so a traffic shift costs nothing. The price is paid on every long prompt, as a pause in somebody else&rsquo;s stream.</div>'+
+            '<div class="simnote" style="margin-top:10px">Switch back to two pools and set the split to what the last row suggests. Better on both numbers &mdash; as long as the traffic stays this shape.</div>'
+      : (pUse>0.95||dUse>0.95)
+      ? '<div class="lzbad"><b>One pool is saturated while the other has room, and it cannot help.</b> That is the cost of separating them. The last row says this traffic wants '+ideal+' prefill machines; you have '+p+'.</div>'
+      : Math.abs(p-ideal)<=1
+      ? '<div class="ok"><b>Sized to the traffic.</b> Both pools comfortable, no interference between phases, and each can be tuned for its own bottleneck &mdash; more compute for prefill, more memory bandwidth and capacity for decode.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>Now change the traffic shape without touching the split.</b> That is the risk you accepted: a fixed ratio is a bet on a mix, and the bet is re-run every time the product changes.</div>'
+      : '<div class="lzwarn"><b>Workable but off.</b> This traffic wants about '+ideal+' prefill machines and you have '+p+'. Nothing is on fire; you are simply paying for capacity in the wrong pool.</div>';
+  }
+  render();
+})();
+
+/* ================= 6 · PLANNER & AUTOSCALING ================= */
+document.getElementById('sec-flplan').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">A control loop that reacts too fast is worse than none</h2>
+  <div class="plain-line"><b>In plain English:</b> something has to decide the fleet is too small and add to it. That is a feedback loop: measure a signal, compare it to a target, change capacity, wait, measure again. Every classic control problem applies, and inference has one property that makes it unusually easy to get wrong &mdash; <b>new capacity takes minutes to arrive</b>, because a worker has to be scheduled, pull an image and load tens of gigabytes of weights.</div>
+  <div class="plain-line">So the loop is acting on information that is already old, and its actions will not take effect for several minutes more. React quickly to a spike and you will still be adding machines long after the spike has passed &mdash; then remove them just as the next one arrives. That is oscillation, and it costs more than the over-provisioning it was meant to avoid.</div>
+  <div class="plain-line"><b>Which signal you scale on matters as much as how fast.</b> GPU utilisation is nearly useless here: a memory-bound decode loop shows high utilisation while doing very little useful work. Queue depth and time-to-first-token track the thing users actually feel.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; tune a loop against a spiky day</h2>
+  <div class="plain-line"><b>Try this:</b> a day of traffic with a lunchtime spike. Choose what to scale on, how hard to react, and how long to wait before acting again. Watch the fleet chase the load &mdash; or oscillate around it.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A shower with a long pipe. Turn the tap when the water is cold, wait, it is scalding, turn it back, wait, freezing. The delay is doing all the damage, not the tap.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set reaction to <b>aggressive</b> with no cooldown and watch the fleet size oscillate.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>control loop</b> measure, compare to a target, act, repeat</span><span class="sp-w"><b>lag</b> the delay between deciding to add capacity and it serving traffic</span><span class="sp-w"><b>cooldown</b> a minimum wait before acting again</span><span class="sp-w"><b>oscillation</b> repeatedly over-correcting in both directions</span><span class="sp-w"><b>headroom</b> spare capacity kept for the load that has not arrived yet</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flPlanOut"></div></div>
+    <div><div class="dim" style="font-size:11px;margin-bottom:7px">SCALE ON</div>
+      <div class="segmented" id="flPlanSig" style="flex-direction:column;align-items:stretch"></div>
+      <div id="flPlanCtl" style="margin-top:12px"></div>
+      <div id="flPlanNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: the planner --- */
+(function(){
+  const sig=document.getElementById('flPlanSig'), ctl=document.getElementById('flPlanCtl'),
+        out=document.getElementById('flPlanOut'), note=document.getElementById('flPlanNote');
+  if(!sig) return;
+  const LAG=4;                                  /* ticks before a new worker serves */
+  let signal='queue', gain=1.0, cool=0;
+  const SIG={
+    gpu  :{n:'GPU utilisation',  noisy:true },
+    queue:{n:'Queue depth',      noisy:false},
+    ttft :{n:'Time to first token', noisy:false}
+  };
+  /* a day: quiet, ramp, lunch spike, decay */
+  const LOAD=[3,3,4,4,5,6,8,12,18,22,24,23,19,14,10,8,7,6,5,4,4,3,3,3];
+  function simulate(){
+    let n=4, pending=[], hist=[];
+    let lastAct=-99;
+    LOAD.forEach((l,t)=>{
+      pending=pending.filter(p=>{ if(t>=p.at){ n+=p.d; return false; } return true; });
+      const cap=n*1.6;
+      const util=Math.min(1.4,l/cap);
+      const q=Math.max(0,(l-cap))*2.2;
+      const ttft=90+q*30;
+      let obs = signal==='gpu' ? Math.min(1,util*0.75+0.28) : signal==='queue' ? Math.min(1,q/9) : Math.min(1,(ttft-90)/420);
+      if(SIG[signal].noisy) obs=Math.min(1,Math.max(0,obs+((t*37)%11-5)/60));
+      hist.push({t,l,n,cap,q,ttft,util,obs});
+      if(t-lastAct>=cool){
+        const err=obs-0.6;
+        if(Math.abs(err)>0.12){
+          const d=Math.round(err*gain*6);
+          if(d!==0){ pending.push({at:t+(d>0?LAG:1),d:Math.max(-n+2,d)}); lastAct=t; }
+        }
+      }
+    });
+    return hist;
+  }
+  function render(){
+    sig.innerHTML=Object.entries(SIG).map(([k,v])=>'<button class="seg'+(signal===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.n+'</button>').join('');
+    sig.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{signal=b.dataset.k;render();});
+    ctl.innerHTML='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">reaction strength</span><span>'+(gain<0.7?'gentle':gain>1.5?'aggressive':'moderate')+'</span></div>'+
+      '<input type="range" id="flG" min="0.3" max="2.5" step="0.1" value="'+gain+'" style="width:100%"></div>'+
+      '<div><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">cooldown</span><span>'+(cool===0?'none':cool+' ticks')+'</span></div>'+
+      '<input type="range" id="flC" min="0" max="6" step="1" value="'+cool+'" style="width:100%"></div>';
+    const g=document.getElementById('flG'); if(g) g.oninput=()=>{gain=+g.value;render();};
+    const c=document.getElementById('flC'); if(c) c.oninput=()=>{cool=+c.value;render();};
+    const h=simulate();
+    const maxN=Math.max(...h.map(x=>x.n),...h.map(x=>x.l/1.6))+1;
+    let flips=0;
+    for(let i=2;i<h.length;i++){ const a=h[i-1].n-h[i-2].n, b=h[i].n-h[i-1].n; if(a*b<0) flips++; }
+    const breached=h.filter(x=>x.ttft>400).length;
+    const machineTicks=h.reduce((a,x)=>a+x.n,0);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">A DAY &mdash; DEMAND AGAINST FLEET SIZE</div>'+
+      '<div style="position:relative;height:110px;display:flex;gap:2px;align-items:flex-end">'+
+      h.map(x=>'<div style="flex:1;position:relative;height:100%">'+
+        '<div style="position:absolute;bottom:0;width:100%;height:'+(x.n/maxN*100)+'%;background:var(--teal);opacity:.85;border-radius:2px 2px 0 0"></div>'+
+        '<div style="position:absolute;bottom:'+(x.l/1.6/maxN*100)+'%;width:100%;height:2px;background:var(--amber)"></div>'+
+        '</div>').join('')+'</div>'+
+      '<div style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px">'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--teal);border-radius:2px"></span> machines running</span>'+
+      '<span><span style="display:inline-block;width:9px;height:3px;background:var(--amber)"></span> machines the load needs</span></div>'+
+      '<div class="dim" style="font-size:11px;margin:16px 0 7px">TIME TO FIRST TOKEN THROUGH THE DAY</div>'+
+      '<div style="display:flex;gap:2px;align-items:flex-end;height:52px">'+
+      h.map(x=>'<div style="flex:1;height:'+Math.min(100,x.ttft/700*100)+'%;background:'+
+        (x.ttft>400?'var(--red)':x.ttft>200?'var(--amber)':'var(--green)')+';border-radius:2px 2px 0 0"></div>').join('')+'</div>'+
+      '<div style="margin-top:14px">'+
+      [['direction changes',flips+(flips>6?' — oscillating':'')],
+       ['ticks over a 400 ms target',breached+' of '+h.length],
+       ['machine-ticks bought',machineTicks],
+       ['scaling lag',LAG+' ticks before a new worker serves']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
+    note.innerHTML =
+      flips>6 ? '<div class="lzbad"><b>Oscillating.</b> '+flips+' direction changes in a day. The loop is reacting to a signal that is already stale and acting with a lag of '+LAG+' ticks, so every correction lands after the thing it was correcting. Reduce the gain, add cooldown, or both.</div>'
+      : breached>6 ? '<div class="lzwarn"><b>Too slow to matter.</b> The fleet is stable and the latency target is missed for '+breached+' of '+h.length+' ticks. A loop this gentle is close to not having one &mdash; you are paying for the machinery and keeping the outages.</div>'
+      : '<div class="ok"><b>Stable and mostly inside the target.</b> Note it never tracks the demand line exactly, and should not try to &mdash; with a lag this long, the achievable goal is staying close enough that queueing does not explode.</div>';
+    note.innerHTML+= signal==='gpu'
+      ? '<div class="lzbad" style="margin-top:10px"><b>And this is the wrong signal.</b> GPU utilisation reads high whenever a kernel is resident, which a memory-bound decode loop does while accomplishing very little. It is noisy, it saturates early, and it does not fall when the queue drains. Scale on queue depth or on first-token latency &mdash; things a user would recognise.</div>'
+      : '<div class="simnote" style="margin-top:10px"><b>Now try the same settings on GPU utilisation.</b> Same loop, same traffic, much worse behaviour &mdash; because the signal saturates and is noisy. Choosing what to measure matters more than tuning how hard to react to it.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The lag is the thing you cannot tune away.</b> Loading weights takes minutes. That is why fleets keep headroom and pre-warm capacity ahead of known peaks rather than relying on the loop to catch them &mdash; the loop is for drift, not for spikes.</div>';
+  }
+  render();
+})();
+
+/* ================= 7 · WHEN A WORKER DIES ================= */
+document.getElementById('sec-flfail').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">The state was in that GPU, and that GPU is gone</h2>
+  <div class="plain-line"><b>In plain English:</b> a stateless web service loses a worker and the load balancer sends the next request elsewhere. Nobody notices. Inference is not stateless: a request halfway through generating has a KV cache holding everything it has read and written, and that cache lives in one GPU&rsquo;s memory. When the worker dies, so does the conversation.</div>
+  <div class="plain-line"><b>So the interesting question is not whether you retry &mdash; it is what the user has already seen.</b> A request that had not started can be retried invisibly. A request that has streamed four hundred tokens cannot: retrying means either sending those tokens again, or continuing from a state nobody has. Neither is free, and choosing by accident is what produces the worst outcomes.</div>
+  <div class="plain-line"><b>And a partial answer is worse than no answer</b> in most products. A stream that stops mid-sentence looks like the model refused, or crashed, or lost its nerve &mdash; and the client cannot tell which. Saying so explicitly is nearly always better than trailing off.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; kill a worker at different moments</h2>
+  <div class="plain-line"><b>Try this:</b> the same failure at four points in a request&rsquo;s life, under three policies. What the fleet can do about it changes completely depending on when it happens, and so does what the person on the other end sees.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A phone call dropping. Before it connects, redial and nobody knows. Halfway through a sentence, you can call back but you cannot un-say the half they heard.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>kill the worker <b>mid-stream</b> with <b>retry silently</b> selected, and read what the client actually receives.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>in-flight</b> a request that has started but not finished</span><span class="sp-w"><b>idempotent</b> safe to repeat — doing it twice is the same as once</span><span class="sp-w"><b>replay</b> re-sending tokens the client has already been shown</span><span class="sp-w"><b>fail fast</b> stop immediately and say so rather than trying to recover</span><span class="sp-w"><b>blast radius</b> how many requests one failure takes with it</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flFailOut"></div></div>
+    <div><div class="dim" style="font-size:11px;margin-bottom:7px">WHEN THE WORKER DIES</div>
+      <div class="segmented" id="flFailWhen" style="flex-direction:column;align-items:stretch"></div>
+      <div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE FLEET DOES</div>
+      <div class="segmented" id="flFailPol" style="flex-direction:column;align-items:stretch"></div>
+      <div id="flFailNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: failure timing --- */
+(function(){
+  const wEl=document.getElementById('flFailWhen'), pEl=document.getElementById('flFailPol'),
+        out=document.getElementById('flFailOut'), note=document.getElementById('flFailNote');
+  if(!wEl) return;
+  const WHEN={
+    queued :{n:'While still queued',      sent:0,   desc:'The router picked the worker; nothing has run yet.'},
+    prefill:{n:'During prefill',          sent:0,   desc:'The prompt was being processed. No output has been produced.'},
+    early  :{n:'After 12 tokens',         sent:12,  desc:'The client has seen the first few words appear.'},
+    late   :{n:'After 400 tokens',        sent:400, desc:'Most of a long answer has already been streamed and read.'}
+  };
+  const POL={
+    silent:{n:'Retry on another worker, silently'},
+    resume:{n:'Retry, and replay what was already sent'},
+    fail  :{n:'Fail fast and tell the client'}
+  };
+  let when='early', pol='silent';
+  function render(){
+    wEl.innerHTML=Object.entries(WHEN).map(([k,v])=>'<button class="seg'+(when===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.n+'</button>').join('');
+    wEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{when=b.dataset.k;render();});
+    pEl.innerHTML=Object.entries(POL).map(([k,v])=>'<button class="seg'+(pol===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.n+'</button>').join('');
+    pEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pol=b.dataset.k;render();});
+    const w=WHEN[when], sent=w.sent;
+    let sees, verdict, cls, cost;
+    if(sent===0){
+      sees='The answer, slightly later than usual. Nothing else.';
+      verdict='<b>Retry is genuinely invisible here, whatever the policy says.</b> No output has been produced, so re-running the request on another worker is indistinguishable from it having been slow. This is the only case where recovery is free, and it is worth building for because it is also the most common.';
+      cls='ok'; cost='one extra prefill';
+    } else if(pol==='silent'){
+      sees='<b>'+sent+' tokens, then the same answer restarting from the beginning.</b> The client sees the response begin twice.';
+      verdict='<b>Silently retrying a stream is not silent.</b> Those tokens already reached the client and cannot be recalled. A user watching an answer restart mid-flow reads it as a fault, and any software parsing the stream sees a malformed document.';
+      cls='lzbad'; cost='duplicate output, and a confused client';
+    } else if(pol==='resume'){
+      sees='The answer completes, with '+sent+' tokens re-sent that the client had already displayed.';
+      verdict= sent>200
+        ? '<b>Workable, and expensive at this point.</b> Replaying '+sent+' tokens means re-running the prefill <em>and</em> regenerating that far before anything new appears — so recovery takes longer than the answer had taken so far, and sampling may not reproduce the same text.'
+        : '<b>Usually the right answer this early.</b> A few tokens replayed is a barely visible stutter, and the client ends up with one coherent answer.';
+      cls= sent>200?'lzwarn':'ok'; cost='a full re-run to the point of failure';
+    } else {
+      sees= sent>200
+        ? '<b>An explicit error after '+sent+' tokens.</b> The client knows the answer is incomplete and can decide what to do.'
+        : 'An explicit error after '+sent+' tokens, early enough to retry at the application layer.';
+      verdict='<b>Honest, and often correct for long streams.</b> It costs a visible failure and buys a client that knows the truth — which beats a truncated answer indistinguishable from the model deciding to stop. The decision belongs to whoever knows whether a partial answer is dangerous.';
+      cls= sent>200?'ok':'lzwarn'; cost='a visible error, and no wasted compute';
+    }
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE REQUEST&rsquo;S LIFE</div>'+
+      '<div style="display:flex;gap:2px;margin-bottom:6px">'+
+      [...Array(60)].map((_,i)=>{
+        const doneAt = sent===0 ? (when==='queued'?0:6) : Math.round(sent/400*54)+6;
+        return '<span style="flex:1;height:20px;border-radius:2px;background:'+
+          (i<6?'var(--blue)':i<doneAt?'var(--teal)':'var(--line2)')+';opacity:'+(i<doneAt?1:.3)+'"></span>';
+      }).join('')+
+      '<span style="width:3px;background:var(--red)"></span></div>'+
+      '<div style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--muted)">'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--blue);border-radius:2px"></span> prefill</span>'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--teal);border-radius:2px"></span> tokens streamed to the client</span>'+
+      '<span style="color:var(--red)">| worker dies</span></div>'+
+      '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:14px;border-left-color:var(--wire)">'+w.desc+'</div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE CLIENT ACTUALLY RECEIVES</div>'+
+      '<div class="'+cls+'" style="padding:11px 13px">'+sees+'</div>'+
+      '<div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--muted)">cost: '+cost+'</div>';
+    note.innerHTML='<div class="'+cls+'">'+verdict+'</div>'+
+      '<div class="simnote" style="margin-top:10px"><b>The general rule that falls out of all twelve combinations:</b> recovery is cheap before the first token and expensive after it. That single boundary is worth designing around &mdash; retry aggressively while nothing has been sent, and be conservative and explicit once the stream has started.</div>'+
+      '<div class="note" style="margin-top:10px"><b>And this is the strongest argument for not routing away from a cached prefix casually.</b> Every request in flight on a worker dies with it, so a fleet that concentrates traffic for cache reasons also concentrates blast radius. That tension is real, and the answer is usually a cap on how much of the traffic any one worker may hold.</div>';
+  }
+  render();
+})();
+
+/* ================= 8 · CAPACITY ACCEPTANCE ================= */
+document.getElementById('sec-flcap').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">How many machines, and how would you know you were wrong?</h2>
+  <div class="plain-line"><b>In plain English:</b> at some point somebody asks how much hardware this needs, and the honest answer requires four numbers: the traffic shape, the latency you have promised, the headroom you are keeping for the load that has not arrived, and what one machine can actually do under your workload rather than in a benchmark.</div>
+  <div class="plain-line"><b>The last one is where estimates go wrong.</b> A published throughput figure is measured with a fixed prompt length, no cancellations, no cache pressure and a saturated batch. Your traffic has none of those properties. The only figure worth planning on is one you measured on your own request mix, and if you have not, you are extrapolating from somebody else&rsquo;s workload.</div>
+  <div class="plain-line"><b>And utilisation targets are a latency decision, not an efficiency one.</b> From the serving lab: past roughly 90%, queueing delay grows faster than load. Planning to run a latency-sensitive fleet at 95% is planning to miss the target, and the spare capacity is what you are selling.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; size a fleet and see what you are buying</h2>
+  <div class="plain-line"><b>Try this:</b> set your peak traffic, your latency promise and your headroom, and read out the fleet. Then check the last line, which is the one people forget until the incident review.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Booking a venue. You size for the busiest night, not the average one, and you leave room by the door — because the cost of being slightly too big is money and the cost of being too small is people outside in the rain.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set headroom to <b>none</b> and look at what a single machine failing does.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>peak</b> the busiest period you must serve, not the average</span><span class="sp-w"><b>headroom</b> spare capacity above peak, deliberately unused</span><span class="sp-w"><b>N+1</b> enough spare that losing one machine changes nothing</span><span class="sp-w"><b>goodput</b> requests per second that met their latency target</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flCapOut"></div></div>
+    <div><div id="flCapCtl"></div>
+      <div id="flCapNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: capacity --- */
+(function(){
+  const ctl=document.getElementById('flCapCtl'), out=document.getElementById('flCapOut'), note=document.getElementById('flCapNote');
+  if(!ctl) return;
+  let peak=180, target=600, headroom=0.25, perNode=14;
+  function render(){
+    const sl=(id,lab,val,min,max,step,fmt)=>'<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">'+lab+'</span><span>'+fmt+'</span></div>'+
+      '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'" style="width:100%"></div>';
+    ctl.innerHTML=sl('fcP','peak requests per second',peak,20,600,10,peak+'/s')+
+                  sl('fcT','time-to-first-token target',target,200,2000,50,target+' ms')+
+                  sl('fcH','headroom above peak',headroom,0,0.6,0.05,headroom===0?'none':(headroom*100).toFixed(0)+'%')+
+                  sl('fcN','measured capacity per machine',perNode,4,40,1,perNode+' req/s');
+    const b=(id,fn)=>{const e=document.getElementById(id); if(e) e.oninput=()=>{fn(+e.value);render();};};
+    b('fcP',v=>peak=v); b('fcT',v=>target=v); b('fcH',v=>headroom=v); b('fcN',v=>perNode=v);
+    /* the latency target caps how hard a machine may be driven */
+    const maxUtil=Math.min(0.95,0.55+ (target-200)/1800*0.4);
+    const usable=perNode*maxUtil;
+    const need=Math.ceil(peak/usable);
+    const withHead=Math.ceil(need*(1+headroom));
+    const util=peak/(withHead*perNode);
+    const oneDown=peak/Math.max(1,(withHead-1)*perNode);
+    const survives=oneDown<=maxUtil;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE FLEET</div>'+
+      [['machines to carry peak at all',need],
+       ['plus headroom',withHead+' machines'],
+       ['utilisation at peak',(util*100).toFixed(0)+'%'],
+       ['the target allows driving a machine to',(maxUtil*100).toFixed(0)+'%'],
+       ['utilisation with one machine down',(oneDown*100).toFixed(0)+'%']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:16px 0 7px">CAPACITY AGAINST DEMAND</div>'+
+      '<div style="height:26px;background:var(--panel2);border-radius:6px;overflow:hidden;display:flex;position:relative">'+
+      '<div style="width:'+Math.min(100,util*100)+'%;background:var(--teal)"></div>'+
+      '<div style="width:'+Math.max(0,Math.min(100-util*100,(maxUtil-util)*100))+'%;background:var(--green);opacity:.45"></div>'+
+      '<span style="position:absolute;left:'+(maxUtil*100)+'%;top:0;bottom:0;width:2px;background:var(--violet)"></span></div>'+
+      '<div style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px">'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--teal);border-radius:2px"></span> peak demand</span>'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--green);opacity:.45;border-radius:2px"></span> headroom</span>'+
+      '<span style="color:var(--violet)">| the ceiling your latency target sets</span></div>'+
+      '<div class="'+(survives?'ok':'lzbad')+'" style="margin-top:14px;padding:11px 13px">'+
+      (survives
+        ? '<b>Survives losing one machine.</b> At '+(oneDown*100).toFixed(0)+'% the remaining fleet is still inside the ceiling the latency target sets, so a single failure is invisible to users rather than an incident.'
+        : '<b>One machine down breaks the target.</b> The rest would have to run at '+(oneDown*100).toFixed(0)+'%, past the '+(maxUtil*100).toFixed(0)+'% ceiling — so a routine failure, a rolling deploy, or one node draining becomes a latency incident.')+'</div>';
+    note.innerHTML='<div class="simnote"><b>Watch the ceiling move as you change the latency target.</b> A generous target lets you drive machines harder and buy fewer; a tight one caps utilisation whatever you do. Utilisation is not something you choose &mdash; it is something your latency promise chooses for you.</div>'+
+      (!survives
+        ? '<div class="lzbad" style="margin-top:10px"><b>This is the line people forget.</b> Sizing for peak is sizing for the day nothing goes wrong. Machines fail, get drained for maintenance and get replaced during deploys, and every one of those is the same arithmetic as a failure. If the fleet cannot lose one, it will have an incident on a Tuesday for no reason anyone will remember.</div>'
+        : '<div class="note" style="margin-top:10px">Try dropping headroom to none and watch the last row. That is the difference between a fleet and a fleet that survives an ordinary week.</div>')+
+      '<div class="note" style="margin-top:10px"><b>The number to distrust is capacity per machine.</b> It is the only input here that comes from measurement rather than from a decision, and a published benchmark figure will be optimistic against real traffic &mdash; different prompt lengths, cancellations, cache pressure and an unsaturated batch. Measure it on your own mix, or treat the whole calculation as a guess with confident arithmetic on top.</div>';
+  }
+  render();
+})();
+
+/* ================= 9 · EXAM ANGLE ================= */
+document.getElementById('sec-flexam').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios here.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Recognising an answer and producing one are different skills.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> before reading the list below.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation phrased the way an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
+  <div id="drillHost"></div>
+</div>
+
+<div class="card">
+  <h2 class="sec">The scenarios</h2>
+  <div class="exam-line"><b>&ldquo;We added replicas and our cache hit rate collapsed.&rdquo;</b> &rarr; The cache lives inside a replica and the router does not know about it. Round-robin sends a request with a shared prefix to whichever machine is free, so the prefix is re-prefilled somewhere that never held it. Route on prefix locality as well as load &mdash; which needs workers publishing what they hold.</div>
+  <div class="exam-line"><b>&ldquo;We routed purely on cache locality and latency got worse.&rdquo;</b> &rarr; You created a hot spot. Every request sharing a system prompt now piles onto one worker while the others idle, so cache hits are excellent and the queue is the bottleneck. It is a weighting between locality and load, not a mode, and both ends are misconfigurations.</div>
+  <div class="exam-line"><b>&ldquo;Should we move the KV cache to a free worker or recompute the prefix there?&rdquo;</b> &rarr; Arithmetic, not preference. Transfer costs bytes over the interconnect; recompute costs prefill time. On an intra-rack RDMA fabric moving usually wins; on ordinary datacentre Ethernet it usually loses. Work out the crossover for your hardware and your model shape once.</div>
+  <div class="exam-line"><b>&ldquo;Requests keep going to a worker that died a few seconds ago.&rdquo;</b> &rarr; The lease has not expired. Discovery is eventually consistent, so there is always a window between a worker stopping and the router noticing. Shorten it and you pay registry traffic; that window is a trade rather than a bug.</div>
+  <div class="exam-line"><b>&ldquo;New workers get traffic before they can serve it.&rdquo;</b> &rarr; Registered is not ready. A worker loading tens of gigabytes of weights is running and reachable and useless, so it must not advertise itself as routable until it can actually serve. Separate liveness from readiness.</div>
+  <div class="exam-line"><b>&ldquo;Our prefill pool is saturated while the decode pool sits idle.&rdquo;</b> &rarr; The split does not match the traffic. Long prompts and short answers need prefill capacity; chat needs decode. Compute the work split from your own input and output lengths and size to that &mdash; and remember a fixed ratio is a bet that the traffic shape holds.</div>
+  <div class="exam-line"><b>&ldquo;Our autoscaler keeps adding and removing machines all day.&rdquo;</b> &rarr; Oscillation from reacting faster than the feedback arrives. New capacity takes minutes to load weights, so corrections land after the condition that caused them. Reduce the gain, add a cooldown, and scale on queue depth or first-token latency rather than GPU utilisation.</div>
+  <div class="exam-line"><b>&ldquo;Why is GPU utilisation a bad autoscaling signal for inference?&rdquo;</b> &rarr; It reads high whenever a kernel is resident, and a memory-bound decode loop is resident almost all the time while accomplishing very little. It saturates early, it is noisy, and it does not fall when the queue drains. Scale on something a user would recognise.</div>
+  <div class="exam-line"><b>&ldquo;A worker died mid-stream. Should we retry?&rdquo;</b> &rarr; Depends entirely on whether tokens have been sent. Before the first token, retry is invisible and you should. After four hundred tokens, a silent retry restarts the answer in front of the user and a replay costs a full re-run. Once the stream has started, an explicit error is usually the honest choice.</div>
+  <div class="exam-line"><b>&ldquo;One worker failing took out a disproportionate share of traffic.&rdquo;</b> &rarr; Cache-affinity routing concentrated it there. Optimising for prefix locality also concentrates blast radius, so a cap on the share of traffic any one worker may hold is the usual mitigation &mdash; and it costs some cache hit rate deliberately.</div>
+  <div class="exam-line"><b>&ldquo;We sized the fleet for peak and had an incident during a routine deploy.&rdquo;</b> &rarr; No headroom. Sizing for peak is sizing for the day nothing goes wrong, and draining a node for a rolling deploy is arithmetically the same as losing one. Size so the fleet still meets the target with one machine gone.</div>
+  <div class="exam-line"><b>&ldquo;Our capacity model said twelve machines and we needed twenty.&rdquo;</b> &rarr; The per-machine figure almost certainly came from a benchmark: fixed prompt lengths, a saturated batch, no cancellations and no cache pressure. Measure capacity on your own request mix, because that is the only input to the model that is measured rather than chosen.</div>
+</div>`;
+
+/* ================= THEME ================= */
+/* shares the study guide's stored preference so the two pages agree */
+(function(){
+  const KEY='study-theme', root=document.documentElement;
+  const read=()=>{ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } };
+  const apply=m=>{ root.dataset.theme=m; const b=document.getElementById('themeBtn');
+                   if(b) b.textContent = m==='dark' ? '☀️ theme' : '🌙 theme'; };
+  let mode=read();
+  if(mode!=='dark' && mode!=='light')
+    mode = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  apply(mode);
+  document.getElementById('themeBtn').onclick=()=>{
+    mode = root.dataset.theme==='dark' ? 'light' : 'dark';
+    apply(mode);
+    try{ localStorage.setItem(KEY, JSON.stringify(mode)) }catch{}
+  };
+  addEventListener('keydown',e=>{
+    if(e.key==='d' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName))
+      document.getElementById('themeBtn').click();
+  });
+})();
+/* deep links: cloud.html#pane-cheat should open that tab, and the URL should follow the tab */
+(function(){
+  const open = id => {
+    const tab = document.querySelector(`.tab[data-pane="${id}"]`), pane = document.getElementById('pane-'+id);
+    if(!tab || !pane) return false;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    tab.classList.add('on'); pane.classList.add('on');
+    return true;
+  };
+  const fromHash = () => {
+    const m = (location.hash||'').match(/^#pane-([\w-]+)$/);
+    if (m) open(m[1]);
+  };
+  fromHash();
+  addEventListener('hashchange', fromHash);
+  document.querySelectorAll('.tab[data-pane]').forEach(t=>t.addEventListener('click',()=>{
+    history.replaceState(null,'','#pane-'+t.dataset.pane);
+  }));
+})();
+
+/* ================= SCENARIO DRILL =================
+   Reads the page's own .exam-line entries at runtime, so it can never
+   drift from the content and a new scenario becomes a new question free.
+   Distractors are the answers to other scenarios on the same page, which
+   makes them plausible by construction rather than by invention. */
+(function(){
+  const host=document.getElementById('drillHost');
+  if(!host) return;
+  const src=[...document.querySelectorAll('.exam-line')].map(el=>{
+    const html=el.innerHTML;
+    /* .exam-line is also used for pillar notes, which are multi-fact and start differently.
+       A drillable scenario is authored as <b>“…”</b> → answer, so require that shape. */
+    if(!/^\s*<b>\s*&ldquo;/.test(html)) return null;
+    const i=html.indexOf('&rarr;')>=0?html.indexOf('&rarr;'):html.indexOf('→');
+    if(i<0) return null;
+    const q=html.slice(0,i).replace(/<\/?b>/g,'').replace(/&ldquo;|&rdquo;/g,'').trim();
+    const full=html.slice(i+6).trim();
+    /* the headline answer is the first sentence; the rest is the explanation */
+    const m=full.match(/^(.*?[.!?])(\s|$)([\s\S]*)$/);
+    const head=(m?m[1]:full).replace(/^\s+/,'');
+    return {q, head, rest:(m?m[3]:'').trim(), full};
+  }).filter(Boolean);
+  /* some pages author the same content as a three-column table instead of exam lines:
+     scenario | answer | because. Collect those too, so one engine serves both shapes. */
+  [...document.querySelectorAll('table')].forEach(tb=>{
+    const h=tb.innerHTML;
+    if(!/When the scenario says/i.test(h)) return;
+    const rows=h.match(/<tr>[\s\S]*?<\/tr>/g)||[];
+    rows.forEach(r=>{
+      const cells=(r.match(/<td[^>]*>([\s\S]*?)<\/td>/g)||[]).map(c=>c.replace(/^<td[^>]*>|<\/td>$/g,'').trim());
+      if(cells.length<2) return;
+      const q=cells[0].replace(/<\/?b>/g,'').trim();
+      const head=cells[1].replace(/<\/?b>/g,'').trim();
+      if(!q||!head) return;
+      src.push({q:'&ldquo;'+q+'&rdquo;', head, rest:(cells[2]||'').trim(), full:head});
+    });
+  });
+  if(src.length<4){ host.innerHTML='<div class="simnote">Not enough scenarios on this page to drill.</div>'; return; }
+
+  let order=[], idx=0, chosen=null, score=[], opts=[];
+  let seed=src.length*7919;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff;};
+  function shuffle(a){const b=a.slice(); for(let i=b.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b;}
+  function build(){
+    order=shuffle(src.map((_,i)=>i)); idx=0; score=[]; chosen=null; setOpts(); render();
+  }
+  function setOpts(){
+    const cur=src[order[idx]];
+    const others=shuffle(src.filter(x=>x!==cur && x.head!==cur.head)).slice(0,3);
+    opts=shuffle([cur,...others]);
+  }
+  function render(){
+    const cur=src[order[idx]];
+    const done=idx>=order.length;
+    if(done){
+      const right=score.filter(Boolean).length;
+      host.innerHTML='<div class="drl">'+
+        '<div style="font-family:var(--display);font-size:22px;margin-bottom:8px">'+right+' of '+score.length+'</div>'+
+        '<div class="plain-line" style="margin-bottom:12px">'+
+          (right===score.length?'Every one. Worth re-running it — the questions come back in a different order and the wrong answers move around.'
+           :right/score.length>=0.7?'Solid. The ones you missed are the ones worth reading again, and they are the ones an interviewer will reach for.'
+           :'Worth another pass. These are not memory questions — each one has a reason underneath it, and the reason is what makes the next one answerable.')+
+        '</div><button class="btn" id="drlAgain">run it again</button></div>';
+      host.querySelector('#drlAgain').onclick=build; return;
+    }
+    host.innerHTML='<div class="drl">'+
+      '<div class="drl-bar">'+order.map((_,i)=>'<i class="'+(i<score.length?(score[i]?'ok':'no'):i===idx?'now':'')+'"></i>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:6px">SCENARIO '+(idx+1)+' OF '+order.length+'</div>'+
+      '<div class="drl-q">'+cur.q+'</div>'+
+      opts.map((o,i)=>'<button class="drl-o'+(chosen===null?'':(o===cur?' right':(o===chosen?' wrong':' muted')))+'" data-i="'+i+'"'+(chosen!==null?' disabled':'')+'>'+o.head+'</button>').join('')+
+      (chosen!==null?'<div class="'+(chosen===cur?'ok':'lzbad')+'" style="margin-top:12px">'+
+          (chosen===cur?'<b>Right.</b> ':'<b>Not that one.</b> ')+cur.head+(cur.rest?' '+cur.rest:'')+'</div>'+
+        '<button class="btn" id="drlNext" style="margin-top:12px">next scenario ▸</button>':'')+
+      '</div>';
+    host.querySelectorAll('.drl-o').forEach(b=>b.onclick=()=>{
+      if(chosen!==null) return;
+      chosen=opts[+b.dataset.i]; score[idx]=(chosen===cur); render();
+    });
+    const n=host.querySelector('#drlNext');
+    if(n) n.onclick=()=>{ idx++; chosen=null; if(idx<order.length) setOpts(); render(); };
+  }
+  build();
+})();
+
+
+/* ================= INTERFACE =================
+   Navigation and orientation only. Nothing here touches what a simulation does — and it is
+   wrapped so that if any of it fails, the content and the simulations still work. */
+(function(){
+ try{
+  const tabsEl=document.querySelector('.tabs');
+  if(!tabsEl||!tabsEl.parentNode) return;
+
+  /* --- sticky bar + reading progress --- */
+  const wrap=document.createElement('div'); wrap.className='tabwrap';
+  tabsEl.parentNode.insertBefore(wrap, tabsEl); wrap.appendChild(tabsEl);
+  const prog=document.createElement('div'); prog.className='rprog';
+  const progBar=document.createElement('i');
+  prog.appendChild(progBar);
+  document.body.appendChild(prog);
+  const onScroll=()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    progBar.style.width=(h>0?Math.min(100,window.scrollY/h*100):0)+'%';
+  };
+  window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+  /* --- count the simulations in each tab, and mark their cards --- */
+  const panes=[...document.querySelectorAll('.pane')];
+  /* mark the cards that contain a simulation, by looking down rather than up */
+  panes.forEach(p=>{
+    p.querySelectorAll('.card').forEach(c=>{
+      if(c.querySelectorAll('.simplain').length) c.classList.add('issim');
+    });
+  });
+  [...tabsEl.querySelectorAll('.tab')].forEach(t=>{
+    const p=document.getElementById('pane-'+t.dataset.pane);
+    if(!p) return;
+    const n=p.querySelectorAll('.simplain').length;
+    if(n) t.insertAdjacentHTML('beforeend','<span class="tcount">'+n+'</span>');
+  });
+
+  /* --- wrap the panes so a rail can sit beside them --- */
+  const first=panes[0]; if(!first) return;
+  const grid=document.createElement('div'); grid.className='labgrid';
+  const main=document.createElement('div');
+  first.parentNode.insertBefore(grid, first);
+  panes.forEach(p=>main.appendChild(p));
+  grid.appendChild(main);
+  const railCol=document.createElement('div'); railCol.className='railcol';
+  const railHead=document.createElement('div'); railHead.className='railhead'; railHead.textContent='on this tab';
+  const rail=document.createElement('nav'); rail.className='rail'; rail.id='labRail';
+  railCol.appendChild(railHead); railCol.appendChild(rail);
+  grid.appendChild(railCol);
+
+  let spy=null;
+  function buildRail(){
+    const pane=document.querySelector('.pane.on'); if(!pane) return;
+    /* walk cards rather than headings, so “is this section interactive?” is answered
+       by the card that owns the heading instead of by climbing the tree */
+    const rows=[];
+    pane.querySelectorAll('.card').forEach((c,i)=>{
+      const h=c.querySelector('h2.sec'); if(!h) return;
+      if(!h.id) h.id='s-'+pane.id.replace('pane-','')+'-'+i;
+      rows.push({id:h.id, sim:c.querySelectorAll('.simplain').length>0,
+                 txt:h.textContent.replace(/^Try it\s*[—–-]\s*/,'').trim()});
+    });
+    const heads=rows.map(r=>document.getElementById(r.id)).filter(Boolean);
+    rail.innerHTML=rows.map(r=>
+      '<a href="#'+r.id+'" data-t="'+r.id+'" class="'+(r.sim?'sim':'')+'"><i></i><span>'+r.txt+'</span></a>').join('');
+    rail.querySelectorAll('a').forEach(a=>a.addEventListener('click',e=>{
+      e.preventDefault();
+      const el=document.getElementById(a.dataset.t);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84, behavior:'smooth'});
+    }));
+    if(spy) spy.disconnect();
+    if(typeof IntersectionObserver!=='undefined'&&heads.length){
+      spy=new IntersectionObserver(es=>{
+        es.forEach(en=>{
+          if(!en.isIntersecting) return;
+          rail.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.t===en.target.id));
+        });
+      },{rootMargin:'-84px 0px -70% 0px'});
+      heads.forEach(h=>spy.observe(h));
+    }
+    const f=rail.querySelector('a'); if(f) f.classList.add('on');
+  }
+
+  /* --- keep the active tab visible, and rebuild the rail on every switch --- */
+  function afterSwitch(){
+    const on=tabsEl.querySelector('.tab.on');
+    if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    buildRail();
+  }
+  tabsEl.addEventListener('click',e=>{ if(e.target.closest('.tab')) setTimeout(afterSwitch,0); });
+  buildRail();
+
+  function switchTo(pane){
+    const t=tabsEl.querySelector('.tab[data-pane="'+pane+'"]');
+    if(t){ t.click(); setTimeout(afterSwitch,0); }
+  }
+
+  /* --- command palette over every heading on the page --- */
+  const idx=[];
+  panes.forEach(p=>{
+    const label=(tabsEl.querySelector('.tab[data-pane="'+p.id.replace('pane-','')+'"]')||{}).textContent||'';
+    p.querySelectorAll('h2.sec').forEach((h,i)=>{
+      if(!h.id) h.id='s-'+p.id.replace('pane-','')+'-'+i;
+      idx.push({pane:p.id.replace('pane-',''), tab:label.replace(/\d+$/,'').trim(), id:h.id, name:h.textContent.trim()});
+    });
+  });
+  const pal=document.createElement('div'); pal.className='cmdk';
+  const box=document.createElement('div'); box.className='cmdbox';
+  box.setAttribute('role','dialog'); box.setAttribute('aria-label','Find a section');
+  const inp=document.createElement('input');
+  inp.id='cmdInput'; inp.placeholder='Find a section…';
+  inp.setAttribute('autocomplete','off'); inp.setAttribute('spellcheck','false');
+  const list=document.createElement('div'); list.className='cmdlist'; list.id='cmdList';
+  const foot=document.createElement('div'); foot.className='cmdfoot';
+  foot.innerHTML='<span><b>↑↓</b> move</span><span><b>↵</b> jump</span><span><b>esc</b> close</span>'+
+    '<span><b>← →</b> switch tab</span>';
+  box.appendChild(inp); box.appendChild(list); box.appendChild(foot);
+  pal.appendChild(box); document.body.appendChild(pal);
+  let hits=[], sel=0;
+  function draw(q){
+    const s=q.trim().toLowerCase();
+    hits=(s?idx.filter(x=>(x.name+' '+x.tab).toLowerCase().includes(s)):idx).slice(0,60);
+    sel=0;
+    list.innerHTML=hits.length
+      ? hits.map((h,i)=>'<button data-i="'+i+'" class="'+(i===0?'on':'')+'"><span class="cmdtab">'+h.tab+'</span><span class="cmdname">'+h.name+'</span></button>').join('')
+      : '<div class="cmdnone">Nothing matches that.</div>';
+    list.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.i)));
+  }
+  function go(i){
+    const h=hits[i]; if(!h) return;
+    close(); switchTo(h.pane);
+    setTimeout(()=>{ const el=document.getElementById(h.id);
+      if(el) window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-84,behavior:'smooth'}); },60);
+  }
+  function open(){ pal.classList.add('on'); inp.value=''; draw(''); if(inp.focus) inp.focus(); }
+  function close(){ pal.classList.remove('on'); }
+  pal.addEventListener('click',e=>{ if(e.target===pal) close(); });
+  inp.addEventListener('input',()=>draw(inp.value));
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault(); if(!hits.length) return;
+      sel=(sel+(e.key==='ArrowDown'?1:-1)+hits.length)%hits.length;
+      list.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===sel));
+      const b=list.querySelectorAll('button')[sel]; if(b&&b.scrollIntoView) b.scrollIntoView({block:'nearest'});
+    } else if(e.key==='Enter'){ e.preventDefault(); go(sel); }
+    else if(e.key==='Escape'){ close(); }
+  });
+  draw('');
+
+  /* --- keyboard --- */
+  window.addEventListener('keydown',e=>{
+    const typing=/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement||{}).tagName||'');
+    if(e.key==='Escape'){ close(); return; }
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); open(); return; }
+    if(typing) return;
+    if(e.key==='/'){ e.preventDefault(); open(); return; }
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+      const all=[...tabsEl.querySelectorAll('.tab')];
+      const i=all.findIndex(t=>t.classList.contains('on'));
+      if(i<0) return;
+      const n=all[(i+(e.key==='ArrowRight'?1:-1)+all.length)%all.length];
+      n.click(); setTimeout(afterSwitch,0); n.focus&&n.focus();
+    }
+  });
+ }catch(err){ if(window.console) console.warn('interface enhancements unavailable:', err); }
+})();
+
+</script>
+</body>
+</html>
+
+
+</script>
+</body>
+</html>
