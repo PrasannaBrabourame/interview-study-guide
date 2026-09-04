@@ -55,13 +55,14 @@ govern.html       Govern & secure lab — the agent gateway on both sides, the
                   policy chain, private egress, agent identity, delegated
                   access, the threat landscape, boundaries and controls,
                   perimeters, the registry, tracing and audit
-rushhour.html     Rush Hour lab — one transit-crisis agent carried through the
-                  whole lifecycle: setup, build (tools, docstrings, reroute
-                  search), scale (sessions, Memory Bank, sandbox, the smoke
-                  test that saves the deploy), govern (Model Armor, least
-                  privilege), optimise (graded eval, LLM-as-judge), engage
-                  (publishing, and the session-id bug that only shows up
-                  there)
+peakweek.html     Peak Week lab — a sorter fails at a parcel hub on the
+                  busiest night of the year, and one agent is carried through
+                  the whole life of a system: groundwork, make it work (tools,
+                  docstrings, route search), make it survive (sessions, Memory
+                  Bank, sandbox, the smoke test that saves the deploy), make it
+                  safe (Model Armor, least privilege), make it good (graded
+                  eval, LLM-as-judge), make it theirs (publishing, and the
+                  session-id bug that only shows up there)
 design.html       Diagram lab — audiences, levels of zoom, anatomy, notation,
                   choosing services, what people leave out, the questions
                   behind the picture, surviving a review, diagram rot, the
