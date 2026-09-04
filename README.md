@@ -67,6 +67,11 @@ llm.html          LLM internals lab — the generation loop, tokenisation and
                   without residuals, sampling, the KV cache and its
                   arithmetic, quantisation (GPTQ/AWQ/naive), continuous
                   batching and paged attention
+serving.html      LLM serving lab — what an inference engine does that a model
+                  does not: prefill vs decode, iteration-level scheduling and
+                  preemption, prefix caching, speculative decoding, CUDA
+                  graphs, multi-LoRA, prefill/decode disaggregation, and
+                  TTFT/TPOT/tail-latency SLOs
 peakweek.html     Peak Week lab — a sorter fails at a parcel hub on the
                   busiest night of the year, and one agent is carried through
                   the whole life of a system: groundwork, make it work (tools,
