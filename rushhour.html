@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rush Hour lab — one agent through build, scale, govern, optimize, publish</title>
+<title>Rush Hour lab — one agent through build, scale, govern, optimise, publish</title>
 <style>
   /* self-hosted, same subsets the portfolio serves — no external requests */
   @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(assets/fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
@@ -446,7 +446,7 @@
     <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
     <a href="design.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▦ diagram lab</a>
     
-    <div class="eyebrow">build → scale → govern → optimize → engage</div>
+    <div class="eyebrow">build → scale → govern → optimise → engage</div>
     <h1>One agent, all the way through <span class="thin">— the six handoffs nobody shows you</span></h1>
     <p class="sub">A signal failure at St&nbsp;Pancras has stopped the cross-border trains, and several hundred people want to know whether they will get home. A chatbot cannot answer that &mdash; not because it is not clever enough, but because it has no way to find out what is actually happening. This lab follows one agent from an empty console to something a colleague with no technical background can chat with. Six stages, in order. The interesting part is what happens <em>between</em> them &mdash; the places where one stage quietly sets something up that a later stage needs. Three are worth watching for. Deploying the agent is what puts it in the company catalogue, though nothing tells you so. A small file you paste in at stage two is the reason the thing can be published at stage five. And the permissions it ends up with are the one thing nobody hands you &mdash; you have to go and check those yourself.</p>
   </header>
@@ -457,7 +457,7 @@
     <button class="tab" data-pane="m1" role="tab">M1 · Build</button>
     <button class="tab" data-pane="m2" role="tab">M2 · Scale</button>
     <button class="tab" data-pane="m3" role="tab">M3 · Govern</button>
-    <button class="tab" data-pane="m4" role="tab">M4 · Optimize</button>
+    <button class="tab" data-pane="m4" role="tab">M4 · Optimise</button>
     <button class="tab" data-pane="m5" role="tab">M5 · Engage</button>
     <button class="tab" data-pane="arc" role="tab">The whole arc</button>
     <button class="tab" data-pane="traps" role="tab">Where it breaks</button>
@@ -547,7 +547,7 @@ document.getElementById('sec-start').innerHTML=`
   <tr><td><b>M1 Build</b></td><td>Scaffold an ADK agent, three tools, a system instruction, run it locally</td><td>The project <em>shape</em>. The same layout deploys unmodified in M2 — that is what the scaffold is for</td></tr>
   <tr><td><b>M2 Scale</b></td><td>Deploy to Agent Runtime; add Sessions, Memory Bank, a code sandbox</td><td>Registration and an identity (M3 verifies them), and the session-id handling that makes M5&rsquo;s portal work at all</td></tr>
   <tr><td><b>M3 Govern</b></td><td>Verify the registry entry and the identity; audit its roles; shield it with Model Armor</td><td>Nothing later depends on it — which is exactly why it is the stage people skip</td></tr>
-  <tr><td><b>M4 Optimize</b></td><td>Simulate the crisis at scale, then grade the agent with an LLM judge</td><td>A reusable regression suite. Also nothing later depends on it</td></tr>
+  <tr><td><b>M4 Optimise</b></td><td>Simulate the crisis at scale, then grade the agent with an LLM judge</td><td>A reusable regression suite. Also nothing later depends on it</td></tr>
   <tr><td><b>M5 Engage</b></td><td>Publish the M2 deployment to Gemini Enterprise</td><td>&mdash; the finish line. Note it publishes the <em>existing</em> deployment; there is no second deploy</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Read the third column again.</b> Two of the five stages are load-bearing for the ones after them, and two are not. You can run the core path M0&nbsp;&rarr;&nbsp;M1&nbsp;&rarr;&nbsp;M2&nbsp;&rarr;&nbsp;M5 in about an hour and still finish with a working, published agent. What you would be dropping is the part that checks whether the thing is safe and the part that checks whether it is any good &mdash; which is a fair description of how most demos become most production incidents.</div>
@@ -1326,7 +1326,7 @@ document.getElementById('sec-m4').innerHTML=`
   <h2 class="sec">Turning &ldquo;it looks right&rdquo; into a number</h2>
   <div class="plain-line"><b>In plain English:</b> up to here you have tested the agent the way everyone tests an agent &mdash; by asking it a few things and reading the answers. That works until the answers are long, plausible and slightly wrong. M4 replaces reading with measuring: run many scenarios, score each one, and look at where the score is low.</div>
   <div class="plain-line"><b>Nothing in this module deploys.</b> It all runs locally against the agent&rsquo;s code, which is what makes it usable &mdash; a quality loop with a ten-minute deploy inside it is a quality loop nobody runs twice.</div>
-  <div class="plain-line">The loop itself is four steps and it is called the <b>quality flywheel</b>: <b>evaluate</b> against many scenarios &rarr; <b>analyse</b> the weakest case and why it failed &rarr; <b>optimize</b> the instruction or the tool &rarr; <b>repeat</b>, comparing to last time. Each turn raises quality empirically rather than by argument.</div>
+  <div class="plain-line">The loop itself is four steps and it is called the <b>quality flywheel</b>: <b>evaluate</b> against many scenarios &rarr; <b>analyse</b> the weakest case and why it failed &rarr; <b>optimise</b> the instruction or the tool &rarr; <b>repeat</b>, comparing to last time. Each turn raises quality empirically rather than by argument.</div>
   <table class="osi"><thead><tr><th>Metric</th><th>What it measures</th><th>Why this one is gated on</th></tr></thead><tbody>
   <tr><td><b>hallucinations_v1</b> <span class="tag">gated</span></td><td>The fraction of the answer&rsquo;s sentences grounded in what the tools returned. Continuous 0&ndash;1, judged by a model</td><td><b>Reference-free</b> &mdash; there is no hand-written answer to game, and it measures the thing the system instruction actually forbids</td></tr>
   <tr><td>final_response_match_v2</td><td>Semantic match to a reference answer, judged by a model</td><td>Majority-vote binary per single-turn case, so it cannot show fine-grained movement</td></tr>
@@ -1495,7 +1495,7 @@ document.getElementById('sec-arc').innerHTML=`
   <tr><td><b>M1 &middot; Build</b></td><td>25 min</td><td>An ADK project, three deterministic tools, a system instruction as written text, and a reasoning trace you can read</td></tr>
   <tr><td><b>M2 &middot; Scale</b></td><td>30 min</td><td>A managed runtime with an HTTPS endpoint, sessions, cross-session memory, a code sandbox &mdash; and, invisibly, a registry entry and an identity</td></tr>
   <tr><td><b>M3 &middot; Govern</b></td><td>15 min</td><td>An audited role list, a Model Armor template you have attacked, and knowing where the gateway and policy controls live</td></tr>
-  <tr><td><b>M4 &middot; Optimize</b></td><td>18 min</td><td>Ten simulated scenarios, a four-case graded evalset, per-case scores and the judge&rsquo;s flagged sentences &mdash; a reusable regression suite</td></tr>
+  <tr><td><b>M4 &middot; Optimise</b></td><td>18 min</td><td>Ten simulated scenarios, a four-case graded evalset, per-case scores and the judge&rsquo;s flagged sentences &mdash; a reusable regression suite</td></tr>
   <tr><td><b>M5 &middot; Engage</b></td><td>10 min</td><td>The M2 deployment registered in Gemini Enterprise, and a colleague who can use it without knowing any of the above</td></tr>
   </tbody></table>
 </div>
@@ -1516,7 +1516,7 @@ document.getElementById('sec-arc').innerHTML=`
 (function(){
   const host=document.getElementById('rhArcMap'); if(!host) return;
   const S=[['M0','Setup','12'],['M1','Build','25'],['M2','Scale','30'],
-           ['M3','Govern','15'],['M4','Optimize','18'],['M5','Engage','10']];
+           ['M3','Govern','15'],['M4','Optimise','18'],['M5','Engage','10']];
   const w=92, gap=8, y=46;
   let body='';
   S.forEach((s,i)=>{
@@ -1548,7 +1548,7 @@ document.getElementById('sec-arc').innerHTML=`
     {k:'m2',n:'M2 · Scale',min:30,fixed:true,  gives:'A deployed, stateful runtime — and the registry entry, identity and session handling everything later needs'},
     {k:'m3',n:'M3 · Govern',min:15,fixed:false,gives:'An audited role list and a tested attack shield',
      lose:'You ship with whatever roles the scaffold granted — in this lab that includes storage, BigQuery and Secret Manager admin on an agent that reads local files. And no shield: a jailbreak or a card number reaches the model.'},
-    {k:'m4',n:'M4 · Optimize',min:18,fixed:false,gives:'Per-case grounding scores and a reusable regression suite',
+    {k:'m4',n:'M4 · Optimise',min:18,fixed:false,gives:'Per-case grounding scores and a reusable regression suite',
      lose:'You have no number for whether it invents things. The platform-number hallucination scored 0.50 and reads exactly like the answers that scored 1.00 — you would not have caught it by reading.'},
     {k:'m5',n:'M5 · Engage',min:10,fixed:true, gives:'Published to Gemini Enterprise, usable by anyone'}
   ];

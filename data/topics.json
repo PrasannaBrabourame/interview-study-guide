@@ -3773,7 +3773,7 @@
     "title": "Vanishing and Exploding Gradients",
     "category": "Deep Learning & Neural Networks",
     "difficulty": "Medium",
-    "question": "What are vanishing and exploding gradients? What causes them, and what fixes them: ReLU, residual connections, normalization, clipping?",
+    "question": "What are vanishing and exploding gradients? What causes them, and what fixes them: ReLU, residual connections, normalisation, clipping?",
     "technical": [
       "Repeated multiplication through deep or recurrent networks can shrink gradients toward zero or grow them uncontrollably.",
       "Vanishing gradients slow learning in early layers; exploding gradients cause instability, NaNs or huge updates.",
@@ -4165,7 +4165,7 @@
     "title": "RLHF and DPO",
     "category": "Large Language Models",
     "difficulty": "Medium",
-    "question": "Walk through RLHF from end to end: what the reward model does, and what policy optimization does. How does DPO reach a similar place more simply?",
+    "question": "Walk through RLHF from end to end: what the reward model does, and what policy optimisation does. How does DPO reach a similar place more simply?",
     "technical": [
       "RLHF commonly collects preference comparisons, trains a reward model and optimises the policy against that reward while constraining drift from a reference model.",
       "Policy optimisation introduces complexity, instability and reward-hacking risk.",

@@ -59,7 +59,7 @@ rushhour.html     Rush Hour lab — one transit-crisis agent carried through the
                   whole lifecycle: setup, build (tools, docstrings, reroute
                   search), scale (sessions, Memory Bank, sandbox, the smoke
                   test that saves the deploy), govern (Model Armor, least
-                  privilege), optimize (graded eval, LLM-as-judge), engage
+                  privilege), optimise (graded eval, LLM-as-judge), engage
                   (publishing, and the session-id bug that only shows up
                   there)
 design.html       Diagram lab — audiences, levels of zoom, anatomy, notation,
@@ -101,7 +101,7 @@ view is shareable as `index.html#lab=<key>`.
 Categories a lab only brushes against are deliberately left out — a link that
 returns half the site is the problem it was meant to fix.
 
-Data, styling, and behavior are split into separate files so each can be
+Data, styling, and behaviour are split into separate files so each can be
 edited and diffed independently — e.g. adding a topic only touches
 `data/topics.json`.
 
