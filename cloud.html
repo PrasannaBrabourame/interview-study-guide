@@ -562,17 +562,60 @@
   <!-- ================= OSI ================= -->
   <section class="pane" id="pane-osi">
     <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">The trick that makes it click</h2>
+      <div class="plain-line"><b>In plain English:</b> the seven layers are not seven steps a message goes through. They are <b>seven separate conversations happening at once</b> &mdash; each layer talking only to its own counterpart on the machine at the other end, and treating everything handed down from above as sealed cargo it must never open.</div>
+      <div class="plain-line">Layer 3 on your laptop is having a conversation with layer 3 on the server. It neither knows nor cares that the bytes it is carrying happen to be an HTTP request. Layer 3 on a router halfway between them cares even less &mdash; it reads the address on the outside and passes it on.</div>
+      <div class="plain-line"><b>That is the whole idea.</b> Once you have it, the model stops being a list to memorise and becomes a way of narrowing down where a problem lives.</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; post a birthday card, one layer at a time</h2>
+      <div class="plain-line"><b>Try this:</b> you want to send a birthday message to a friend abroad. Walk the seven things that happen to it, and at each step look at what the person carrying it can actually see. Then press <b>the sorting office</b> to find out how much of your message the postal worker in the middle is allowed to read.</div>
+      <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>This <em>is</em> the real life one. Post has worked this way for two centuries, and computer networks copied it &mdash; which is why the analogy is not a simplification but the actual design.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>1</b> and keep going. Then press <b>the sorting office</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>encapsulation</b> wrapping something in an outer layer that hides what is inside</span><span class="sp-w"><b>payload</b> the part being carried, which the carrier never opens</span><span class="sp-w"><b>header</b> the writing on the outside of the wrapper</span><span class="sp-w"><b>hop</b> one leg of the journey, between two neighbours</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="osiPostOut"></div></div>
+        <div><div class="segmented" id="osiPostPick" style="flex-direction:column;align-items:stretch"></div>
+          <div id="osiPostNote" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
       <h2 class="sec">One request, wrapped and unwrapped — what each layer adds</h2>
       <div id="encapDiagram"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h2 class="sec">Try it &mdash; trace your own lab request through the stack</h2>
+      <div class="plain-line"><b>Try this:</b> a real command against a real machine &mdash; <span class="code">curl http://35.244.40.212/</span>. Step down the stack watching each layer add its own wrapper, then step back up the other side watching each one strip its wrapper off, until Apache sees nothing but the HTTP request. The last step explains why your firewall rule is written the way it is.</div>
+      <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Packing a parcel inside a box, inside a sack, onto a lorry &mdash; then the same in reverse at the other end. Nobody along the way unpacks more than their own layer.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>send</b> and step all the way down, then keep going &mdash; the return journey is where it clicks.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>curl</b> a command that fetches a web page from the terminal</span><span class="sp-w"><b>segment / packet / frame</b> what the message is called at layers 4, 3 and 2</span><span class="sp-w"><b>port</b> the number saying which program on the machine should get it</span><span class="sp-w"><b>MAC address</b> the name of one network card, used for a single hop</span></span></div></div>
+      <div class="sim-layout">
+        <div><div id="osiTraceOut"></div></div>
+        <div><div class="segmented" id="osiTraceCtl" style="flex-direction:column;align-items:stretch"></div>
+          <div id="osiTraceNote" class="cidr-out" style="margin-top:12px"></div></div>
+      </div>
     </div>
     <div class="osi-layout">
       <div class="card">
         <h2 class="sec">The seven layers</h2>
         <div class="osi-stack" id="osiStack"></div>
-        <p class="simnote"><b>Reality check:</b> real networks run TCP/IP, which folds layers 5 to 7 into one. OSI survives because it gives everyone a shared vocabulary for where a problem lives.</p>
+        <p class="simnote"><b>Two memory aids.</b> Top-down, 7&rarr;1: <b>A</b>ll <b>P</b>eople <b>S</b>eem <b>T</b>o <b>N</b>eed <b>D</b>ata <b>P</b>rocessing. Bottom-up, 1&rarr;7: <b>P</b>lease <b>D</b>o <b>N</b>ot <b>T</b>hrow <b>S</b>ausage <b>P</b>izza <b>A</b>way.</p>
+        <p class="simnote" style="margin-top:9px"><b>The honest caveat.</b> Real networks run TCP/IP, not OSI. Layers 5, 6 and 7 do not exist as separate things in practice &mdash; HTTPS smears encryption, session and application into a single stack. OSI survives anyway, because it gives engineers a shared vocabulary: saying &ldquo;that&rsquo;s a layer 3 problem&rdquo; instantly means routing, rather than the app being broken.</p>
       </div>
       <div class="card" id="osiDetail"></div>
     </div>
+    <div class="card" style="margin-top:16px">
+      <h2 class="sec">How you actually use this at 3am</h2>
+      <div class="plain-line"><b>In plain English:</b> the payoff of the model is not knowing the seven names. It is being able to cut the search in half with one command, then in half again &mdash; because each test that passes eliminates everything below it.</div>
+      <table class="osi"><thead><tr><th>What you observe</th><th>Where the problem is</th><th>Because</th></tr></thead><tbody>
+      <tr><td>Cannot ping the IP at all</td><td><b>Layer 3</b></td><td>Nothing is reaching the machine. Routing, the address, or a network-level block &mdash; and no point looking at the app</td></tr>
+      <tr><td>Ping works, but the port is refused</td><td><b>Layer 4</b></td><td>The machine is reachable, so routing is fine. Either a firewall is blocking that port or nothing is listening on it</td></tr>
+      <tr><td>Port is open, but you get a 500</td><td><b>Layer 7</b></td><td>The whole network path works. The request arrived and the application itself failed &mdash; stop looking at infrastructure</td></tr>
+      <tr><td>Works by IP, fails by name</td><td><b>Layer 7</b> (DNS)</td><td>Everything below is proven by the IP working. Only the name lookup is broken</td></tr>
+      <tr><td>Works from one machine, not another</td><td><b>Layer 3 or 4</b></td><td>The service is fine, so it is about the path or the permission &mdash; a source range, a security group, a route</td></tr>
+      </tbody></table>
+      <div class="plain-line" style="margin-top:12px"><b>That is layer-by-layer elimination</b>, and it is the model&rsquo;s real payoff. Each of those tests is cheap, and each one rules out several floors of the building at once. Working <em>up</em> from the bottom is almost always faster than guessing at the top, because the lower layers are the ones with fewer possible causes.</div>
+    </div>
+
     <div class="card" style="margin-top:16px">
       <h2 class="sec">Break something — and see which layer stops it</h2>
       <div class="plain-line"><b>Try this:</b> every one of these faults looks identical to a user (&ldquo;the site is down&rdquo;) and completely different to whoever has to fix it. Pick one, watch how far the request gets, and read what the command actually prints.</div>
@@ -2502,6 +2545,7 @@ const OSIROLE={"l7lb": "reads the HTTP request and routes on it","cdn": "caches 
 
 const OSI=[
 {n:7,name:'Application',sub:'the actual request',
+ q:'What does the message mean?', met:'HTTP, DNS, SSH &mdash; your curl, and the page Apache serves',
  plain:'The conversation itself: a GET for a page, a gRPC call, a DNS lookup. This is the only layer your application code normally thinks about.',
  touch:'Routing on path and host, TLS certificates, authentication, rate limits, WAF rules, caching headers.',
  aws:'ALB (listener rules) · API Gateway · CloudFront · Route 53 · WAF · AppSync',
@@ -2509,6 +2553,7 @@ const OSI=[
  breaks:'A 404 from a rule that matched the wrong target group, a 502 when the target is healthy at TCP level but returning garbage, an expired certificate.',
  test:'curl -v https://host/path'},
 {n:6,name:'Presentation',sub:'encoding and encryption',
+ q:'What format, and is it encrypted?', met:'TLS, JSON, gzip, UTF-8',
  plain:'How the payload is dressed before it travels: TLS encryption, gzip or brotli compression, JSON or protobuf serialisation.',
  touch:'Where TLS terminates, which cipher policy you allow, certificate issuance and renewal, whether you compress.',
  aws:'ACM certificates · TLS termination on ALB, CloudFront or NLB · security policies · mTLS on API Gateway',
@@ -2516,6 +2561,7 @@ const OSI=[
  breaks:'A handshake failure with an old client because you disabled a cipher, or content compressed twice and arriving as gibberish.',
  test:'openssl s_client -connect host:443'},
 {n:5,name:'Session',sub:'keeping the conversation open',
+ q:'Are we in an ongoing conversation?', met:'Cookies, login sessions, RPC',
  plain:'Starting a conversation, keeping it alive and closing it: TLS resumption, a WebSocket that stays open, an SSH session, a VPN tunnel.',
  touch:'Sticky sessions, idle timeouts, keep-alives, connection draining during a deploy, IKE negotiation for VPN.',
  aws:'ALB stickiness cookies · deregistration delay · Site-to-Site VPN (IKE) · Session Manager',
@@ -2523,6 +2569,7 @@ const OSI=[
  breaks:'Users randomly logged out because there is no stickiness, or a long poll that dies at exactly sixty seconds — a number that round is a timeout setting, never a bug in your code.',
  test:'watch when it fails: a suspiciously round number of seconds is a configured timeout'},
 {n:4,name:'Transport',sub:'ports and delivery',
+ q:'Which app on that machine, and did it all arrive?', met:'TCP port 80, UDP &mdash; retransmits the pieces that went missing',
  plain:'Getting bytes to the right program on the right machine: TCP with its handshake and retransmits, or UDP which just fires and hopes.',
  touch:'Port rules, listener protocols, target group ports, health check type, TCP versus UDP.',
  aws:'NLB · security groups · network ACLs · Global Accelerator · target groups',
@@ -2530,6 +2577,7 @@ const OSI=[
  breaks:'The distinction that finds the bug fastest: <b>connection refused</b> means you reached the host and nothing was listening; <b>connection timed out</b> means a firewall dropped you silently and never replied.',
  test:'nc -vz host 443'},
 {n:3,name:'Network',sub:'addresses and routes',
+ q:'Which machine, across networks?', met:'IP addresses and routers &mdash; 35.244.40.212',
  plain:'Where things live and how to get there: IP addresses, CIDR blocks, subnets and the routes between them. Almost all cloud networking design happens here.',
  touch:'VPC and subnet CIDRs, route tables, internet and NAT gateways, peering, transit, private endpoints.',
  aws:'VPC · subnets · route tables · IGW · NAT gateway · Transit Gateway · VPC peering · PrivateLink',
@@ -2537,6 +2585,7 @@ const OSI=[
  breaks:'No route to the destination, or two networks with overlapping CIDRs that can never be peered — which is why address planning happens before anything is built.',
  test:'ping (ICMP) and traceroute; then Reachability Analyzer or Connectivity Tests'},
 {n:2,name:'Data link',sub:'the local segment',
+ q:'Which device on this one hop?', met:'MAC addresses, Ethernet, Wi-Fi, switches',
  plain:'Moving frames between directly connected devices: MAC addresses, ARP, VLANs and the maximum size a frame may be.',
  touch:'Almost nothing — the cloud hides it. Except MTU, which will genuinely ruin a day.',
  aws:'Elastic network interfaces · jumbo frames at 9001 bytes inside a VPC · 802.1Q VLANs on Direct Connect',
@@ -2544,6 +2593,7 @@ const OSI=[
  breaks:'The classic: small requests work perfectly and large uploads hang forever. That is an MTU mismatch with fragmentation blocked, and it is almost never the application.',
  test:'ping -M do -s 1472 host — shrink until it stops failing to find the real path MTU'},
 {n:1,name:'Physical',sub:'cables and buildings',
+ q:'Which electrical or optical signal?', met:'Cables, radio waves, fibre',
  plain:'Fibre, copper, radio, power and the data centres they run through. Real, and entirely someone else’s problem.',
  touch:'Nothing directly. You choose placement instead: which regions, how many availability zones, whether you take a cross-connect.',
  aws:'Availability zones · region hardware · Direct Connect cross-connect ports · Local Zones and Outposts',
@@ -2558,6 +2608,11 @@ function osiRender(i){
   const l=OSI[i];
   document.querySelectorAll('.osi-l').forEach((b,k)=>b.classList.toggle('on',k===i));
   detEl.innerHTML=`<div class="cat">layer ${l.n}</div><h3 style="font-size:18px;font-weight:600;margin-bottom:8px">${l.name}</h3>
+    <div class="lzhop" style="display:block;padding:10px 12px;border-left-color:var(--blue);margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:3px">THE ONE QUESTION IT ANSWERS</div>
+      <b>${l.q}</b>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin:8px 0 3px">WHERE YOU HAVE MET IT</div>
+      <span style="font-size:12.5px;color:var(--muted)">${l.met}</span></div>
     <div class="plain-line"><b>In plain English:</b> ${l.plain}</div>
     <h4>What you actually configure</h4><p style="font-size:13px;color:var(--muted);line-height:1.65">${l.touch}</p>
     <h4>Cloud-native services that live here</h4>
@@ -2651,6 +2706,141 @@ document.getElementById('encapDiagram').innerHTML=(()=>{
     <text x="320" y="228" text-anchor="middle" style="${MONO};fill:var(--dim)">each layer reads only its own header and never opens the payload</text>
   </svg>
     <div class="diagcap"><b>How to read it:</b> going down the stack, every layer wraps what came from above in its own header and treats the rest as payload it never opens. That is why an NLB can carry a protocol it has never seen, and why an ALB must decrypt before it can route on a path.</div></div>`;
+})();
+
+
+/* --- SIM: the postal analogy, one layer at a time --- */
+(function(){
+  const pick=document.getElementById('osiPostPick'), out=document.getElementById('osiPostOut'), note=document.getElementById('osiPostNote');
+  if(!pick) return;
+  const S=[
+    {l:7,t:'You write the message',  d:'&ldquo;Happy birthday! Hope the new job is going well.&rdquo;',
+     w:'This is the content. Everything else exists only to get it there.', net:'The HTTP request itself &mdash; <span class="k">GET / HTTP/1.1</span>.'},
+    {l:6,t:'You write it in a language you both read', d:'English, in your usual shorthand. You could have written it in code only the two of you know.',
+     w:'Format and encoding &mdash; and if you wanted it private, this is where you would encrypt it.', net:'TLS, gzip, UTF-8, JSON.'},
+    {l:5,t:'You both know where you are in the conversation', d:'This is letter number three. They owe you a reply. Neither of you restates the whole history each time.',
+     w:'The thread that makes a series of messages one exchange rather than several unrelated ones.', net:'Cookies, login sessions, RPC.'},
+    {l:4,t:'You put it in an envelope and send it registered', d:'Pages numbered so they can be put back in order, and a receipt so you are told if it goes missing.',
+     w:'Did all of it arrive, in the right order &mdash; and which pigeonhole at the far end is it for?', net:'TCP, port 80, retransmission of anything lost.'},
+    {l:3,t:'You write the destination address', d:'The full address of the house, anywhere in the world. This does not change during the journey.',
+     w:'Which building, across any number of countries and postal systems.', net:'IP addresses and routers &mdash; <span class="k">35.244.40.212</span>.'},
+    {l:2,t:'The local office bags it for the next leg', d:'A sack labelled &ldquo;to the airport&rdquo;. At the airport it goes into a different sack with a different label.',
+     w:'Just this one hop, to the next neighbour along. <b>This label is rewritten at every stage of the journey.</b>', net:'MAC addresses, Ethernet, Wi-Fi, switches.'},
+    {l:1,t:'A lorry physically carries the sack', d:'Wheels, roads, an aeroplane. Something actually moves.',
+     w:'The physical signal. No meaning at all at this level, just movement.', net:'Cables, radio waves, fibre.'}
+  ];
+  let step=0, office=false;
+  function render(){
+    pick.innerHTML=S.map((x,i)=>'<button class="seg'+(step===i&&!office?' on':'')+'" data-i="'+i+'" style="text-align:left">'+
+      '<b style="font-family:var(--mono);font-size:11px">'+(i+1)+' &middot; L'+x.l+'</b> <span style="font-size:12px">'+x.t+'</span></button>').join('')+
+      '<button class="seg'+(office?' on':'')+'" data-i="office" style="text-align:left;margin-top:8px"><b>&#9993; the sorting office</b> &mdash; what can the postal worker read?</button>';
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      if(b.dataset.i==='office'){ office=true; } else { office=false; step=+b.dataset.i; }
+      render(); });
+    if(office){
+      out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">WHAT EACH HANDLER ALONG THE WAY CAN SEE</div>'+
+        [['The lorry driver','the sack &mdash; and only that it is a sack','var(--wire)'],
+         ['The sorting office','the label on the sack: which airport it goes to next','var(--amber)'],
+         ['The international hub','the address on the envelope, so it can pick the next country','var(--blue)'],
+         ['The postman at the far end','the address, and that it is registered post','var(--blue)'],
+         ['Your friend','<b>the message</b>','var(--green)']]
+        .map(([who,what,c])=>'<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:'+c+'">'+
+          '<b>'+who+'</b><small>can see: '+what+'</small></div>').join('')+
+        '<div class="ok" style="margin-top:12px;padding:11px 13px"><b>Nobody in the middle ever opens the envelope.</b> They do not need to, and they are not allowed to. Each one reads only the wrapper meant for them and passes the rest along untouched.</div>';
+      note.innerHTML='<div class="simnote"><b>That is encapsulation, and it is the whole point of the model.</b> It is why a switch can forward traffic for a protocol invented after the switch was built, why a router does not care whether you are sending email or video, and why a load balancer that needs to route on a URL must first decrypt &mdash; it is reaching into a layer that is not its own.</div>'+
+        '<div class="note" style="margin-top:10px"><b>Read the middle row again.</b> The sack label changes at every hop; the address on the envelope never does. That single difference is layer 2 versus layer 3, and it is the one people most often blur together.</div>';
+      return;
+    }
+    const x=S[step];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">STEP '+(step+1)+' OF 7 &nbsp;&middot;&nbsp; LAYER '+x.l+'</div>'+
+      '<div class="lzhop" style="display:block;padding:12px 14px;border-left-color:var(--blue)"><b>'+x.t+'</b><small>'+x.d+'</small></div>'+
+      '<div style="margin-top:14px"><div class="dim" style="font-size:11px;margin-bottom:6px">THE QUESTION THIS STEP ANSWERS</div>'+
+      '<div class="lzhop" style="display:block;padding:10px 12px;border-left-color:var(--amber)">'+x.w+'</div></div>'+
+      '<div style="margin-top:12px"><div class="dim" style="font-size:11px;margin-bottom:6px">THE SAME THING ON A NETWORK</div>'+
+      '<div class="lzhop" style="display:block;padding:10px 12px;border-left-color:var(--green)">'+x.net+'</div></div>'+
+      '<div style="display:flex;gap:5px;margin-top:14px">'+S.map((y,i)=>
+        '<span style="flex:1;height:5px;border-radius:99px;background:'+(i<=step?'var(--blue)':'var(--line2)')+'"></span>').join('')+'</div>';
+    note.innerHTML = step===5
+      ? '<div class="lzwarn"><b>This is the step worth slowing down on.</b> The sack label is rewritten at every single hop; the address on the envelope is written once and never touched. Layer 2 is &ldquo;the next machine along&rdquo;. Layer 3 is &ldquo;the machine I am actually trying to reach&rdquo;. Confusing the two is behind a great many bad afternoons.</div>'
+      : step===6
+      ? '<div class="simnote"><b>And that is the bottom.</b> Below the address, below the envelope, below the language &mdash; just something physically moving. Now press <b>the sorting office</b> to see what everybody in the middle was allowed to look at.</div>'
+      : '<div class="simnote">Notice that each step wraps the one before it rather than replacing it. The message never changes; it just gains another layer of packaging, each with its own writing on the outside.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: trace a real request down the stack and back up --- */
+(function(){
+  const ctl=document.getElementById('osiTraceCtl'), out=document.getElementById('osiTraceOut'), note=document.getElementById('osiTraceNote');
+  if(!ctl) return;
+  const DOWN=[
+    {l:7,n:'curl composes the request',c:'GET / HTTP/1.1\nHost: 35.244.40.212',adds:'Nothing wraps it yet. This is the cargo.'},
+    {l:4,n:'TCP wraps it',c:'[TCP dst=80 seq=1] GET / HTTP/1.1 …',adds:'Stamps destination <b>port 80</b>, and numbers the segments so the far end can put them back in order and notice if one is missing.'},
+    {l:3,n:'IP wraps that',c:'[IP dst=35.244.40.212] [TCP dst=80] GET / …',adds:'Stamps the destination <b>address</b>. This is what every router between here and there will read.'},
+    {l:2,n:'Ethernet wraps that',c:'[Eth dst=MAC of your router] [IP …] [TCP …] GET / …',adds:'Adds the <b>MAC address of the next hop only</b> &mdash; your own router. This gets rewritten at every hop along the way.'},
+    {l:1,n:'Bits go out on the wire',c:'10110100 01101110 11010010 …',adds:'No meaning left at all. Just voltage, light or radio.'}
+  ];
+  const UP=[
+    {l:1,n:'The VM receives the signal',adds:'Bits off the wire, reassembled into a frame.'},
+    {l:2,n:'Ethernet header stripped',adds:'&ldquo;This frame was addressed to my network card.&rdquo; The MAC address has done its job and is discarded.'},
+    {l:3,n:'IP header stripped',adds:'&ldquo;This packet was addressed to my IP.&rdquo; Handed up.'},
+    {l:4,n:'TCP header stripped',adds:'&ldquo;Port 80 &mdash; that is Apache. All segments present, in order.&rdquo; Handed up.'},
+    {l:7,n:'Apache reads the request',adds:'Apache sees <b>only</b> <span class="k">GET / HTTP/1.1</span>. It has no idea which cables it crossed, which routers carried it, or what any MAC address along the way was.'}
+  ];
+  let i=0;                                   /* 0..4 down, 5..9 up, 10 firewall */
+  const TOTAL=DOWN.length+UP.length;
+  function render(){
+    ctl.innerHTML=
+      '<button class="seg" data-a="back" style="text-align:left"'+(i===0?' disabled':'')+'>&larr; step back</button>'+
+      '<button class="seg on" data-a="fwd" style="text-align:left">'+(i===0?'send the request &rarr;':i<TOTAL?'next step &rarr;':'the firewall rule &rarr;')+'</button>'+
+      '<button class="seg" data-a="reset" style="text-align:left;margin-top:8px">start again</button>';
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a;
+      if(a==='fwd') i=Math.min(i+1,TOTAL); else if(a==='back') i=Math.max(i-1,0); else i=0;
+      render(); });
+    let h='';
+    if(i>=TOTAL){
+      h='<div class="dim" style="font-size:11px;margin-bottom:8px">AND YOUR FIREWALL RULE?</div>'+
+        '<div class="cmd">gcloud compute firewall-rules create allow-http \\\n  --allow=tcp:80 --source-ranges=0.0.0.0/0 --target-tags=http-server</div>'+
+        '<div style="margin-top:12px">'+
+        [['<span class="k">tcp:80</span>','<b>layer 4</b> &mdash; which protocol, and which port on the machine','var(--amber)'],
+         ['<span class="k">0.0.0.0/0</span>','<b>layer 3</b> &mdash; which source addresses may send at all','var(--blue)'],
+         ['<span class="k">--target-tags</span>','not a layer at all &mdash; which machines this rule applies to','var(--wire)']]
+        .map(([a,b,c])=>'<div class="lzhop" style="display:block;padding:10px 12px;border-left-color:'+c+'">'+a+'<small>'+b+'</small></div>').join('')+'</div>'+
+        '<div class="ok" style="margin-top:12px;padding:11px 13px"><b>That is why the rule reads the way it does.</b> A cloud firewall rule is layer 3 and layer 4 written on one line &mdash; addresses and ports. Notice what it cannot say: nothing about URLs, methods or headers, because those live at layer 7 and this thing never opens the envelope.</div>';
+    } else if(i===0){
+      h='<div class="dim" style="font-size:11px;margin-bottom:8px">READY</div>'+
+        '<div class="cmd">curl http://35.244.40.212/</div>'+
+        '<div class="note" style="margin-top:12px">One command, one machine. Press <b>send the request</b> and watch what happens to it on the way down.</div>';
+    } else if(i<=DOWN.length){
+      const done=DOWN.slice(0,i);
+      h='<div class="dim" style="font-size:11px;margin-bottom:8px">GOING DOWN THE STACK &mdash; YOUR LAPTOP</div>'+
+        done.map((d,k)=>'<div class="lzhop" style="display:block;padding:10px 12px;border-left-color:'+
+          (k===done.length-1?'var(--blue)':'var(--wire)')+';opacity:'+(k===done.length-1?1:.55)+'">'+
+          '<div style="display:flex;gap:9px"><span class="n2">L'+d.l+'</span><span style="min-width:0"><b>'+d.n+'</b>'+
+          '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:4px 0 5px;word-break:break-word;white-space:pre-wrap">'+d.c+'</div>'+
+          (k===done.length-1?'<small>'+d.adds+'</small>':'')+'</span></div></div>').join('');
+    } else {
+      const k=i-DOWN.length, done=UP.slice(0,k);
+      h='<div class="dim" style="font-size:11px;margin-bottom:8px">COMING BACK UP &mdash; THE VM</div>'+
+        done.map((u,j)=>'<div class="lzhop" style="display:block;padding:10px 12px;border-left-color:'+
+          (j===done.length-1?'var(--green)':'var(--wire)')+';opacity:'+(j===done.length-1?1:.55)+'">'+
+          '<div style="display:flex;gap:9px"><span class="n2">L'+u.l+'</span><span><b>'+u.n+'</b>'+
+          (j===done.length-1?'<small>'+u.adds+'</small>':'')+'</span></div></div>').join('');
+    }
+    out.innerHTML=h+'<div style="display:flex;gap:4px;margin-top:14px">'+
+      Array.from({length:TOTAL+1},(_,k)=>'<span style="flex:1;height:5px;border-radius:99px;background:'+
+        (k<=i?(k<=DOWN.length?'var(--blue)':'var(--green)'):'var(--line2)')+'"></span>').join('')+'</div>';
+    note.innerHTML =
+      i>=TOTAL ? '<div class="simnote"><b>This is the payoff of the whole model.</b> You can read a firewall rule, a load balancer config or a routing table and know immediately which layer it operates at &mdash; and therefore what it is capable of deciding and what it is blind to.</div>'
+      : i===DOWN.length ? '<div class="lzwarn"><b>Bottom of the stack.</b> Everything you typed is now voltage on a wire, wrapped in four layers of packaging. Keep going &mdash; the return journey is where it clicks.</div>'
+      : i>DOWN.length && i<TOTAL ? '<div class="simnote">Each layer strips only its own wrapper and hands the rest up. None of them looks inside the part that is not addressed to them.</div>'
+      : i===TOTAL-1||i===TOTAL ? ''
+      : i===0 ? '<div class="simnote">The command you typed is the cargo. Everything added from here is packaging &mdash; and every piece of it gets removed again at the other end.</div>'
+      : '<div class="simnote">Each step wraps what came before it and writes its own information on the outside. Nothing above is modified, or even read.</div>';
+    if(i===TOTAL-1) note.innerHTML='<div class="ok"><b>Apache sees only the HTTP request.</b> Everything the network did &mdash; the ports, the addresses, the MAC rewrites at every hop, the bits on the wire &mdash; has been unwrapped and thrown away. That is the model working exactly as designed.</div>';
+  }
+  render();
 })();
 
 /* ================= NGINX ================= */
