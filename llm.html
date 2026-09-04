@@ -467,6 +467,7 @@
 
   <div class="tabs" role="tablist">
     <button class="tab on" data-pane="lmstart" role="tab">Start here</button>
+    <button class="tab" data-pane="lmshape" role="tab">Shapes</button>
     <button class="tab" data-pane="lmtok" role="tab">Tokenisation</button>
     <button class="tab" data-pane="lmemb" role="tab">Embeddings & position</button>
     <button class="tab" data-pane="lmattn" role="tab">Attention</button>
@@ -479,6 +480,7 @@
   </div>
 
   <section class="pane on" id="pane-lmstart"><div id="sec-lmstart"></div></section>
+  <section class="pane" id="pane-lmshape"><div id="sec-lmshape"></div></section>
   <section class="pane" id="pane-lmtok"><div id="sec-lmtok"></div></section>
   <section class="pane" id="pane-lmemb"><div id="sec-lmemb"></div></section>
   <section class="pane" id="pane-lmattn"><div id="sec-lmattn"></div></section>
@@ -639,6 +641,17 @@ document.getElementById('sec-lmtok').innerHTML=`
     <div><div id="lmTokOut"></div></div>
     <div><div class="segmented" id="lmTokPick" style="flex-direction:column;align-items:stretch"></div>
       <div id="lmTokNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; the step before tokenising that nobody mentions</h2>
+  <div class="plain-line"><b>Try this:</b> you send a list of messages; the model receives one flat string. Something has to decide how those messages are marked up so the model can tell whose turn it is &mdash; and that something is the <b>chat template</b> shipped with the model. Get it wrong and nothing errors. Compare the four cases and watch what the model is actually being asked.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A script for a play. The words are the same either way; without the character names and stage directions, an actor cannot tell which lines are theirs.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>look at <b>no template at all</b> and ask yourself where the model is supposed to start writing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>chat template</b> the rule turning a list of messages into one marked-up string</span><span class="sp-w"><b>role</b> whether a message is the system, the user, or the assistant</span><span class="sp-w"><b>special token</b> a marker the tokeniser knows, injected outside the merge rules</span><span class="sp-w"><b>generation prompt</b> the trailing marker that says &ldquo;your turn now&rdquo;</span><span class="sp-w"><b>base model</b> one trained only to continue text, with no notion of turns</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="lmTplOut"></div></div>
+    <div><div class="segmented" id="lmTplPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="lmTplNote" class="cidr-out" style="margin-top:12px"></div></div>
   </div>
 </div>
 
@@ -1793,6 +1806,194 @@ document.getElementById('sec-lmexam').innerHTML=`
   <div class="exam-line"><b>&ldquo;Should we serve a 70B model at 2-bit or a smaller model at 4-bit?&rdquo;</b> &rarr; Almost always the smaller model at 4-bit, and it should be measured rather than assumed. Quality falls off sharply below about 3 bits, whereas a well-quantised smaller model degrades gracefully &mdash; run both on your own evaluation before committing.</div>
   <div class="exam-line"><b>&ldquo;The model swapped two names round halfway through a long document.&rdquo;</b> &rarr; A retrieval-over-context failure, not a memory failure. Everything is still in the window; attention simply has to pick the right earlier token out of thousands, and the further back it sits the weaker the signal. Shortening the relevant distance &mdash; by retrieval or by restructuring the prompt &mdash; helps more than a longer window.</div>
 </div>`;
+
+/* ================= 2 · SHAPES ================= */
+document.getElementById('sec-lmshape').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Three numbers describe almost everything moving through the model</h2>
+  <div class="plain-line"><b>In plain English:</b> every value inside a transformer lives in an array with a small number of axes, and almost all of them are the same three: <b>how many requests</b> are in this batch, <b>how many tokens</b> long each is, and <b>how wide</b> the model&rsquo;s internal representation is. Written as <span class="k">[batch, sequence, hidden]</span>, and once you can read that, most diagrams stop being decorative.</div>
+  <div class="plain-line">The reason it matters operationally is that those three numbers are the ones you control. Batch is how many conversations share a pass over the weights. Sequence is what the context window limits. Hidden is fixed by the model you chose. Every memory calculation in this lab is a product of some subset of them.</div>
+  <div class="plain-line"><b>And a fourth appears inside attention.</b> The hidden dimension gets split across heads, so a tensor briefly becomes <span class="k">[batch, heads, sequence, head_dim]</span> before being folded back. That split-and-rejoin is where the interesting mistakes happen, which is the second simulation.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; follow the shape through one forward pass</h2>
+  <div class="plain-line"><b>Try this:</b> one batch of prompts entering a small model. Step through and watch the shape at each stage &mdash; where an axis appears, where one is split, where one collapses. The final step is the one worth pausing on: what comes out is not a word.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Following a parcel through a depot by its label. Same parcel throughout; the label gets rewritten at each stage to say what it now is and where it sits.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next stage</b> all the way to the end and watch where the sequence axis goes.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tensor</b> an array of numbers with one or more axes</span><span class="sp-w"><b>axis</b> one dimension of that array — batch, sequence, hidden</span><span class="sp-w"><b>shape</b> the size of each axis, written as a list</span><span class="sp-w"><b>batch</b> how many separate requests are being processed together</span><span class="sp-w"><b>vocabulary</b> every token the model could possibly emit</span><span class="sp-w"><b>embedding</b> the table turning a token id into a row of numbers</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="lmShapeOut"></div></div>
+    <div><div id="lmShapeCtl"></div>
+      <div id="lmShapeNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; the transformation that is valid and wrong</h2>
+  <div class="plain-line"><b>Try this:</b> attention needs the hidden axis split into heads. There are two ways to write it that produce <em>exactly the same shape</em>, and only one of them keeps the data meaning what it meant. The shape assertion passes either way, nothing raises, and the model quietly becomes worse. Pick a version and look at which numbers each head actually receives.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Dealing a deck into four hands. Deal round the table and each player gets a spread of the deck; deal in blocks and player one gets the first quarter. Four hands of thirteen either way, and completely different games.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>reshape only</b> with <b>reshape then transpose</b> and read the row each head gets.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>reshape</b> reinterpret the same numbers with different axis sizes</span><span class="sp-w"><b>transpose</b> swap two axes, actually moving which number sits where</span><span class="sp-w"><b>head</b> one of several parallel attention computations</span><span class="sp-w"><b>contiguous</b> whether the numbers sit in memory in the order the axes imply</span><span class="sp-w"><b>silent failure</b> wrong output with no error anywhere</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="lmAxisOut"></div></div>
+    <div><div class="segmented" id="lmAxisPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="lmAxisNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: shapes through a forward pass --- */
+(function(){
+  const ctl=document.getElementById('lmShapeCtl'), out=document.getElementById('lmShapeOut'), note=document.getElementById('lmShapeNote');
+  if(!ctl) return;
+  const B=4,S=12,H=512,NH=8,DH=64,V=32000,FF=2048;
+  const ST=[
+   {n:'token ids',sh:[B,S],d:'What the tokeniser produced. Integers, not meaning &mdash; just positions in the vocabulary.',ax:'batch · sequence'},
+   {n:'after the embedding table',sh:[B,S,H],d:'Each id is replaced by a row of the embedding table. The hidden axis appears here and stays until the very end.',ax:'batch · sequence · hidden'},
+   {n:'projected to queries, keys, values',sh:[B,S,3*H],d:'One matrix multiply produces all three at once, stacked along the hidden axis.',ax:'batch · sequence · 3×hidden'},
+   {n:'split across heads',sh:[B,NH,S,DH],d:'The hidden axis divides into '+NH+' heads of '+DH+' each, and the head axis moves in front of sequence so each head is a contiguous block to work on.',ax:'batch · heads · sequence · head_dim'},
+   {n:'attention scores',sh:[B,NH,S,S],d:'Every token scored against every token, per head. <b>This is the square one</b> &mdash; the only shape here that grows with the square of the sequence.',ax:'batch · heads · sequence · sequence'},
+   {n:'attention output',sh:[B,NH,S,DH],d:'Scores applied to values. Back to one vector per token per head.',ax:'batch · heads · sequence · head_dim'},
+   {n:'heads merged back',sh:[B,S,H],d:'The head axis folds back into hidden. From here the block looks exactly as it did before attention.',ax:'batch · sequence · hidden'},
+   {n:'through the feed-forward',sh:[B,S,FF],d:'Widened, activated, and projected back to hidden. Most of the model&rsquo;s parameters are in this step.',ax:'batch · sequence · wider'},
+   {n:'logits',sh:[B,S,V],d:'One score for every token in the vocabulary, at every position. Only the last position matters when generating &mdash; the rest are computed and discarded.',ax:'batch · sequence · vocabulary'}
+  ];
+  let i=0;
+  function render(){
+    ctl.innerHTML='<button class="seg on" data-a="f" style="text-align:left"'+(i>=ST.length-1?' disabled':'')+'>'+
+      (i>=ST.length-1?'that is the forward pass':'next stage &rarr;')+'</button>'+
+      '<button class="seg" data-a="b" style="text-align:left"'+(i===0?' disabled':'')+'>&larr; back</button>'+
+      '<button class="seg" data-a="r" style="text-align:left;margin-top:8px">start again</button>';
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a; i=a==='f'?Math.min(ST.length-1,i+1):a==='b'?Math.max(0,i-1):0; render(); });
+    const st=ST[i];
+    const n=st.sh.reduce((a,b)=>a*b,1);
+    const COL=['var(--blue)','var(--teal)','var(--violet)','var(--amber)'];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">STAGE '+(i+1)+' OF '+ST.length+'</div>'+
+      '<div class="lzhop" style="display:block;padding:12px 14px;border-left-color:var(--blue)">'+
+      '<b>'+st.n+'</b><small>'+st.d+'</small></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">SHAPE</div>'+
+      '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+
+      st.sh.map((v,j)=>'<span style="font-family:var(--mono);font-size:15px;padding:6px 12px;border-radius:7px;background:var(--panel2);border:1px solid '+COL[j%4]+'">'+v+'</span>').join('<span style="color:var(--muted)">×</span>')+
+      '<span style="font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-left:8px">= '+(n/1e6>=1?(n/1e6).toFixed(1)+'M':(n/1000).toFixed(0)+'k')+' values</span></div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px">'+st.ax+'</div>'+
+      '<div class="dim" style="font-size:11px;margin:16px 0 7px">SIZE OF EACH STAGE, RELATIVE</div>'+
+      '<div style="display:flex;gap:3px;align-items:flex-end;height:64px">'+
+      ST.map((x,j)=>{const v=x.sh.reduce((a,b)=>a*b,1);
+        const mx=Math.max(...ST.map(y=>y.sh.reduce((a,b)=>a*b,1)));
+        return '<div style="flex:1;height:'+Math.max(3,v/mx*60)+'px;background:'+(j===i?'var(--blue)':'var(--line2)')+
+        ';border-radius:2px 2px 0 0" title="'+x.n+'"></div>';}).join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:4px">batch '+B+' · sequence '+S+' · hidden '+H+' · '+NH+' heads · vocabulary '+(V/1000)+'k</div>';
+    note.innerHTML =
+      i===4 ? '<div class="lzwarn"><b>This is the one that hurts.</b> Every other stage grows linearly with sequence length; this one grows with its square, per head. Double the context and this tensor quadruples &mdash; which is the whole reason the fused attention in the GPU lab exists, and why long context was hard before it.</div>'
+      : i===ST.length-1 ? '<div class="ok"><b>Look at the last shape and what it costs.</b> A score for every token in the vocabulary, at every position &mdash; and when generating, only the final position is used. The rest is computed and thrown away, which is exactly the waste that speculative decoding turns into an advantage by checking several positions at once.</div>'
+      : i===3 ? '<div class="simnote"><b>Note that the head axis moved in front of sequence.</b> That reordering is not cosmetic &mdash; it puts each head&rsquo;s data together in memory so the matrix multiply can work on a contiguous block. It is also where the bug in the next simulation lives.</div>'
+      : '<div class="simnote"><b>Watch where each axis comes from and where it goes.</b> Batch never changes. Sequence survives the whole way and only collapses when you take the last position. Hidden appears at the embedding and is the axis everything else is measured against.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The shapes are the memory calculation.</b> Multiply them out and you have the activation memory for one layer &mdash; which is why a batch size that fitted yesterday does not fit when somebody raises the context limit.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: valid shape, wrong meaning --- */
+(function(){
+  const pick=document.getElementById('lmAxisPick'), out=document.getElementById('lmAxisOut'), note=document.getElementById('lmAxisNote');
+  if(!pick) return;
+  const S=4,H=8,NH=2,DH=4;
+  /* one token's hidden vector laid out as h0..h7, for 4 positions */
+  const data=[...Array(S)].map((_,s)=>[...Array(H)].map((_,h)=>'t'+s+'h'+h));
+  const M={
+   wrong:{n:'reshape only', code:'x = x.view(B, n_heads, S, head_dim)',
+     get:(head,pos)=>{ const flat=data.flat(); const idx=head*(S*DH)+pos*DH; return flat.slice(idx,idx+DH); },
+     ok:false,
+     why:'<b>The shape is right and the data is scrambled.</b> Reading the numbers in memory order and cutting them into two blocks means head 0 receives the first two tokens entirely, and head 1 receives the last two. Each head now sees a slice of the <em>sequence</em> rather than a slice of the <em>hidden vector</em> &mdash; which is not attention at all.'},
+   right:{n:'reshape then transpose', code:'x = x.view(B, S, n_heads, head_dim).transpose(1, 2)',
+     get:(head,pos)=>data[pos].slice(head*DH,(head+1)*DH),
+     ok:true,
+     why:'<b>Correct.</b> Split the hidden axis first, so each token&rsquo;s vector is cut into per-head pieces, and only then move the head axis in front. Every head sees every token, and each sees its own slice of the representation &mdash; which is what multi-head attention means.'}
+  };
+  let cur='wrong';
+  function render(){
+    pick.innerHTML=Object.entries(M).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+
+      '<span style="font-family:var(--mono);font-size:11.5px">'+v.n+'</span></button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const m=M[cur];
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT YOU WROTE</div>'+
+      '<div class="code"><pre><code>'+hl(m.code)+'</code></pre></div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+      ['shape after: [B, '+NH+', '+S+', '+DH+']','assertion passes','no error raised']
+      .map(x=>'<span style="font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid var(--green);color:var(--green)">✓ '+x+'</span>').join('')+'</div>'+
+      '<div class="dim" style="font-size:11px;margin:16px 0 7px">WHAT EACH HEAD ACTUALLY RECEIVES</div>'+
+      [0,1].map(h=>'<div style="margin-bottom:10px">'+
+        '<div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:5px">head '+h+'</div>'+
+        [0,1,2,3].map(p=>{
+          const vals=m.get(h,p);
+          const clean=vals.every(v=>v.startsWith('t'+p));
+          return '<div style="display:flex;gap:5px;align-items:center;margin-bottom:3px">'+
+          '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);min-width:52px">position '+p+'</span>'+
+          vals.map(v=>'<span style="font-family:var(--mono);font-size:10px;padding:2px 5px;border-radius:3px;background:'+
+            (v.startsWith('t'+p)?'var(--n-teal)':'var(--badsoft)')+';border:1px solid '+
+            (v.startsWith('t'+p)?'var(--teal)':'var(--red)')+'">'+v+'</span>').join('')+'</div>';
+        }).join('')+'</div>').join('')+
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--muted)">t<i>n</i>h<i>m</i> = hidden value <i>m</i> of token <i>n</i> · red means this head is reading a different token&rsquo;s numbers at this position</div>'+
+      '<div class="'+(m.ok?'ok':'lzbad')+'" style="margin-top:14px;padding:11px 13px">'+m.why+'</div>';
+    note.innerHTML = m.ok
+      ? '<div class="ok"><b>Every position holds its own token&rsquo;s numbers, and the two heads hold different halves of them.</b> That is the arrangement the rest of attention assumes, and nothing downstream checks it.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>Now switch back and look at the red.</b> Same shape, same assertion, same absence of any error &mdash; and head 0 is reading token 1&rsquo;s numbers while claiming to be at position 1.</div>'
+      : '<div class="lzbad"><b>Nothing will tell you.</b> The shape is what you expected, the assertion passes, the model trains and serves and produces fluent text. It is simply worse than it should be, by an amount nobody can attribute without going back to the tensor.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>This is the most useful idea on this tab.</b> A shape check proves the axes are the right <em>size</em>. It proves nothing about what they <em>mean</em>. Two tensors with identical shapes can hold data arranged completely differently, and the only defence is knowing which layout each operation expects.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>Why the wrong version is so easy to write:</b> it is shorter, it looks like it says what you want, and every automated check agrees with it. Bugs that survive review are usually the ones that read correctly &mdash; and this class of bug is why frameworks provide named-axis helpers and why serious code asserts on meaning rather than only on shape.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: chat templates --- */
+(function(){
+  const pick=document.getElementById('lmTplPick'), out=document.getElementById('lmTplOut'), note=document.getElementById('lmTplNote');
+  if(!pick) return;
+  const MSG=[['system','You are a careful assistant. Answer briefly.'],['user','What time is the last train?']];
+  const T={
+   right:{n:'The model&rsquo;s own template',
+     build:()=>MSG.map(([r,c])=>'<|im_start|>'+r+'\n'+c+'<|im_end|>\n').join('')+'<|im_start|>assistant\n',
+     ok:true, tokens:41,
+     why:'<b>Correct.</b> Each message is wrapped in markers the model was trained on, and the final opener says the assistant should speak now. The model knows where its own turn begins, which is the entire job of the template.'},
+   none:{n:'No template at all &mdash; messages joined',
+     build:()=>MSG.map(([r,c])=>c).join('\n'),
+     ok:false, tokens:26,
+     why:'<b>Nothing marks whose turn it is.</b> The model receives a paragraph and does what a language model does with a paragraph &mdash; continues it. Often that looks like answering, sometimes it looks like inventing a second question, and it will ignore the system message as often as not because nothing distinguishes it from the user&rsquo;s words.'},
+   nogen:{n:'Right template, no generation prompt',
+     build:()=>MSG.map(([r,c])=>'<|im_start|>'+r+'\n'+c+'<|im_end|>\n').join(''),
+     ok:false, tokens:38,
+     why:'<b>The subtle one.</b> Everything is marked up properly and the trailing <span class="k">assistant</span> opener is missing, so the most likely continuation is another turn header rather than an answer. Symptom: the model emits a role marker, or replies as the user, or produces an empty response.'},
+   wrong:{n:'Another model&rsquo;s template',
+     build:()=>'[INST] <<SYS>>\n'+MSG[0][1]+'\n<</SYS>>\n\n'+MSG[1][1]+' [/INST]',
+     ok:false, tokens:44,
+     why:'<b>Fluent and quietly degraded.</b> The markers belong to a different family, so this model has never seen them and tokenises them as ordinary text rather than as the special tokens they look like. It still answers &mdash; a little worse, less obedient to the system message, and with no signal anywhere that anything is wrong.'}
+  };
+  let cur='right';
+  function render(){
+    pick.innerHTML=Object.entries(T).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const t=T[cur], str=t.build();
+    const marked=esc(str)
+      .replace(/(&lt;\|[\w]+\|&gt;)/g,'<span style="color:var(--violet);font-weight:600">$1</span>')
+      .replace(/(\[INST\]|\[\/INST\]|&lt;&lt;SYS&gt;&gt;|&lt;&lt;\/SYS&gt;&gt;|&lt;\/&lt;SYS&gt;&gt;)/g,'<span style="color:var(--red);font-weight:600">$1</span>');
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT YOU SENT</div>'+
+      MSG.map(([r,c])=>'<div style="display:flex;gap:9px;margin-bottom:5px">'+
+        '<span style="font-family:var(--mono);font-size:10.5px;color:var(--muted);min-width:52px">'+r+'</span>'+
+        '<span style="font-size:12.5px">'+esc(c)+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE MODEL ACTUALLY RECEIVES</div>'+
+      '<div class="code"><pre><code style="white-space:pre-wrap">'+marked+'</code></pre></div>'+
+      '<div style="margin-top:12px">'+
+      [['tokens',t.tokens],
+       ['model can tell whose turn it is',t.ok?'yes':'<b style="color:var(--red)">no</b>'],
+       ['any error raised','none — this always runs']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div class="'+(t.ok?'ok':'lzbad')+'" style="margin-top:12px;padding:11px 13px">'+t.why+'</div>';
+    note.innerHTML='<div class="simnote"><b>Every one of these produces text.</b> None of them raises, none of them is caught by a test that checks the endpoint returned 200, and three of them make the model measurably worse. That is what makes template bugs expensive to find: the failure mode is <em>quality</em>, and quality has no exception type.</div>'+
+      (cur==='wrong'
+        ? '<div class="lzwarn" style="margin-top:10px"><b>This is the common one in practice.</b> It happens when a prompt is copied between models, when a framework guesses a default, or when a fine-tune ships without updating its template. The fix is always the same: use the template that came with the weights rather than one you wrote.</div>'
+        : '<div class="note" style="margin-top:10px"><b>The markers are special tokens, not text.</b> From the tokenisation tab: they are injected around the merge rules rather than produced by them, precisely so that a user typing the same characters cannot forge a turn boundary. A template from the wrong family loses that protection as well as the structure.</div>')+
+      '<div class="note" style="margin-top:10px"><b>And it interacts with prefix caching.</b> The template is the very start of every prompt, so it is the most-shared prefix you have. Rendering it inconsistently &mdash; a stray space, a different ordering &mdash; changes those leading bytes and collapses the cache hit rate across your whole workload.</div>';
+  }
+  render();
+})();
 
 /* ================= THEME ================= */
 /* shares the study guide's stored preference so the two pages agree */
