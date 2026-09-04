@@ -70,7 +70,10 @@ llm.html          LLM internals lab — the generation loop, tokenisation and
 serving.html      LLM serving lab — what an inference engine does that a model
                   does not: prefill vs decode, iteration-level scheduling and
                   preemption, prefix caching, speculative decoding, CUDA
-                  graphs, multi-LoRA, prefill/decode disaggregation, and
+                  graphs, multi-LoRA, prefill/decode disaggregation, KV cache
+                  tiers, constrained decoding and tool parsing, padding waste
+                  in ragged batches, the request lifecycle (streaming,
+                  cancellation, invalid input) and benchmark methodology, and
                   TTFT/TPOT/tail-latency SLOs
 fleet.html        Fleet lab — the orchestration layer above one engine:
                   discovery and readiness, KV-aware routing, moving KV state
