@@ -632,16 +632,58 @@ document.getElementById('sec-lmtok').innerHTML=`
   </div>
 </div>
 
-<div class="card">
+<div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; build a vocabulary by merging</h2>
-  <div class="plain-line"><b>Try this:</b> byte-pair encoding, run step by step on a tiny corpus. Each round finds the most frequent adjacent pair and glues it into one new symbol. Watch words assemble themselves out of fragments &mdash; nobody told it what a word is.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Shorthand invented by a note-taker. You notice you keep writing &ldquo;th&rdquo;, so you invent one squiggle for it. Then you notice you keep writing that squiggle followed by &ldquo;e&rdquo;, so you invent one for that too.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>merge</b> repeatedly and watch which pair gets chosen each round.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>corpus</b> the body of text the vocabulary is learned from</span><span class="sp-w"><b>merge</b> replacing a frequent pair with one new symbol</span><span class="sp-w"><b>frequency</b> how often a pair appears next to each other</span><span class="sp-w"><b>greedy</b> always taking the best option right now, never looking ahead</span></span></div></div>
+  <div class="plain-line"><b>Try this:</b> byte-pair encoding, run step by step. Each round finds the most frequent adjacent pair and glues it into one new symbol. <b>Before you press anything, look at the text and decide which pair you think wins</b> &mdash; then check. Committing to an answer first is the difference between watching this and learning it. Then try the other inputs &mdash; each exposes a different behaviour, and the last produces nothing at all.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Shorthand invented by a note-taker. You notice you keep writing &ldquo;th&rdquo;, so you invent one squiggle for it. Then you notice you keep writing that squiggle followed by &ldquo;e&rdquo;, so you invent one for that too.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>guess the winning pair on the default text, then press <b>merge</b> and see whether you were right.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>corpus</b> the body of text the vocabulary is learned from</span><span class="sp-w"><b>merge</b> replacing a frequent pair with one new symbol</span><span class="sp-w"><b>merge table</b> the ordered list of rules that comes out of training</span><span class="sp-w"><b>frequency</b> how often a pair appears next to each other</span><span class="sp-w"><b>greedy</b> always taking the best option right now, never looking ahead</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmBpeOut"></div></div>
-    <div><div class="segmented" id="lmBpeCtl" style="flex-direction:column;align-items:stretch"></div>
+    <div><div class="dim" style="font-size:11px;margin-bottom:7px">TEXT TO LEARN FROM</div>
+      <div class="segmented" id="lmBpeText" style="flex-direction:column;align-items:stretch"></div>
+      <div class="segmented" id="lmBpeCtl" style="flex-direction:column;align-items:stretch;margin-top:12px"></div>
       <div id="lmBpeNote" class="cidr-out" style="margin-top:12px"></div></div>
   </div>
-</div>`;
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; the table is built once and then only applied</h2>
+  <div class="plain-line"><b>Try this:</b> the simulation above is <em>training</em>, and training happens exactly once, on a corpus of billions of words. What happens every time you send a prompt is the other half: the table is fixed, nothing is counted, and the rules are applied in the order they were learned. Send some new text through a trained table and watch.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Writing the shorthand key once, in the front of the notebook. After that you never invent new squiggles &mdash; you just apply the ones on the key, in the order they were invented.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send <b>the theatre</b> through, then send <b>xyz</b> and see what a table that never learned those pairs does with it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>training</b> counting pairs over a corpus to build the rules — done once</span><span class="sp-w"><b>inference</b> applying those fixed rules to your text — done every request</span><span class="sp-w"><b>merge table</b> the ordered rules that training produced</span><span class="sp-w"><b>deterministic</b> same text and same table always give the same tokens</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="lmInfOut"></div></div>
+    <div><div class="segmented" id="lmInfPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="lmInfNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Two things the simple picture leaves out</h2>
+  <div class="plain-line"><b>In plain English &mdash; first, nothing is ever unrepresentable.</b> If a vocabulary were built from characters, any character never seen during training would have no token, and the model would receive a placeholder meaning &ldquo;something was here and I cannot tell you what&rdquo;. Every emoji, every unusual script, every mangled byte in a corrupted file would arrive as that same hole. So real tokenisers start from <b>bytes</b> instead: there are exactly 256 of them, that is a complete base vocabulary, and any input in any encoding can be spelled out from it. Rare text becomes long rather than unknown, which is a much better failure.</div>
+  <div class="plain-line"><b>Second, merges never cross word boundaries.</b> Text is split into word-like chunks <em>before</em> byte-pair encoding runs, so the last letter of one word can never merge with the space starting the next. Without that you would get tokens spanning two words, which are frequent enough in the corpus to be learned and useless everywhere else. The families differ in how they mark it &mdash; one lineage attaches the leading space to the following token and displays it with a special marker, another marks it with a different one &mdash; but every one of them draws the boundary somewhere.</div>
+  <div class="plain-line"><b>And special tokens are not produced by this process at all.</b> Markers for end-of-text and for turn boundaries in a conversation are injected around the output, never learned from data. That is deliberate: if the algorithm could produce them, text containing the right characters could forge a turn boundary &mdash; which is exactly the injection problem, and it is why they sit outside the vocabulary the merges build.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Vocabulary size is a real decision, made before anything is trained</h2>
+  <div class="plain-line"><b>In plain English:</b> how many merges you stop after is a number somebody chooses, and it trades two things against each other. A bigger vocabulary compresses text better &mdash; fewer tokens for the same meaning, so a longer effective context and a smaller bill. It also makes the embedding table and the output layer bigger, which costs memory and computation on every single forward pass.</div>
+  <table class="osi"><thead><tr><th>Roughly</th><th>Vocabulary</th><th>What it buys</th></tr></thead><tbody>
+  <tr><td>An older open model</td><td>~32 000</td><td>A small embedding table. Pays for it on non-English text and code, which fragment badly</td></tr>
+  <tr><td>A mid-generation frontier model</td><td>~100 000</td><td>Noticeably better compression, especially on code</td></tr>
+  <tr><td>A later one</td><td>~200 000</td><td>Better again on non-English scripts &mdash; it narrows the language gap without closing it</td></tr>
+  </tbody></table>
+  <div class="plain-line" style="margin-top:12px"><b>Worth knowing rather than memorising:</b> the numbers move with every model generation. What does not move is the shape of the trade, and the fact that it is fixed before training and cannot be revised afterwards without retraining the model that sits on top of it.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; the model behaviours that are really tokenisation</h2>
+  <div class="plain-line"><b>Try this:</b> four things models are known to be oddly bad at. Each one has the same cause, and it is not the model being stupid &mdash; it is that the thing you are asking about was never visible to it in the first place.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Asking someone how many times the letter R appears in a word you spelled out to them in Morse code. They heard the word perfectly. They never heard the letters.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>take <b>count the letters</b> and look at what the model actually received.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>token boundary</b> where one chunk ends and the next begins</span><span class="sp-w"><b>opaque</b> the model sees the chunk as one thing, not as its letters</span><span class="sp-w"><b>digit grouping</b> how a number gets split across tokens</span><span class="sp-w"><b>case-sensitive</b> upper and lower case are different tokens entirely</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="lmWhyOut"></div></div>
+    <div><div class="segmented" id="lmWhyPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="lmWhyNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div></div>`;
 
 /* --- SIM: tokenisation --- */
 (function(){
@@ -694,61 +736,208 @@ document.getElementById('sec-lmtok').innerHTML=`
   render();
 })();
 
-/* --- SIM: BPE merges --- */
+/* --- SIM: BPE merges, with presets and a prediction step --- */
 (function(){
-  const ctl=document.getElementById('lmBpeCtl'), out=document.getElementById('lmBpeOut'), note=document.getElementById('lmBpeNote');
-  if(!ctl) return;
-  const WORDS={'low':5,'lower':2,'lowest':2,'slow':3,'slower':1,'flow':2,'flower':2};
-  let merges=[];
+  const tEl=document.getElementById('lmBpeText'), ctl=document.getElementById('lmBpeCtl'),
+        out=document.getElementById('lmBpeOut'), note=document.getElementById('lmBpeNote');
+  if(!tEl) return;
+  const CORPUS={
+   def :{n:'the cat sat on the mat', words:{'the':2,'cat':1,'sat':1,'on':1,'mat':1},
+     hint:'Common English pairs win first. Watch <span class="k">the</span> assemble itself: t+h, then th+e. Nobody told it what a word is.'},
+   rep :{n:'aaaaaa', words:{'aaaaaa':1},
+     hint:'<b>Progressive doubling.</b> a &rarr; aa &rarr; aaaa. Pure repetition lets each merge build on the last, so the token count collapses in very few rounds.'},
+   word:{n:'hello world hello world', words:{'hello':2,'world':2},
+     hint:'Every pair appears twice, so merging is aggressive and both whole words end up as single tokens. This is what a frequent phrase looks like to the algorithm.'},
+   ban :{n:'banana banana', words:{'banana':2},
+     hint:'<b>Overlapping pairs.</b> &ldquo;an&rdquo; and &ldquo;na&rdquo; overlap inside the same word. Watch which one wins and what winning does to the other.'},
+   none:{n:'xyz 123', words:{'xyz':1,'123':1},
+     hint:'<b>Nothing merges at all.</b> No pair repeats, so no pair is more frequent than any other and there is nothing to learn.'}
+  };
+  let cur='def', merges=[], guessed=false;
   function tokenise(w){
     let t=w.split('');
-    for(const [a,b] of merges){
+    for(const [x,y] of merges){
       const o=[]; let i=0;
-      while(i<t.length){ if(t[i]===a&&t[i+1]===b){o.push(a+b);i+=2;} else {o.push(t[i]);i++;} }
+      while(i<t.length){ if(t[i]===x&&t[i+1]===y){o.push(x+y);i+=2;} else {o.push(t[i]);i++;} }
       t=o;
     }
     return t;
   }
-  function bestPair(){
-    const f={};
-    for(const w in WORDS){
+  function pairCounts(){
+    const W=CORPUS[cur].words, f={};
+    for(const w in W){
       const t=tokenise(w);
-      for(let i=0;i<t.length-1;i++){ const k=t[i]+'\\u0000'+t[i+1]; f[k]=(f[k]||0)+WORDS[w]; }
+      for(let i=0;i<t.length-1;i++){ const k=t[i]+' '+t[i+1]; f[k]=(f[k]||0)+W[w]; }
     }
-    let best=null,n=0;
-    for(const k in f) if(f[k]>n){n=f[k];best=k;}
-    return best?[best.split('\\u0000'),n]:null;
+    return f;
+  }
+  function best(){
+    const f=pairCounts(); let k=null,n=0;
+    for(const x in f) if(f[x]>n){n=f[x];k=x;}
+    return (k&&n>1)?[k.split(' '),n]:null;
   }
   function render(){
-    const bp=bestPair();
-    ctl.innerHTML='<button class="seg on" data-a="m" style="text-align:left"'+(bp?'':' disabled')+'>'+
-      (bp?'merge &ldquo;'+bp[0][0]+'&rdquo; + &ldquo;'+bp[0][1]+'&rdquo; →':'nothing left to merge')+'</button>'+
+    tEl.innerHTML=Object.entries(CORPUS).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+
+      '<span style="font-family:var(--mono);font-size:11.5px">'+v.n+'</span></button>').join('');
+    tEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;merges=[];guessed=false;render();});
+    const bp=best();
+    ctl.innerHTML=
+      ((!guessed&&bp)?'<button class="seg" data-a="guess" style="text-align:left">I have decided which pair wins &mdash; reveal it</button>':'')+
+      '<button class="seg on" data-a="m" style="text-align:left"'+(bp?'':' disabled')+'>'+
+        (bp?(guessed?'merge &ldquo;'+bp[0][0]+'&rdquo; + &ldquo;'+bp[0][1]+'&rdquo; &rarr;':'merge the winning pair &rarr;'):'nothing left to merge')+'</button>'+
       '<button class="seg" data-a="r" style="text-align:left;margin-top:8px">start again</button>';
     ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
-      if(b.dataset.a==='m'){ const p=bestPair(); if(p) merges.push(p[0]); } else merges=[];
+      const a=b.dataset.a;
+      if(a==='guess') guessed=true;
+      else if(a==='m'){ const p=best(); if(p){merges.push(p[0]); guessed=false;} }
+      else { merges=[]; guessed=false; }
       render(); });
-    const total=Object.entries(WORDS).reduce((a,[w,c])=>a+tokenise(w).length*c,0);
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">THE CORPUS &mdash; SEVEN WORDS, WITH HOW OFTEN EACH APPEARS</div>'+
-      Object.entries(WORDS).map(([w,c])=>{
+    const W=CORPUS[cur].words;
+    const total=Object.entries(W).reduce((a,[w,c])=>a+tokenise(w).length*c,0);
+    const start=Object.entries(W).reduce((a,[w,c])=>a+w.length*c,0);
+    const f=pairCounts();
+    const ranked=Object.entries(f).sort((x,y)=>y[1]-x[1]).slice(0,5);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">THE TEXT, AS IT STANDS NOW</div>'+
+      Object.entries(W).map(([w,c])=>{
         const t=tokenise(w);
         return '<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px">'+
-        '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:56px">'+w+' ×'+c+'</span>'+
+        '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:62px">'+w+(c>1?' x'+c:'')+'</span>'+
         '<span style="display:flex;gap:3px;flex-wrap:wrap">'+t.map(x=>'<span style="font-family:var(--mono);font-size:12px;padding:2px 6px;border-radius:4px;background:'+
           (x.length>1?'var(--n-teal)':'var(--panel2)')+';border:1px solid '+(x.length>1?'var(--teal)':'var(--line2)')+'">'+x+'</span>').join('')+'</span></div>';
       }).join('')+
-      '<div class="dim" style="font-size:11px;margin:14px 0 7px">MERGES LEARNED, IN ORDER</div>'+
+      ((bp&&!guessed)
+        ? '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:12px;border-left-color:var(--amber)">'+
+          '<b>Which adjacent pair appears most often?</b><small>Look at the text above and decide before revealing. There is a right answer and it is only counting.</small></div>'
+        : bp
+        ? '<div class="dim" style="font-size:11px;margin:14px 0 6px">PAIR FREQUENCIES RIGHT NOW</div>'+
+          ranked.map(([k,n],i)=>{const p=k.split(' ');
+            return '<div style="display:flex;gap:9px;align-items:center;margin-bottom:4px">'+
+            '<span style="font-family:var(--mono);font-size:11.5px;min-width:74px;'+(i===0?'color:var(--teal);font-weight:600':'')+'">'+p[0]+'+'+p[1]+'</span>'+
+            '<div style="flex:1;height:7px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
+            (n/ranked[0][1]*100)+'%;background:'+(i===0?'var(--teal)':'var(--wire)')+'"></i></div>'+
+            '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:20px;text-align:right">'+n+'</span></div>';}).join('')
+        : '')+
+      '<div class="dim" style="font-size:11px;margin:16px 0 6px">THE MERGE TABLE &mdash; ORDERED RULES, THE ONLY OUTPUT OF TRAINING</div>'+
       (merges.length
-        ? '<div style="display:flex;flex-wrap:wrap;gap:5px">'+merges.map(([a,b],i)=>
-            '<span style="font-family:var(--mono);font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid var(--teal);color:var(--teal)">'+(i+1)+'. '+a+'+'+b+' → '+a+b+'</span>').join('')+'</div>'
-        : '<div class="note">None yet &mdash; every word is still individual characters.</div>')+
-      '<div style="margin-top:14px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-top:1px solid var(--line)">'+
-      '<span style="color:var(--muted)">tokens needed for the whole corpus</span><span>'+total+'</span></div>';
+        ? '<div style="display:flex;flex-wrap:wrap;gap:5px">'+merges.map((m,i)=>
+            '<span style="font-family:var(--mono);font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid var(--teal);color:var(--teal)">'+(i+1)+'. '+m[0]+'+'+m[1]+' &rarr; '+m[0]+m[1]+'</span>').join('')+'</div>'
+        : '<div class="note">Empty &mdash; nothing has been learned yet.</div>')+
+      '<div style="margin-top:14px">'+
+      [['tokens at the start',start],['tokens now',total],
+       ['compression',start?((1-total/start)*100).toFixed(0)+'%':'-']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
+    note.innerHTML='<div class="simnote">'+CORPUS[cur].hint+'</div>'+
+      (cur==='none'
+        ? '<div class="lzwarn" style="margin-top:10px"><b>But a real tokeniser would still split this sensibly</b>, because its table was trained on billions of words and already holds rules for pairs like these. What you are seeing is not how tokenisation behaves &mdash; it is what training on a single line produces. The next simulation makes that difference concrete.</div>'
+        : merges.length===0
+        ? '<div class="note" style="margin-top:10px">Nothing has merged yet. Decide which pair you think wins before revealing &mdash; guessing and then checking is worth far more than watching.</div>'
+        : '<div class="ok" style="margin-top:10px"><b>Notice what the output actually is.</b> Not a list of words, and not a vocabulary in any interesting sense &mdash; an <em>ordered</em> list of rules. The order is the important part, and the next simulation is why.</div>')+
+      '<div class="note" style="margin-top:10px"><b>How this simplifies:</b> production training counts pairs across a whole corpus <em>weighted by how often each word occurs</em>, so a word appearing a million times contributes a million to its pairs. That is why the commonest words become single tokens almost immediately. Here each word counts once or twice, which shows the mechanism and understates how fast it moves.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: training once, then inference forever --- */
+(function(){
+  const pick=document.getElementById('lmInfPick'), out=document.getElementById('lmInfOut'), note=document.getElementById('lmInfNote');
+  if(!pick) return;
+  const TABLE=[['t','h'],['th','e'],['i','n'],['e','r'],['a','t'],['the','a'],['o','n'],['r','e']];
+  const TEXTS={
+   a:{n:'the theatre', s:'the theatre'},
+   b:{n:'in there', s:'in there'},
+   c:{n:'xyz', s:'xyz'},
+   d:{n:'a word in another script', s:'\u0925\u094b\u0921\u093c\u093e'}
+  };
+  let cur='a';
+  function apply(str){
+    let t=str.split(''), trace=[];
+    TABLE.forEach((r,ri)=>{
+      const o=[]; let i=0, hit=0;
+      while(i<t.length){ if(t[i]===r[0]&&t[i+1]===r[1]){o.push(r[0]+r[1]);i+=2;hit++;} else {o.push(t[i]);i++;} }
+      if(hit) trace.push({rule:ri+1,pair:r[0]+'+'+r[1],made:r[0]+r[1],hit,after:o.slice()});
+      t=o;
+    });
+    return {tokens:t,trace};
+  }
+  function render(){
+    pick.innerHTML=Object.entries(TEXTS).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+
+      '<span style="font-family:var(--mono);font-size:12px">'+(k==='d'?v.n+' &mdash; '+v.s:v.n)+'</span></button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const r=apply(TEXTS[cur].s);
+    const chip=x=>'<span style="font-family:var(--mono);font-size:12px;padding:3px 7px;border-radius:5px;background:'+
+      (x.length>1?'var(--n-teal)':'var(--panel2)')+';border:1px solid '+(x.length>1?'var(--teal)':'var(--line2)')+'">'+x+'</span>';
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">THE MERGE TABLE &mdash; FIXED, LEARNED ONCE, NEVER UPDATED</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">'+
+      TABLE.map((m,i)=>'<span style="font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:5px;border:1px solid '+
+        (r.trace.some(x=>x.rule===i+1)?'var(--teal)':'var(--line2)')+';color:'+
+        (r.trace.some(x=>x.rule===i+1)?'var(--teal)':'var(--dim)')+'">'+(i+1)+'. '+m[0]+'+'+m[1]+'</span>').join('')+'</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:7px">APPLYING THE RULES IN ORDER &mdash; NO COUNTING HAPPENS HERE</div>'+
+      (r.trace.length
+        ? r.trace.map(x=>'<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:var(--teal)">'+
+            '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:5px">RULE '+x.rule+' &mdash; '+x.pair+' &rarr; '+x.made+', applied '+x.hit+'x</div>'+
+            '<div style="display:flex;gap:3px;flex-wrap:wrap">'+x.after.map(chip).join('')+'</div></div>').join('')
+        : '<div class="lzwarn" style="padding:11px 13px"><b>No rule in the table matched anything.</b> Every rule was checked, in order, and none applied.</div>')+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">FINAL TOKENS</div>'+
+      '<div style="display:flex;gap:4px;flex-wrap:wrap">'+r.tokens.map(chip).join('')+'</div>'+
+      '<div style="margin-top:14px">'+
+      [['characters in',TEXTS[cur].s.length],['tokens out',r.tokens.length],
+       ['rules that fired',r.trace.length+' of '+TABLE.length],
+       ['pairs counted',0]]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
     note.innerHTML =
-      merges.length===0 ? '<div class="simnote">Every word starts as loose characters. Press merge and watch which pair the algorithm picks &mdash; it is always simply the most common one, with no understanding of language involved.</div>'
-      : merges.length<4 ? '<div class="simnote"><b>It is picking pairs, not meanings.</b> Nothing here knows what a word is. The frequent letter pairs just happen to be the ones inside common words, so word-like chunks emerge as a side effect.</div>'
-      : '<div class="ok"><b>Look at what assembled itself.</b> Fragments like <span class="k">low</span> and <span class="k">er</span> appear because they are frequent, and they turn out to be exactly the pieces you would want &mdash; a stem and a suffix. Nobody encoded that. It fell out of counting.</div>'+
-        '<div class="simnote" style="margin-top:10px"><b>And notice the total falling.</b> That number is the whole point: fewer tokens for the same text means a longer effective context and a lower bill, which is why vocabulary size is a real design decision rather than a detail.</div>';
-    note.innerHTML+='<div class="note" style="margin-top:10px"><b>Real vocabularies do this tens of thousands of times</b> over a corpus of billions of words, starting from raw bytes rather than letters so that any possible input can be represented. The mechanism is exactly what you are pressing.</div>';
+      cur==='c' ? '<div class="lzwarn"><b>Nothing matched, and nothing broke.</b> The text still tokenised, as individual characters &mdash; more tokens for the same meaning but perfectly usable. A real table has tens of thousands of rules and would find several here; this small one simply never learned them.</div>'
+      : cur==='d' ? '<div class="lzbad"><b>This is the language gap, at its most concrete.</b> A table learned from English holds no rules that match this script, so it falls back to the smallest pieces. Same meaning, several times the tokens, several times the cost, and a context window that fills that much faster &mdash; entirely because of whose text the table was trained on.</div>'
+      : '<div class="ok"><b>Look at the last row: zero pairs counted.</b> Training counted; inference does not. It walks the fixed rules in order and applies each wherever it fits, which is why tokenising is fast enough to be invisible and why the same text always produces exactly the same tokens.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>The order is load-bearing.</b> Rule 2 can only fire because rule 1 already made <span class="k">th</span>. Shuffle the table and the same text gives different tokens &mdash; which is why it ships as an ordered list rather than a set, and why a model and its tokeniser can never be separated.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: the behaviours that are really tokenisation --- */
+(function(){
+  const pick=document.getElementById('lmWhyPick'), out=document.getElementById('lmWhyOut'), note=document.getElementById('lmWhyNote');
+  if(!pick) return;
+  const C=[
+   {k:'count',n:'Count the letters in a word',
+    ask:'How many times does the letter r appear in &ldquo;strawberry&rdquo;?',
+    toks:['str','aw','berry'], sees:'three opaque chunks, not ten letters',
+    why:'<b>The model never received the letters.</b> It received three chunks, and which letters sit inside them is not information it has &mdash; any more than you can hear the spelling of a word spoken aloud. It often answers correctly anyway, from having read discussions of spelling, which is recall rather than observation and much less reliable.',
+    fix:'If you need character-level work, do it in code. Asking the model to count characters is asking it to remember rather than to look.'},
+   {k:'math',n:'Arithmetic on a long number',
+    ask:'What is 4827 + 1195?',
+    toks:['48','27',' +',' 11','95'], sees:'digits grouped in chunks that ignore place value',
+    why:'<b>The number is not a number to it.</b> Digits are grouped by whatever the merge table found frequent, so 4827 arrives as two chunks with no relationship to thousands and hundreds. Carrying between chunks has to be reconstructed rather than seen, which is why accuracy falls away sharply as digits are added.',
+    fix:'Give it a calculator. Tool use exists largely for this class of problem, and it is not something better prompting fixes.'},
+   {k:'case',n:'The same word, capitalised',
+    ask:'Compare &ldquo;hello&rdquo; with &ldquo;HELLO&rdquo;',
+    toks:['hello','vs','HE','LL','O'], sees:'one token against three, with unrelated embeddings',
+    why:'<b>Case is not a modifier, it is a different token.</b> The lower-case form is common enough to earn one entry; the upper-case form is rare enough to be spelled out. Their embeddings are unrelated, so what the model learned about one is not automatically available for the other.',
+    fix:'Worth remembering when output differs between a shouted and a normal phrasing, and when deciding whether to normalise user input before it reaches the model.'},
+   {k:'code',n:'Two spellings of one identifier',
+    ask:'myVariableName versus my_variable_name',
+    toks:['my','Variable','Name','vs','my','_variable','_name'], sees:'different splits for the same concept',
+    why:'Both split where the merge table found boundaries frequent, and the boundaries differ. Code-focused tokenisers handle this far better than general ones, which is part of why coding models ship their own vocabularies.',
+    fix:'Mostly a curiosity &mdash; but it explains why a model can be better at one naming convention than another, and why code costs roughly a third more tokens than prose of the same length.'}
+  ];
+  let cur='count';
+  function render(){
+    pick.innerHTML=C.map(c=>'<button class="seg'+(cur===c.k?' on':'')+'" data-k="'+c.k+'" style="text-align:left;font-size:12px">'+c.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const c=C.find(x=>x.k===cur);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT YOU ASKED</div>'+
+      '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:var(--wire)"><b>'+c.ask+'</b></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE MODEL ACTUALLY RECEIVED</div>'+
+      '<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">'+
+      c.toks.map(t=>t==='vs'
+        ? '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:0 4px">vs</span>'
+        : '<span style="font-family:var(--mono);font-size:13px;padding:5px 9px;border-radius:6px;background:var(--n-violet);border:1px solid var(--violet)">'+t+'</span>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:8px">it sees '+c.sees+'</div>'+
+      '<div class="lzwarn" style="margin-top:14px;padding:11px 13px">'+c.why+'</div>';
+    note.innerHTML='<div class="simnote"><b>What to do about it:</b> '+c.fix+'</div>'+
+      '<div class="ok" style="margin-top:10px"><b>The general lesson is worth more than any of the four.</b> When a model is strangely bad at something that looks easy, an early question is whether the thing you are asking about survived tokenisation at all. A surprising amount of apparent stupidity is a question about characters put to something that only ever saw chunks.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Splits shown are illustrative</b> &mdash; exact boundaries differ between tokenisers and change with each generation. The failure mode does not.</div>';
   }
   render();
 })();
