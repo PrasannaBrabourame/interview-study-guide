@@ -474,6 +474,9 @@
     <button class="tab" data-pane="svgraph" role="tab">CUDA graphs</button>
     <button class="tab" data-pane="svlora" role="tab">Multi-LoRA</button>
     <button class="tab" data-pane="svdisagg" role="tab">Disaggregation</button>
+    <button class="tab" data-pane="svtiers" role="tab">Cache tiers</button>
+    <button class="tab" data-pane="svstruct" role="tab">Structured output</button>
+    <button class="tab" data-pane="svlife" role="tab">Request lifecycle</button>
     <button class="tab" data-pane="svslo" role="tab">Metrics & SLOs</button>
     <button class="tab" data-pane="svexam" role="tab">Exam angle</button>
   </div>
@@ -486,6 +489,9 @@
   <section class="pane" id="pane-svgraph"><div id="sec-svgraph"></div></section>
   <section class="pane" id="pane-svlora"><div id="sec-svlora"></div></section>
   <section class="pane" id="pane-svdisagg"><div id="sec-svdisagg"></div></section>
+  <section class="pane" id="pane-svtiers"><div id="sec-svtiers"></div></section>
+  <section class="pane" id="pane-svstruct"><div id="sec-svstruct"></div></section>
+  <section class="pane" id="pane-svlife"><div id="sec-svlife"></div></section>
   <section class="pane" id="pane-svslo"><div id="sec-svslo"></div></section>
   <section class="pane" id="pane-svexam"><div id="sec-svexam"></div></section>
 
@@ -710,7 +716,19 @@ document.getElementById('sec-svsched').innerHTML=`
       <div class="segmented" id="svSchedPol" style="flex-direction:column;align-items:stretch"></div>
       <div id="svSchedNote" class="cidr-out" style="margin-top:12px"></div></div>
   </div>
-</div>`;
+
+<div class="card" style="margin-top:16px">
+  <h2 class="sec">Try it &mdash; the bytes a ragged batch throws away</h2>
+  <div class="plain-line"><b>Try this:</b> requests in a batch are different lengths, and the naive way to process them together is to pad every one up to the longest. Those padded positions are computed and discarded. Change the spread of lengths and watch how much of the batch is arithmetic on nothing.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A tray of identical boxes for parcels of wildly different sizes. Everything fits and the van is mostly carrying air.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the spread to <b>very mixed</b> and read the wasted share.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>ragged</b> a batch whose members have different lengths</span><span class="sp-w"><b>padding</b> filler tokens added so every row is the same length</span><span class="sp-w"><b>mask</b> the flags telling the model which positions are real</span><span class="sp-w"><b>bucketing</b> grouping similar lengths together to shorten the padding</span><span class="sp-w"><b>packing</b> laying sequences end to end so no padding is needed at all</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svPadOut"></div></div>
+    <div><div id="svPadCtl"></div>
+      <div class="dim" style="font-size:11px;margin:14px 0 7px">HOW THE BATCH IS BUILT</div>
+      <div class="segmented" id="svPadMode" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svPadNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div></div>`;
 
 /* --- SIM: scheduler under pressure --- */
 (function(){
@@ -1275,6 +1293,466 @@ document.getElementById('sec-svexam').innerHTML=`
   <div class="exam-line"><b>&ldquo;Utilisation is 95% and we are pleased with ourselves.&rdquo;</b> &rarr; Be careful. Past roughly 90%, queueing delay grows faster than load, so the tail deteriorates sharply for a small gain in efficiency. For a latency-sensitive service headroom is not waste, it is the thing you are selling.</div>
   <div class="exam-line"><b>&ldquo;Which single metric should our serving dashboard lead with?&rdquo;</b> &rarr; Goodput &mdash; requests per second that met their latency target. Throughput alone rewards a system that serves everyone badly, and latency alone ignores how many were served. Goodput is the one that cannot be gamed by making the other worse.</div>
 </div>`;
+
+/* ================= CACHE TIERS ================= */
+document.getElementById('sec-svtiers').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Evicted does not have to mean gone</h2>
+  <div class="plain-line"><b>In plain English:</b> when the KV cache fills, the usual answer is to evict &mdash; throw a conversation&rsquo;s cached state away and recompute it if the user comes back. But GPU memory is not the only memory in the machine. Host RAM is roughly ten times larger and much slower; a local disk is larger again and slower again. Blocks pushed down a tier are still cheaper to fetch than to recompute, up to a point.</div>
+  <div class="plain-line"><b>The point is where fetching costs more than recomputing</b>, and that is the same comparison as the fleet lab&rsquo;s transfer-versus-recompute question, asked one level down. A tier only earns its place if reading from it beats redoing the prefill &mdash; and disk very often does not.</div>
+  <div class="plain-line"><b>What makes it worth having at all is the traffic pattern.</b> A user who returns to a conversation after two minutes is extremely common, and their prefix is long. Holding that in host memory instead of discarding it converts a full prefill into a copy, on exactly the requests where the prefix is largest.</div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; add tiers and see which ones pay</h2>
+  <div class="plain-line"><b>Try this:</b> a working set larger than GPU memory. Add host memory, then disk, and watch the hit rate climb while the average fetch cost climbs with it. The third tier is the interesting one: it raises hit rate and makes the service slower.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Papers on the desk, in the drawer, and in the basement archive. Fetching from the basement is still faster than re-doing the work &mdash; until the archive is far enough away that you would rather just redo it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>turn <b>disk</b> on and off with a long prefix and watch the average time move the wrong way.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tier</b> one level of storage, slower and larger than the one above</span><span class="sp-w"><b>working set</b> how much cached state is actively being reused</span><span class="sp-w"><b>hit rate</b> the share of requests that find their prefix somewhere</span><span class="sp-w"><b>eviction</b> pushing a block down a tier or discarding it</span><span class="sp-w"><b>offload</b> moving cache off the GPU rather than throwing it away — KV offload, or CPU offload when the tier is host memory</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svTierOut"></div></div>
+    <div><div class="segmented" id="svTierOn" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svTierCtl" style="margin-top:12px"></div>
+      <div id="svTierNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: cache tiers --- */
+(function(){
+  const onEl=document.getElementById('svTierOn'), ctl=document.getElementById('svTierCtl'),
+        out=document.getElementById('svTierOut'), note=document.getElementById('svTierNote');
+  if(!onEl) return;
+  const T=[
+    {k:'gpu', n:'GPU memory', cap:40,  bw:2000e9, on:true,  fixed:true},
+    {k:'host',n:'Host memory (over PCIe)', cap:400, bw:25e9, on:true},
+    {k:'disk',n:'Local NVMe', cap:4000, bw:5e9,   on:false}
+  ];
+  let prefix=4096;
+  const PRE=[512,1024,2048,4096,8192,16384];
+  const PER=128*1024;                       /* KV bytes per token, GQA 8B */
+  function render(){
+    onEl.innerHTML=T.map(t=>'<button class="seg'+(t.on?' on':'')+'" data-k="'+t.k+'" style="text-align:left'+(t.fixed?';opacity:.7':'')+'">'+
+      '<b style="font-size:12px">'+(t.on?'● ':'○ ')+t.n+'</b><br><small style="font-family:var(--mono);font-size:10px;color:var(--muted)">'+
+      t.cap+' GB · '+(t.bw/1e9).toFixed(0)+' GB/s'+(t.fixed?' · always on':'')+'</small></button>').join('');
+    onEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const t=T.find(x=>x.k===b.dataset.k); if(!t.fixed){t.on=!t.on;render();} });
+    ctl.innerHTML='<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">typical prefix length</span><span>'+prefix.toLocaleString()+' tokens</span></div>'+
+      '<input type="range" id="svPf" min="0" max="'+(PRE.length-1)+'" step="1" value="'+PRE.indexOf(prefix)+'" style="width:100%">';
+    const e=document.getElementById('svPf'); if(e) e.oninput=()=>{prefix=PRE[+e.value];render();};
+    const bytes=prefix*PER;
+    const recomp=prefix*0.055;                       /* ms to prefill */
+    const active=T.filter(t=>t.on);
+    const totalCap=active.reduce((a,t)=>a+t.cap,0);
+    /* hit rate saturates with capacity against a 900 GB working set */
+    const WS=900;
+    const hit=1-Math.exp(-totalCap/WS*2.2);
+    let sum=0, share=[];
+    active.forEach((t,i)=>{
+      const prev=active.slice(0,i).reduce((a,x)=>a+x.cap,0);
+      const h=(1-Math.exp(-(prev+t.cap)/WS*2.2))-(1-Math.exp(-prev/WS*2.2));
+      const ms=t.k==='gpu'?0.05:bytes/t.bw*1000+ (t.k==='disk'?2.4:0.4);
+      share.push({t,h,ms}); sum+=h*ms;
+    });
+    const avgHit=sum/Math.max(1e-9,hit);
+    const eff=hit*avgHit+(1-hit)*recomp;
+    const worthIt=share.every(s=>s.ms<recomp);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+prefix.toLocaleString()+
+      '-TOKEN PREFIX &mdash; '+(bytes/1e6).toFixed(0)+' MB OF KV STATE</div>'+
+      share.map(s=>'<div class="lzhop" style="display:block;padding:10px 12px;border-left-color:'+
+        (s.ms<recomp?'var(--green)':'var(--red)')+'">'+
+        '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">'+
+        '<b>'+s.t.n+'</b><span style="font-family:var(--mono);font-size:12px;color:'+(s.ms<recomp?'var(--green)':'var(--red)')+'">'+
+        (s.ms<1?s.ms.toFixed(2):s.ms.toFixed(0))+' ms to fetch</span></div>'+
+        '<small>serves '+(s.h*100).toFixed(0)+'% of requests'+
+        (s.ms>=recomp?' &mdash; <b>slower than recomputing</b>':'')+'</small></div>').join('')+
+      '<div class="lzhop" style="display:block;padding:10px 12px;border-left-color:var(--wire)">'+
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">'+
+      '<b>not cached anywhere</b><span style="font-family:var(--mono);font-size:12px;color:var(--muted)">'+recomp.toFixed(0)+' ms to recompute</span></div>'+
+      '<small>'+((1-hit)*100).toFixed(0)+'% of requests</small></div>'+
+      '<div style="margin-top:14px">'+
+      [['total cache capacity',totalCap+' GB'],
+       ['requests finding their prefix',(hit*100).toFixed(0)+'%'],
+       ['average cost of a hit',avgHit<1?avgHit.toFixed(2)+' ms':avgHit.toFixed(0)+' ms'],
+       ['effective prefill cost per request',eff.toFixed(0)+' ms']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
+    const disk=T.find(t=>t.k==='disk');
+    note.innerHTML =
+      (disk.on && share.find(s=>s.t.k==='disk')?.ms>=recomp)
+      ? '<div class="lzbad"><b>The disk tier is costing you.</b> Fetching '+(bytes/1e6).toFixed(0)+' MB from it takes longer than simply recomputing the prefill, so every request it &ldquo;saves&rdquo; is a request made slower. A tier only pays while reading from it beats redoing the work.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>And it looks like a win on the dashboard.</b> Cache hit rate went up. That is the trap &mdash; hit rate is a proxy, and this is the case where the proxy and the goal point in opposite directions.</div>'
+      : disk.on
+      ? '<div class="ok"><b>All three tiers pay at this prefix length.</b> The prefix is long enough that recomputation is expensive, so even a disk read beats it. Shorten the prefix and watch the disk tier flip to a loss.</div>'
+      : '<div class="simnote"><b>Host memory is nearly always worth having.</b> Ten times the capacity of the GPU at a fetch cost far below recomputation, on exactly the requests where the prefix is longest. Turn on disk and try short prefixes to find where the argument breaks.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The rule that generalises:</b> a tier is worth adding when the time to fetch from it is less than the time to recreate what it holds. That single comparison decides GPU-to-host, host-to-disk, and the fleet lab&rsquo;s move-or-recompute question &mdash; it is the same arithmetic at three scales.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Names you will meet.</b> Engines call this KV offload or hierarchical KV storage, and the host-memory tier is usually CPU offload. The mechanism is the same wherever you find it.</div><div class="note" style="margin-top:10px"><b>Two costs this leaves out.</b> Moving blocks down a tier occupies the same PCIe link your weights and activations use, so offloading under load competes with serving. And a hit still has to land somewhere &mdash; if the GPU has no free blocks to receive it, the fetch waits.</div>';
+  }
+  render();
+})();
+
+/* ================= STRUCTURED OUTPUT ================= */
+document.getElementById('sec-svstruct').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Asking for JSON and guaranteeing JSON are different things</h2>
+  <div class="plain-line"><b>In plain English:</b> if you ask a model for JSON in the prompt, you will get JSON almost every time. Almost. The failure is not usually a wrong answer &mdash; it is a trailing comma, a missing brace, an explanation before the object, or a hallucinated field &mdash; and it arrives at whatever rate it arrives at, which you discover in production.</div>
+  <div class="plain-line"><b>Constrained decoding removes the possibility rather than reducing the probability.</b> Before sampling each token, the engine works out which tokens could legally come next given the grammar and what has been emitted so far, and sets every other token&rsquo;s probability to zero. Invalid output stops being unlikely and becomes unrepresentable. The model still chooses; it just cannot choose something that breaks the schema.</div>
+  <div class="plain-line"><b>What it costs:</b> the mask has to be computed, which is real work per token, and a schema compiles into a state machine that has to be built and cached. Also worth knowing &mdash; constraining <em>where</em> the model may go does not make its content correct. A perfectly valid object can hold a wrong number.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; watch illegal tokens disappear</h2>
+  <div class="plain-line"><b>Try this:</b> the model is emitting an object against a schema. Step through and watch, at each position, which tokens the grammar allows and which are masked to zero &mdash; and what the unconstrained model would have done instead.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A form where the date field only accepts digits. You are still choosing the number; you simply cannot type &ldquo;probably Tuesday&rdquo; into it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>step to position 4 and look at what the unconstrained model was about to do.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>grammar</b> the set of strings that count as valid here</span><span class="sp-w"><b>mask</b> forcing chosen tokens to zero probability before sampling</span><span class="sp-w"><b>state machine</b> what the schema compiles into — where you are, what may come next</span><span class="sp-w"><b>JSON schema</b> the declared shape of the object you want back</span><span class="sp-w"><b>guided decoding</b> another name for constraining generation to a grammar</span><span class="sp-w"><b>unconstrained</b> ordinary sampling with nothing forbidden</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svGramOut"></div></div>
+    <div><div id="svGramCtl"></div>
+      <div id="svGramNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; when can software act on a stream?</h2>
+  <div class="plain-line"><b>Try this:</b> a tool call arriving token by token. At each point, decide whether you could safely act on what you have &mdash; and see what happens if you act early. This is the difference between a demo and something that touches a real system.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Taking an order over the phone. &ldquo;Cancel the&hellip;&rdquo; is not yet an instruction, and acting on it would be a serious mistake.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>advance to the middle of the arguments and press <b>act on it now</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tool call</b> the model asking for a function to be run, with arguments</span><span class="sp-w"><b>tool parser</b> the code turning generated text into a call your software can make</span><span class="sp-w"><b>reasoning parser</b> the equivalent for separating thinking from the answer</span><span class="sp-w"><b>partial</b> a fragment that is not yet a complete value</span><span class="sp-w"><b>reasoning trace</b> thinking the model emits that is not part of the answer</span><span class="sp-w"><b>idempotent</b> safe to repeat, so a retry cannot double the effect</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svToolOut"></div></div>
+    <div><div id="svToolCtl"></div>
+      <div id="svToolNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: constrained decoding --- */
+(function(){
+  const ctl=document.getElementById('svGramCtl'), out=document.getElementById('svGramOut'), note=document.getElementById('svGramNote');
+  if(!ctl) return;
+  const STEPS=[
+   {emit:'{',   state:'start of object', legal:['{'], wanted:['Sure','{','Here'],
+    n:'Only one token can legally start the object. The model was about to write a sentence.'},
+   {emit:'"',   state:'expecting a key', legal:['"','}'], wanted:['"','name','\\n'],
+    n:'A key must open with a quote, or the object may close. Nothing else is representable.'},
+   {emit:'city',state:'inside a key', legal:['city','name','id','…any key text'], wanted:['city','town','place'],
+    n:'Inside a string almost anything is legal, so the model is choosing freely here — the grammar is not doing the thinking.'},
+   {emit:'"',   state:'closing the key', legal:['"','…more key text'], wanted:['"','_name'],
+    n:'It may continue the key or close it.'},
+   {emit:':',   state:'after a key', legal:[':'], wanted:[':',' is',' =' ],
+    n:'<b>Exactly one legal token.</b> The unconstrained model was about to write prose — and this is the position where hand-written prompts most often produce broken JSON.'},
+   {emit:'"',   state:'expecting a value', legal:['"','0-9','t','f','n','{','['], wanted:['"','Paris','The'],
+    n:'A value may be a string, number, boolean, null, object or array — but not a bare word.'},
+   {emit:'Bristol',state:'inside a value', legal:['…any string text'], wanted:['Bristol','London'],
+    n:'Free again. Constraining the shape never constrains the content.'},
+   {emit:'"',   state:'closing the value', legal:['"','…more text'], wanted:['"'],
+    n:'Closing the string.'},
+   {emit:'}',   state:'object may close', legal:[',','}'], wanted:['}',',','\\n\\nHope'],
+    n:'<b>The last trap.</b> Unconstrained, the model very often adds an explanation after the object. Here it cannot — the grammar has nowhere to put one.'}
+  ];
+  let i=0, on=true;
+  function render(){
+    ctl.innerHTML='<div style="display:flex;gap:6px;margin-bottom:10px">'+
+      [[true,'Constrained'],[false,'Unconstrained']].map(([v,n])=>
+      '<button class="seg'+(on===v?' on':'')+'" data-c="'+v+'" style="flex:1;font-size:11.5px">'+n+'</button>').join('')+'</div>'+
+      '<button class="seg on" data-a="f" style="text-align:left"'+(i>=STEPS.length-1?' disabled':'')+'>next position &rarr;</button>'+
+      '<button class="seg" data-a="b" style="text-align:left"'+(i===0?' disabled':'')+'>&larr; back</button>'+
+      '<button class="seg" data-a="r" style="text-align:left;margin-top:8px">start again</button>';
+    ctl.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{on=b.dataset.c==='true';render();});
+    ctl.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a; i=a==='f'?Math.min(STEPS.length-1,i+1):a==='b'?Math.max(0,i-1):0; render(); });
+    const st=STEPS[i];
+    const soFar=STEPS.slice(0,i).map(x=>x.emit).join('');
+    const cand=[...new Set([...st.wanted,...st.legal.filter(x=>!x.startsWith('…'))])].slice(0,6);
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">EMITTED SO FAR</div>'+
+      '<div class="code"><pre><code>'+esc(soFar||'(nothing yet)')+'<span style="color:var(--amber)">▌</span></code></pre></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">GRAMMAR STATE</div>'+
+      '<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:var(--violet)">'+st.state+'</div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">CANDIDATE TOKENS AT THIS POSITION</div>'+
+      cand.map(c=>{
+        const legal=st.legal.includes(c)||st.legal.some(l=>l.startsWith('…'));
+        const blocked=on&&!legal;
+        return '<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px">'+
+        '<span style="font-family:var(--mono);font-size:12px;min-width:96px;padding:3px 7px;border-radius:5px;background:'+
+        (blocked?'var(--badsoft)':'var(--n-teal)')+';border:1px solid '+(blocked?'var(--red)':'var(--teal)')+
+        (blocked?';text-decoration:line-through;opacity:.6':'')+'">'+esc(c)+'</span>'+
+        '<span style="font-family:var(--mono);font-size:10.5px;color:'+(blocked?'var(--red)':'var(--muted)')+'">'+
+        (blocked?'masked to zero — cannot be chosen':'allowed')+'</span></div>';
+      }).join('')+
+      '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'+
+      ['position '+(i+1)+' of '+STEPS.length, on?st.legal.length+' legal continuation'+(st.legal.length===1?'':'s'):'all '+cand.length+' available']
+      .map(x=>'<span style="font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:8px;border:1px solid '+
+        (on?'var(--teal)':'var(--amber)')+';color:'+(on?'var(--teal)':'var(--amber)')+'">'+x+'</span>').join('')+'</div>'+
+      '<div class="'+(on?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+st.n+'</div>';
+    note.innerHTML = on
+      ? '<div class="ok"><b>Invalid output is not unlikely here &mdash; it is unrepresentable.</b> The tokens that would break the schema have zero probability, so no amount of temperature or unlucky sampling can produce them.</div>'
+      : '<div class="lzbad"><b>Unconstrained, every one of those candidates is reachable.</b> Most of the time the model picks the valid one, and the rate at which it does not is a property of the model, the prompt and the temperature &mdash; which is to say, something you find out in production.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>Notice which positions are tight and which are free.</b> Structural positions &mdash; braces, colons, quotes &mdash; often have exactly one legal token. Inside a string almost anything goes. The grammar constrains the <em>shape</em> and never the <em>content</em>, which is why a schema-valid response can still be factually wrong.</div>'+
+      '<div class="note" style="margin-top:10px"><b>What it costs.</b> The mask is computed per token, and a schema compiles to a state machine that must be built and cached &mdash; a cost paid once per distinct schema, which is why hundreds of one-off schemas behave very differently from one reused schema.</div>'+
+      '<div class="note" style="margin-top:10px"><b>And it interacts with speculation.</b> A draft model proposing tokens the grammar forbids has them rejected, so acceptance rates fall on heavily constrained output &mdash; two features that are individually good and partly cancel.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: acting on a partial stream --- */
+(function(){
+  const ctl=document.getElementById('svToolCtl'), out=document.getElementById('svToolOut'), note=document.getElementById('svToolNote');
+  if(!ctl) return;
+  const FULL=['<think>','The user wants a refund',' on order 4471.','</think>','{"tool":','"issue_refund"',',"args":{','"order":"4471"',',"amount":',' 250','}}'];
+  const SAFE=FULL.length-1;
+  let i=3, acted=null;
+  function render(){
+    ctl.innerHTML='<button class="seg on" data-a="f" style="text-align:left"'+(i>=FULL.length-1?' disabled':'')+'>next chunk &rarr;</button>'+
+      '<button class="seg" data-a="b" style="text-align:left"'+(i===0?' disabled':'')+'>&larr; back</button>'+
+      '<button class="seg" data-a="x" style="text-align:left;margin-top:8px">act on it now</button>'+
+      '<button class="seg" data-a="r" style="text-align:left">start again</button>';
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a;
+      if(a==='f'){i=Math.min(FULL.length-1,i+1);acted=null;}
+      else if(a==='b'){i=Math.max(0,i-1);acted=null;}
+      else if(a==='x') acted=i;
+      else {i=3;acted=null;}
+      render(); });
+    const got=FULL.slice(0,i+1);
+    const txt=got.join('');
+    const inThink=got.filter(x=>x==='<think>').length>got.filter(x=>x==='</think>').length;
+    const complete=i>=SAFE;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT HAS ARRIVED</div>'+
+      '<div class="code"><pre><code style="white-space:pre-wrap">'+
+      got.map(c=>{
+        const think=c==='<think>'||c==='</think>'||(FULL.indexOf(c)>0&&FULL.indexOf(c)<3);
+        return '<span style="'+(think?'color:var(--dim)':'color:var(--text)')+'">'+esc(c)+'</span>';
+      }).join('')+'<span style="color:var(--amber)">▌</span></code></pre></div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT SOFTWARE CAN CONCLUDE</div>'+
+      [['inside a reasoning trace',inThink?'yes — this is not the answer':'no'],
+       ['a tool name is known',txt.includes('"issue_refund"')?'yes — issue_refund':'no'],
+       ['arguments complete',complete?'yes':'<b style="color:var(--red)">no — still arriving</b>'],
+       ['safe to execute',complete?'<b style="color:var(--green)">yes</b>':'<b style="color:var(--red)">no</b>']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+
+      (acted!==null?'<div class="'+(acted>=SAFE?'ok':'lzbad')+'" style="margin-top:14px;padding:11px 13px">'+
+        (acted>=SAFE
+          ? '<b>Refund of £250 issued on order 4471.</b> Correct — the arguments were complete and the reasoning trace had closed.'
+          : inThink
+          ? '<b>You just acted on the model thinking out loud.</b> That text was inside a reasoning trace — it is the model considering the problem, not instructing you. Executing it is acting on a thought.'
+          : txt.includes('"amount"')&&!complete
+          ? '<b>Refund issued with a missing or truncated amount.</b> The arguments had not finished arriving, so the number you acted on is whatever had been received — possibly £2, possibly £25.'
+          : '<b>Tool invoked with incomplete arguments.</b> The call is malformed; what your handler does with it is undefined.')+'</div>':'');
+    note.innerHTML =
+      acted!==null&&acted<SAFE
+      ? '<div class="lzbad"><b>This is the failure that matters, because it touches something real.</b> Streaming is for showing a human progress. Software must wait for a complete, parsed structure before acting &mdash; and the two uses of the same stream have completely different rules.</div>'
+      : inThink
+      ? '<div class="lzwarn"><b>Everything here is inside a reasoning trace.</b> The model is working through the problem, and a parser has to know that this region is not the answer. Treating it as output is how systems end up acting on a model&rsquo;s discarded first idea.</div>'
+      : complete
+      ? '<div class="ok"><b>Now it is safe.</b> The structure closed, the arguments parse, and the trace is separated from the answer. This is the only point at which acting is defensible.</div>'
+      : '<div class="simnote"><b>A name without arguments is not an instruction.</b> You know what the model wants to do and not what to. Advance until the object closes.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>Two things worth building in regardless.</b> Make the side effect idempotent, so a retry after a dropped stream cannot issue the refund twice. And keep the reasoning region strictly separated in your parser rather than by looking for markers in a string &mdash; because a user can type those markers.</div>';
+  }
+  render();
+})();
+
+/* ================= REQUEST LIFECYCLE ================= */
+document.getElementById('sec-svlife').innerHTML=`
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Four paths through the same endpoint, and three of them get forgotten</h2>
+  <div class="plain-line"><b>In plain English:</b> the happy path &mdash; a request arrives, tokens stream back, it finishes &mdash; is the one everybody builds and tests. Three others exist on the same endpoint and behave completely differently: a non-streaming call that waits for the whole answer, a client that hangs up halfway, and input that was never valid.</div>
+  <div class="plain-line"><b>Cancellation is the one that costs money.</b> A user closing the tab does not stop the GPU. Unless the disconnect propagates all the way into the scheduler, the engine keeps generating a thousand tokens nobody will ever read, holding a KV allocation the whole time. On a busy fleet with impatient users, that is a large amount of capacity spent on abandoned work.</div>
+  <div class="plain-line"><b>And streaming versus not is not a formatting choice.</b> It changes which latency metric matters, whether partial results are visible, whether cancellation is even detectable, and what a failure halfway through looks like to the caller.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; take each path and see what it costs</h2>
+  <div class="plain-line"><b>Try this:</b> the same request on four paths. Watch what the client experiences, what the engine spends, and where the work goes when nobody is waiting for it any more.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A kitchen that keeps cooking a table&rsquo;s order after they have walked out. The food is perfect and nobody eats it, and the hob was not available to anyone else.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>take <b>the client hangs up</b> and compare the two rows at the bottom.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>streaming</b> tokens sent as they are produced</span><span class="sp-w"><b>non-streaming</b> the whole answer sent in one response at the end</span><span class="sp-w"><b>cancellation</b> the caller going away before the answer finishes</span><span class="sp-w"><b>abandoned work</b> generation nobody is waiting for any more</span><span class="sp-w"><b>propagate</b> the disconnect reaching the scheduler rather than stopping at the web layer</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svLifeOut"></div></div>
+    <div><div class="segmented" id="svLifePick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svLifeNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="sec">Try it &mdash; measure it in a way somebody else could repeat</h2>
+  <div class="plain-line"><b>Try this:</b> the same system benchmarked four ways. Only one of them produces a number worth acting on, and the differences between them are exactly the things people leave out of a methodology section.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Timing a car from cold on a wet road, then from warm on a dry one, and reporting the second as its performance.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>look at <b>no warm-up</b> and read what the first measurements are actually measuring.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>warm-up</b> requests run and discarded before measurement begins</span><span class="sp-w"><b>steady state</b> the system behaving as it will under sustained load</span><span class="sp-w"><b>open loop</b> load arriving at a fixed rate whatever the system does</span><span class="sp-w"><b>closed loop</b> each client waiting for a reply before sending again</span><span class="sp-w"><b>coordinated omission</b> a measurement that hides delay by slowing the measurer</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svBenchOut"></div></div>
+    <div><div class="segmented" id="svBenchPick" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svBenchNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>`;
+
+/* --- SIM: the four paths --- */
+(function(){
+  const pick=document.getElementById('svLifePick'), out=document.getElementById('svLifeOut'), note=document.getElementById('svLifeNote');
+  if(!pick) return;
+  const P={
+   stream:{n:'Streaming, runs to completion',
+     client:'First token at 180 ms, then a token every 18 ms until it finishes.',
+     spent:600, useful:600, kv:'held for the whole generation, released at the end',
+     metric:'TTFT and TPOT both matter, and the user forgives a slow total if the first token is quick.',
+     v:['ok','The path everybody builds. Worth noticing that the user&rsquo;s sense of speed is set almost entirely by the first 180 ms.']},
+   whole:{n:'Non-streaming, runs to completion',
+     client:'Nothing at all for 11 seconds, then the entire answer at once.',
+     spent:600, useful:600, kv:'identical — the engine does the same work either way',
+     metric:'Only end-to-end exists. TTFT is meaningless to the caller because nothing is shown until the end.',
+     v:['lzwarn','<b>The engine does exactly the same thing;</b> the difference is entirely in what the caller sees. For an agent calling a tool this is right &mdash; nobody is watching, and a partial answer is useless. For a person it is eleven seconds of blank screen.']},
+   cancel:{n:'The client hangs up after 2 seconds',
+     client:'Saw about 100 tokens, closed the tab, and is gone.',
+     spent:600, useful:100, kv:'held until generation finishes — long after anyone cares',
+     metric:'Nothing is recorded, because the request never completed. It is invisible in your latency dashboards.',
+     v:['lzbad','<b>The expensive one.</b> Unless the disconnect propagates into the scheduler, the engine generates the remaining 500 tokens for nobody, holding its KV blocks the whole time. Multiply by the share of users who close a tab mid-answer and it is a real fraction of the fleet.']},
+   invalid:{n:'Input that was never valid',
+     client:'A 400 within a few milliseconds.',
+     spent:0, useful:0, kv:'never allocated',
+     metric:'Cheap, and it belongs in a different bucket &mdash; mixing rejected requests into latency percentiles makes them look better than they are.',
+     v:['ok','<b>The one to get right early.</b> Invalid input should be rejected at the boundary — validate before allocating anything: a prompt over the context limit, a malformed schema, an unknown model. Catching it at the boundary costs microseconds; discovering it inside the engine costs an allocation and a confusing error.']}
+  };
+  let cur='stream';
+  function render(){
+    pick.innerHTML=Object.entries(P).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+v.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const p=P[cur];
+    const waste=p.spent-p.useful;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT THE CLIENT EXPERIENCES</div>'+
+      '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:var(--blue)">'+p.client+'</div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">TOKENS GENERATED &mdash; AND HOW MANY WERE WANTED</div>'+
+      '<div style="height:24px;border-radius:6px;overflow:hidden;display:flex;background:var(--panel2)">'+
+      (p.spent?('<div style="width:'+(p.useful/6)+'%;background:var(--teal)"></div>'+
+       '<div style="width:'+(waste/6)+'%;background:var(--red)"></div>'):'<div style="width:100%;display:grid;place-items:center;font-family:var(--mono);font-size:10px;color:var(--muted)">nothing generated</div>')+'</div>'+
+      (p.spent?'<div style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px">'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--teal);border-radius:2px"></span> read by someone</span>'+
+      (waste?'<span><span style="display:inline-block;width:9px;height:9px;background:var(--red);border-radius:2px"></span> generated for nobody</span>':'')+'</div>':'')+
+      '<div style="margin-top:14px">'+
+      [['tokens the engine produced',p.spent],['tokens anybody read',p.useful],
+       ['KV cache',p.kv],['what your metrics record',p.metric]]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:12px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted);flex:none">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+'</div>'+
+      '<div class="'+p.v[0]+'" style="margin-top:12px;padding:11px 13px">'+p.v[1]+'</div>';
+    note.innerHTML =
+      cur==='cancel' ? '<div class="lzbad"><b>And it is invisible.</b> The request never completed, so it contributes to no latency percentile and no success rate. You find it by measuring generated tokens against delivered tokens &mdash; a comparison most deployments never make, which is why abandoned work runs for months unnoticed.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>The fix is a plumbing problem rather than a clever one.</b> The disconnect has to travel from the HTTP layer through the API server into the engine and abort the sequence. Every hop that swallows it turns a cancelled request into a fully-generated one.</div>'
+      : cur==='whole' ? '<div class="simnote"><b>Choose by who is waiting.</b> A person watching text wants streaming, because the first token is most of the perceived speed. An agent calling a tool wants the whole thing, because a partial JSON object is not useful and it has to wait anyway. The same endpoint often serves both, which is a good reason to measure them separately.</div>'
+      : cur==='invalid' ? '<div class="simnote"><b>Keep rejections out of your latency percentiles.</b> They are fast, so mixing them in drags every percentile down and flatters the service. Count them separately and alert on the rate &mdash; a spike in 400s is usually a client that just deployed.</div>'
+      : '<div class="simnote"><b>Try the other three.</b> They share this endpoint, they are far less tested, and one of them is quietly spending a fraction of your fleet.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: benchmark methodology --- */
+(function(){
+  const pick=document.getElementById('svBenchPick'), out=document.getElementById('svBenchOut'), note=document.getElementById('svBenchNote');
+  if(!pick) return;
+  const M={
+   naive:{n:'No warm-up, closed loop, one prompt length',
+     ttft:96, tpot:9.4, tput:'4 200 tok/s', honest:false,
+     flaws:['First requests measured while CUDA graphs were still being captured and the cache was empty',
+            'Every client waits for its reply before sending again, so the load falls whenever the system slows',
+            'One prompt length means the batch is uniform and padding is zero — nothing like real traffic'],
+     v:'<b>Every number here is better than the truth, and by an unknown amount.</b> It is not that the benchmark is imprecise; it is that each flaw pushes the result the same way.'},
+   warm:{n:'With warm-up, still closed loop',
+     ttft:118, tpot:11.1, tput:'3 700 tok/s', honest:false,
+     flaws:['Load still backs off whenever the system is slow, so queueing never builds',
+            'Still a single prompt length'],
+     v:'<b>Better, and still flattering.</b> Discarding the first requests removes compilation and cold-cache effects. What remains is the harder problem: a closed loop cannot show you what happens when demand does not politely wait.'},
+   open:{n:'Warm-up, open loop, one prompt length',
+     ttft:210, tpot:14.8, tput:'3 400 tok/s', honest:false,
+     flaws:['Still a single prompt length, so no ragged batches and no padding waste'],
+     v:'<b>Now the queueing is real.</b> Load arrives at a fixed rate regardless of how the system is coping, so delay accumulates the way it does in production. The numbers got worse because they got truer.'},
+   real:{n:'Warm-up, open loop, your own traffic mix',
+     ttft:340, tpot:17.2, tput:'2 900 tok/s', honest:true,
+     flaws:[],
+     v:'<b>The only one worth planning capacity on.</b> Mixed prompt lengths, real cancellation rate, real share of shared prefixes. Roughly 30% off the headline figure &mdash; which is the gap between a benchmark and a service.'}
+  };
+  let cur='naive';
+  function render(){
+    pick.innerHTML=Object.entries(M).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:11.5px">'+v.n+'</button>').join('');
+    pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
+    const m=M[cur], base=M.real;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">WHAT THIS METHOD REPORTS</div>'+
+      [['time to first token',m.ttft+' ms',m.ttft/base.ttft],
+       ['time per output token',m.tpot+' ms',m.tpot/base.tpot],
+       ['throughput',m.tput,null]]
+      .map(([k,v,r])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+
+        (r&&r<0.95?' <span style="color:var(--red)">('+((1-r)*100).toFixed(0)+'% optimistic)</span>':r?' <span style="color:var(--green)">(honest)</span>':'')+'</span></div>').join('')+
+      '<div class="dim" style="font-size:11px;margin:16px 0 7px">AGAINST THE HONEST MEASUREMENT</div>'+
+      '<div style="display:flex;gap:8px;align-items:flex-end;height:70px">'+
+      Object.entries(M).map(([k,x])=>'<div style="flex:1;text-align:center">'+
+        '<div style="height:'+(x.ttft/base.ttft*62)+'px;background:'+(k===cur?(x.honest?'var(--green)':'var(--red)'):'var(--line2)')+
+        ';border-radius:3px 3px 0 0"></div>'+
+        '<div style="font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:4px">'+x.ttft+'</div></div>').join('')+'</div>'+
+      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:3px">reported TTFT — taller is more honest</div>'+
+      (m.flaws.length
+        ? '<div class="dim" style="font-size:11px;margin:16px 0 7px">WHAT IT IS STILL HIDING</div>'+
+          m.flaws.map(f=>'<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:var(--red)">'+f+'</div>').join('')
+        : '<div class="ok" style="margin-top:16px;padding:11px 13px">Nothing systematic left. Still worth stating the traffic mix alongside the number, because it only holds for that mix.</div>');
+    note.innerHTML='<div class="'+(m.honest?'ok':'lzbad')+'">'+m.v+'</div>'+
+      (cur==='naive'
+        ? '<div class="simnote" style="margin-top:10px"><b>Warm-up is not a nicety.</b> The first requests after start-up pay for CUDA graph capture, an empty prefix cache and a cold allocator. Including them measures start-up; excluding them without saying so measures a system that has been running for a while, which is usually what you want &mdash; but it has to be stated.</div>'
+        : cur==='open'
+        ? '<div class="simnote" style="margin-top:10px"><b>Closed-loop load testing is the subtle one.</b> If every virtual client waits for its reply before sending the next request, the offered load automatically falls whenever the system slows &mdash; so the queue never grows and the tail never appears. The measurement is self-correcting in exactly the way you do not want.</div>'
+        : '<div class="simnote" style="margin-top:10px"><b>The gap between the first bar and the last is the point.</b> Nothing here is dishonest; each step simply removes an assumption that happened to be favourable. A benchmark is a claim about a workload, and it is only as good as how closely that workload resembles yours.</div>')+
+      '<div class="note" style="margin-top:10px"><b>What to write down next to any number:</b> prompt and output length distributions, the share of requests with a shared prefix, the arrival pattern, the warm-up policy, and whether the load was open or closed. Without those five, the figure cannot be reproduced or compared, and the next person will re-measure it anyway.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: padding waste in a ragged batch --- */
+(function(){
+  const ctl=document.getElementById('svPadCtl'), mEl=document.getElementById('svPadMode'),
+        out=document.getElementById('svPadOut'), note=document.getElementById('svPadNote');
+  if(!ctl) return;
+  let spread=0.7, mode='pad';
+  const N=8, BASE=600;
+  function lengths(){
+    const seed=[0.12,0.95,0.31,0.77,0.05,0.58,0.41,0.88];
+    return seed.map(x=>Math.round(BASE*(1-spread)+BASE*spread*2*x));
+  }
+  function render(){
+    ctl.innerHTML='<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
+      '<span style="color:var(--muted)">spread of prompt lengths</span>'+
+      '<span>'+(spread<0.25?'all similar':spread>0.75?'very mixed':'mixed')+'</span></div>'+
+      '<input type="range" id="svSp" min="0" max="1" step="0.05" value="'+spread+'" style="width:100%">';
+    const e=document.getElementById('svSp'); if(e) e.oninput=()=>{spread=+e.value;render();};
+    mEl.innerHTML=[['pad','Pad every row to the longest'],['bucket','Bucket similar lengths, then pad'],['pack','Pack end to end, no padding']]
+      .map(([k,n])=>'<button class="seg'+(mode===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
+    mEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{mode=b.dataset.k;render();});
+    const L=lengths(), real=L.reduce((a,b)=>a+b,0), max=Math.max(...L);
+    let allocated, rows;
+    if(mode==='pad'){ allocated=max*N; rows=L.map(l=>({l,pad:max-l})); }
+    else if(mode==='bucket'){
+      const sorted=[...L].sort((a,b)=>a-b);
+      const g1=sorted.slice(0,4), g2=sorted.slice(4);
+      const m1=Math.max(...g1), m2=Math.max(...g2);
+      allocated=m1*4+m2*4;
+      rows=[...g1.map(l=>({l,pad:m1-l})),...g2.map(l=>({l,pad:m2-l}))];
+    } else { allocated=real; rows=L.map(l=>({l,pad:0})); }
+    const waste=allocated-real, pct=waste/allocated*100;
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+N+' REQUESTS IN ONE BATCH</div>'+
+      rows.map(r=>'<div style="display:flex;gap:2px;align-items:center;margin-bottom:4px">'+
+        '<span style="font-family:var(--mono);font-size:10px;color:var(--muted);min-width:52px">'+r.l+'</span>'+
+        '<div style="flex:1;display:flex;height:14px;border-radius:3px;overflow:hidden;background:var(--panel2)">'+
+        '<div style="width:'+(r.l/max*100)+'%;background:var(--teal)"></div>'+
+        '<div style="width:'+(r.pad/max*100)+'%;background:var(--red);opacity:.55"></div></div></div>').join('')+
+      '<div style="display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px">'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--teal);border-radius:2px"></span> real tokens</span>'+
+      '<span><span style="display:inline-block;width:9px;height:9px;background:var(--red);opacity:.55;border-radius:2px"></span> padding — computed, then discarded</span></div>'+
+      '<div style="margin-top:14px">'+
+      [['real tokens',real.toLocaleString()],['positions computed',allocated.toLocaleString()],
+       ['wasted on padding',waste.toLocaleString()+' ('+pct.toFixed(0)+'%)'],
+       ['effective throughput',(100-pct).toFixed(0)+'% of the hardware']]
+      .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
+      '<div class="'+(pct<3?'ok':pct<20?'lzwarn':'lzbad')+'" style="margin-top:12px;padding:11px 13px">'+
+      (mode==='pack'
+        ? '<b>No padding at all.</b> Sequences are laid end to end in one long row, with the attention mask keeping them from seeing each other. Every position computed is a position somebody wanted.'
+        : mode==='bucket'
+        ? '<b>Grouping similar lengths shortens the padding.</b> Cheap to implement and it does not eliminate the waste &mdash; the spread inside each bucket still has to be padded away.'
+        : pct>25
+        ? '<b>A quarter or more of the batch is arithmetic on filler.</b> The GPU reports high utilisation throughout, because computing padding looks exactly like computing anything else.'
+        : '<b>Modest waste, because the lengths are close.</b> Widen the spread and watch it climb.')+'</div>';
+    note.innerHTML =
+      mode==='pack' ? '<div class="ok"><b>This is what modern engines actually do</b> for prefill &mdash; concatenate the batch into one sequence and let the attention kernel handle the boundaries. It is why continuous batching and fused attention arrived together: neither is much use without the other.</div>'
+      : '<div class="simnote"><b>Note what this does to your metrics.</b> Padding is indistinguishable from real work at every level except one &mdash; utilisation is high, the kernels are busy, and the tokens-per-second you care about is lower than the tokens-per-second the hardware is achieving. Measuring only the second is how a fleet looks healthy and expensive at once.</div>'+
+        '<div class="note" style="margin-top:10px"><b>Try packing with the spread at its widest.</b> The waste goes to zero, which is why this is worth understanding even though you will not implement it &mdash; it tells you which engine behaviours to look for and what a suspiciously round utilisation figure might be hiding.</div>';
+  }
+  render();
+})();
 
 /* ================= THEME ================= */
 /* shares the study guide's stored preference so the two pages agree */
