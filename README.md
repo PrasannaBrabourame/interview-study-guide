@@ -61,6 +61,12 @@ gpu.html          GPU lab — the layer everything else sits on: why a GPU is
                   and arithmetic intensity, coalescing, tiling, tensor cores
                   and number formats, operator fusion and FlashAttention,
                   and Triton vs torch.compile (with graph breaks)
+llm.html          LLM internals lab — the generation loop, tokenisation and
+                  BPE, embeddings and position, attention (Q/K/V, heads,
+                  the attention sink), the transformer block and what breaks
+                  without residuals, sampling, the KV cache and its
+                  arithmetic, quantisation (GPTQ/AWQ/naive), continuous
+                  batching and paged attention
 peakweek.html     Peak Week lab — a sorter fails at a parcel hub on the
                   busiest night of the year, and one agent is carried through
                   the whole life of a system: groundwork, make it work (tools,

@@ -49,6 +49,7 @@
   <a role="menuitem" href="design.html"><i>▦</i><span><b>Architecture diagrams</b><small>11 tabs · 11 sims</small></span></a>
   <a role="menuitem" href="peakweek.html"><i>◐</i><span><b>Peak Week · one agent end to end</b><small>10 tabs · 16 sims</small></span></a>
   <a role="menuitem" href="gpu.html"><i>▮</i><span><b>The machine underneath</b><small>10 tabs · 13 sims</small></span></a>
+  <a role="menuitem" href="llm.html"><i>◫</i><span><b>One token at a time</b><small>10 tabs · 15 sims</small></span></a>
 </div></div>
 <button class="btn" id="theme" title="Toggle theme">🌙</button>
 <button class="btn" id="print" title="Print / PDF">🖨</button>
@@ -194,6 +195,19 @@
       <span class="lmeta">10 tabs · 13 simulations · worked on a named machine</span>
     </a>
   <button class="ltopics" data-lab="gpu" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="gpu"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="llm.html">
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>One token at a time</b>
+      <small>A model does one thing: score every possible next token. Watch the loop run, text become tokens, a pronoun find its noun, the KV cache turn quadratic into linear &mdash; and then work out, on real models, why the cache ends up bigger than the weights.</small>
+      <span class="lmeta">10 tabs · 15 simulations · arithmetic on named models</span>
+    </a>
+  <button class="ltopics" data-lab="llm" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="llm"></span></button>
 </div>
   <div class="labcell">
   <a class="lab" href="cloud.html#pane-pca" id="labPca">
