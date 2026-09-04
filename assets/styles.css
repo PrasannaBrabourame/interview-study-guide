@@ -74,7 +74,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;white-space:no
 .hcell.l3{background:var(--hm3)}
 .hcell.l4{background:var(--hm4)}
 .dtitle{margin:34px 0 14px;font-size:19px;letter-spacing:-.02em}
-.dnote{max-width:640px;margin:-12px 0 18px;color:var(--muted);font-size:14px;line-height:1.6}
+.dnote{max-width:640px;margin:24px 0 18px;color:var(--muted);font-size:14px;line-height:1.6}
+/* the tight negative margin is only right when it sits under a heading */
+.dtitle + .dnote{margin-top:-12px}
 .dtitle small{font-weight:400;color:var(--muted);font-size:13px;letter-spacing:0}
 
 /* difficulty badges + legend */
@@ -310,6 +312,10 @@ h1,h2.dtitle,.dwelcome h1,.btitle h2{font-family:var(--display);font-weight:500;
 .lab .lmeta{display:block;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--faint);
   letter-spacing:.04em}
 .lab .lbrands{display:flex;align-items:center;gap:14px;margin-bottom:13px;min-height:26px}
+.lab .lstep{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;
+  background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.labcell:hover .lab .lstep{background:var(--accentsoft);color:var(--accent);border-color:var(--accent)}
 .lab .lbrand{display:flex;align-items:center;gap:6px}
 .lab .lbrand svg{display:block;height:22px;width:auto}
 .lab .lbrand i{font-style:normal;font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;

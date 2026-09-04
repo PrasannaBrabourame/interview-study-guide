@@ -39,15 +39,17 @@
 <span class="oring" id="oring" title="Overall progress"></span>
 <div class="labmenu"><button class="btn" id="labsBtn" aria-haspopup="true" aria-expanded="false">◈ Labs</button>
 <div class="labpop" id="labsPop" role="menu">
-  <a role="menuitem" href="cloud.html"><i>☁</i><span><b>Cloud lab</b><small>14 tabs · 30 sims</small></span></a>
+  <div class="labpopsep">Build, run &amp; govern</div>
+  <a role="menuitem" href="adk.html"><i>◇</i><span><b>ADK lab</b><small>10 tabs · 11 sims</small></span></a>
   <a role="menuitem" href="agentcore.html"><i>◆</i><span><b>AgentCore lab</b><small>9 tabs · 10 sims</small></span></a>
   <a role="menuitem" href="agentbuild.html"><i>⬡</i><span><b>Agents building agents</b><small>9 tabs · 10 sims</small></span></a>
-  <a role="menuitem" href="adk.html"><i>◇</i><span><b>ADK lab</b><small>10 tabs · 11 sims</small></span></a>
   <a role="menuitem" href="evals.html"><i>◈</i><span><b>Evaluation &amp; hill climbing</b><small>11 tabs · 14 sims</small></span></a>
-  <a role="menuitem" href="gemini.html"><i>◉</i><span><b>Gemini Enterprise</b><small>12 tabs · 14 sims</small></span></a>
   <a role="menuitem" href="govern.html"><i>⬢</i><span><b>Govern &amp; secure agents</b><small>12 tabs · 12 sims</small></span></a>
-  <a role="menuitem" href="design.html"><i>▦</i><span><b>Architecture diagrams</b><small>11 tabs · 11 sims</small></span></a>
+  <a role="menuitem" href="gemini.html"><i>◉</i><span><b>Gemini Enterprise</b><small>12 tabs · 14 sims</small></span></a>
   <a role="menuitem" href="peakweek.html"><i>◐</i><span><b>Peak Week · one agent end to end</b><small>10 tabs · 16 sims</small></span></a>
+  <div class="labpopsep">Cloud &amp; architecture</div>
+  <a role="menuitem" href="cloud.html"><i>☁</i><span><b>Cloud lab</b><small>14 tabs · 30 sims</small></span></a>
+  <a role="menuitem" href="design.html"><i>▦</i><span><b>Architecture diagrams</b><small>11 tabs · 11 sims</small></span></a>
   <div class="labpopsep">Under the hood</div>
   <a role="menuitem" href="gpu.html"><i>▮</i><span><b>The machine underneath</b><small>10 tabs · 13 sims</small></span></a>
   <a role="menuitem" href="llm.html"><i>◫</i><span><b>One token at a time</b><small>10 tabs · 15 sims</small></span></a>
@@ -80,10 +82,102 @@
 <small id="streaktext"></small>
 </div>
 </div>
-<h2 class="dtitle">Hands-on labs <small>— read less, break things instead</small></h2>
+<p class="dnote">Three tracks. They are independent &mdash; start whichever suits you &mdash; but the order <em>within</em> each is deliberate, and each lab still stands on its own if you would rather not follow it. New to all of it? Open <b>Cloud lab</b> for foundations, or <b>ADK lab</b> to build something today.</p>
+<h2 class="dtitle">Build, run and govern an agent <small>&mdash; 7 labs, in order</small></h2>
+<p class="dnote">The main track, and the one most people want. Build one, run it in production, hand the building to a coding agent, measure it, secure it, publish it &mdash; then the capstone carries a single agent through every stage at once.</p>
+<div class="labs">
+  <div class="labcell">
+  <a class="lab" href="adk.html">
+      <span class="lstep">1</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>ADK lab</b>
+      <small>Build an agent that behaves. A docstring decides whether a tool is ever chosen, a four-character prefix decides whether data leaks, and model-written code runs in a room with no doors. Ten tabs from first agent to production routing.</small>
+      <span class="lmeta">10 tabs · 11 simulations · three Google courses</span>
+    </a>
+  <button class="ltopics" data-lab="adk" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="adk"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="agentcore.html">
+      <span class="lstep">2</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
+      </span>
+      <b>AgentCore lab</b>
+      <small>What it takes to trust an agent in production: isolation, identity, tools, memory, and proving it works. Watch a request become a trace and a prompt change fail a quality gate.</small>
+      <span class="lmeta">9 tabs · 10 simulations · scenario drill</span>
+    </a>
+  <button class="ltopics" data-lab="agentcore" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="agentcore"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="agentbuild.html">
+      <span class="lstep">3</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>Agents building agents</b>
+      <small>A coding agent writes your agent from a specification — and quietly targets the wrong API if you skip a step. Then a managed runtime that starts locked down. Watch the drift, the eval trap and the containment layers.</small>
+      <span class="lmeta">9 tabs · 10 simulations · two Google courses</span>
+    </a>
+  <button class="ltopics" data-lab="agentbuild" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="agentbuild"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="evals.html">
+      <span class="lstep">4</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>Evaluation &amp; hill climbing</b>
+      <small>An agent gives a different answer every time, so &ldquo;it works&rdquo; stops being something you can assert. Score it, find the turn that actually broke, then climb: change one thing, measure everything, keep it or throw it away.</small>
+      <span class="lmeta">11 tabs · 14 simulations · five Google courses</span>
+    </a>
+  <button class="ltopics" data-lab="evals" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="evals"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="govern.html">
+      <span class="lstep">5</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>Govern &amp; secure agents</b>
+      <small>Every security control assumes a person or a program on the other side. An agent is neither — it decides what to do by reading text, and text can be written by an attacker. The gateway on both sides, identity that expires, and the injection nobody has to break in for.</small>
+      <span class="lmeta">12 tabs · 12 simulations · two Google courses</span>
+    </a>
+  <button class="ltopics" data-lab="govern" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="govern"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="gemini.html">
+      <span class="lstep">6</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>Gemini Enterprise rollout</b>
+      <small>Half plumbing, half people. Which identity provider your data sources force on you, the connector whose default is “everyone sees everything”, the firewall that cuts answers off at thirty seconds, and getting several thousand colleagues to actually use it.</small>
+      <span class="lmeta">12 tabs · 14 simulations · five Google courses</span>
+    </a>
+  <button class="ltopics" data-lab="gemini" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="gemini"></span></button>
+</div>
+  <div class="labcell">
+  <a class="lab" href="peakweek.html">
+      <span class="lstep">7</span>
+      <span class="lbrands" aria-hidden="true">
+        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
+      </span>
+      <b>Peak Week &mdash; one agent end to end</b>
+      <small>A sorter fails at a parcel hub on the busiest night of the year. Every other lab teaches one stage of an agent&rsquo;s life; this one carries a single agent through all of them &mdash; made, deployed, secured, scored, handed over &mdash; so the handoffs are visible: the small file you paste in at stage two is what makes it publishable at stage five, and its permissions are the one thing deploying does not sort out for you.</small>
+      <span class="lmeta">10 tabs · 16 simulations · groundwork → work → survive → safe → good → theirs</span>
+    </a>
+  <button class="ltopics" data-lab="peakweek" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="peakweek"></span></button>
+</div>
+</div>
+
+<h2 class="dtitle">Cloud and architecture <small>&mdash; 4 labs, in order</small></h2>
+<p class="dnote">How the cloud actually works, how to draw it so somebody else can act on it, and then the two exam workbenches. Useful on its own, and the ground the agent track is standing on.</p>
 <div class="labs">
   <div class="labcell">
   <a class="lab" href="cloud.html">
+      <span class="lstep">1</span>
       <span class="lbrands" aria-hidden="true">
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
@@ -96,73 +190,8 @@
   <button class="ltopics" data-lab="cloud" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="cloud"></span></button>
 </div>
   <div class="labcell">
-  <a class="lab" href="agentcore.html">
-      <span class="lbrands" aria-hidden="true">
-        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
-      </span>
-      <b>AgentCore lab</b>
-      <small>What it takes to trust an agent in production: isolation, identity, tools, memory, and proving it works. Watch a request become a trace and a prompt change fail a quality gate.</small>
-      <span class="lmeta">9 tabs · 10 simulations · scenario drill</span>
-    </a>
-  <button class="ltopics" data-lab="agentcore" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="agentcore"></span></button>
-</div>
-  <div class="labcell">
-  <a class="lab" href="agentbuild.html">
-      <span class="lbrands" aria-hidden="true">
-        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
-      </span>
-      <b>Agents building agents</b>
-      <small>A coding agent writes your agent from a specification — and quietly targets the wrong API if you skip a step. Then a managed runtime that starts locked down. Watch the drift, the eval trap and the containment layers.</small>
-      <span class="lmeta">9 tabs · 10 simulations · two Google courses</span>
-    </a>
-  <button class="ltopics" data-lab="agentbuild" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="agentbuild"></span></button>
-</div>
-  <div class="labcell">
-  <a class="lab" href="adk.html">
-      <span class="lbrands" aria-hidden="true">
-        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
-      </span>
-      <b>ADK lab</b>
-      <small>Build an agent that behaves. A docstring decides whether a tool is ever chosen, a four-character prefix decides whether data leaks, and model-written code runs in a room with no doors. Ten tabs from first agent to production routing.</small>
-      <span class="lmeta">10 tabs · 11 simulations · three Google courses</span>
-    </a>
-  <button class="ltopics" data-lab="adk" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="adk"></span></button>
-</div>
-  <div class="labcell">
-  <a class="lab" href="evals.html">
-      <span class="lbrands" aria-hidden="true">
-        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
-      </span>
-      <b>Evaluation &amp; hill climbing</b>
-      <small>An agent gives a different answer every time, so &ldquo;it works&rdquo; stops being something you can assert. Score it, find the turn that actually broke, then climb: change one thing, measure everything, keep it or throw it away.</small>
-      <span class="lmeta">11 tabs · 14 simulations · five Google courses</span>
-    </a>
-  <button class="ltopics" data-lab="evals" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="evals"></span></button>
-</div>
-  <div class="labcell">
-  <a class="lab" href="gemini.html">
-      <span class="lbrands" aria-hidden="true">
-        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
-      </span>
-      <b>Gemini Enterprise rollout</b>
-      <small>Half plumbing, half people. Which identity provider your data sources force on you, the connector whose default is “everyone sees everything”, the firewall that cuts answers off at thirty seconds, and getting several thousand colleagues to actually use it.</small>
-      <span class="lmeta">12 tabs · 14 simulations · five Google courses</span>
-    </a>
-  <button class="ltopics" data-lab="gemini" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="gemini"></span></button>
-</div>
-  <div class="labcell">
-  <a class="lab" href="govern.html">
-      <span class="lbrands" aria-hidden="true">
-        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
-      </span>
-      <b>Govern &amp; secure agents</b>
-      <small>Every security control assumes a person or a program on the other side. An agent is neither — it decides what to do by reading text, and text can be written by an attacker. The gateway on both sides, identity that expires, and the injection nobody has to break in for.</small>
-      <span class="lmeta">12 tabs · 12 simulations · two Google courses</span>
-    </a>
-  <button class="ltopics" data-lab="govern" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="govern"></span></button>
-</div>
-  <div class="labcell">
   <a class="lab" href="design.html">
+      <span class="lstep">2</span>
       <span class="lbrands" aria-hidden="true">
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
@@ -175,18 +204,8 @@
   <button class="ltopics" data-lab="design" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="design"></span></button>
 </div>
   <div class="labcell">
-  <a class="lab" href="peakweek.html">
-      <span class="lbrands" aria-hidden="true">
-        <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
-      </span>
-      <b>Peak Week &mdash; one agent end to end</b>
-      <small>A sorter fails at a parcel hub on the busiest night of the year. Every other lab teaches one stage of an agent&rsquo;s life; this one carries a single agent through all of them &mdash; made, deployed, secured, scored, handed over &mdash; so the handoffs are visible: the small file you paste in at stage two is what makes it publishable at stage five, and its permissions are the one thing deploying does not sort out for you.</small>
-      <span class="lmeta">10 tabs · 16 simulations · groundwork → work → survive → safe → good → theirs</span>
-    </a>
-  <button class="ltopics" data-lab="peakweek" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="peakweek"></span></button>
-</div>
-  <div class="labcell">
   <a class="lab" href="cloud.html#pane-pca" id="labPca">
+      <span class="lstep">3</span>
       <span class="lbrands" aria-hidden="true">
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mGCP"/></svg><i>Google Cloud</i></span>
       </span>
@@ -198,6 +217,7 @@
 </div>
   <div class="labcell">
   <a class="lab" href="cloud.html#pane-cheat" id="labCheat">
+      <span class="lstep">4</span>
       <span class="lbrands" aria-hidden="true">
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
       </span>
@@ -209,11 +229,12 @@
 </div>
 </div>
 
-<h2 class="dtitle">Under the hood <small>— the layers everything above is running on</small></h2>
-<p class="dnote">Read in order if you read them at all: the machine, then what runs on it, then what serves it. Each one answers a question the next one assumes.</p>
+<h2 class="dtitle">Under the hood <small>&mdash; 3 labs, in order</small></h2>
+<p class="dnote">The layers everything above is running on. Optional depth rather than a prerequisite &mdash; take it whenever you want to know why inference is priced the way it is, and read it in order.</p>
 <div class="labs">
   <div class="labcell">
   <a class="lab" href="gpu.html">
+      <span class="lstep">1</span>
       <span class="lbrands" aria-hidden="true">
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
@@ -227,6 +248,7 @@
 </div>
   <div class="labcell">
   <a class="lab" href="llm.html">
+      <span class="lstep">2</span>
       <span class="lbrands" aria-hidden="true">
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
@@ -240,6 +262,7 @@
 </div>
   <div class="labcell">
   <a class="lab" href="serving.html">
+      <span class="lstep">3</span>
       <span class="lbrands" aria-hidden="true">
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAWS"/></svg><i>AWS</i></span>
         <span class="lbrand"><svg viewBox="0 0 52 30"><use href="#mAzure"/></svg><i>Azure</i></span>
@@ -252,6 +275,7 @@
   <button class="ltopics" data-lab="serving" type="button"><span class="ltn">Related topics</span><span class="ltc" data-labcount="serving"></span></button>
 </div>
 </div>
+
 <h2 class="dtitle">Difficulty <small>— click a level to drill</small></h2>
 <div class="dlegend" id="dlegend"></div>
 <h2 class="dtitle">Categories <small>— coloured by domain</small></h2>
