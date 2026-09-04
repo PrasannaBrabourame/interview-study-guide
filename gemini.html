@@ -38,7 +38,7 @@
     --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
   }
   *{box-sizing:border-box; margin:0; padding:0}
-  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  html,body{background:var(--bg); color:var(--text); font:15.5px/1.62 var(--sans); -webkit-font-smoothing:antialiased}
   body{min-height:100vh; padding:28px 20px 60px;
     background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
   .wrap{max-width:1280px; margin:0 auto}
@@ -423,6 +423,15 @@
     border:1px solid var(--line2); border-radius:99px; padding:4px 11px; cursor:default}
   .kbdhint b{font-weight:400; color:var(--muted); margin-right:6px}
   @media (max-width:760px){.kbdhint{display:none}}
+
+  /* ---- typography, aligned across every page ----
+     div.note and div.ok carried no size of their own, so they inherited the
+     body default and rendered larger and tighter than the callouts beside
+     them. .k holds inline code identifiers and was rendering in the body
+     face. Measured in a browser rather than assumed. */
+  div.note{font-size:12.5px; line-height:1.65; color:var(--muted)}
+  div.ok{font-size:12.5px; line-height:1.65}
+  .k{font-family:var(--mono); font-size:.94em}
 </style>
 </head>
 <body>
@@ -847,7 +856,7 @@ document.getElementById('sec-identity').innerHTML=`
       '<div class="lzrow"><span class="lzmark">?</span><span><b>Why.</b> '+o.why+'</span></div>'+
       '<div class="lzrow"><span class="lzmark" style="color:var(--amber)">→</span><span><b>What to do next.</b> '+o.next+'</span></div>'+
       (pr?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line2)">'+
-        '<div class="'+(pr.hard?'lzbad':'ok')+'" style="margin-bottom:8px;font-size:14px"><b>Protocol: '+pr.t+'</b>'+
+        '<div class="'+(pr.hard?'lzbad':'ok')+'" style="margin-bottom:8px"><b>Protocol: '+pr.t+'</b>'+
         (pr.hard?' <span style="font-family:var(--mono);font-size:10px;padding:1px 7px;border-radius:99px;border:1px solid currentColor;margin-left:6px">FORCED</span>':'')+'</div>'+
         '<div class="lzrow"><span class="lzmark">?</span><span>'+pr.why+'</span></div></div>':'')+
       '<div style="margin-top:14px;font-family:var(--mono);font-size:10.5px;color:var(--muted)">path taken: '+o.path.join('  ›  ')+'</div>'+
@@ -1004,7 +1013,7 @@ document.getElementById('sec-wif').innerHTML=`
          setext:"principalSet://iam.googleapis.com/.../attribute.cost_center/101",
          onesub:"principalSet://iam.googleapis.com/.../subject/alice@partner.com"}[w])+'</pre>'+
       '<div class="dim" style="font-size:11px;margin:16px 0 8px">RESULT</div>'+
-      '<div class="'+((mapOK&&whoOK)?'ok':'lzbad')+'" style="font-size:14px"><b>'+
+      '<div class="'+((mapOK&&whoOK)?'ok':'lzbad')+'"><b>'+
         (mapOK&&whoOK ? '✓ the role applies' : '✗ nothing happens')+'</b></div>';
     let html='';
     if(!mapOK) html+='<div class="lzbad" style="margin-bottom:10px"><b>Backwards syntax.</b> The mapping is written <b>Google name = provider claim</b>, always in that order. Written the other way round it is a syntax error, and the reason it is easy to get wrong is that it reads like an assignment going the natural direction — you are describing what Google should call the thing, not what the provider should call it.</div>';

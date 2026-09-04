@@ -38,7 +38,7 @@
     --exam-text:#E6CFA4; --plain-text:#A8DDD6; --alert-text:#EDB0B0;
   }
   *{box-sizing:border-box; margin:0; padding:0}
-  html,body{background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased}
+  html,body{background:var(--bg); color:var(--text); font:15.5px/1.62 var(--sans); -webkit-font-smoothing:antialiased}
   body{min-height:100vh; padding:28px 20px 60px;
     background-image:radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0); background-size:24px 24px}
   .wrap{max-width:1280px; margin:0 auto}
@@ -412,6 +412,15 @@
     border:1px solid var(--line2); border-radius:99px; padding:4px 11px; cursor:default}
   .kbdhint b{font-weight:400; color:var(--muted); margin-right:6px}
   @media (max-width:760px){.kbdhint{display:none}}
+
+  /* ---- typography, aligned across every page ----
+     div.note and div.ok carried no size of their own, so they inherited the
+     body default and rendered larger and tighter than the callouts beside
+     them. .k holds inline code identifiers and was rendering in the body
+     face. Measured in a browser rather than assumed. */
+  div.note{font-size:12.5px; line-height:1.65; color:var(--muted)}
+  div.ok{font-size:12.5px; line-height:1.65}
+  .k{font-family:var(--mono); font-size:.94em}
 </style>
 </head>
 <body>
