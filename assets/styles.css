@@ -74,6 +74,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;white-space:no
 .hcell.l3{background:var(--hm3)}
 .hcell.l4{background:var(--hm4)}
 .dtitle{margin:34px 0 14px;font-size:19px;letter-spacing:-.02em}
+.dnote{max-width:640px;margin:-12px 0 18px;color:var(--muted);font-size:14px;line-height:1.6}
 .dtitle small{font-weight:400;color:var(--muted);font-size:13px;letter-spacing:0}
 
 /* difficulty badges + legend */
@@ -335,6 +336,8 @@ a.brand:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-
   background:var(--accentsoft);color:var(--accent);font-size:13px;flex:none}
 .labpop a b{display:block;font-size:13px;font-weight:600}
 .labpop a small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:1px}
+.labpopsep{margin:8px 4px 4px;padding-top:8px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
 
 /* ============ motion ============ */
 @media (prefers-reduced-motion: reduce){
