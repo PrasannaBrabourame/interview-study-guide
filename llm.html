@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LLM internals lab — what happens between your prompt and the answer</title>
+<title>LLM internals lab, what happens between your prompt and the answer</title>
 <link rel="stylesheet" href="assets/lab.css">
 <style>
 
@@ -70,10 +70,10 @@
       <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
     </nav>
     <div class="eyebrow">tokens · attention · cache · precision</div>
-    <h1>One token at a time <span class="thin">— what actually happens between your prompt and the answer</span></h1>
+    <h1>One token at a time: <span class="thin">what actually happens between your prompt and the answer</span></h1>
     <p class="track" id="trackLine"></p>
-    <p class="sub">A language model does exactly one thing: given some text, it produces a probability for every possible next token. Everything a chat assistant appears to do &mdash; reasoning, refusing, remembering what you said four messages ago &mdash; is that single operation run in a loop with its own output fed back in. This lab opens the loop up. Nine sections, each with something you can operate, and a running answer to the question that decides every production trade-off you will make: <b>where does the memory go?</b></p>
-    <div class="note" style="margin-top:14px"><b>Two neighbours.</b> The <a href="gpu.html">GPU lab</a> explains why moving bytes, not doing arithmetic, is what costs you &mdash; this lab is where you find out which bytes. Neither is a prerequisite for the other, and the arithmetic here uses named models so you can check it.</div>
+    <p class="sub">A language model does exactly one thing: given some text, it produces a probability for every possible next token. Everything a chat assistant appears to do (reasoning, refusing, remembering what you said four messages ago) is that single operation run in a loop with its own output fed back in. This lab opens the loop up. Nine sections, each with something you can operate, and a running answer to the question that decides every production trade-off you will make: <b>where does the memory go?</b></p>
+    <div class="note" style="margin-top:14px"><b>Two neighbours.</b> The <a href="gpu.html">GPU lab</a> explains why moving bytes, not doing arithmetic, is what costs you. This lab is where you find out which bytes. Neither is a prerequisite for the other, and the arithmetic here uses named models so you can check it.</div>
   </header>
 
   <div class="tabs" role="tablist">
@@ -136,16 +136,16 @@ const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
 document.getElementById('sec-lmstart').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The whole thing is one operation in a loop</h2>
-  <div class="plain-line"><b>In plain English:</b> a language model takes a sequence of tokens and returns a number for every token in its vocabulary &mdash; how likely each one is to come next. That is the entire model. It does not plan a sentence, hold an intention, or know it is answering a question.</div>
-  <div class="plain-line">To produce text, something outside the model picks one of those tokens, sticks it on the end of the input, and runs the model again. And again. Every apparent higher-level behaviour &mdash; following instructions, changing its mind, writing code that compiles &mdash; is that loop, plus the fact that the probabilities were shaped by an enormous amount of training.</div>
+  <div class="plain-line"><b>In plain English:</b> a language model takes a sequence of tokens and returns a number for every token in its vocabulary, how likely each one is to come next. That is the entire model. It does not plan a sentence, hold an intention, or know it is answering a question.</div>
+  <div class="plain-line">To produce text, something outside the model picks one of those tokens, sticks it on the end of the input, and runs the model again. And again. Every apparent higher-level behaviour (following instructions, changing its mind, writing code that compiles) is that loop, plus the fact that the probabilities were shaped by an enormous amount of training.</div>
   <div id="lmLoopDiag"></div>
-  <div class="plain-line" style="margin-top:12px"><b>Two consequences you will meet immediately.</b> First, the model re-reads the entire conversation on every single token &mdash; which is why long chats get slower and more expensive, and why the KV cache exists. Second, the choice of <em>which</em> token to pick is made outside the model, by a sampler you control. Most &ldquo;the model is too random&rdquo; complaints are sampler settings.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Two consequences you will meet immediately.</b> First, the model re-reads the entire conversation on every single token, which is why long chats get slower and more expensive, and why the KV cache exists. Second, the choice of <em>which</em> token to pick is made outside the model, by a sampler you control. Most &ldquo;the model is too random&rdquo; complaints are sampler settings.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; run the loop by hand</h2>
+  <h2 class="sec">Try it: run the loop by hand</h2>
   <div class="plain-line"><b>Try this:</b> step through generation one token at a time. Watch the input grow, watch the model produce a distribution rather than an answer, and watch the cost of each step climb as the context lengthens.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Someone completing your sentence, then reading the whole sentence again including their own word, then completing it again. Every time, from the beginning.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next token</b> five or six times and watch the &ldquo;tokens read this step&rdquo; number.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>token</b> a chunk of text — roughly a word, often part of one</span><span class="sp-w"><b>context</b> everything the model can currently see</span><span class="sp-w"><b>logits</b> the raw scores the model gives every possible next token</span><span class="sp-w"><b>distribution</b> those scores turned into probabilities that add to one</span><span class="sp-w"><b>autoregressive</b> each output becomes part of the next input</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Someone completing your sentence, then reading the whole sentence again including their own word, then completing it again. Every time, from the beginning.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next token</b> five or six times and watch the &ldquo;tokens read this step&rdquo; number.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>token</b> a chunk of text, roughly a word, often part of one</span><span class="sp-w"><b>context</b> everything the model can currently see</span><span class="sp-w"><b>logits</b> the raw scores the model gives every possible next token</span><span class="sp-w"><b>distribution</b> those scores turned into probabilities that add to one</span><span class="sp-w"><b>autoregressive</b> each output becomes part of the next input</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmLoopOut"></div></div>
     <div><div class="segmented" id="lmLoopCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -167,7 +167,7 @@ document.getElementById('sec-lmstart').innerHTML=`
   b+=tm(280,146,'the chosen token is appended, and the whole thing runs again','var(--teal)');
   b+=tm(280,28,'this is the only thing the model does','var(--muted)');
   h.innerHTML=D('0 0 560 160','Prompt into model into logits into sampler, with the output fed back to the prompt',b,
-    'The blue box is the neural network. Everything else &mdash; choosing a token, appending it, deciding when to stop &mdash; happens outside it, in ordinary code you control.');
+    'The blue box is the neural network. Everything else (choosing a token, appending it, deciding when to stop) happens outside it, in ordinary code you control.');
 })();
 
 /* --- SIM: the generation loop --- */
@@ -194,29 +194,29 @@ document.getElementById('sec-lmstart').innerHTML=`
     const chosen=STEPS.slice(0,step).map(d=>d[0][0]);
     const ctx=[...PROMPT,...chosen];
     const cur=step<STEPS.length?STEPS[step]:null;
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT THE MODEL READS THIS STEP &mdash; '+ctx.length+' TOKENS</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT THE MODEL READS THIS STEP '+ctx.length+' TOKENS</div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">'+
       ctx.map((w,i)=>'<span style="font-family:var(--mono);font-size:12px;padding:4px 8px;border-radius:6px;background:'+
         (i<PROMPT.length?'var(--panel2)':'var(--n-teal)')+';border:1px solid '+(i<PROMPT.length?'var(--line2)':'var(--teal)')+'">'+w+'</span>').join('')+
       (cur?'<span style="font-family:var(--mono);font-size:12px;padding:4px 8px;border-radius:6px;border:1px dashed var(--amber);color:var(--amber)">?</span>':'')+'</div>'+
       (cur
-        ? '<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT COMES BACK &mdash; A SCORE FOR EVERY TOKEN IN THE VOCABULARY</div>'+
+        ? '<div class="dim" style="font-size:11px;margin-bottom:7px">WHAT COMES BACK, A SCORE FOR EVERY TOKEN IN THE VOCABULARY</div>'+
           cur.map(([w,p],i)=>'<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px">'+
             '<span style="font-family:var(--mono);font-size:12px;min-width:74px;'+(i===0?'color:var(--green);font-weight:600':'')+'">'+w+'</span>'+
             '<div style="flex:1;height:8px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
             (p*100)+'%;background:'+(i===0?'var(--green)':'var(--wire)')+'"></i></div>'+
             '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:36px;text-align:right">'+(p*100).toFixed(0)+'%</span></div>').join('')+
           '<div style="font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:6px">…and about 50 000 more, all with scores near zero</div>'
-        : '<div class="ok" style="padding:11px 13px"><b>Six tokens generated, six full passes over the whole context.</b> The model was never told it was writing a sentence about Paris. Each step it was asked one question &mdash; what comes next &mdash; and each answer became part of the next question.</div>')+
+        : '<div class="ok" style="padding:11px 13px"><b>Six tokens generated, six full passes over the whole context.</b> The model was never told it was writing a sentence about Paris. Each step it was asked one question (what comes next) and each answer became part of the next question.</div>')+
       '<div style="margin-top:14px">'+
       [['tokens read this step',ctx.length],['forward passes so far',step],
        ['total tokens processed',PROMPT.length*Math.max(1,step)+chosen.reduce((a,_,i)=>a+i,0)]]
       .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
     note.innerHTML =
-      step===0 ? '<div class="simnote">Five tokens in. Press the button and look carefully at what comes back &mdash; it is not a word, it is a score for every word the model knows.</div>'
-      : step>=STEPS.length ? '<div class="ok"><b>Notice what never happened.</b> At no point did the model decide to write a sentence about Paris, or plan the clause it was halfway through. It answered the same one-step question six times, and the sentence is what that looks like from outside.</div><div class="simnote" style="margin-top:10px"><b>And notice the cost.</b> Each step re-read everything, including its own output. Without the trick in the KV cache section, generating the thousandth token means processing a thousand tokens &mdash; which is why long conversations get slower, not just longer.</div>'
-      : '<div class="simnote"><b>The model returns a distribution, not an answer.</b> Something outside it picked the top one here. Change that choice and you change the personality of the whole system &mdash; that is the generation section, and it is the cheapest lever you have.</div>';
+      step===0 ? '<div class="simnote">Five tokens in. Press the button and look carefully at what comes back. It is not a word, it is a score for every word the model knows.</div>'
+      : step>=STEPS.length ? '<div class="ok"><b>Notice what never happened.</b> At no point did the model decide to write a sentence about Paris, or plan the clause it was halfway through. It answered the same one-step question six times, and the sentence is what that looks like from outside.</div><div class="simnote" style="margin-top:10px"><b>And notice the cost.</b> Each step re-read everything, including its own output. Without the trick in the KV cache section, generating the thousandth token means processing a thousand tokens, which is why long conversations get slower, not just longer.</div>'
+      : '<div class="simnote"><b>The model returns a distribution, not an answer.</b> Something outside it picked the top one here. Change that choice and you change the personality of the whole system. That is the generation section, and it is the cheapest lever you have.</div>';
   }
   render();
 })();
@@ -231,9 +231,9 @@ document.getElementById('sec-lmtok').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; watch text become tokens</h2>
-  <div class="plain-line"><b>Try this:</b> pick a piece of text and see how it splits. Watch what happens to code, to a rare surname, to a long number, and to non-English text &mdash; the ratio is not a constant and the cases where it collapses are worth knowing.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A phrasebook with ten thousand common phrases printed in it. Anything in the book is one lookup. Anything not in it has to be spelled out syllable by syllable, and takes far longer to say.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>ordinary English</b> with <b>a long random identifier</b> and look at the characters-per-token figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>vocabulary</b> the fixed list of pieces the model knows</span><span class="sp-w"><b>sub-word</b> a piece smaller than a word but bigger than a letter</span><span class="sp-w"><b>BPE</b> byte-pair encoding — the merging algorithm that builds the vocabulary</span><span class="sp-w"><b>token</b> one entry from that vocabulary</span></span></div></div>
+  <h2 class="sec">Try it: watch text become tokens</h2>
+  <div class="plain-line"><b>Try this:</b> pick a piece of text and see how it splits. Watch what happens to code, to a rare surname, to a long number, and to non-English text. The ratio is not a constant and the cases where it collapses are worth knowing.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A phrasebook with ten thousand common phrases printed in it. Anything in the book is one lookup. Anything not in it has to be spelled out syllable by syllable, and takes far longer to say.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>ordinary English</b> with <b>a long random identifier</b> and look at the characters-per-token figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>vocabulary</b> the fixed list of pieces the model knows</span><span class="sp-w"><b>sub-word</b> a piece smaller than a word but bigger than a letter</span><span class="sp-w"><b>BPE</b> byte-pair encoding, the merging algorithm that builds the vocabulary</span><span class="sp-w"><b>token</b> one entry from that vocabulary</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmTokOut"></div></div>
     <div><div class="segmented" id="lmTokPick" style="flex-direction:column;align-items:stretch"></div>
@@ -242,8 +242,8 @@ document.getElementById('sec-lmtok').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; the step before tokenising that nobody mentions</h2>
-  <div class="plain-line"><b>Try this:</b> you send a list of messages; the model receives one flat string. Something has to decide how those messages are marked up so the model can tell whose turn it is &mdash; and that something is the <b>chat template</b> shipped with the model. Get it wrong and nothing errors. Compare the four cases and watch what the model is actually being asked.</div>
+  <h2 class="sec">Try it: the step before tokenising that nobody mentions</h2>
+  <div class="plain-line"><b>Try this:</b> you send a list of messages; the model receives one flat string. Something has to decide how those messages are marked up so the model can tell whose turn it is, and that something is the <b>chat template</b> shipped with the model. Get it wrong and nothing errors. Compare the four cases and watch what the model is actually being asked.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A script for a play. The words are the same either way; without the character names and stage directions, an actor cannot tell which lines are theirs.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>look at <b>no template at all</b> and ask yourself where the model is supposed to start writing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>chat template</b> the rule turning a list of messages into one marked-up string</span><span class="sp-w"><b>role</b> whether a message is the system, the user, or the assistant</span><span class="sp-w"><b>special token</b> a marker the tokeniser knows, injected outside the merge rules</span><span class="sp-w"><b>generation prompt</b> the trailing marker that says &ldquo;your turn now&rdquo;</span><span class="sp-w"><b>base model</b> one trained only to continue text, with no notion of turns</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmTplOut"></div></div>
@@ -253,8 +253,8 @@ document.getElementById('sec-lmtok').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; build a vocabulary by merging</h2>
-  <div class="plain-line"><b>Try this:</b> byte-pair encoding, run step by step. Each round finds the most frequent adjacent pair and glues it into one new symbol. <b>Before you press anything, look at the text and decide which pair you think wins</b> &mdash; then check. Committing to an answer first is the difference between watching this and learning it. Then try the other inputs &mdash; each exposes a different behaviour, and the last produces nothing at all.</div>
+  <h2 class="sec">Try it: build a vocabulary by merging</h2>
+  <div class="plain-line"><b>Try this:</b> byte-pair encoding, run step by step. Each round finds the most frequent adjacent pair and glues it into one new symbol. <b>Before you press anything, look at the text and decide which pair you think wins</b>, then check. Committing to an answer first is the difference between watching this and learning it. Then try the other inputs, each exposes a different behaviour, and the last produces nothing at all.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Shorthand invented by a note-taker. You notice you keep writing &ldquo;th&rdquo;, so you invent one squiggle for it. Then you notice you keep writing that squiggle followed by &ldquo;e&rdquo;, so you invent one for that too.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>guess the winning pair on the default text, then press <b>merge</b> and see whether you were right.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>corpus</b> the body of text the vocabulary is learned from</span><span class="sp-w"><b>merge</b> replacing a frequent pair with one new symbol</span><span class="sp-w"><b>merge table</b> the ordered list of rules that comes out of training</span><span class="sp-w"><b>frequency</b> how often a pair appears next to each other</span><span class="sp-w"><b>greedy</b> always taking the best option right now, never looking ahead</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmBpeOut"></div></div>
@@ -266,9 +266,9 @@ document.getElementById('sec-lmtok').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; the table is built once and then only applied</h2>
+  <h2 class="sec">Try it: the table is built once and then only applied</h2>
   <div class="plain-line"><b>Try this:</b> the simulation above is <em>training</em>, and training happens exactly once, on a corpus of billions of words. What happens every time you send a prompt is the other half: the table is fixed, nothing is counted, and the rules are applied in the order they were learned. Send some new text through a trained table and watch.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Writing the shorthand key once, in the front of the notebook. After that you never invent new squiggles &mdash; you just apply the ones on the key, in the order they were invented.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send <b>the theatre</b> through, then send <b>xyz</b> and see what a table that never learned those pairs does with it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>training</b> counting pairs over a corpus to build the rules — done once</span><span class="sp-w"><b>inference</b> applying those fixed rules to your text — done every request</span><span class="sp-w"><b>merge table</b> the ordered list of rules that comes out of training</span><span class="sp-w"><b>deterministic</b> same text and same table always give the same tokens</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Writing the shorthand key once, in the front of the notebook. After that you never invent new squiggles. You just apply the ones on the key, in the order they were invented.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send <b>the theatre</b> through, then send <b>xyz</b> and see what a table that never learned those pairs does with it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>training</b> counting pairs over a corpus to build the rules, done once</span><span class="sp-w"><b>inference</b> applying those fixed rules to your text, done every request</span><span class="sp-w"><b>merge table</b> the ordered list of rules that comes out of training</span><span class="sp-w"><b>deterministic</b> same text and same table always give the same tokens</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmInfOut"></div></div>
     <div><div class="segmented" id="lmInfPick" style="flex-direction:column;align-items:stretch"></div>
@@ -278,24 +278,24 @@ document.getElementById('sec-lmtok').innerHTML=`
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Two things the simple picture leaves out</h2>
-  <div class="plain-line"><b>In plain English &mdash; first, nothing is ever unrepresentable.</b> If a vocabulary were built from characters, any character never seen during training would have no token, and the model would receive a placeholder meaning &ldquo;something was here and I cannot tell you what&rdquo;. Every emoji, every unusual script, every mangled byte in a corrupted file would arrive as that same hole. So real tokenisers start from <b>bytes</b> instead: there are exactly 256 of them, that is a complete base vocabulary, and any input in any encoding can be spelled out from it. Rare text becomes long rather than unknown, which is a much better failure.</div>
-  <div class="plain-line"><b>Second, merges never cross word boundaries.</b> Text is split into word-like chunks <em>before</em> byte-pair encoding runs, so the last letter of one word can never merge with the space starting the next. Without that you would get tokens spanning two words, which are frequent enough in the corpus to be learned and useless everywhere else. The families differ in how they mark it &mdash; one lineage attaches the leading space to the following token and displays it with a special marker, another marks it with a different one &mdash; but every one of them draws the boundary somewhere.</div>
-  <div class="plain-line"><b>And special tokens are not produced by this process at all.</b> Markers for end-of-text and for turn boundaries in a conversation are injected around the output, never learned from data. That is deliberate: if the algorithm could produce them, text containing the right characters could forge a turn boundary &mdash; which is exactly the injection problem, and it is why they sit outside the vocabulary the merges build.</div>
+  <div class="plain-line"><b>In plain English, first, nothing is ever unrepresentable.</b> If a vocabulary were built from characters, any character never seen during training would have no token, and the model would receive a placeholder meaning &ldquo;something was here and I cannot tell you what&rdquo;. Every emoji, every unusual script, every mangled byte in a corrupted file would arrive as that same hole. So real tokenisers start from <b>bytes</b> instead: there are exactly 256 of them, that is a complete base vocabulary, and any input in any encoding can be spelled out from it. Rare text becomes long rather than unknown, which is a much better failure.</div>
+  <div class="plain-line"><b>Second, merges never cross word boundaries.</b> Text is split into word-like chunks <em>before</em> byte-pair encoding runs, so the last letter of one word can never merge with the space starting the next. Without that you would get tokens spanning two words, which are frequent enough in the corpus to be learned and useless everywhere else. The families differ in how they mark it (one lineage attaches the leading space to the following token and displays it with a special marker, another marks it with a different one) but every one of them draws the boundary somewhere.</div>
+  <div class="plain-line"><b>And special tokens are not produced by this process at all.</b> Markers for end-of-text and for turn boundaries in a conversation are injected around the output, never learned from data. That is deliberate: if the algorithm could produce them, text containing the right characters could forge a turn boundary, which is exactly the injection problem, and it is why they sit outside the vocabulary the merges build.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Vocabulary size is a real decision, made before anything is trained</h2>
-  <div class="plain-line"><b>In plain English:</b> how many merges you stop after is a number somebody chooses, and it trades two things against each other. A bigger vocabulary compresses text better &mdash; fewer tokens for the same meaning, so a longer effective context and a smaller bill. It also makes the embedding table and the output layer bigger, which costs memory and computation on every single forward pass.</div>
+  <div class="plain-line"><b>In plain English:</b> how many merges you stop after is a number somebody chooses, and it trades two things against each other. A bigger vocabulary compresses text better, fewer tokens for the same meaning, so a longer effective context and a smaller bill. It also makes the embedding table and the output layer bigger, which costs memory and computation on every single forward pass.</div>
   <table class="osi"><thead><tr><th>Roughly</th><th>Vocabulary</th><th>What it buys</th></tr></thead><tbody>
   <tr><td>An older open model</td><td>~32 000</td><td>A small embedding table. Pays for it on non-English text and code, which fragment badly</td></tr>
   <tr><td>A mid-generation frontier model</td><td>~100 000</td><td>Noticeably better compression, especially on code</td></tr>
-  <tr><td>A later one</td><td>~200 000</td><td>Better again on non-English scripts &mdash; it narrows the language gap without closing it</td></tr>
+  <tr><td>A later one</td><td>~200 000</td><td>Better again on non-English scripts. It narrows the language gap without closing it</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Worth knowing rather than memorising:</b> the numbers move with every model generation. What does not move is the shape of the trade, and the fact that it is fixed before training and cannot be revised afterwards without retraining the model that sits on top of it.</div>
 </div>
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; pick a vocabulary size and pay for it twice</h2>
-  <div class="plain-line"><b>Try this:</b> move the vocabulary size and watch two numbers move in opposite directions. There is no setting that makes both good, which is the whole point &mdash; this is a trade somebody has to choose, once, before training starts.</div>
+  <h2 class="sec">Try it: pick a vocabulary size and pay for it twice</h2>
+  <div class="plain-line"><b>Try this:</b> move the vocabulary size and watch two numbers move in opposite directions. There is no setting that makes both good, which is the whole point. This is a trade somebody has to choose, once, before training starts.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding how many pre-printed forms to keep at a counter. Stock a form for every situation and each customer is served in one step, but the cabinet is enormous and you pay for it every day. Stock five general forms and the cabinet is tiny, but everybody fills in three of them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag to <b>32k</b> and read the Tamil and code rows, then drag to <b>256k</b> and watch the parameter cost.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>vocabulary</b> the fixed list of tokens a model is allowed to use</span><span class="sp-w"><b>token</b> one entry from that vocabulary</span><span class="sp-w"><b>embedding table</b> one row of numbers per vocabulary entry</span><span class="sp-w"><b>output layer</b> the final matrix that scores every vocabulary entry</span><span class="sp-w"><b>parameter</b> one trained number the model has to store</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmVocabOut"></div></div>
@@ -306,8 +306,8 @@ document.getElementById('sec-lmtok').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; the model behaviours that are really tokenisation</h2>
-  <div class="plain-line"><b>Try this:</b> four things models are known to be oddly bad at. Each one has the same cause, and it is not the model being stupid &mdash; it is that the thing you are asking about was never visible to it in the first place.</div>
+  <h2 class="sec">Try it: the model behaviours that are really tokenisation</h2>
+  <div class="plain-line"><b>Try this:</b> four things models are known to be oddly bad at. Each one has the same cause, and it is not the model being stupid. It is that the thing you are asking about was never visible to it in the first place.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Asking someone how many times the letter R appears in a word you spelled out to them in Morse code. They heard the word perfectly. They never heard the letters.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>take <b>count the letters</b> and look at what the model actually received.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>token boundary</b> where one chunk ends and the next begins</span><span class="sp-w"><b>opaque</b> the model sees the chunk as one thing, not as its letters</span><span class="sp-w"><b>digit grouping</b> how a number gets split across tokens</span><span class="sp-w"><b>case-sensitive</b> upper and lower case are different tokens entirely</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmWhyOut"></div></div>
@@ -323,22 +323,22 @@ document.getElementById('sec-lmtok').innerHTML=`
   const T=[
    {k:'en',n:'Ordinary English',text:'The quick brown fox jumps over the lazy dog.',
     toks:['The',' quick',' brown',' fox',' jumps',' over',' the',' lazy',' dog','.'],
-    why:'Roughly four characters per token &mdash; the number most cost estimates assume. Every word here is common enough to have earned its own entry, and the leading space belongs to the token.'},
+    why:'Roughly four characters per token. The number most cost estimates assume. Every word here is common enough to have earned its own entry, and the leading space belongs to the token.'},
    {k:'rare',n:'A rare surname',text:'Dr Brabourame reviewed it.',
     toks:['Dr',' Bra','bou','rame',' reviewed',' it','.'],
-    why:'The surname is not in the vocabulary, so it is spelled out in fragments. Rare proper nouns cost several tokens each &mdash; and this is also why models misspell unusual names: they are assembling them from pieces.'},
+    why:'The surname is not in the vocabulary, so it is spelled out in fragments. Rare proper nouns cost several tokens each, and this is also why models misspell unusual names: they are assembling them from pieces.'},
    {k:'code',n:'A line of code',text:'const userIdList = getUserIds(orgId);',
     toks:['const',' user','Id','List',' =',' get','User','Ids','(','org','Id',')',';'],
     why:'Camel case splits at every capital, and punctuation is usually its own token. Code runs closer to <b>three</b> characters per token, so a codebase costs noticeably more than prose of the same length.'},
    {k:'num',n:'A long number',text:'Order 8829174455 shipped.',
     toks:['Order',' 88','291','744','55',' shipped','.'],
-    why:'Digits are grouped in short runs, and where the boundaries fall depends on the tokeniser. This is a large part of why models are poor at arithmetic on long numbers &mdash; the digits are not individually visible to it.'},
+    why:'Digits are grouped in short runs, and where the boundaries fall depends on the tokeniser. This is a large part of why models are poor at arithmetic on long numbers. The digits are not individually visible to it.'},
    {k:'ja',n:'The same sentence in Japanese',text:'速い茶色の狐が怠け者の犬を飛び越えます。',
     toks:['速','い','茶','色','の','狐','が','怠','け','者','の','犬','を','飛','び','越','え','ます','。'],
-    why:'<b>Close to one token per character.</b> Vocabularies built mostly from English text spend far more tokens on other scripts &mdash; so the same meaning can cost two or three times as much, and fills a context window that much faster.'},
+    why:'<b>Close to one token per character.</b> Vocabularies built mostly from English text spend far more tokens on other scripts, so the same meaning can cost two or three times as much, and fills a context window that much faster.'},
    {k:'ws',n:'Text with odd whitespace',text:'Hello   world\\n\\n\\tIndented',
     toks:['Hello',' ',' ',' world','\\n','\\n','\\t','Ind','ented'],
-    why:'Repeated spaces, newlines and tabs each cost tokens. Pretty-printed JSON or heavily indented code can spend a surprising share of the context on whitespace &mdash; minifying before sending is sometimes a real saving.'}
+    why:'Repeated spaces, newlines and tabs each cost tokens. Pretty-printed JSON or heavily indented code can spend a surprising share of the context on whitespace, minifying before sending is sometimes a real saving.'}
   ];
   let cur='en';
   function render(){
@@ -362,7 +362,7 @@ document.getElementById('sec-lmtok').innerHTML=`
         '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
     note.innerHTML='<div class="'+(ratio>3.5?'ok':ratio>2?'lzwarn':'lzbad')+'">'+x.why+'</div>'+
       '<div class="simnote" style="margin-top:10px"><b>Why this is worth ten minutes of your attention:</b> tokens are the unit you are billed in, the unit your context limit is measured in, and the unit your latency scales with. A 4&times; difference in tokens-per-character is a 4&times; difference in all three.</div>'+
-      '<div class="note" style="margin-top:10px"><b>These splits are illustrative</b> &mdash; the exact boundaries differ between tokenisers, and a newer 128k-vocabulary model handles non-English text and code noticeably better than an older 50k one. The <em>shapes</em> shown here hold across all of them.</div>';
+      '<div class="note" style="margin-top:10px"><b>These splits are illustrative</b>, the exact boundaries differ between tokenisers, and a newer 128k-vocabulary model handles non-English text and code noticeably better than an older 50k one. The <em>shapes</em> shown here hold across all of them.</div>';
   }
   render();
 })();
@@ -413,7 +413,7 @@ document.getElementById('sec-lmtok').innerHTML=`
     tEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;merges=[];guessed=false;render();});
     const bp=best();
     ctl.innerHTML=
-      ((!guessed&&bp)?'<button class="seg" data-a="guess" style="text-align:left">I have decided which pair wins &mdash; reveal it</button>':'')+
+      ((!guessed&&bp)?'<button class="seg" data-a="guess" style="text-align:left">I have decided which pair wins, reveal it</button>':'')+
       '<button class="seg on" data-a="m" style="text-align:left"'+(bp?'':' disabled')+'>'+
         (bp?(guessed?'merge &ldquo;'+bp[0][0]+'&rdquo; + &ldquo;'+bp[0][1]+'&rdquo; &rarr;':'merge the winning pair &rarr;'):'nothing left to merge')+'</button>'+
       '<button class="seg" data-a="r" style="text-align:left;margin-top:8px">start again</button>';
@@ -448,11 +448,11 @@ document.getElementById('sec-lmtok').innerHTML=`
             (n/ranked[0][1]*100)+'%;background:'+(i===0?'var(--teal)':'var(--wire)')+'"></i></div>'+
             '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:20px;text-align:right">'+n+'</span></div>';}).join('')
         : '')+
-      '<div class="dim" style="font-size:11px;margin:16px 0 6px">THE MERGE TABLE &mdash; ORDERED RULES, THE ONLY OUTPUT OF TRAINING</div>'+
+      '<div class="dim" style="font-size:11px;margin:16px 0 6px">THE MERGE TABLE, ORDERED RULES, THE ONLY OUTPUT OF TRAINING</div>'+
       (merges.length
         ? '<div style="display:flex;flex-wrap:wrap;gap:5px">'+merges.map((m,i)=>
             '<span style="font-family:var(--mono);font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid var(--teal);color:var(--teal)">'+(i+1)+'. '+m[0]+'+'+m[1]+' &rarr; '+m[0]+m[1]+'</span>').join('')+'</div>'
-        : '<div class="note">Empty &mdash; nothing has been learned yet.</div>')+
+        : '<div class="note">Empty. Nothing has been learned yet.</div>')+
       '<div style="margin-top:14px">'+
       [['tokens at the start',start],['tokens now',total],
        ['compression',start?((1-total/start)*100).toFixed(0)+'%':'-']]
@@ -460,10 +460,10 @@ document.getElementById('sec-lmtok').innerHTML=`
         '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
     note.innerHTML='<div class="simnote">'+CORPUS[cur].hint+'</div>'+
       (cur==='none'
-        ? '<div class="lzwarn" style="margin-top:10px"><b>But a real tokeniser would still split this sensibly</b>, because its table was trained on billions of words and already holds rules for pairs like these. What you are seeing is not how tokenisation behaves &mdash; it is what training on a single line produces. The next simulation makes that difference concrete.</div>'
+        ? '<div class="lzwarn" style="margin-top:10px"><b>But a real tokeniser would still split this sensibly</b>, because its table was trained on billions of words and already holds rules for pairs like these. What you are seeing is not how tokenisation behaves. It is what training on a single line produces. The next simulation makes that difference concrete.</div>'
         : merges.length===0
-        ? '<div class="note" style="margin-top:10px">Nothing has merged yet. Decide which pair you think wins before revealing &mdash; guessing and then checking is worth far more than watching.</div>'
-        : '<div class="ok" style="margin-top:10px"><b>Notice what the output actually is.</b> Not a list of words, and not a vocabulary in any interesting sense &mdash; an <em>ordered</em> list of rules. The order is the important part, and the next simulation is why.</div>')+
+        ? '<div class="note" style="margin-top:10px">Nothing has merged yet. Decide which pair you think wins before revealing, guessing and then checking is worth far more than watching.</div>'
+        : '<div class="ok" style="margin-top:10px"><b>Notice what the output actually is.</b> Not a list of words, and not a vocabulary in any interesting sense, an <em>ordered</em> list of rules. The order is the important part, and the next simulation is why.</div>')+
       '<div class="note" style="margin-top:10px"><b>How this simplifies:</b> production training counts pairs across a whole corpus <em>weighted by how often each word occurs</em>, so a word appearing a million times contributes a million to its pairs. That is why the commonest words become single tokens almost immediately. Here each word counts once or twice, which shows the mechanism and understates how fast it moves.</div>';
   }
   render();
@@ -493,20 +493,20 @@ document.getElementById('sec-lmtok').innerHTML=`
   }
   function render(){
     pick.innerHTML=Object.entries(TEXTS).map(([k,v])=>'<button class="seg'+(cur===k?' on':'')+'" data-k="'+k+'" style="text-align:left">'+
-      '<span style="font-family:var(--mono);font-size:12px">'+(k==='d'?v.n+' &mdash; '+v.s:v.n)+'</span></button>').join('');
+      '<span style="font-family:var(--mono);font-size:12px">'+(k==='d'?v.n+' '+v.s:v.n)+'</span></button>').join('');
     pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
     const r=apply(TEXTS[cur].s);
     const chip=x=>'<span style="font-family:var(--mono);font-size:12px;padding:3px 7px;border-radius:5px;background:'+
       (x.length>1?'var(--n-teal)':'var(--panel2)')+';border:1px solid '+(x.length>1?'var(--teal)':'var(--line2)')+'">'+x+'</span>';
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">THE MERGE TABLE &mdash; FIXED, LEARNED ONCE, NEVER UPDATED</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:7px">THE MERGE TABLE, FIXED, LEARNED ONCE, NEVER UPDATED</div>'+
       '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">'+
       TABLE.map((m,i)=>'<span style="font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:5px;border:1px solid '+
         (r.trace.some(x=>x.rule===i+1)?'var(--teal)':'var(--line2)')+';color:'+
         (r.trace.some(x=>x.rule===i+1)?'var(--teal)':'var(--dim)')+'">'+(i+1)+'. '+m[0]+'+'+m[1]+'</span>').join('')+'</div>'+
-      '<div class="dim" style="font-size:11px;margin-bottom:7px">APPLYING THE RULES IN ORDER &mdash; NO COUNTING HAPPENS HERE</div>'+
+      '<div class="dim" style="font-size:11px;margin-bottom:7px">APPLYING THE RULES IN ORDER, NO COUNTING HAPPENS HERE</div>'+
       (r.trace.length
         ? r.trace.map(x=>'<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:var(--teal)">'+
-            '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:5px">RULE '+x.rule+' &mdash; '+x.pair+' &rarr; '+x.made+', applied '+x.hit+'x</div>'+
+            '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:5px">RULE '+x.rule+' '+x.pair+' &rarr; '+x.made+', applied '+x.hit+'x</div>'+
             '<div style="display:flex;gap:3px;flex-wrap:wrap">'+x.after.map(chip).join('')+'</div></div>').join('')
         : '<div class="lzwarn" style="padding:11px 13px"><b>No rule in the table matched anything.</b> Every rule was checked, in order, and none applied.</div>')+
       '<div class="dim" style="font-size:11px;margin:14px 0 7px">FINAL TOKENS</div>'+
@@ -518,10 +518,10 @@ document.getElementById('sec-lmtok').innerHTML=`
       .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
     note.innerHTML =
-      cur==='c' ? '<div class="lzwarn"><b>Nothing matched, and nothing broke.</b> The text still tokenised, as individual characters &mdash; more tokens for the same meaning but perfectly usable. A real table has tens of thousands of rules and would find several here; this small one simply never learned them.</div>'
-      : cur==='d' ? '<div class="lzbad"><b>This is the language gap, at its most concrete.</b> A table learned from English holds no rules that match this script, so it falls back to the smallest pieces. Same meaning, several times the tokens, several times the cost, and a context window that fills that much faster &mdash; entirely because of whose text the table was trained on.</div>'
+      cur==='c' ? '<div class="lzwarn"><b>Nothing matched, and nothing broke.</b> The text still tokenised, as individual characters, more tokens for the same meaning but perfectly usable. A real table has tens of thousands of rules and would find several here; this small one simply never learned them.</div>'
+      : cur==='d' ? '<div class="lzbad"><b>This is the language gap, at its most concrete.</b> A table learned from English holds no rules that match this script, so it falls back to the smallest pieces. Same meaning, several times the tokens, several times the cost, and a context window that fills that much faster, entirely because of whose text the table was trained on.</div>'
       : '<div class="ok"><b>Look at the last row: zero pairs counted.</b> Training counted; inference does not. It walks the fixed rules in order and applies each wherever it fits, which is why tokenising is fast enough to be invisible and why the same text always produces exactly the same tokens.</div>';
-    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>The order is load-bearing.</b> Rule 2 can only fire because rule 1 already made <span class="k">th</span>. Shuffle the table and the same text gives different tokens &mdash; which is why it ships as an ordered list rather than a set, and why a model and its tokeniser can never be separated.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>The order is load-bearing.</b> Rule 2 can only fire because rule 1 already made <span class="k">th</span>. Shuffle the table and the same text gives different tokens, which is why it ships as an ordered list rather than a set, and why a model and its tokeniser can never be separated.</div>';
   }
   render();
 })();
@@ -534,7 +534,7 @@ document.getElementById('sec-lmtok').innerHTML=`
    {k:'count',n:'Count the letters in a word',
     ask:'How many times does the letter r appear in &ldquo;strawberry&rdquo;?',
     toks:['str','aw','berry'], sees:'three opaque chunks, not ten letters',
-    why:'<b>The model never received the letters.</b> It received three chunks, and which letters sit inside them is not information it has &mdash; any more than you can hear the spelling of a word spoken aloud. It often answers correctly anyway, from having read discussions of spelling, which is recall rather than observation and much less reliable.',
+    why:'<b>The model never received the letters.</b> It received three chunks, and which letters sit inside them is not information it has, any more than you can hear the spelling of a word spoken aloud. It often answers correctly anyway, from having read discussions of spelling, which is recall rather than observation and much less reliable.',
     fix:'If you need character-level work, do it in code. Asking the model to count characters is asking it to remember rather than to look.'},
    {k:'math',n:'Arithmetic on a long number',
     ask:'What is 4827 + 1195?',
@@ -550,7 +550,7 @@ document.getElementById('sec-lmtok').innerHTML=`
     ask:'myVariableName versus my_variable_name',
     toks:['my','Variable','Name','vs','my','_variable','_name'], sees:'different splits for the same concept',
     why:'Both split where the merge table found boundaries frequent, and the boundaries differ. Code-focused tokenisers handle this far better than general ones, which is part of why coding models ship their own vocabularies.',
-    fix:'Mostly a curiosity &mdash; but it explains why a model can be better at one naming convention than another, and why code costs roughly a third more tokens than prose of the same length.'}
+    fix:'Mostly a curiosity, but it explains why a model can be better at one naming convention than another, and why code costs roughly a third more tokens than prose of the same length.'}
   ];
   let cur='count';
   function render(){
@@ -568,7 +568,7 @@ document.getElementById('sec-lmtok').innerHTML=`
       '<div class="lzwarn" style="margin-top:14px;padding:11px 13px">'+c.why+'</div>';
     note.innerHTML='<div class="simnote"><b>What to do about it:</b> '+c.fix+'</div>'+
       '<div class="ok" style="margin-top:10px"><b>The general lesson is worth more than any of the four.</b> When a model is strangely bad at something that looks easy, an early question is whether the thing you are asking about survived tokenisation at all. A surprising amount of apparent stupidity is a question about characters put to something that only ever saw chunks.</div>'+
-      '<div class="note" style="margin-top:10px"><b>Splits shown are illustrative</b> &mdash; exact boundaries differ between tokenisers and change with each generation. The failure mode does not.</div>';
+      '<div class="note" style="margin-top:10px"><b>Splits shown are illustrative</b>, exact boundaries differ between tokenisers and change with each generation. The failure mode does not.</div>';
   }
   render();
 })();
@@ -603,7 +603,7 @@ document.getElementById('sec-lmtok').innerHTML=`
     const params=c.v*DM*2, mem=params*BYTES;            /* embedding table + output layer */
     const worst=Math.max.apply(null,V.map(x=>Math.max(x.eng,x.code,x.tam,x.emoji)));
     out.innerHTML =
-      '<div class="simnote" style="margin-bottom:10px">The same four samples, tokenised by each vocabulary. Shorter bars are better &mdash; fewer tokens for the same meaning.</div>'
+      '<div class="simnote" style="margin-bottom:10px">The same four samples, tokenised by each vocabulary. Shorter bars are better, fewer tokens for the same meaning.</div>'
       + ROWS.map(function(r){
           const k=r[0], name=r[1], sample=r[2];
           const n=c[k], w=Math.round(n/worst*100), rel=n-base[k];
@@ -620,18 +620,18 @@ document.getElementById('sec-lmtok').innerHTML=`
       + '<b>What the vocabulary costs before a single word is generated</b>'
       + '<div style="margin-top:6px;font-size:12.5px">embedding table + output layer = '
       + '<span class="k">'+c.v.toLocaleString('en-GB')+' &times; 4096 &times; 2</span> = <b>'+fmt(params)+' parameters</b>'
-      + ' &mdash; about <b>'+(mem/1e9).toFixed(1)+' GB</b> at fp16, resident for every request.</div></div>';
+      + ', about <b>'+(mem/1e9).toFixed(1)+' GB</b> at fp16, resident for every request.</div></div>';
     const dP=params-base.v*DM*2;
     note.innerHTML =
-      '<div class="ok"><b>'+c.n+' &mdash; '+c.lbl+'.</b> '
+      '<div class="ok"><b>'+c.n+' '+c.lbl+'.</b> '
       + (c.v<=50000
-         ? 'English is barely affected. Tamil costs <b>'+c.tam+' tokens</b> for two words, and code fragments badly. Somebody writing Tamil pays several times more per sentence than somebody writing English for the same meaning &mdash; same bill, same context window, less said.'
+         ? 'English is barely affected. Tamil costs <b>'+c.tam+' tokens</b> for two words, and code fragments badly. Somebody writing Tamil pays several times more per sentence than somebody writing English for the same meaning, same bill, same context window, less said.'
          : c.v>=200000
          ? 'Every language compresses well now. You paid <b>'+fmt(dP)+' extra parameters</b> against the 100k baseline for it, and that memory is occupied whether or not anyone sends Tamil.'
          : 'A middle setting. English is near its floor, code and Tamil are tolerable, and the table is still affordable.')
       + '</div>'
-      + '<div class="simnote" style="margin-top:10px"><b>Why both directions hurt.</b> Fewer tokens per sentence means more meaning fits in the context window, and fewer forward passes to say the same thing &mdash; cheaper per request. But the embedding table and the output layer are both <span class="k">vocabulary &times; d_model</span>, and the output layer scores every entry on <em>every</em> token generated. Doubling the vocabulary does not double the model, but it does add memory you never get back.</div>'
-      + '<div class="simnote" style="margin-top:10px"><b>The part that is a fairness question rather than a performance one.</b> The vocabulary is chosen from a training corpus. Whatever is under-represented there fragments at inference time, permanently &mdash; no prompt fixes it. That is a large part of why vocabularies grew.</div>';
+      + '<div class="simnote" style="margin-top:10px"><b>Why both directions hurt.</b> Fewer tokens per sentence means more meaning fits in the context window, and fewer forward passes to say the same thing, cheaper per request. But the embedding table and the output layer are both <span class="k">vocabulary &times; d_model</span>, and the output layer scores every entry on <em>every</em> token generated. Doubling the vocabulary does not double the model, but it does add memory you never get back.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The part that is a fairness question rather than a performance one.</b> The vocabulary is chosen from a training corpus. Whatever is under-represented there fragments at inference time, permanently, no prompt fixes it. That is a large part of why vocabularies grew.</div>';
   }
   rng.addEventListener('input',render);
   render();
@@ -641,15 +641,15 @@ document.getElementById('sec-lmtok').innerHTML=`
 document.getElementById('sec-lmemb').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A token id is a name; an embedding is a description</h2>
-  <div class="plain-line"><b>In plain English:</b> after tokenising you have a list of integers, and an integer carries no meaning &mdash; token 4823 is not more similar to token 4824 than to token 90. So the first thing the model does is look each id up in a large table and replace it with a list of numbers, typically a few thousand of them. That list is the <b>embedding</b>, and its position in space is what encodes meaning.</div>
+  <div class="plain-line"><b>In plain English:</b> after tokenising you have a list of integers, and an integer carries no meaning, token 4823 is not more similar to token 4824 than to token 90. So the first thing the model does is look each id up in a large table and replace it with a list of numbers, typically a few thousand of them. That list is the <b>embedding</b>, and its position in space is what encodes meaning.</div>
   <div class="plain-line">The table is learned, not designed. Nothing tells it that <em>king</em> and <em>queen</em> are related; it discovers that putting them near each other makes the next-token predictions better, so training pushes them together. Directions in that space end up meaning something, which is why the arithmetic works at all.</div>
-  <div class="plain-line"><b>But embeddings alone lose the order.</b> Attention, which comes next, treats its input as a set &mdash; it has no built-in notion of which token came first. So position has to be added explicitly, either by adding a position signal to each embedding or by rotating the vectors by an angle that depends on where they sit. Without it, &ldquo;the dog bit the man&rdquo; and &ldquo;the man bit the dog&rdquo; are the same input.</div>
+  <div class="plain-line"><b>But embeddings alone lose the order.</b> Attention, which comes next, treats its input as a set. It has no built-in notion of which token came first. So position has to be added explicitly, either by adding a position signal to each embedding or by rotating the vectors by an angle that depends on where they sit. Without it, &ldquo;the dog bit the man&rdquo; and &ldquo;the man bit the dog&rdquo; are the same input.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; move around in meaning space</h2>
-  <div class="plain-line"><b>Try this:</b> pick a word and see its neighbours, then try the direction arithmetic. The last two cases are the ones worth sitting with &mdash; they show what this representation is genuinely good at and where it quietly fails.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Seating a party by who has things in common. You never write down the rule; you just notice that the people who get on end up at the same end of the table, and where someone sits tells you something about them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try <b>king − man + woman</b>, then read the <b>bank</b> case underneath it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>embedding</b> a list of numbers standing for one token&rsquo;s meaning</span><span class="sp-w"><b>dimension</b> one of those numbers — a model might use 4096</span><span class="sp-w"><b>cosine similarity</b> how closely two vectors point the same way</span><span class="sp-w"><b>vector arithmetic</b> adding and subtracting directions in that space</span></span></div></div>
+  <h2 class="sec">Try it: move around in meaning space</h2>
+  <div class="plain-line"><b>Try this:</b> pick a word and see its neighbours, then try the direction arithmetic. The last two cases are the ones worth sitting with. They show what this representation is genuinely good at and where it quietly fails.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Seating a party by who has things in common. You never write down the rule; you just notice that the people who get on end up at the same end of the table, and where someone sits tells you something about them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try <b>king − man + woman</b>, then read the <b>bank</b> case underneath it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>embedding</b> a list of numbers standing for one token&rsquo;s meaning</span><span class="sp-w"><b>dimension</b> one of those numbers. A model might use 4096</span><span class="sp-w"><b>cosine similarity</b> how closely two vectors point the same way</span><span class="sp-w"><b>vector arithmetic</b> adding and subtracting directions in that space</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmEmbOut"></div></div>
     <div><div class="segmented" id="lmEmbPick" style="flex-direction:column;align-items:stretch"></div>
@@ -658,9 +658,9 @@ document.getElementById('sec-lmemb').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; take the order away</h2>
+  <h2 class="sec">Try it: take the order away</h2>
   <div class="plain-line"><b>Try this:</b> attention with no position information cannot tell these sentences apart. Switch the position signal on and off and see which pairs collapse into the same input.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A bag of fridge magnets with the words of a sentence on them. Everything you need is in the bag, and the sentence is not.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch position <b>off</b> and look at the first pair.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>permutation</b> the same items in a different order</span><span class="sp-w"><b>positional encoding</b> information about where a token sits, added to it</span><span class="sp-w"><b>RoPE</b> rotary encoding — rotates the vector by an angle set by position</span><span class="sp-w"><b>relative position</b> how far apart two tokens are, rather than where each is</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A bag of fridge magnets with the words of a sentence on them. Everything you need is in the bag, and the sentence is not.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch position <b>off</b> and look at the first pair.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>permutation</b> the same items in a different order</span><span class="sp-w"><b>positional encoding</b> information about where a token sits, added to it</span><span class="sp-w"><b>RoPE</b> rotary encoding, rotates the vector by an angle set by position</span><span class="sp-w"><b>relative position</b> how far apart two tokens are, rather than where each is</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmPosOut"></div></div>
     <div><div class="segmented" id="lmPosCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -681,13 +681,13 @@ document.getElementById('sec-lmemb').innerHTML=`
     why:'<b>Directions carry meaning.</b> The step from <em>man</em> to <em>woman</em> and the step from <em>king</em> to <em>queen</em> turn out to be roughly the same movement, so you can travel it deliberately. This is genuinely surprising and it was discovered, not designed.'},
    {k:'paris',n:'Paris − France + Japan = ?',
     rows:[['Tokyo',0.66],['Osaka',0.54],['Japan',0.51],['Kyoto',0.48],['Japanese',0.45]],
-    why:'The same trick on a different relation &mdash; capital-of behaves like a consistent direction. Note that the source words themselves score highly too; the arithmetic points at a region, not a single answer.'},
+    why:'The same trick on a different relation, capital-of behaves like a consistent direction. Note that the source words themselves score highly too; the arithmetic points at a region, not a single answer.'},
    {k:'bank',n:'Neighbours of &ldquo;bank&rdquo;',
     rows:[['river',0.58],['financial',0.57],['shore',0.54],['account',0.53],['deposit',0.51],['edge',0.47]],
-    why:'<b>Two unrelated meanings, one point in space.</b> The lookup table has exactly one entry for this token, so it has to average the riverbank and the high-street bank together. This is a real limitation of the table on its own &mdash; and it is what the attention layers exist to fix, by reshaping each token in light of its neighbours.'},
+    why:'<b>Two unrelated meanings, one point in space.</b> The lookup table has exactly one entry for this token, so it has to average the riverbank and the high-street bank together. This is a real limitation of the table on its own, and it is what the attention layers exist to fix, by reshaping each token in light of its neighbours.'},
    {k:'the',n:'Neighbours of &ldquo;the&rdquo;',
     rows:[['a',0.61],['this',0.49],['an',0.47],['its',0.41],['that',0.38]],
-    why:'Function words sit near other function words, which is unremarkable and worth seeing anyway &mdash; a large share of the vocabulary carries grammatical rather than semantic weight, and those tokens still occupy the same space.'}
+    why:'Function words sit near other function words, which is unremarkable and worth seeing anyway, a large share of the vocabulary carries grammatical rather than semantic weight, and those tokens still occupy the same space.'}
   ];
   let cur='king';
   function render(){
@@ -703,9 +703,9 @@ document.getElementById('sec-lmemb').innerHTML=`
       '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:12px;border-left-color:'+(cur==='bank'?'var(--amber)':'var(--teal)')+'">'+c.why+'</div>';
     note.innerHTML =
       cur==='bank'
-      ? '<div class="lzwarn"><b>This is the case that explains why one table is not enough.</b> A static embedding is the average of every context a word ever appeared in. The layers above take that average and specialise it &mdash; after a few attention layers, &ldquo;bank&rdquo; in a sentence about rivers and &ldquo;bank&rdquo; in a sentence about loans are no longer the same vector at all.</div>'
+      ? '<div class="lzwarn"><b>This is the case that explains why one table is not enough.</b> A static embedding is the average of every context a word ever appeared in. The layers above take that average and specialise it, after a few attention layers, &ldquo;bank&rdquo; in a sentence about rivers and &ldquo;bank&rdquo; in a sentence about loans are no longer the same vector at all.</div>'
       : '<div class="simnote"><b>The table is learned as a side effect.</b> The training objective is only ever &ldquo;predict the next token&rdquo;. Meaningful geometry emerges because it is the most efficient way to do that, not because anyone specified it.</div>';
-    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The numbers here are illustrative</b> &mdash; real similarities depend on the model, the corpus and how the vectors are normalised. The relationships shown are the well-attested ones; treat the exact scores as a way of reading the shape rather than as measurements.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The numbers here are illustrative</b>, real similarities depend on the model, the corpus and how the vectors are normalised. The relationships shown are the well-attested ones; treat the exact scores as a way of reading the shape rather than as measurements.</div>';
   }
   render();
 })();
@@ -722,11 +722,11 @@ document.getElementById('sec-lmemb').innerHTML=`
    {a:['only','she','told','him'],b:['she','told','him','only'],
     note:'Same words, and &ldquo;only&rdquo; attaches to something different in each. Order is doing all the work.'},
    {a:['the','cat','sat'],b:['the','cat','slept'],
-    note:'A genuinely different token in the second sentence &mdash; this pair is distinguishable either way, which is the control case.'}
+    note:'A genuinely different token in the second sentence. This pair is distinguishable either way, which is the control case.'}
   ];
   let pos=false;
   function render(){
-    ctl.innerHTML=[[false,'Position off — attention sees a set'],[true,'Position on — each token knows where it sits']]
+    ctl.innerHTML=[[false,'Position off, attention sees a set'],[true,'Position on, each token knows where it sits']]
       .map(([v,n])=>'<button class="seg'+(pos===v?' on':'')+'" data-v="'+v+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
     ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{pos=b.dataset.v==='true';render();});
     const chip=(w,i)=>'<span style="font-family:var(--mono);font-size:12px;padding:3px 7px;border-radius:5px;background:var(--panel2);border:1px solid var(--line2)">'+
@@ -739,13 +739,13 @@ document.getElementById('sec-lmemb').innerHTML=`
         '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">'+p.a.map(chip).join('')+'</div>'+
         '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px">'+p.b.map(chip).join('')+'</div>'+
         '<div style="font-family:var(--mono);font-size:10.5px;color:'+(collides?'var(--red)':'var(--green)')+'">'+
-        (collides?'IDENTICAL TO THE MODEL — it cannot tell these apart':'distinguishable')+'</div></div>';
+        (collides?'IDENTICAL TO THE MODEL. It cannot tell these apart':'distinguishable')+'</div></div>';
     }).join('');
     note.innerHTML = pos
-      ? '<div class="ok"><b>Every token now carries where it sits, so the three reorderings become different inputs.</b> That is all positional encoding does &mdash; it is not a mechanism for understanding order, it is the minimum needed for order to be visible at all.</div>'+
-        '<div class="simnote" style="margin-top:10px"><b>How it is done has consequences.</b> Older models added a fixed pattern to each embedding. Most current ones rotate the query and key vectors by an angle proportional to position, which makes attention depend on the <em>gap</em> between two tokens rather than their absolute places &mdash; and that is a large part of why context windows can be extended after training.</div>'
+      ? '<div class="ok"><b>Every token now carries where it sits, so the three reorderings become different inputs.</b> That is all positional encoding does. It is not a mechanism for understanding order, it is the minimum needed for order to be visible at all.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>How it is done has consequences.</b> Older models added a fixed pattern to each embedding. Most current ones rotate the query and key vectors by an angle proportional to position, which makes attention depend on the <em>gap</em> between two tokens rather than their absolute places, and that is a large part of why context windows can be extended after training.</div>'
       : '<div class="lzbad"><b>Three of the four pairs have collapsed.</b> Attention computes how much each token should look at each other token; nothing in that operation involves where they are. Take position away and a sentence is a bag of words.</div>'+
-        '<div class="simnote" style="margin-top:10px">The fourth pair still differs because the <em>tokens</em> differ. That is the control &mdash; it shows the collapse is specifically about ordering, not about the model being blind generally.</div>';
+        '<div class="simnote" style="margin-top:10px">The fourth pair still differs because the <em>tokens</em> differ. That is the control. It shows the collapse is specifically about ordering, not about the model being blind generally.</div>';
   }
   render();
 })();
@@ -756,13 +756,13 @@ document.getElementById('sec-lmattn').innerHTML=`
   <h2 class="sec">Every token asks every earlier token a question</h2>
   <div class="plain-line"><b>In plain English:</b> each token turns its own vector into three separate things. A <b>query</b> is the request it sends out. A <b>key</b> is the advertisement it puts up for others to match against. A <b>value</b> is what it hands over when somebody matches it. Then every token compares its query against every other token&rsquo;s key. Where they match, that token&rsquo;s value gets mixed in. The output is each token rewritten in the light of the ones it found relevant.</div>
   <div class="plain-line"><b>The library-desk version:</b> the query is what you write on your request slip. The keys are the spine labels on the shelves. The values are the actual books. You compare your slip against every spine, and take a blend of the books weighted by how well each spine matched.</div>
-  <div class="code"><pre><code>${hl('attention(Q, K, V) = softmax( Q x K_transpose / sqrt(d) ) x V\n\n# Q x K_transpose  — every query scored against every key\n# / sqrt(d)        — keeps the scores from growing with vector size\n# softmax          — turns scores into weights that add to one\n# x V              — a weighted blend of the values')}</code></pre></div>
-  <div class="plain-line" style="margin-top:12px"><b>Two details that matter later.</b> The scores form an N&times;N grid, which is where the quadratic cost of long context comes from. And in a generative model, a <b>mask</b> stops each token seeing anything after it &mdash; otherwise predicting the next token would be trivial, since the answer is right there in the input.</div>
+  <div class="code"><pre><code>${hl('attention(Q, K, V) = softmax( Q x K_transpose / sqrt(d) ) x V\n\n# Q x K_transpose: every query scored against every key\n# / sqrt(d): keeps the scores from growing with vector size\n# softmax: turns scores into weights that add to one\n# x V: a weighted blend of the values')}</code></pre></div>
+  <div class="plain-line" style="margin-top:12px"><b>Two details that matter later.</b> The scores form an N&times;N grid, which is where the quadratic cost of long context comes from. And in a generative model, a <b>mask</b> stops each token seeing anything after it, otherwise predicting the next token would be trivial, since the answer is right there in the input.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; see what a token is looking at</h2>
-  <div class="plain-line"><b>Try this:</b> click a token and watch where its attention goes. The pronoun cases are the ones worth trying &mdash; this is the mechanism that resolves &ldquo;it&rdquo;, and you can watch it happen.</div>
+  <h2 class="sec">Try it: see what a token is looking at</h2>
+  <div class="plain-line"><b>Try this:</b> click a token and watch where its attention goes. The pronoun cases are the ones worth trying. This is the mechanism that resolves &ldquo;it&rdquo;, and you can watch it happen.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Reading a sentence and, when you hit &ldquo;it&rdquo;, flicking your eyes back to whatever &ldquo;it&rdquo; refers to. You do it without noticing. This is the same move, made explicit and given a weight.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>it</b> in the first sentence, then switch to the second sentence and click <b>it</b> again.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>query</b> what this token is looking for</span><span class="sp-w"><b>key</b> what a token advertises about itself</span><span class="sp-w"><b>value</b> what it contributes when attended to</span><span class="sp-w"><b>attention weight</b> how much of each value gets mixed in</span><span class="sp-w"><b>mask</b> the rule stopping a token from seeing the future</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmAttnOut"></div></div>
@@ -774,7 +774,7 @@ document.getElementById('sec-lmattn').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; several heads, several jobs</h2>
+  <h2 class="sec">Try it: several heads, several jobs</h2>
   <div class="plain-line"><b>Try this:</b> attention is not run once but many times in parallel, each with its own smaller Q, K and V. Different heads reliably specialise. Switch between them on the same sentence and watch the pattern change completely.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Several people proof-reading the same page: one checks the grammar, one the names, one whether the figures add up. Same page, entirely different marks on it, and you want all of them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare the <b>previous-token</b> head with the <b>coreference</b> head.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>head</b> one of several parallel attention computations</span><span class="sp-w"><b>multi-head</b> several running in parallel, then combined</span><span class="sp-w"><b>specialise</b> heads settling into different jobs during training</span><span class="sp-w"><b>coreference</b> working out which earlier thing a word refers to</span></span></div></div>
   <div class="sim-layout">
@@ -797,11 +797,11 @@ document.getElementById('sec-lmattn').innerHTML=`
    {k:'b',label:'The trophy would not fit in the suitcase because <b>it</b> was too small',
     toks:['The','trophy','would','not','fit','in','the','suitcase','because','it','was','too','small'],
     w:{9:{7:.58,1:.17,4:.07,12:.05,8:.04},12:{7:.34,1:.18,9:.16,11:.08},1:{0:.44,4:.16,7:.10}},
-    hint:'One word changed and &ldquo;it&rdquo; now leans on <b>suitcase</b>. Nothing about the grammar moved &mdash; the model has to reason about what can be small.'},
+    hint:'One word changed and &ldquo;it&rdquo; now leans on <b>suitcase</b>. Nothing about the grammar moved. The model has to reason about what can be small.'},
    {k:'c',label:'The keys to the cabinet <b>were</b> on the table',
     toks:['The','keys','to','the','cabinet','were','on','the','table'],
     w:{5:{1:.57,4:.16,8:.09,2:.06},8:{6:.31,5:.22,1:.14},1:{0:.39,4:.21}},
-    hint:'The verb attends to <b>keys</b>, not to the nearer <b>cabinet</b> &mdash; which is what makes the agreement plural. Distance is not what decides attention.'}
+    hint:'The verb attends to <b>keys</b>, not to the nearer <b>cabinet</b>, which is what makes the agreement plural. Distance is not what decides attention.'}
   ];
   let cur='a', tok=null;
   function render(){
@@ -831,12 +831,12 @@ document.getElementById('sec-lmattn').innerHTML=`
         '<div style="flex:1;height:8px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
         (a*100)+'%;background:var(--teal)"></i></div>'+
         '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);min-width:36px;text-align:right">'+(a*100).toFixed(0)+'%</span></div>').join('')+
-      '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px">dashed tokens are masked — this one cannot see them, because they have not been generated yet</div>';
+      '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:8px">dashed tokens are masked. This one cannot see them, because they have not been generated yet</div>';
     note.innerHTML='<div class="simnote">'+s.hint+'</div>'+
       (cur!=='c'
-        ? '<div class="ok" style="margin-top:10px"><b>Compare the first two sentences.</b> They differ by one adjective, and the pronoun resolves to the opposite noun. No rule about pronouns exists anywhere in the model &mdash; this is the same weighted-blend operation, with weights that training shaped.</div>'
+        ? '<div class="ok" style="margin-top:10px"><b>Compare the first two sentences.</b> They differ by one adjective, and the pronoun resolves to the opposite noun. No rule about pronouns exists anywhere in the model. This is the same weighted-blend operation, with weights that training shaped.</div>'
         : '<div class="ok" style="margin-top:10px"><b>Note what did <em>not</em> win.</b> &ldquo;cabinet&rdquo; is the nearest noun and gets a fraction of the weight. Attention is not a proximity rule; the comparison is between learned queries and keys, and distance only matters if training made it matter.</div>')+
-      '<div class="note" style="margin-top:10px"><b>These weights are illustrative</b> &mdash; a real model spreads attention over dozens of heads and layers, and no single head is this tidy. The pattern shown is the aggregate behaviour these examples are known for.</div>';
+      '<div class="note" style="margin-top:10px"><b>These weights are illustrative</b>, a real model spreads attention over dozens of heads and layers, and no single head is this tidy. The pattern shown is the aggregate behaviour these examples are known for.</div>';
   }
   render();
 })();
@@ -848,13 +848,13 @@ document.getElementById('sec-lmattn').innerHTML=`
   const TOKS=['When','Maria','opened','the','shop','she','found','the','ledger','missing'];
   const H=[
    {k:'prev',n:'Previous-token head',fn:(i)=>({[Math.max(0,i-1)]:.86,[Math.max(0,i-2)]:.09}),
-    why:'Almost every model grows one of these. It looks one step back, near enough always, and it is doing the work that a simple sequence model would do &mdash; keeping local order intact.'},
+    why:'Almost every model grows one of these. It looks one step back, near enough always, and it is doing the work that a simple sequence model would do, keeping local order intact.'},
    {k:'coref',n:'Coreference head',fn:(i)=>i===5?{1:.71,4:.11,0:.05}:i===8?{4:.38,2:.19,1:.12}:{[Math.max(0,i-1)]:.3},
     why:'Fires on pronouns and definite noun phrases, reaching back to whatever they refer to. &ldquo;she&rdquo; finds <b>Maria</b> across four intervening tokens.'},
    {k:'syn',n:'Verb-argument head',fn:(i)=>i===2?{1:.52,4:.28}:i===6?{5:.44,8:.31}:{[Math.max(0,i-1)]:.25},
     why:'Links verbs to who did the thing and what it was done to. This is grammar, discovered rather than specified.'},
    {k:'first',n:'Attention-sink head',fn:(i)=>({0:.74,[Math.max(0,i-1)]:.11}),
-    why:'<b>Parks most of its weight on the very first token, whatever it is.</b> This looks like a bug and is not &mdash; softmax weights must sum to one, so a head with nothing useful to say needs somewhere to dump the weight. That sink turns out to matter: dropping the first token when trimming context can noticeably damage output, and serving engines deliberately keep it.'}
+    why:'<b>Parks most of its weight on the very first token, whatever it is.</b> This looks like a bug and is not, softmax weights must sum to one, so a head with nothing useful to say needs somewhere to dump the weight. That sink turns out to matter: dropping the first token when trimming context can noticeably damage output, and serving engines deliberately keep it.'}
   ];
   let cur='prev';
   function render(){
@@ -878,7 +878,7 @@ document.getElementById('sec-lmattn').innerHTML=`
     note.innerHTML='<div class="simnote"><b>Nobody assigned these jobs.</b> Each head starts random and ends up specialised because the division of labour lowers the loss. A model with 32 heads per layer and 32 layers has around a thousand of them, and only a minority are ever this interpretable.</div>'+
       (cur==='first'
         ? '<div class="lzwarn" style="margin-top:10px"><b>This one has a direct operational consequence.</b> If you compress a long context by dropping the oldest tokens, dropping the very first one removes the sink that many heads rely on, and quality falls further than the amount of text removed would explain. Keeping the first few tokens is a known, cheap mitigation.</div>'
-        : '<div class="note" style="margin-top:10px"><b>Heads are also why the KV cache is shaped the way it is.</b> Each head keeps its own keys and values, so cache size scales with the number of heads &mdash; which is exactly what grouped-query attention attacks, and that arithmetic is two sections along.</div>');
+        : '<div class="note" style="margin-top:10px"><b>Heads are also why the KV cache is shaped the way it is.</b> Each head keeps its own keys and values, so cache size scales with the number of heads, which is exactly what grouped-query attention attacks, and that arithmetic is two sections along.</div>');
   }
   render();
 })();
@@ -887,15 +887,15 @@ document.getElementById('sec-lmattn').innerHTML=`
 document.getElementById('sec-lmblock').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The same small unit, stacked dozens of times</h2>
-  <div class="plain-line"><b>In plain English:</b> a model is not a bespoke architecture. It is one block repeated &mdash; 32 times in a 7-billion-parameter model, 80 or more in the largest. Every block does the same two things: <b>attention</b>, where tokens exchange information, and a <b>feed-forward network</b>, where each token is processed on its own. Mix, then think. Mix, then think. Dozens of times.</div>
+  <div class="plain-line"><b>In plain English:</b> a model is not a bespoke architecture. It is one block repeated, 32 times in a 7-billion-parameter model, 80 or more in the largest. Every block does the same two things: <b>attention</b>, where tokens exchange information, and a <b>feed-forward network</b>, where each token is processed on its own. Mix, then think. Mix, then think. Dozens of times.</div>
   <div id="lmBlockDiag"></div>
-  <div class="plain-line" style="margin-top:12px"><b>Two supporting pieces do more work than they look like they do.</b> The <b>residual connection</b> adds each sub-layer&rsquo;s input to its output, so information can travel straight up the stack untouched and gradients have a clear path back down. <b>Normalisation</b> keeps the numbers in a sane range at every step. Remove either from a deep stack and it stops training &mdash; not gets worse, stops.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Two supporting pieces do more work than they look like they do.</b> The <b>residual connection</b> adds each sub-layer&rsquo;s input to its output, so information can travel straight up the stack untouched and gradients have a clear path back down. <b>Normalisation</b> keeps the numbers in a sane range at every step. Remove either from a deep stack and it stops training, not gets worse, stops.</div>
   <div class="plain-line"><b>Where the parameters actually live</b> is worth knowing, because it is not where people assume: roughly two thirds of them sit in the feed-forward networks, not in attention. Attention gets the attention; the feed-forward layers get the weights.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; take a piece out</h2>
-  <div class="plain-line"><b>Try this:</b> remove one component at a time from a 32-layer stack and read what breaks. Two of these degrade gracefully. Two do not degrade at all &mdash; they fail.</div>
+  <h2 class="sec">Try it: take a piece out</h2>
+  <div class="plain-line"><b>Try this:</b> remove one component at a time from a 32-layer stack and read what breaks. Two of these degrade gracefully. Two do not degrade at all. They fail.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Taking parts out of a bicycle. Losing a bell is a nuisance; losing the chain is not a worse bicycle, it is not a bicycle.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>remove the <b>residual connections</b> and read what happens at depth 32.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>residual</b> adding a layer&rsquo;s input to its output, so the original survives</span><span class="sp-w"><b>normalisation</b> rescaling numbers to keep them in a workable range</span><span class="sp-w"><b>feed-forward</b> the per-token part, where most parameters live</span><span class="sp-w"><b>gradient</b> the signal that tells each weight which way to move</span><span class="sp-w"><b>vanishing</b> a gradient shrinking to nothing on its way back down</span><span class="sp-w"><b>embedding table</b> the lookup turning each token id into a vector</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmAblOut"></div></div>
@@ -910,10 +910,10 @@ document.getElementById('sec-lmblock').innerHTML=`
   let b='';
   b+=box(132,16,216,26,'var(--wire)','var(--panel2)'); b+=t(240,33,'input from the block below',SANS);
   b+=box(150,62,180,30,'var(--teal)','var(--panel2)');  b+=t(240,81,'normalise',SANS);
-  b+=box(150,110,180,34,'var(--violet)','var(--n-violet)'); b+=t(240,131,'attention — tokens mix',SANS);
+  b+=box(150,110,180,34,'var(--violet)','var(--n-violet)'); b+=t(240,131,'attention: tokens mix',SANS);
   b+=box(150,164,180,26,'var(--wire)','var(--panel2)'); b+=t(240,181,'+ add the input back',SANS);
   b+=box(150,210,180,30,'var(--teal)','var(--panel2)'); b+=t(240,229,'normalise',SANS);
-  b+=box(120,258,240,34,'var(--blue)','var(--n-blue)');  b+=t(240,279,'feed-forward — each token alone',SANS);
+  b+=box(120,258,240,34,'var(--blue)','var(--n-blue)');  b+=t(240,279,'feed-forward: each token alone',SANS);
   b+=box(150,312,180,26,'var(--wire)','var(--panel2)'); b+=t(240,329,'+ add the input back',SANS);
   [42,92,144,190,240,292].forEach(y=>{ b+='<line x1="240" y1="'+y+'" x2="240" y2="'+(y+18)+'" style="stroke:var(--wire)" marker-end="url(#ah)"/>'; });
   /* residual bypass arcs */
@@ -922,7 +922,7 @@ document.getElementById('sec-lmblock').innerHTML=`
   b+=tm(76,240,'residual','var(--amber)');
   b+=tm(400,178,'×32 layers','var(--dim)');
   h.innerHTML=D('0 0 480 350','One transformer block: normalise, attention, residual add, normalise, feed-forward, residual add',b,
-    'Read top to bottom. The dashed amber lines are the residual connections &mdash; they carry the input past each sub-layer and add it to the output, which is the reason a stack this deep can be trained at all.');
+    'Read top to bottom. The dashed amber lines are the residual connections. They carry the input past each sub-layer and add it to the output, which is the reason a stack this deep can be trained at all.');
 })();
 
 /* --- SIM: ablation --- */
@@ -938,16 +938,16 @@ document.getElementById('sec-lmblock').innerHTML=`
     e:'<b>Training stops working.</b> The gradient is multiplied by something smaller than one at every step down, so by layer 1 it is effectively zero and the early layers never learn. This is the problem residuals were invented to solve, and it is why depth was capped at a handful of layers before them.'},
    {k:'norm',n:'Remove normalisation',sev:3,
     d:'Nothing keeps the scale of the activations in check between layers.',
-    e:'<b>The numbers run away.</b> Small drifts compound multiplicatively through the stack until values overflow the number format &mdash; and the deeper the model, the earlier it happens. You get NaN rather than poor quality.'},
+    e:'<b>The numbers run away.</b> Small drifts compound multiplicatively through the stack until values overflow the number format, and the deeper the model, the earlier it happens. You get NaN rather than poor quality.'},
    {k:'ffn',n:'Remove the feed-forward networks',sev:2,
     d:'Tokens still exchange information; nothing processes each one individually afterwards.',
-    e:'<b>It trains, and it is much worse.</b> You have removed roughly two thirds of the parameters &mdash; the part usually described as where factual knowledge sits. Attention moves information around; without the feed-forward layers there is very little doing anything with it.'},
+    e:'<b>It trains, and it is much worse.</b> You have removed roughly two thirds of the parameters, the part usually described as where factual knowledge sits. Attention moves information around; without the feed-forward layers there is very little doing anything with it.'},
    {k:'attn',n:'Remove attention',sev:2,
     d:'Each token is processed entirely on its own, all the way up.',
     e:'<b>It trains, and it cannot use context at all.</b> No token can ever see another, so this is a very expensive per-token lookup table. Everything interesting about the architecture is the mixing.'},
    {k:'heads',n:'Keep one attention head instead of 32',sev:1,
     d:'Attention still happens, with a single set of Q, K and V per layer.',
-    e:'<b>Degrades gracefully.</b> One head must do every job at once &mdash; local order, coreference, syntax &mdash; and it cannot, so quality falls. But it still works, which is the difference between removing capacity and removing a mechanism.'}
+    e:'<b>Degrades gracefully.</b> One head must do every job at once (local order, coreference, syntax) and it cannot, so quality falls. But it still works, which is the difference between removing capacity and removing a mechanism.'}
   ];
   let cur='none';
   function render(){
@@ -972,9 +972,9 @@ document.getElementById('sec-lmblock').innerHTML=`
       '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:4px"><span>layer 1</span><span>layer 32</span></div>'+
       '<div class="'+(a.sev===0?'ok':a.sev>=3?'lzbad':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+a.e+'</div>';
     note.innerHTML =
-      a.sev>=3 ? '<div class="lzbad"><b>This is a mechanism, not capacity.</b> Removing it does not give you a smaller model &mdash; it gives you one that cannot be trained at all. Both of the fatal cases are about numbers surviving a journey through 32 layers, which is a problem nobody has when the stack is three layers deep.</div>'
-      : a.sev===0 ? '<div class="simnote">Baseline. Take something out and watch which kind of failure you get &mdash; the interesting split is between components whose removal degrades quality and components whose removal stops the thing working.</div>'
-      : '<div class="lzwarn"><b>This is capacity, not mechanism.</b> The model still trains and still works; it is simply worse. That distinction is the useful one to carry &mdash; it tells you which parts of an architecture are negotiable when you are shrinking a model and which are not.</div>';
+      a.sev>=3 ? '<div class="lzbad"><b>This is a mechanism, not capacity.</b> Removing it does not give you a smaller model. It gives you one that cannot be trained at all. Both of the fatal cases are about numbers surviving a journey through 32 layers, which is a problem nobody has when the stack is three layers deep.</div>'
+      : a.sev===0 ? '<div class="simnote">Baseline. Take something out and watch which kind of failure you get. The interesting split is between components whose removal degrades quality and components whose removal stops the thing working.</div>'
+      : '<div class="lzwarn"><b>This is capacity, not mechanism.</b> The model still trains and still works; it is simply worse. That distinction is the useful one to carry. It tells you which parts of an architecture are negotiable when you are shrinking a model and which are not.</div>';
     note.innerHTML+='<div class="note" style="margin-top:10px"><b>Where the parameters sit, for a 7B model:</b> roughly two thirds in the feed-forward networks, most of the rest in attention&rsquo;s four projections, and a few percent in the embedding table. When people say a model &ldquo;knows&rdquo; a fact, the weights they mean are mostly in the part this diagram gives the least space to.</div>';
   }
   render();
@@ -986,18 +986,18 @@ document.getElementById('sec-lmgen').innerHTML=`
   <h2 class="sec">The model does not choose the word. You do.</h2>
   <div class="plain-line"><b>In plain English:</b> the model hands back a probability for every token. Turning that into one token is a separate step, done in ordinary code, with settings you control. Most complaints about a model being repetitive, or unhinged, or inconsistent between runs, are complaints about this step rather than about the model.</div>
   <table class="osi"><thead><tr><th>Setting</th><th>What it does</th><th>Reach for it when</th></tr></thead><tbody>
-  <tr><td><b>greedy</b></td><td>Always take the highest-probability token. Fully deterministic</td><td>You want reproducibility &mdash; extraction, classification, anything you will diff</td></tr>
+  <tr><td><b>greedy</b></td><td>Always take the highest-probability token. Fully deterministic</td><td>You want reproducibility, extraction, classification, anything you will diff</td></tr>
   <tr><td><b>temperature</b></td><td>Divides the scores before they become probabilities. Below 1 sharpens toward the favourite; above 1 flattens toward the field</td><td>The one dial to reach for first. 0 for determinism, 0.7&ndash;1.0 for prose</td></tr>
   <tr><td><b>top-k</b></td><td>Discard everything outside the k most likely, then sample</td><td>A blunt safety rail. Its weakness is that k is fixed whether the model is certain or not</td></tr>
   <tr><td><b>top-p</b> (nucleus)</td><td>Keep the smallest set of tokens whose probabilities add to p, then sample</td><td>Usually better than top-k, because the size of the set adapts to how confident the model is</td></tr>
-  <tr><td><b>repetition penalty</b></td><td>Reduce the score of tokens that have already appeared</td><td>Loops. Use sparingly &mdash; it also penalises words that legitimately recur, like a subject&rsquo;s name</td></tr>
+  <tr><td><b>repetition penalty</b></td><td>Reduce the score of tokens that have already appeared</td><td>Loops. Use sparingly. It also penalises words that legitimately recur, like a subject&rsquo;s name</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>The trap worth naming:</b> temperature 0 is not &ldquo;the model being careful&rdquo;. It is the model being <em>predictable</em>. A confidently wrong answer arrives just as reliably at temperature 0 as a right one, and it will arrive identically every time, which can make a systematic error look like a stable feature.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; turn the dials on a real distribution</h2>
-  <div class="plain-line"><b>Try this:</b> one distribution, five sampling settings. Watch which tokens survive the cut and what each setting does to the shape. Then look at the second case, where the model is genuinely uncertain &mdash; that is where top-k and top-p stop agreeing.</div>
+  <h2 class="sec">Try it: turn the dials on a real distribution</h2>
+  <div class="plain-line"><b>Try this:</b> one distribution, five sampling settings. Watch which tokens survive the cut and what each setting does to the shape. Then look at the second case, where the model is genuinely uncertain. That is where top-k and top-p stop agreeing.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing from a menu. Always order your usual; order from the top three; order from however many dishes make up most of what people actually order tonight. Three different rules, three different kinds of evening.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch the distribution to <b>uncertain</b> and compare top-k 5 with top-p 0.9.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>logit</b> the raw score before it becomes a probability</span><span class="sp-w"><b>softmax</b> turns raw scores into probabilities that add to one</span><span class="sp-w"><b>temperature</b> a divisor that sharpens or flattens the distribution</span><span class="sp-w"><b>nucleus</b> the smallest group of tokens covering probability p</span><span class="sp-w"><b>deterministic</b> the same input always gives the same output</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmSampOut"></div></div>
@@ -1016,9 +1016,9 @@ document.getElementById('sec-lmgen').innerHTML=`
         cEl=document.getElementById('lmSampCtl'), out=document.getElementById('lmSampOut'), note=document.getElementById('lmSampNote');
   if(!dEl) return;
   const D={
-    sharp:{n:'Confident — &ldquo;the capital of France is&hellip;&rdquo;',
+    sharp:{n:'Confident. &ldquo;the capital of France is&hellip;&rdquo;',
       toks:[['Paris',6.2],['the',2.1],['a',1.6],['located',1.3],['now',1.0],['home',0.8],['known',0.6],['still',0.4],['one',0.3],['very',0.1]]},
-    flat:{n:'Uncertain — &ldquo;she opened the door and&hellip;&rdquo;',
+    flat:{n:'Uncertain. &ldquo;she opened the door and&hellip;&rdquo;',
       toks:[['saw',2.4],['stepped',2.3],['found',2.2],['walked',2.1],['looked',2.0],['felt',1.9],['froze',1.8],['called',1.7],['waited',1.6],['smiled',1.5]]}
   };
   let dist='sharp', mode='greedy', temp=1.0, k=5, p=0.9;
@@ -1030,14 +1030,14 @@ document.getElementById('sec-lmgen').innerHTML=`
   function render(){
     dEl.innerHTML=Object.entries(D).map(([kk,v])=>'<button class="seg'+(dist===kk?' on':'')+'" data-k="'+kk+'" style="text-align:left;font-size:11.5px">'+v.n+'</button>').join('');
     dEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{dist=b.dataset.k;render();});
-    mEl.innerHTML=[['greedy','Greedy — always the top token'],['temp','Temperature'],['topk','Top-k'],['topp','Top-p (nucleus)']]
+    mEl.innerHTML=[['greedy','Greedy, always the top token'],['temp','Temperature'],['topk','Top-k'],['topp','Top-p (nucleus)']]
       .map(([kk,n])=>'<button class="seg'+(mode===kk?' on':'')+'" data-k="'+kk+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
     mEl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{mode=b.dataset.k;render();});
     cEl.innerHTML =
       mode==='temp' ? '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px"><span style="color:var(--muted)">temperature</span><span>'+temp.toFixed(2)+'</span></div><input type="range" id="lmT" min="0.05" max="2" step="0.05" value="'+temp+'" style="width:100%">'
       : mode==='topk' ? '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px"><span style="color:var(--muted)">k</span><span>'+k+'</span></div><input type="range" id="lmK" min="1" max="10" step="1" value="'+k+'" style="width:100%">'
       : mode==='topp' ? '<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px"><span style="color:var(--muted)">p</span><span>'+p.toFixed(2)+'</span></div><input type="range" id="lmP" min="0.1" max="1" step="0.05" value="'+p+'" style="width:100%">'
-      : '<div class="note" style="font-size:12px">No settings &mdash; greedy always takes the top token.</div>';
+      : '<div class="note" style="font-size:12px">No settings, greedy always takes the top token.</div>';
     const bind=(id,fn)=>{const e=document.getElementById(id); if(e) e.oninput=()=>{fn(+e.value);render();};};
     bind('lmT',v=>temp=v); bind('lmK',v=>k=v); bind('lmP',v=>p=v);
     const toks=D[dist].toks;
@@ -1050,7 +1050,7 @@ document.getElementById('sec-lmgen').innerHTML=`
     else if(mode==='topp'){ let c=0; for(const [i,pr] of order){ keep.add(i); c+=pr; if(c>=p) break; } }
     else order.forEach(([i])=>keep.add(i));
     const kept=[...keep].reduce((a,i)=>a+probs[i],0);
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">CANDIDATES &mdash; SHADED ONES CAN BE CHOSEN</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">CANDIDATES, SHADED ONES CAN BE CHOSEN</div>'+
       order.map(([i,pr])=>{
         const on=keep.has(i);
         return '<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px;opacity:'+(on?1:.35)+'">'+
@@ -1062,21 +1062,21 @@ document.getElementById('sec-lmgen').innerHTML=`
       '<div style="margin-top:12px">'+
       [['tokens in play',keep.size+' of '+toks.length],
        ['probability covered',(kept*100).toFixed(1)+'%'],
-       ['deterministic?',mode==='greedy'||(mode==='temp'&&temp<=0.05)?'yes':'no — a different run may differ']]
+       ['deterministic?',mode==='greedy'||(mode==='temp'&&temp<=0.05)?'yes':'no. A different run may differ']]
       .map(([kk,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+kk+'</span><span>'+v+'</span></div>').join('')+'</div>';
     let msg='';
-    if(mode==='greedy') msg='<div class="ok"><b>One candidate, always the same one.</b> Reproducible, and prone to loops in longer text &mdash; the most likely continuation of a repeated phrase is often that phrase again.</div>';
+    if(mode==='greedy') msg='<div class="ok"><b>One candidate, always the same one.</b> Reproducible, and prone to loops in longer text, the most likely continuation of a repeated phrase is often that phrase again.</div>';
     else if(mode==='temp') msg = temp<0.3
-      ? '<div class="ok"><b>Sharpened.</b> Low temperature concentrates almost everything on the favourite &mdash; close to greedy, with a little room left.</div>'
+      ? '<div class="ok"><b>Sharpened.</b> Low temperature concentrates almost everything on the favourite, close to greedy, with a little room left.</div>'
       : temp>1.3 ? '<div class="lzbad"><b>Flattened too far.</b> At this temperature genuinely unlikely tokens get real probability. This is where output stops being merely creative and starts being incoherent.</div>'
-      : '<div class="lzwarn"><b>Around 1.0 the distribution is left roughly as the model produced it.</b> Below sharpens, above flattens &mdash; and note it is the <em>relative</em> gaps that change, not the ordering.</div>';
+      : '<div class="lzwarn"><b>Around 1.0 the distribution is left roughly as the model produced it.</b> Below sharpens, above flattens, and note it is the <em>relative</em> gaps that change, not the ordering.</div>';
     else if(mode==='topk') msg = dist==='flat'
       ? '<div class="lzwarn"><b>Here is top-k&rsquo;s weakness.</b> The model is genuinely torn between ten reasonable verbs, and a fixed k discards perfectly good ones for no reason other than the count. The same k on the confident distribution would keep nine tokens that should never be chosen.</div>'
-      : '<div class="lzwarn"><b>On a confident distribution, k is doing little.</b> Everything after the first token is already near zero, so cutting at 5 or at 10 barely changes the outcome &mdash; which is exactly why a fixed k is a poor rule.</div>';
-    else msg = '<div class="ok"><b>The set size adapts.</b> On the confident distribution the nucleus is one or two tokens; on the uncertain one it is many. Same setting, different behaviour, chosen by the model&rsquo;s own confidence &mdash; which is why top-p is usually the better default.</div>';
+      : '<div class="lzwarn"><b>On a confident distribution, k is doing little.</b> Everything after the first token is already near zero, so cutting at 5 or at 10 barely changes the outcome, which is exactly why a fixed k is a poor rule.</div>';
+    else msg = '<div class="ok"><b>The set size adapts.</b> On the confident distribution the nucleus is one or two tokens; on the uncertain one it is many. Same setting, different behaviour, chosen by the model&rsquo;s own confidence, which is why top-p is usually the better default.</div>';
     note.innerHTML=msg+
-      '<div class="simnote" style="margin-top:10px"><b>Switch between the two distributions with the same sampler.</b> The lesson is that a sampler setting is not a property of your application &mdash; it interacts with how certain the model happens to be at that token, and the model&rsquo;s certainty varies enormously from token to token within one sentence.</div>'+
+      '<div class="simnote" style="margin-top:10px"><b>Switch between the two distributions with the same sampler.</b> The lesson is that a sampler setting is not a property of your application. It interacts with how certain the model happens to be at that token, and the model&rsquo;s certainty varies enormously from token to token within one sentence.</div>'+
       '<div class="note" style="margin-top:10px"><b>Determinism is not free even at temperature 0.</b> Floating-point addition is not associative, so a different batch size or a different kernel can change the arithmetic order and flip a near-tie between two tokens. Greedy decoding is reproducible on identical hardware and settings, not universally.</div>';
   }
   render();
@@ -1086,13 +1086,13 @@ document.getElementById('sec-lmgen').innerHTML=`
 document.getElementById('sec-lmkv').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The optimisation that makes generation possible at all</h2>
-  <div class="plain-line"><b>In plain English:</b> to produce the next token, attention needs a key and a value for every token so far. Those depend only on the token and its position &mdash; not on anything that comes later. So once you have computed them, they never change. Recomputing them for the whole context on every single step, which is what the naive loop does, is pure waste.</div>
-  <div class="plain-line"><b>The KV cache keeps them.</b> Each step you compute K and V for exactly one new token, append them, and attend against the stored set. The work per step stops growing with the context and becomes constant &mdash; turning generation from quadratic into linear.</div>
-  <div class="plain-line"><b>And it moves the problem.</b> You have traded arithmetic for memory, and the memory is not small: for a long context and a decent batch size the cache can exceed the weights. Every serving system you will meet &mdash; paging, eviction, prefix sharing, quantised caches, grouped-query attention &mdash; exists to manage the object this section creates.</div>
+  <div class="plain-line"><b>In plain English:</b> to produce the next token, attention needs a key and a value for every token so far. Those depend only on the token and its position, not on anything that comes later. So once you have computed them, they never change. Recomputing them for the whole context on every single step, which is what the naive loop does, is pure waste.</div>
+  <div class="plain-line"><b>The KV cache keeps them.</b> Each step you compute K and V for exactly one new token, append them, and attend against the stored set. The work per step stops growing with the context and becomes constant, turning generation from quadratic into linear.</div>
+  <div class="plain-line"><b>And it moves the problem.</b> You have traded arithmetic for memory, and the memory is not small: for a long context and a decent batch size the cache can exceed the weights. Every serving system you will meet (paging, eviction, prefix sharing, quantised caches, grouped-query attention) exists to manage the object this section creates.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; generate with and without it</h2>
+  <h2 class="sec">Try it: generate with and without it</h2>
   <div class="plain-line"><b>Try this:</b> the same twenty tokens, generated both ways. Watch the work per step, and watch the memory that appears in exchange.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Adding a column of figures. You can re-add the whole column each time a number arrives, or keep a running total and add one. Same answer; one of them takes all afternoon.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run it <b>without</b> the cache and watch the per-step bar climb.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>KV cache</b> the stored keys and values for every token so far</span><span class="sp-w"><b>prefill</b> processing the whole prompt in one parallel pass</span><span class="sp-w"><b>decode</b> generating the answer one token at a time</span><span class="sp-w"><b>quadratic</b> doubling the input makes the work four times bigger</span><span class="sp-w"><b>linear</b> doubling the length doubles the work</span></span></div></div>
   <div class="sim-layout">
@@ -1103,9 +1103,9 @@ document.getElementById('sec-lmkv').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; work out how big the cache gets</h2>
-  <div class="plain-line"><b>Try this:</b> real arithmetic on named models. Move the sliders and find the point where the cache overtakes the weights &mdash; it arrives sooner than most people expect, and it is why grouped-query attention exists.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Buying a van by its engine and then discovering the load bed is the thing that decides what you can actually carry.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>take the batch size to 32 on the model without grouped-query attention.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>layer</b> one transformer block; each keeps its own cache</span><span class="sp-w"><b>KV head</b> a head that stores keys and values — fewer means a smaller cache</span><span class="sp-w"><b>GQA</b> grouped-query attention — several query heads sharing one KV head</span><span class="sp-w"><b>batch</b> how many separate conversations are in flight at once</span></span></div></div>
+  <h2 class="sec">Try it: work out how big the cache gets</h2>
+  <div class="plain-line"><b>Try this:</b> real arithmetic on named models. Move the sliders and find the point where the cache overtakes the weights. It arrives sooner than most people expect, and it is why grouped-query attention exists.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Buying a van by its engine and then discovering the load bed is the thing that decides what you can actually carry.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>take the batch size to 32 on the model without grouped-query attention.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>layer</b> one transformer block; each keeps its own cache</span><span class="sp-w"><b>KV head</b> a head that stores keys and values, fewer means a smaller cache</span><span class="sp-w"><b>GQA</b> grouped-query attention, several query heads sharing one KV head</span><span class="sp-w"><b>batch</b> how many separate conversations are in flight at once</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmKvSizeOut"></div></div>
     <div><div class="segmented" id="lmKvModel" style="flex-direction:column;align-items:stretch"></div>
@@ -1121,14 +1121,14 @@ document.getElementById('sec-lmkv').innerHTML=`
   const PROMPT=100, GEN=20;
   let cache=true, step=GEN;
   function render(){
-    ctl.innerHTML=[[true,'With the KV cache'],[false,'Without — recompute everything']]
+    ctl.innerHTML=[[true,'With the KV cache'],[false,'Without, recompute everything']]
       .map(([v,n])=>'<button class="seg'+(cache===v?' on':'')+'" data-v="'+v+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
     ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cache=b.dataset.v==='true';render();});
     const per=[...Array(GEN)].map((_,i)=>cache?1:PROMPT+i);
     const tot=per.reduce((a,b)=>a+b,0);
     const totCached=GEN, totNaive=[...Array(GEN)].reduce((a,_,i)=>a+PROMPT+i,0);
     const max=Math.max(...per);
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TOKENS PROCESSED AT EACH DECODE STEP &mdash; '+PROMPT+'-TOKEN PROMPT, '+GEN+' GENERATED</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TOKENS PROCESSED AT EACH DECODE STEP '+PROMPT+'-TOKEN PROMPT, '+GEN+' GENERATED</div>'+
       '<div style="display:flex;gap:2px;align-items:flex-end;height:80px">'+
       per.map((v,i)=>'<div style="flex:1;height:'+Math.max(3,v/max*76)+'px;background:'+(cache?'var(--green)':'var(--amber)')+
         ';border-radius:2px 2px 0 0" title="step '+(i+1)+': '+v+' tokens"></div>').join('')+'</div>'+
@@ -1143,12 +1143,12 @@ document.getElementById('sec-lmkv').innerHTML=`
       '<div class="'+(cache?'ok':'lzbad')+'" style="margin-top:12px;padding:11px 13px">'+
       (cache
         ? '<b>Flat.</b> Each step computes K and V for one new token and attends against everything stored. The cost per token stops depending on how much came before.'
-        : '<b>Climbing, and it never stops climbing.</b> Every step recomputes keys and values for the entire context &mdash; work that produces exactly the same numbers as last time.')+'</div>';
+        : '<b>Climbing, and it never stops climbing.</b> Every step recomputes keys and values for the entire context, work that produces exactly the same numbers as last time.')+'</div>';
     note.innerHTML = cache
       ? '<div class="ok"><b>This is why the cache is not an optimisation you can skip.</b> Without it a 4 000-token conversation costs forty times what a 100-token one does per generated token; with it, the same. Long-context products are not viable without this.</div>'+
-        '<div class="lzwarn" style="margin-top:10px"><b>And here is the bill.</b> All those keys and values now sit in memory for the whole life of the request, per conversation. You did not remove the cost &mdash; you converted it from arithmetic into memory, and memory is the scarcer of the two. The next simulation is that arithmetic.</div>'
+        '<div class="lzwarn" style="margin-top:10px"><b>And here is the bill.</b> All those keys and values now sit in memory for the whole life of the request, per conversation. You did not remove the cost. You converted it from arithmetic into memory, and memory is the scarcer of the two. The next simulation is that arithmetic.</div>'
       : '<div class="lzbad"><b>The waste is total.</b> Keys and values depend only on the token and its position, so every recomputation produces bit-identical numbers to the previous step. Nothing is learned by doing it again.</div>'+
-        '<div class="simnote" style="margin-top:10px">Note the prompt is processed once either way &mdash; that is <b>prefill</b>, and it is a genuinely parallel operation over the whole prompt. The difference here is entirely in <b>decode</b>, which is serial and where most of the wall-clock time of a long answer goes.</div>';
+        '<div class="simnote" style="margin-top:10px">Note the prompt is processed once either way. That is <b>prefill</b>, and it is a genuinely parallel operation over the whole prompt. The difference here is entirely in <b>decode</b>, which is serial and where most of the wall-clock time of a long answer goes.</div>';
   }
   render();
 })();
@@ -1159,8 +1159,8 @@ document.getElementById('sec-lmkv').innerHTML=`
         out=document.getElementById('lmKvSizeOut'), note=document.getElementById('lmKvSizeNote');
   if(!mEl) return;
   const M={
-    m7:{n:'7B, no GQA',params:7e9,layers:32,kvheads:32,dim:128,note:'32 query heads and 32 KV heads — every head stores its own.'},
-    m8:{n:'8B with GQA (8 KV heads)',params:8e9,layers:32,kvheads:8,dim:128,note:'32 query heads sharing 8 KV heads — a quarter of the cache.'},
+    m7:{n:'7B, no GQA',params:7e9,layers:32,kvheads:32,dim:128,note:'32 query heads and 32 KV heads, every head stores its own.'},
+    m8:{n:'8B with GQA (8 KV heads)',params:8e9,layers:32,kvheads:8,dim:128,note:'32 query heads sharing 8 KV heads, a quarter of the cache.'},
     m70:{n:'70B with GQA (8 KV heads)',params:70e9,layers:80,kvheads:8,dim:128,note:'Deeper, so more layers each holding a cache.'}
   };
   let model='m7', seq=4096, batch=8, kvbytes=2;
@@ -1205,12 +1205,12 @@ document.getElementById('sec-lmkv').innerHTML=`
       (!fits80?'<b>Does not fit on one 80 GB card.</b> Either fewer concurrent requests, a shorter context, a quantised cache, or more cards.'
        :ratio>1?'<b>The cache is now larger than the model.</b> You are no longer serving a model, you are serving a memory pool that happens to have a model in it.'
        :'<b>Fits, with the weights still dominant.</b> Push the batch size or the context up and watch that change.')+'</div>';
-    note.innerHTML='<div class="simnote">'+m.note+' The per-token figure is <span class="k">2 &times; layers &times; kv_heads &times; head_dim &times; bytes</span> &mdash; the 2 is for keys and values separately.</div>'+
+    note.innerHTML='<div class="simnote">'+m.note+' The per-token figure is <span class="k">2 &times; layers &times; kv_heads &times; head_dim &times; bytes</span>. The 2 is for keys and values separately.</div>'+
       (model==='m7'
-        ? '<div class="lzwarn" style="margin-top:10px"><b>Switch to the GQA model with the same settings.</b> Same depth, same head dimension, a quarter of the cache &mdash; because several query heads share one set of keys and values. That single change is what made long context at scale affordable, and it costs a little quality.</div>'
-        : '<div class="ok" style="margin-top:10px"><b>This is grouped-query attention paying for itself.</b> Fewer KV heads means a smaller cache, which means more concurrent requests on the same card &mdash; and throughput per pound is decided by how many requests fit, not by how fast one runs.</div>')+
+        ? '<div class="lzwarn" style="margin-top:10px"><b>Switch to the GQA model with the same settings.</b> Same depth, same head dimension, a quarter of the cache, because several query heads share one set of keys and values. That single change is what made long context at scale affordable, and it costs a little quality.</div>'
+        : '<div class="ok" style="margin-top:10px"><b>This is grouped-query attention paying for itself.</b> Fewer KV heads means a smaller cache, which means more concurrent requests on the same card, and throughput per pound is decided by how many requests fit, not by how fast one runs.</div>')+
       (kvbytes===1?'<div class="note" style="margin-top:10px"><b>An 8-bit cache halves it again</b> and is widely used in serving. The cache tolerates quantisation better than weights do, because errors in one token&rsquo;s keys and values do not propagate the way weight errors do.</div>':'')+
-      '<div class="note" style="margin-top:10px"><b>This arithmetic is the reason the serving world looks the way it does.</b> Paged allocation, prefix sharing, eviction policies, quantised caches &mdash; every one of them is an attack on the number in this box.</div>';
+      '<div class="note" style="margin-top:10px"><b>This arithmetic is the reason the serving world looks the way it does.</b> Paged allocation, prefix sharing, eviction policies, quantised caches, every one of them is an attack on the number in this box.</div>';
   }
   render();
 })();
@@ -1220,20 +1220,20 @@ document.getElementById('sec-lmquant').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Same weights, fewer bits each</h2>
   <div class="plain-line"><b>In plain English:</b> a weight is a number, and you get to choose how precisely to store it. Sixteen bits is the usual default. Drop to eight and the model halves in size; drop to four and it quarters. The weights are approximations of an approximation to begin with, so rounding them turns out to cost far less quality than you would guess.</div>
-  <div class="plain-line"><b>Why it matters more than the file size suggests:</b> from the GPU lab, decoding one token at a time is memory-bound &mdash; the limit is how fast you can read the weights, not how fast you can multiply them. Halve the bytes and you roughly halve the time per token. Quantisation is a <em>latency</em> optimisation that happens to also save space.</div>
+  <div class="plain-line"><b>Why it matters more than the file size suggests:</b> from the GPU lab, decoding one token at a time is memory-bound. The limit is how fast you can read the weights, not how fast you can multiply them. Halve the bytes and you roughly halve the time per token. Quantisation is a <em>latency</em> optimisation that happens to also save space.</div>
   <table class="osi"><thead><tr><th>Method</th><th>How it decides what to round</th><th>Where you meet it</th></tr></thead><tbody>
   <tr><td><b>Round-to-nearest</b></td><td>Naively, per tensor. Simple and noticeably lossy below 8 bits</td><td>The baseline everything else is measured against</td></tr>
   <tr><td><b>GPTQ</b></td><td>Layer by layer, using a small calibration set and second-order information to compensate each rounding with the weights not yet quantised</td><td>The common 4-bit route for GPU serving</td></tr>
   <tr><td><b>AWQ</b></td><td>Observes which weights matter most to <em>activations</em> and protects them by scaling, rather than treating all weights alike</td><td>Also 4-bit, often better at very low bit widths</td></tr>
-  <tr><td><b>GGUF k-quants</b></td><td>A file format plus a family of mixed schemes &mdash; different bit widths for different tensors within one file</td><td>CPU and laptop inference, llama.cpp and friends</td></tr>
+  <tr><td><b>GGUF k-quants</b></td><td>A file format plus a family of mixed schemes, different bit widths for different tensors within one file</td><td>CPU and laptop inference, llama.cpp and friends</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>The idea common to the good methods:</b> not all weights matter equally. A small fraction have outsized influence on the output, and spending a few extra bits on those while rounding the rest hard is far better than treating every weight the same. Naive quantisation fails at 4 bits precisely because it does not know which weights those are.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; trade bits for quality</h2>
-  <div class="plain-line"><b>Try this:</b> a 70B model at five precisions. Watch what fits on how many cards, what happens to tokens per second, and what happens to quality &mdash; then look at where the curve bends.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Compressing a photograph. The first big saving is invisible. Keep going and you get a usable picture at a fraction of the size. Keep going further and it is blocks.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>FP16</b> and <b>4-bit GPTQ</b> on cards needed and tokens per second.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>quantisation</b> storing each weight in fewer bits</span><span class="sp-w"><b>calibration</b> a small sample of data used to decide how to round</span><span class="sp-w"><b>outlier</b> a weight or activation far larger than the rest, which rounding damages</span><span class="sp-w"><b>perplexity</b> a standard quality measure — lower is better</span><span class="sp-w"><b>memory-bound</b> limited by reading bytes, not by arithmetic</span></span></div></div>
+  <h2 class="sec">Try it: trade bits for quality</h2>
+  <div class="plain-line"><b>Try this:</b> a 70B model at five precisions. Watch what fits on how many cards, what happens to tokens per second, and what happens to quality, then look at where the curve bends.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Compressing a photograph. The first big saving is invisible. Keep going and you get a usable picture at a fraction of the size. Keep going further and it is blocks.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>FP16</b> and <b>4-bit GPTQ</b> on cards needed and tokens per second.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>quantisation</b> storing each weight in fewer bits</span><span class="sp-w"><b>calibration</b> a small sample of data used to decide how to round</span><span class="sp-w"><b>outlier</b> a weight or activation far larger than the rest, which rounding damages</span><span class="sp-w"><b>perplexity</b> a standard quality measure, lower is better</span><span class="sp-w"><b>memory-bound</b> limited by reading bytes, not by arithmetic</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmQOut"></div></div>
     <div><div class="segmented" id="lmQPick" style="flex-direction:column;align-items:stretch"></div>
@@ -1252,19 +1252,19 @@ document.getElementById('sec-lmquant').innerHTML=`
     v:'The baseline everything else is measured against. Also the most expensive way to serve a model, and rarely the right default in production.'},
    {k:'int8',n:'8-bit',bits:8,ppl:0.1,col:'var(--teal)',
     d:'Half the bytes, quality difference hard to detect on most tasks.',
-    v:'<b>Close to free.</b> If you are serving FP16 and have not tried 8-bit, this is the cheapest win available &mdash; half the memory and roughly double the decode speed for a quality change most evaluations cannot resolve.'},
+    v:'<b>Close to free.</b> If you are serving FP16 and have not tried 8-bit, this is the cheapest win available, half the memory and roughly double the decode speed for a quality change most evaluations cannot resolve.'},
    {k:'gptq4',n:'4-bit GPTQ',bits:4,ppl:0.4,col:'var(--green)',
     d:'Layer-by-layer rounding that compensates using the weights not yet quantised.',
     v:'<b>The workhorse.</b> A quarter of the memory for a small, measurable quality cost. This is what makes a 70B model serveable on hardware that could not otherwise hold it.'},
    {k:'awq4',n:'4-bit AWQ',bits:4,ppl:0.35,col:'var(--green)',
     d:'Protects the weights that matter most to activations rather than treating all alike.',
-    v:'Similar size to GPTQ, often slightly better quality, and it needs calibration data that resembles your workload. Which of the two wins depends on the model and the task &mdash; measure, do not assume.'},
+    v:'Similar size to GPTQ, often slightly better quality, and it needs calibration data that resembles your workload. Which of the two wins depends on the model and the task, measure, do not assume.'},
    {k:'rtn4',n:'4-bit, naive rounding',bits:4,ppl:2.8,col:'var(--red)',
     d:'Round every weight to the nearest representable value. No calibration, no compensation.',
-    v:'<b>This is the control, and it is why the clever methods exist.</b> Same bit width as GPTQ, drastically worse output. The difference is entirely in knowing which weights could not afford to be rounded &mdash; outliers dominate the error, and naive rounding is blind to them.'},
+    v:'<b>This is the control, and it is why the clever methods exist.</b> Same bit width as GPTQ, drastically worse output. The difference is entirely in knowing which weights could not afford to be rounded, outliers dominate the error, and naive rounding is blind to them.'},
    {k:'int2',n:'2-bit',bits:2,ppl:6.5,col:'var(--red)',
     d:'Four possible values per weight.',
-    v:'<b>Past the bend.</b> Research methods keep 2-bit usable for some models, but at this width you are usually better served by a smaller model at 4 bits than a large one at 2 &mdash; and that comparison is the one worth running.'}
+    v:'<b>Past the bend.</b> Research methods keep 2-bit usable for some models, but at this width you are usually better served by a smaller model at 4 bits than a large one at 2, and that comparison is the one worth running.'}
   ];
   let cur='fp16';
   function render(){
@@ -1281,15 +1281,15 @@ document.getElementById('sec-lmquant').innerHTML=`
        ['quality change (perplexity)',q.ppl===0?'baseline':'+'+q.ppl.toFixed(2)]]
       .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+
-      '<div class="dim" style="font-size:11px;margin:16px 0 6px">QUALITY COST ACROSS THE OPTIONS &mdash; LOWER IS BETTER</div>'+
+      '<div class="dim" style="font-size:11px;margin:16px 0 6px">QUALITY COST ACROSS THE OPTIONS, LOWER IS BETTER</div>'+
       '<div style="display:flex;gap:6px;align-items:flex-end;height:80px">'+
       Q.map(x=>'<div style="flex:1;text-align:center">'+
         '<div style="height:'+Math.max(3,x.ppl/6.5*72)+'px;background:'+x.col+';opacity:'+(x.k===cur?1:.32)+';border-radius:3px 3px 0 0"></div>'+
         '<div style="font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:4px">'+x.n.replace(' ','<br>')+'</div></div>').join('')+'</div>'+
       '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:14px;border-left-color:'+q.col+'"><b>How it works</b><small>'+q.d+'</small></div>';
     note.innerHTML='<div class="'+(q.ppl<0.5?'ok':q.ppl<1?'lzwarn':'lzbad')+'">'+q.v+'</div>'+
-      '<div class="simnote" style="margin-top:10px"><b>Compare the two 4-bit bars.</b> Identical bit width, one usable and one not. Bit width alone tells you almost nothing &mdash; what matters is whether the method knows which weights it cannot afford to round.</div>'+
-      '<div class="note" style="margin-top:10px"><b>The speed column is the underrated one.</b> Because decoding is memory-bound, fewer bytes per weight means proportionally faster tokens. People adopt quantisation to make a model fit and then discover it also made it quicker &mdash; that is not a coincidence, it is the roofline.</div>'+
+      '<div class="simnote" style="margin-top:10px"><b>Compare the two 4-bit bars.</b> Identical bit width, one usable and one not. Bit width alone tells you almost nothing, what matters is whether the method knows which weights it cannot afford to round.</div>'+
+      '<div class="note" style="margin-top:10px"><b>The speed column is the underrated one.</b> Because decoding is memory-bound, fewer bytes per weight means proportionally faster tokens. People adopt quantisation to make a model fit and then discover it also made it quicker. That is not a coincidence, it is the roofline.</div>'+
       '<div class="note" style="margin-top:10px"><b>Perplexity figures here are illustrative</b> and vary by model, task and calibration set. The ordering and the size of the gaps are what hold; the exact numbers should always be measured on your own workload before a decision.</div>';
   }
   render();
@@ -1300,14 +1300,14 @@ document.getElementById('sec-lmbatch').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Serving many conversations out of one set of weights</h2>
   <div class="plain-line"><b>In plain English:</b> reading the weights to generate one token costs the same whether you are serving one request or forty. So the way to make a card economic is to have as many conversations in flight as possible, all sharing each pass over the weights. Everything in serving follows from that.</div>
-  <div class="plain-line"><b>The obvious approach fails badly.</b> Collect a batch, run it to completion, then start the next batch. But requests finish at wildly different times &mdash; one wants ten tokens, another wants two thousand &mdash; so the whole batch waits for the slowest, with most slots idle. <b>Continuous batching</b> fixes it by making decisions between every decode step rather than every request: as soon as a slot frees, the next queued request joins.</div>
+  <div class="plain-line"><b>The obvious approach fails badly.</b> Collect a batch, run it to completion, then start the next batch. But requests finish at wildly different times (one wants ten tokens, another wants two thousand) so the whole batch waits for the slowest, with most slots idle. <b>Continuous batching</b> fixes it by making decisions between every decode step rather than every request: as soon as a slot frees, the next queued request joins.</div>
   <div class="plain-line"><b>And then memory gets in the way.</b> Each conversation needs a KV cache that grows as it generates, and you do not know in advance how long it will be. Reserving the maximum for everyone wastes most of the card. Reserving contiguous blocks and growing them fragments memory. <b>Paged attention</b> borrows the answer operating systems settled on decades ago: cut the cache into small fixed blocks, let each conversation hold a scattered list of them, and keep a table mapping logical position to physical block.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; watch the batch fill and empty</h2>
+  <h2 class="sec">Try it: watch the batch fill and empty</h2>
   <div class="plain-line"><b>Try this:</b> the same eight requests, wanting very different numbers of tokens, served two ways. Watch how much of the card does nothing under each.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A minibus that will not leave until every seat is full, and will not stop until every passenger has reached their destination &mdash; versus one that picks up and drops off continuously.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run <b>static</b> batching and watch the empty slots after the short requests finish.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>batch</b> requests processed together in one pass over the weights</span><span class="sp-w"><b>static batching</b> fix the batch, run it to completion, then start again</span><span class="sp-w"><b>continuous batching</b> add and remove requests between decode steps</span><span class="sp-w"><b>slot</b> one place in the batch, occupied by one conversation</span><span class="sp-w"><b>utilisation</b> the share of slots doing useful work</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A minibus that will not leave until every seat is full, and will not stop until every passenger has reached their destination, versus one that picks up and drops off continuously.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run <b>static</b> batching and watch the empty slots after the short requests finish.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>batch</b> requests processed together in one pass over the weights</span><span class="sp-w"><b>static batching</b> fix the batch, run it to completion, then start again</span><span class="sp-w"><b>continuous batching</b> add and remove requests between decode steps</span><span class="sp-w"><b>slot</b> one place in the batch, occupied by one conversation</span><span class="sp-w"><b>utilisation</b> the share of slots doing useful work</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmBatOut"></div></div>
     <div><div class="segmented" id="lmBatCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -1316,9 +1316,9 @@ document.getElementById('sec-lmbatch').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; allocate the cache three ways</h2>
+  <h2 class="sec">Try it: allocate the cache three ways</h2>
   <div class="plain-line"><b>Try this:</b> four conversations of unknown final length, sharing one pool of memory. Try each allocation strategy and read how much of the pool ends up doing nothing.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Booking hotel rooms for guests who might stay one night or thirty. Reserve thirty for everyone and the hotel is empty and full at the same time.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try <b>reserve the maximum</b> first — it is the obvious approach and the wasteful one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>fragmentation</b> free memory that exists but is unusable because of its shape</span><span class="sp-w"><b>block</b> a small fixed-size chunk of cache, holding a few tokens</span><span class="sp-w"><b>block table</b> the map from a conversation&rsquo;s position to physical blocks</span><span class="sp-w"><b>copy-on-write</b> sharing blocks until someone writes, then copying</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Booking hotel rooms for guests who might stay one night or thirty. Reserve thirty for everyone and the hotel is empty and full at the same time.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try <b>reserve the maximum</b> first. It is the obvious approach and the wasteful one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>fragmentation</b> free memory that exists but is unusable because of its shape</span><span class="sp-w"><b>block</b> a small fixed-size chunk of cache, holding a few tokens</span><span class="sp-w"><b>block table</b> the map from a conversation&rsquo;s position to physical blocks</span><span class="sp-w"><b>copy-on-write</b> sharing blocks until someone writes, then copying</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmPageOut"></div></div>
     <div><div class="segmented" id="lmPagePick" style="flex-direction:column;align-items:stretch"></div>
@@ -1358,14 +1358,14 @@ document.getElementById('sec-lmbatch').innerHTML=`
     return grid;
   }
   function render(){
-    ctl.innerHTML=[['static','Static — fill, run to completion, repeat'],['cont','Continuous — refill between every step']]
+    ctl.innerHTML=[['static','Static, fill, run to completion, repeat'],['cont','Continuous, refill between every step']]
       .map(([k,n])=>'<button class="seg'+(mode===k?' on':'')+'" data-k="'+k+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
     ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{mode=b.dataset.k;render();});
     const g=simulate();
     const cells=g.length*SLOTS, used=g.reduce((a,row)=>a+row.filter(x=>x!==null).length,0);
     const COL=['var(--blue)','var(--teal)','var(--violet)','var(--amber)','var(--green)','var(--orange)','var(--red)','var(--gcpblue)'];
     const W=Math.max(1,Math.floor(560/g.length));
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+SLOTS+' SLOTS &times; '+g.length+' DECODE STEPS &mdash; EACH COLUMN IS ONE STEP</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">'+SLOTS+' SLOTS &times; '+g.length+' DECODE STEPS, EACH COLUMN IS ONE STEP</div>'+
       '<div style="overflow-x:auto"><div style="display:flex;flex-direction:column;gap:2px;min-width:'+(g.length*Math.max(2,W))+'px">'+
       [...Array(SLOTS)].map((_,s)=>'<div style="display:flex;gap:1px">'+
         g.map(row=>'<span style="flex:1;height:15px;background:'+(row[s]===null?'var(--line2)':COL[row[s]%8])+
@@ -1382,9 +1382,9 @@ document.getElementById('sec-lmbatch').innerHTML=`
         : '<b>Look at the gaps.</b> The short requests finish in a few steps and their slots sit idle until the longest request in the batch is done. The card is powered on and doing nothing.')+'</div>';
     note.innerHTML = mode==='cont'
       ? '<div class="ok"><b>Same eight requests, same four slots, far fewer wasted steps.</b> Nothing about the model changed. The scheduler simply stopped making short requests wait for long ones.</div>'+
-        '<div class="simnote" style="margin-top:10px"><b>The idea is scheduling at the level of the iteration, not the request.</b> That is the whole difference, and it is why a serving engine is not just a queue in front of a model &mdash; it makes a decision every single decode step.</div>'+
+        '<div class="simnote" style="margin-top:10px"><b>The idea is scheduling at the level of the iteration, not the request.</b> That is the whole difference, and it is why a serving engine is not just a queue in front of a model. It makes a decision every single decode step.</div>'+
         '<div class="note" style="margin-top:10px"><b>What it costs:</b> a new request joining needs its prompt processed, and that prefill competes with the decode steps of everyone already running. Sharing a batch between the two phases is where tail latency comes from, and it is why some systems separate them onto different hardware entirely.</div>'
-      : '<div class="lzbad"><b>Utilisation collapses because request lengths vary.</b> If every request wanted the same number of tokens this would be fine &mdash; but they never do, and in production the spread is far wider than shown here.</div>'+
+      : '<div class="lzbad"><b>Utilisation collapses because request lengths vary.</b> If every request wanted the same number of tokens this would be fine, but they never do, and in production the spread is far wider than shown here.</div>'+
         '<div class="simnote" style="margin-top:10px">Switch to continuous and compare the wasted-capacity figure. That gap is money: the card is rented by the hour whether the slots are full or not.</div>';
   }
   render();
@@ -1402,7 +1402,7 @@ document.getElementById('sec-lmbatch').innerHTML=`
      why:'Every conversation is given room for the longest answer it might produce. Safe, simple, and most of the card is holding space for tokens that will never exist.'},
    grow:{n:'Allocate contiguously and grow',
      alloc:c=>c.act, frag:14,
-     why:'Only what is needed &mdash; but each conversation needs its blocks side by side, so as they grow and finish the free space breaks into gaps too small to use. The memory is free and unusable at the same time.'},
+     why:'Only what is needed, but each conversation needs its blocks side by side, so as they grow and finish the free space breaks into gaps too small to use. The memory is free and unusable at the same time.'},
    page:{n:'Fixed blocks, scattered, with a table',
      alloc:c=>c.act, frag:2,
      why:'<b>Blocks need not be adjacent.</b> A table maps each conversation&rsquo;s position to whatever physical blocks it holds, so any free block anywhere can be used by anyone. Waste falls to at most a part-filled final block per conversation.'}
@@ -1428,12 +1428,12 @@ document.getElementById('sec-lmbatch').innerHTML=`
       cells=[]; let li=0,ri=0;
       for(let i=0;i<POOL;i++) cells.push((i%3!==2&&li<live.length)?live[li++]:(ri<rest.length?rest[ri++]:live[li++]));
     }
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE KV POOL OF '+POOL+' BLOCKS &mdash; 16 TOKENS EACH</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE KV POOL OF '+POOL+' BLOCKS, 16 TOKENS EACH</div>'+
       '<div style="display:grid;grid-template-columns:repeat(16,1fr);gap:2px">'+
       cells.slice(0,POOL).map(x=>'<span style="height:17px;border-radius:2px;background:'+
         (x.c>=0?COL[x.c]:x.c===-2?'var(--red)':'var(--line2)')+';opacity:'+(x.c>=0?(x.live?1:.35):x.c===-2?.55:.3)+'"></span>').join('')+'</div>'+
       '<div style="display:flex;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">'+
-      CONV.map((c,i)=>'<span><span style="display:inline-block;width:8px;height:8px;background:'+COL[i]+';border-radius:2px"></span> '+c.n+' — '+c.act+' blocks in use</span>').join('')+
+      CONV.map((c,i)=>'<span><span style="display:inline-block;width:8px;height:8px;background:'+COL[i]+';border-radius:2px"></span> '+c.n+' '+c.act+' blocks in use</span>').join('')+
       '<span><span style="display:inline-block;width:8px;height:8px;background:var(--red);opacity:.55;border-radius:2px"></span> unusable</span>'+
       '<span><span style="display:inline-block;width:8px;height:8px;background:var(--line2);border-radius:2px"></span> free</span></div>'+
       '<div style="margin-top:14px">'+
@@ -1446,7 +1446,7 @@ document.getElementById('sec-lmbatch').innerHTML=`
     note.innerHTML =
       cur==='page'
       ? '<div class="ok"><b>This is virtual memory, applied to a KV cache.</b> The operating system solved exactly this problem for physical RAM decades ago, and the answer transfers: fixed pages, a translation table, and physical adjacency stops mattering.</div>'+
-        '<div class="simnote" style="margin-top:10px"><b>And it unlocks something the other two cannot do.</b> Once blocks are indirected through a table, two conversations that begin with the same system prompt can <em>point at the same blocks</em> instead of each holding a copy &mdash; and only diverge when they start differing. That is prefix sharing, and on a workload where every request carries the same long preamble it is a very large saving.</div>'
+        '<div class="simnote" style="margin-top:10px"><b>And it unlocks something the other two cannot do.</b> Once blocks are indirected through a table, two conversations that begin with the same system prompt can <em>point at the same blocks</em> instead of each holding a copy, and only diverge when they start differing. That is prefix sharing, and on a workload where every request carries the same long preamble it is a very large saving.</div>'
       : cur==='res'
       ? '<div class="lzbad"><b>Most of the pool is reserved for text that will never be generated.</b> And the number of concurrent requests you can accept is set by the worst case rather than the typical one, which is usually an order of magnitude out.</div>'
       : '<div class="lzwarn"><b>Fragmentation is the subtle failure.</b> The pool reports free space, admission control believes it, and the allocation still fails because no single run of free blocks is long enough. It is a bug that looks like a capacity problem.</div>';
@@ -1457,7 +1457,7 @@ document.getElementById('sec-lmbatch').innerHTML=`
 /* ================= 10 · EXAM ANGLE ================= */
 document.getElementById('sec-lmexam').innerHTML=`
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <h2 class="sec">Try it: drill the scenarios instead of reading them</h2>
   <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios here, so none is obviously wrong.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Recognising an answer and producing one are different skills, and only one of them is tested in a room.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> before reading the list below.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
   <div id="drillHost"></div>
@@ -1466,17 +1466,17 @@ document.getElementById('sec-lmexam').innerHTML=`
 <div class="card">
   <h2 class="sec">The scenarios</h2>
   <div class="exam-line"><b>&ldquo;Our per-token cost tripled when we launched in Japan and nothing else changed.&rdquo;</b> &rarr; Tokenisation. A vocabulary learned mostly from English spends far more tokens per character on other scripts, so the same meaning costs more and fills the context faster. Measure tokens per character on real traffic before pricing a market.</div>
-  <div class="exam-line"><b>&ldquo;Long conversations get slower and slower. Is the model degrading?&rdquo;</b> &rarr; No &mdash; attention is quadratic in context and the KV cache grows linearly, so each new token is attending over more history and the memory per request keeps climbing. It is the expected shape, and the fixes are context trimming, prefix caching or a shorter window.</div>
-  <div class="exam-line"><b>&ldquo;We set temperature to 0 and the model still gives confidently wrong answers.&rdquo;</b> &rarr; Temperature controls variability, not correctness. At 0 you get the model&rsquo;s single most likely continuation every time &mdash; which makes a systematic error perfectly reproducible rather than absent.</div>
-  <div class="exam-line"><b>&ldquo;Why is our GPU at 100% utilisation but only producing 30 tokens a second?&rdquo;</b> &rarr; Decode is memory-bound. At small batch sizes you read the entire weight matrix to produce one token, so the arithmetic units idle while the memory system works. Raise the batch size &mdash; the fix is concurrency, not a faster card.</div>
+  <div class="exam-line"><b>&ldquo;Long conversations get slower and slower. Is the model degrading?&rdquo;</b> &rarr; No, attention is quadratic in context and the KV cache grows linearly, so each new token is attending over more history and the memory per request keeps climbing. It is the expected shape, and the fixes are context trimming, prefix caching or a shorter window.</div>
+  <div class="exam-line"><b>&ldquo;We set temperature to 0 and the model still gives confidently wrong answers.&rdquo;</b> &rarr; Temperature controls variability, not correctness. At 0 you get the model&rsquo;s single most likely continuation every time, which makes a systematic error perfectly reproducible rather than absent.</div>
+  <div class="exam-line"><b>&ldquo;Why is our GPU at 100% utilisation but only producing 30 tokens a second?&rdquo;</b> &rarr; Decode is memory-bound. At small batch sizes you read the entire weight matrix to produce one token, so the arithmetic units idle while the memory system works. Raise the batch size. The fix is concurrency, not a faster card.</div>
   <div class="exam-line"><b>&ldquo;Our KV cache is larger than the model. Have we misconfigured something?&rdquo;</b> &rarr; Probably not. Cache size is <span class="code">2 &times; layers &times; kv_heads &times; head_dim &times; context &times; batch &times; bytes</span>, and at long context with real concurrency it routinely exceeds the weights. Grouped-query attention, an 8-bit cache and paged allocation are the levers.</div>
   <div class="exam-line"><b>&ldquo;Two 4-bit quantisations of the same model behave completely differently.&rdquo;</b> &rarr; Bit width is not the method. Naive rounding treats every weight alike and is badly damaged by outliers; GPTQ compensates each rounding against the weights not yet quantised, and AWQ protects the weights that matter most to activations. Same size, very different output.</div>
   <div class="exam-line"><b>&ldquo;Throughput is poor and the batch is usually half empty.&rdquo;</b> &rarr; Static batching. The batch waits for its longest request while finished slots sit idle. Continuous batching schedules at every decode step instead, so a freed slot is refilled immediately.</div>
   <div class="exam-line"><b>&ldquo;We have plenty of free GPU memory and requests are still being rejected.&rdquo;</b> &rarr; Fragmentation. Contiguous KV allocations leave gaps too small to reuse, so free space exists in a shape nobody can use. Paged attention removes the adjacency requirement by indirecting through a block table.</div>
-  <div class="exam-line"><b>&ldquo;Every request carries the same 2 000-token system prompt. Can we avoid re-processing it?&rdquo;</b> &rarr; Yes &mdash; prefix caching. Because keys and values depend only on the token and its position, a shared prefix produces identical cache entries, so requests can point at the same blocks rather than each holding a copy. It needs paged allocation to be possible at all.</div>
+  <div class="exam-line"><b>&ldquo;Every request carries the same 2 000-token system prompt. Can we avoid re-processing it?&rdquo;</b> &rarr; Yes, prefix caching. Because keys and values depend only on the token and its position, a shared prefix produces identical cache entries, so requests can point at the same blocks rather than each holding a copy. It needs paged allocation to be possible at all.</div>
   <div class="exam-line"><b>&ldquo;We trimmed the oldest tokens to fit the context and quality fell more than expected.&rdquo;</b> &rarr; You probably removed the attention sink. Many heads park surplus weight on the first token or two, and dropping them destabilises the softmax across the whole stack. Keep the first few tokens and trim from just after them.</div>
-  <div class="exam-line"><b>&ldquo;Should we serve a 70B model at 2-bit or a smaller model at 4-bit?&rdquo;</b> &rarr; Almost always the smaller model at 4-bit, and it should be measured rather than assumed. Quality falls off sharply below about 3 bits, whereas a well-quantised smaller model degrades gracefully &mdash; run both on your own evaluation before committing.</div>
-  <div class="exam-line"><b>&ldquo;The model swapped two names round halfway through a long document.&rdquo;</b> &rarr; A retrieval-over-context failure, not a memory failure. Everything is still in the window; attention simply has to pick the right earlier token out of thousands, and the further back it sits the weaker the signal. Shortening the relevant distance &mdash; by retrieval or by restructuring the prompt &mdash; helps more than a longer window.</div>
+  <div class="exam-line"><b>&ldquo;Should we serve a 70B model at 2-bit or a smaller model at 4-bit?&rdquo;</b> &rarr; Almost always the smaller model at 4-bit, and it should be measured rather than assumed. Quality falls off sharply below about 3 bits, whereas a well-quantised smaller model degrades gracefully, run both on your own evaluation before committing.</div>
+  <div class="exam-line"><b>&ldquo;The model swapped two names round halfway through a long document.&rdquo;</b> &rarr; A retrieval-over-context failure, not a memory failure. Everything is still in the window; attention simply has to pick the right earlier token out of thousands, and the further back it sits the weaker the signal. Shortening the relevant distance (by retrieval or by restructuring the prompt) helps more than a longer window.</div>
 </div>`;
 
 /* ================= 2 · SHAPES ================= */
@@ -1489,9 +1489,9 @@ document.getElementById('sec-lmshape').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; follow the shape through one forward pass</h2>
-  <div class="plain-line"><b>Try this:</b> one batch of prompts entering a small model. Step through and watch the shape at each stage &mdash; where an axis appears, where one is split, where one collapses. The final step is the one worth pausing on: what comes out is not a word.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Following a parcel through a depot by its label. Same parcel throughout; the label gets rewritten at each stage to say what it now is and where it sits.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next stage</b> all the way to the end and watch where the sequence axis goes.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tensor</b> an array of numbers with one or more axes</span><span class="sp-w"><b>axis</b> one dimension of that array — batch, sequence, hidden</span><span class="sp-w"><b>shape</b> the size of each axis, written as a list</span><span class="sp-w"><b>batch dimension</b> the axis counting how many separate requests are processed together</span><span class="sp-w"><b>vocabulary</b> every token the model could possibly emit</span><span class="sp-w"><b>embedding</b> the table turning a token id into a row of numbers</span></span></div></div>
+  <h2 class="sec">Try it: follow the shape through one forward pass</h2>
+  <div class="plain-line"><b>Try this:</b> one batch of prompts entering a small model. Step through and watch the shape at each stage, where an axis appears, where one is split, where one collapses. The final step is the one worth pausing on: what comes out is not a word.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Following a parcel through a depot by its label. Same parcel throughout; the label gets rewritten at each stage to say what it now is and where it sits.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next stage</b> all the way to the end and watch where the sequence axis goes.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tensor</b> an array of numbers with one or more axes</span><span class="sp-w"><b>axis</b> one dimension of that array, batch, sequence, hidden</span><span class="sp-w"><b>shape</b> the size of each axis, written as a list</span><span class="sp-w"><b>batch dimension</b> the axis counting how many separate requests are processed together</span><span class="sp-w"><b>vocabulary</b> every token the model could possibly emit</span><span class="sp-w"><b>embedding</b> the table turning a token id into a row of numbers</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lmShapeOut"></div></div>
     <div><div id="lmShapeCtl"></div>
@@ -1500,7 +1500,7 @@ document.getElementById('sec-lmshape').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; the transformation that is valid and wrong</h2>
+  <h2 class="sec">Try it: the transformation that is valid and wrong</h2>
   <div class="plain-line"><b>Try this:</b> attention needs the hidden axis split into heads. There are two ways to write it that produce <em>exactly the same shape</em>, and only one of them keeps the data meaning what it meant. The shape assertion passes either way, nothing raises, and the model quietly becomes worse. Pick a version and look at which numbers each head actually receives.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Dealing a deck into four hands. Deal round the table and each player gets a spread of the deck; deal in blocks and player one gets the first quarter. Four hands of thirteen either way, and completely different games.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>reshape only</b> with <b>reshape then transpose</b> and read the row each head gets.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>reshape</b> reinterpret the same numbers with different axis sizes</span><span class="sp-w"><b>transpose</b> swap two axes, actually moving which number sits where</span><span class="sp-w"><b>head</b> one of several parallel attention computations</span><span class="sp-w"><b>contiguous</b> whether the numbers sit in memory in the order the axes imply</span><span class="sp-w"><b>silent failure</b> wrong output with no error anywhere</span></span></div></div>
   <div class="sim-layout">
@@ -1516,15 +1516,15 @@ document.getElementById('sec-lmshape').innerHTML=`
   if(!ctl) return;
   const B=4,S=12,H=512,NH=8,DH=64,V=32000,FF=2048;
   const ST=[
-   {n:'token ids',sh:[B,S],d:'What the tokeniser produced. Integers, not meaning &mdash; just positions in the vocabulary.',ax:'batch · sequence'},
+   {n:'token ids',sh:[B,S],d:'What the tokeniser produced. Integers, not meaning, just positions in the vocabulary.',ax:'batch · sequence'},
    {n:'after the embedding table',sh:[B,S,H],d:'Each id is replaced by a row of the embedding table. The hidden axis appears here and stays until the very end.',ax:'batch · sequence · hidden'},
    {n:'projected to queries, keys, values',sh:[B,S,3*H],d:'One matrix multiply produces all three at once, stacked along the hidden axis.',ax:'batch · sequence · 3×hidden'},
    {n:'split across heads',sh:[B,NH,S,DH],d:'The hidden axis divides into '+NH+' heads of '+DH+' each, and the head axis moves in front of sequence so each head is a contiguous block to work on.',ax:'batch · heads · sequence · head_dim'},
-   {n:'attention scores',sh:[B,NH,S,S],d:'Every token scored against every token, per head. <b>This is the square one</b> &mdash; the only shape here that grows with the square of the sequence.',ax:'batch · heads · sequence · sequence'},
+   {n:'attention scores',sh:[B,NH,S,S],d:'Every token scored against every token, per head. <b>This is the square one</b>, the only shape here that grows with the square of the sequence.',ax:'batch · heads · sequence · sequence'},
    {n:'attention output',sh:[B,NH,S,DH],d:'Scores applied to values. Back to one vector per token per head.',ax:'batch · heads · sequence · head_dim'},
    {n:'heads merged back',sh:[B,S,H],d:'The head axis folds back into hidden. From here the block looks exactly as it did before attention.',ax:'batch · sequence · hidden'},
    {n:'through the feed-forward',sh:[B,S,FF],d:'Widened, activated, and projected back to hidden. Most of the model&rsquo;s parameters are in this step.',ax:'batch · sequence · wider'},
-   {n:'logits',sh:[B,S,V],d:'One score for every token in the vocabulary, at every position. Only the last position matters when generating &mdash; the rest are computed and discarded.',ax:'batch · sequence · vocabulary'}
+   {n:'logits',sh:[B,S,V],d:'One score for every token in the vocabulary, at every position. Only the last position matters when generating. The rest are computed and discarded.',ax:'batch · sequence · vocabulary'}
   ];
   let i=0;
   function render(){
@@ -1553,11 +1553,11 @@ document.getElementById('sec-lmshape').innerHTML=`
         ';border-radius:2px 2px 0 0" title="'+x.n+'"></div>';}).join('')+'</div>'+
       '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:4px">batch '+B+' · sequence '+S+' · hidden '+H+' · '+NH+' heads · vocabulary '+(V/1000)+'k</div>';
     note.innerHTML =
-      i===4 ? '<div class="lzwarn"><b>This is the one that hurts.</b> Every other stage grows linearly with sequence length; this one grows with its square, per head. Double the context and this tensor quadruples &mdash; which is the whole reason the fused attention in the GPU lab exists, and why long context was hard before it.</div>'
-      : i===ST.length-1 ? '<div class="ok"><b>Look at the last shape and what it costs.</b> A score for every token in the vocabulary, at every position &mdash; and when generating, only the final position is used. The rest is computed and thrown away, which is exactly the waste that speculative decoding turns into an advantage by checking several positions at once.</div>'
-      : i===3 ? '<div class="simnote"><b>Note that the head axis moved in front of sequence.</b> That reordering is not cosmetic &mdash; it puts each head&rsquo;s data together in memory so the matrix multiply can work on a contiguous block. It is also where the bug in the next simulation lives.</div>'
+      i===4 ? '<div class="lzwarn"><b>This is the one that hurts.</b> Every other stage grows linearly with sequence length; this one grows with its square, per head. Double the context and this tensor quadruples, which is the whole reason the fused attention in the GPU lab exists, and why long context was hard before it.</div>'
+      : i===ST.length-1 ? '<div class="ok"><b>Look at the last shape and what it costs.</b> A score for every token in the vocabulary, at every position, and when generating, only the final position is used. The rest is computed and thrown away, which is exactly the waste that speculative decoding turns into an advantage by checking several positions at once.</div>'
+      : i===3 ? '<div class="simnote"><b>Note that the head axis moved in front of sequence.</b> That reordering is not cosmetic. It puts each head&rsquo;s data together in memory so the matrix multiply can work on a contiguous block. It is also where the bug in the next simulation lives.</div>'
       : '<div class="simnote"><b>Watch where each axis comes from and where it goes.</b> Batch never changes. Sequence survives the whole way and only collapses when you take the last position. Hidden appears at the embedding and is the axis everything else is measured against.</div>';
-    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The shapes are the memory calculation.</b> Multiply them out and you have the activation memory for one layer &mdash; which is why a batch size that fitted yesterday does not fit when somebody raises the context limit.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The shapes are the memory calculation.</b> Multiply them out and you have the activation memory for one layer, which is why a batch size that fitted yesterday does not fit when somebody raises the context limit.</div>';
   }
   render();
 })();
@@ -1573,11 +1573,11 @@ document.getElementById('sec-lmshape').innerHTML=`
    wrong:{n:'reshape only', code:'x = x.view(B, n_heads, S, head_dim)',
      get:(head,pos)=>{ const flat=data.flat(); const idx=head*(S*DH)+pos*DH; return flat.slice(idx,idx+DH); },
      ok:false,
-     why:'<b>The shape is right and the data is scrambled.</b> Reading the numbers in memory order and cutting them into two blocks means head 0 receives the first two tokens entirely, and head 1 receives the last two. Each head now sees a slice of the <em>sequence</em> rather than a slice of the <em>hidden vector</em> &mdash; which is not attention at all.'},
+     why:'<b>The shape is right and the data is scrambled.</b> Reading the numbers in memory order and cutting them into two blocks means head 0 receives the first two tokens entirely, and head 1 receives the last two. Each head now sees a slice of the <em>sequence</em> rather than a slice of the <em>hidden vector</em>, which is not attention at all.'},
    right:{n:'reshape then transpose', code:'x = x.view(B, S, n_heads, head_dim).transpose(1, 2)',
      get:(head,pos)=>data[pos].slice(head*DH,(head+1)*DH),
      ok:true,
-     why:'<b>Correct.</b> Split the hidden axis first, so each token&rsquo;s vector is cut into per-head pieces, and only then move the head axis in front. Every head sees every token, and each sees its own slice of the representation &mdash; which is what multi-head attention means.'}
+     why:'<b>Correct.</b> Split the hidden axis first, so each token&rsquo;s vector is cut into per-head pieces, and only then move the head axis in front. Every head sees every token, and each sees its own slice of the representation, which is what multi-head attention means.'}
   };
   let cur='wrong';
   function render(){
@@ -1606,10 +1606,10 @@ document.getElementById('sec-lmshape').innerHTML=`
       '<div class="'+(m.ok?'ok':'lzbad')+'" style="margin-top:14px;padding:11px 13px">'+m.why+'</div>';
     note.innerHTML = m.ok
       ? '<div class="ok"><b>Every position holds its own token&rsquo;s numbers, and the two heads hold different halves of them.</b> That is the arrangement the rest of attention assumes, and nothing downstream checks it.</div>'+
-        '<div class="simnote" style="margin-top:10px"><b>Now switch back and look at the red.</b> Same shape, same assertion, same absence of any error &mdash; and head 0 is reading token 1&rsquo;s numbers while claiming to be at position 1.</div>'
+        '<div class="simnote" style="margin-top:10px"><b>Now switch back and look at the red.</b> Same shape, same assertion, same absence of any error, and head 0 is reading token 1&rsquo;s numbers while claiming to be at position 1.</div>'
       : '<div class="lzbad"><b>Nothing will tell you.</b> The shape is what you expected, the assertion passes, the model trains and serves and produces fluent text. It is simply worse than it should be, by an amount nobody can attribute without going back to the tensor.</div>'+
         '<div class="simnote" style="margin-top:10px"><b>This is the most useful idea on this tab.</b> A shape check proves the axes are the right <em>size</em>. It proves nothing about what they <em>mean</em>. Two tensors with identical shapes can hold data arranged completely differently, and the only defence is knowing which layout each operation expects.</div>';
-    note.innerHTML+='<div class="note" style="margin-top:10px"><b>Why the wrong version is so easy to write:</b> it is shorter, it looks like it says what you want, and every automated check agrees with it. Bugs that survive review are usually the ones that read correctly &mdash; and this class of bug is why frameworks provide named-axis helpers and why serious code asserts on meaning rather than only on shape.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>Why the wrong version is so easy to write:</b> it is shorter, it looks like it says what you want, and every automated check agrees with it. Bugs that survive review are usually the ones that read correctly, and this class of bug is why frameworks provide named-axis helpers and why serious code asserts on meaning rather than only on shape.</div>';
   }
   render();
 })();
@@ -1624,10 +1624,10 @@ document.getElementById('sec-lmshape').innerHTML=`
      build:()=>MSG.map(([r,c])=>'<|im_start|>'+r+'\n'+c+'<|im_end|>\n').join('')+'<|im_start|>assistant\n',
      ok:true, tokens:41,
      why:'<b>Correct.</b> Each message is wrapped in markers the model was trained on, and the final opener says the assistant should speak now. The model knows where its own turn begins, which is the entire job of the template.'},
-   none:{n:'No template at all &mdash; messages joined',
+   none:{n:'No template at all, messages joined',
      build:()=>MSG.map(([r,c])=>c).join('\n'),
      ok:false, tokens:26,
-     why:'<b>Nothing marks whose turn it is.</b> The model receives a paragraph and does what a language model does with a paragraph &mdash; continues it. Often that looks like answering, sometimes it looks like inventing a second question, and it will ignore the system message as often as not because nothing distinguishes it from the user&rsquo;s words.'},
+     why:'<b>Nothing marks whose turn it is.</b> The model receives a paragraph and does what a language model does with a paragraph, continues it. Often that looks like answering, sometimes it looks like inventing a second question, and it will ignore the system message as often as not because nothing distinguishes it from the user&rsquo;s words.'},
    nogen:{n:'Right template, no generation prompt',
      build:()=>MSG.map(([r,c])=>'<|im_start|>'+r+'\n'+c+'<|im_end|>\n').join(''),
      ok:false, tokens:38,
@@ -1635,7 +1635,7 @@ document.getElementById('sec-lmshape').innerHTML=`
    wrong:{n:'Another model&rsquo;s template',
      build:()=>'[INST] <<SYS>>\n'+MSG[0][1]+'\n<</SYS>>\n\n'+MSG[1][1]+' [/INST]',
      ok:false, tokens:44,
-     why:'<b>Fluent and quietly degraded.</b> The markers belong to a different family, so this model has never seen them and tokenises them as ordinary text rather than as the special tokens they look like. It still answers &mdash; a little worse, less obedient to the system message, and with no signal anywhere that anything is wrong.'}
+     why:'<b>Fluent and quietly degraded.</b> The markers belong to a different family, so this model has never seen them and tokenises them as ordinary text rather than as the special tokens they look like. It still answers, a little worse, less obedient to the system message, and with no signal anywhere that anything is wrong.'}
   };
   let cur='right';
   function render(){
@@ -1654,7 +1654,7 @@ document.getElementById('sec-lmshape').innerHTML=`
       '<div style="margin-top:12px">'+
       [['tokens',t.tokens],
        ['model can tell whose turn it is',t.ok?'yes':'<b style="color:var(--red)">no</b>'],
-       ['any error raised','none — this always runs']]
+       ['any error raised','none. This always runs']]
       .map(([k,v])=>'<div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>'+
       '<div class="'+(t.ok?'ok':'lzbad')+'" style="margin-top:12px;padding:11px 13px">'+t.why+'</div>';
@@ -1662,7 +1662,7 @@ document.getElementById('sec-lmshape').innerHTML=`
       (cur==='wrong'
         ? '<div class="lzwarn" style="margin-top:10px"><b>This is the common one in practice.</b> It happens when a prompt is copied between models, when a framework guesses a default, or when a fine-tune ships without updating its template. The fix is always the same: use the template that came with the weights rather than one you wrote.</div>'
         : '<div class="note" style="margin-top:10px"><b>The markers are special tokens, not text.</b> From the tokenisation tab: they are injected around the merge rules rather than produced by them, precisely so that a user typing the same characters cannot forge a turn boundary. A template from the wrong family loses that protection as well as the structure.</div>')+
-      '<div class="note" style="margin-top:10px"><b>And it interacts with prefix caching.</b> The template is the very start of every prompt, so it is the most-shared prefix you have. Rendering it inconsistently &mdash; a stray space, a different ordering &mdash; changes those leading bytes and collapses the cache hit rate across your whole workload.</div>';
+      '<div class="note" style="margin-top:10px"><b>And it interacts with prefix caching.</b> The template is the very start of every prompt, so it is the most-shared prefix you have. Rendering it inconsistently (a stray space, a different ordering) changes those leading bytes and collapses the cache hit rate across your whole workload.</div>';
   }
   render();
 })();

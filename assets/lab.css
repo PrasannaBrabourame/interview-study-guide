@@ -1,17 +1,17 @@
-/* Shared lab chrome — the styling every lab page has in common: theme tokens,
+/* Shared lab chrome. The styling every lab page has in common: theme tokens,
    layout, tabs, callouts, the plain-English on-ramp, diagrams and print rules.
    This was thirteen byte-identical copies, which is how the typography drifted:
    a callout with no size rule of its own needed thirteen separate patches, and
    one lab shipped with a stale copy because it was generated from an older
    snapshot. Each lab still carries its own <style> after this one, holding only
    the rules that lab actually needs. */
-/* self-hosted, same subsets the portfolio serves — no external requests */
+/* self-hosted, same subsets the portfolio serves, no external requests */
   @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(fonts/inter-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
 @font-face{font-family:'Inter';font-style:normal;font-weight:400 600;font-display:swap;src:url(fonts/inter-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
 @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(fonts/newsreader-normal-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
 @font-face{font-family:'Newsreader';font-style:normal;font-weight:400 500;font-display:swap;src:url(fonts/newsreader-normal-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
 :root{
-    /* light — the portfolio's paper palette */
+    /* light, the portfolio's paper palette */
     --bg:#FBFAF7; --panel:#FFFFFF; --panel2:#F4F1EA; --line:#E4E0D8; --line2:#D8D3C9;
     --text:#14181C; --muted:#565C63; --dim:#63696F;
     --blue:#34618F; --teal:#1F7A75; --violet:#6B4F9E; --amber:#96601C;
@@ -22,7 +22,7 @@
     --regA:#5E9C87; --regB:#7FA3C6;
     --exam-text:#7A4E06; --plain-text:#14524F; --alert-text:#8C2F36;
     /* One accent for everything the reader can act on: links, the active tab,
-       the focus ring. It was three — amber tabs, teal links, a violet eyebrow —
+       the focus ring. It was three (amber tabs, teal links, a violet eyebrow) 
        none of which meant anything. --accent was also declared only in
        styles.css, which the labs do not load, so eight of them asked for a
        colour that did not exist and silently got body grey. */
@@ -407,7 +407,7 @@ div.ok{font-size:12.5px; line-height:1.65}
 .tnspace{flex:1 1 auto}
 .tn b{font-weight:500; opacity:.75}
 
-/* where this lab sits in its track — the dashboard's reading order, on the page */
+/* where this lab sits in its track, the dashboard's reading order, on the page */
 .track{font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:10px}
 .track .tkname{color:var(--muted)}
 .track a{color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent-line)}

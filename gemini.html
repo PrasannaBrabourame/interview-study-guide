@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gemini Enterprise lab — deploying it, and getting it adopted</title>
+<title>Gemini Enterprise lab, deploying it, and getting it adopted</title>
 <link rel="stylesheet" href="assets/lab.css">
 <style>
 
@@ -69,9 +69,9 @@
       <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
     </nav>
     <div class="eyebrow">gemini enterprise · deploy, secure, adopt</div>
-    <h1>Rolling it out to a whole company <span class="thin">— identity, data, guardrails and the people</span></h1>
+    <h1>Rolling it out to a whole company: <span class="thin">identity, data, guardrails and the people</span></h1>
     <p class="track" id="trackLine"></p>
-    <p class="sub">An enterprise AI assistant is only partly a technical project. Half of it is plumbing that has to be right before anyone logs in &mdash; which identity provider, which data connectors, whose documents each person may see, what the model is allowed to say. The other half is getting several thousand people to actually use it. Twelve sections, plain English first, and simulations for the decisions that are hard to undo.</p>
+    <p class="sub">An enterprise AI assistant is only partly a technical project. Half of it is plumbing that has to be right before anyone logs in, which identity provider, which data connectors, whose documents each person may see, what the model is allowed to say. The other half is getting several thousand people to actually use it. Twelve sections, plain English first, and simulations for the decisions that are hard to undo.</p>
   </header>
 
   <div class="tabs" role="tablist">
@@ -119,9 +119,9 @@
   <section class="pane" id="pane-govern">
     <div id="sec-govern"></div>
     <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; switch on prompt logging, in the wrong order</h2>
-  <div class="plain-line"><b>Try this:</b> logging what people typed is the most useful thing you can turn on and the one with a prerequisite chain. Try it out of order and see which door will not open &mdash; one of the blockers is not technical at all.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Fitting a CCTV camera. There is a technical order — power before recording — and a legal one, which is that you need permission before you point it at people.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>log the full prompt and response content</b> on its own, before anything else.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>instrumentation</b> the plumbing that emits traces and logs at all</span><span class="sp-w"><b>consent</b> permission to hold what people typed</span><span class="sp-w"><b>prompt content</b> the words a person actually wrote — treated as their data</span></span></div></div>
+  <h2 class="sec">Try it: switch on prompt logging, in the wrong order</h2>
+  <div class="plain-line"><b>Try this:</b> logging what people typed is the most useful thing you can turn on and the one with a prerequisite chain. Try it out of order and see which door will not open, one of the blockers is not technical at all.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Fitting a CCTV camera. There is a technical order (power before recording) and a legal one, which is that you need permission before you point it at people.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>log the full prompt and response content</b> on its own, before anything else.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>instrumentation</b> the plumbing that emits traces and logs at all</span><span class="sp-w"><b>consent</b> permission to hold what people typed</span><span class="sp-w"><b>prompt content</b> the words a person actually wrote, treated as their data</span></span></div></div>
   <div class="sim-layout">
     <div><div id="geLogOut"></div></div>
     <div><div class="toggles" id="geLogCtl"></div>
@@ -171,8 +171,8 @@ const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
 document.getElementById('sec-start').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The problem it exists to solve, in one sentence</h2>
-  <div class="plain-line"><b>In plain English:</b> a large company&rsquo;s knowledge is scattered across a dozen systems that do not talk to each other &mdash; a wiki, a shared drive, a ticketing tool, a CRM, five years of email. Everyone knows the answer is <em>somewhere</em>. Nobody can find it. Gemini Enterprise puts one question box in front of all of it: you ask in ordinary language, and it <b>retrieves from the systems you are already allowed to see</b> and answers from what it found.</div>
-  <div class="plain-line">The word doing the work there is <b>grounded</b>. It is not answering from what a model happened to memorise; it is answering from your documents, and it can tell you which ones. That is also why the whole deployment turns out to be mostly an <em>access</em> problem rather than an AI problem &mdash; the hard part is making sure each person&rsquo;s answers are drawn only from the material that person was already permitted to read.</div>
+  <div class="plain-line"><b>In plain English:</b> a large company&rsquo;s knowledge is scattered across a dozen systems that do not talk to each other, a wiki, a shared drive, a ticketing tool, a CRM, five years of email. Everyone knows the answer is <em>somewhere</em>. Nobody can find it. Gemini Enterprise puts one question box in front of all of it: you ask in ordinary language, and it <b>retrieves from the systems you are already allowed to see</b> and answers from what it found.</div>
+  <div class="plain-line">The word doing the work there is <b>grounded</b>. It is not answering from what a model happened to memorise; it is answering from your documents, and it can tell you which ones. That is also why the whole deployment turns out to be mostly an <em>access</em> problem rather than an AI problem. The hard part is making sure each person&rsquo;s answers are drawn only from the material that person was already permitted to read.</div>
   ${D('0 0 700 200','The Gemini Enterprise flow: a user asks, the reasoning engine retrieves from connected data stores and returns a grounded answer, or takes an action.',
    `${box(14,26,140,50,'var(--blue)')}${tm(84,48,'the person','var(--blue)')}${tm(84,64,'asks in plain words','var(--dim)')}
     ${box(180,26,160,50,'var(--violet)')}${tm(260,48,'reasoning engine','var(--violet)')}${tm(260,64,'plans and retrieves','var(--dim)')}
@@ -185,14 +185,14 @@ document.getElementById('sec-start').innerHTML=`
     ${tm(265,120,'a grounded answer comes back, with its sources','var(--green)')}
     ${box(14,142,672,44,'var(--wire)')}
     ${tm(350,162,'the same flow is the deployment plan: interface  ·  reasoning  ·  data  ·  actions','var(--dim)')}
-    ${tm(350,178,'and wrapped around all four — identity, networking and security','var(--dim)')}`,
+    ${tm(350,178,'and wrapped around all four: identity, networking and security','var(--dim)')}`,
    'Read it left to right for what a user experiences, and read the bottom bar for what you actually have to build. The dashed line is the answer returning with citations.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; the twelve things that have to be true</h2>
-  <div class="plain-line"><b>Try this:</b> click through the deployment in order. Each stage says what it is in plain terms, what blocks it, and roughly when it has to happen &mdash; because two of these have to be started in week one or they become the reason the project is late.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Fitting out a new office. The desks are the visible part; the electricity, the door locks and the broadband are what actually decide whether anyone can work on Monday — and two of those have to be ordered months earlier.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Identity</b> and <b>Networking</b> first. They are the two marked week one, and the reason is the same for both.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>provisioning</b> switching the service on in the first place</span><span class="sp-w"><b>connector</b> a link to one of your existing systems so its content can be searched</span><span class="sp-w"><b>agent</b> something that does a job for you, rather than just answering a question</span><span class="sp-w"><b>Model Armor</b> the service that screens prompts and answers for attacks and personal data</span></span></div></div>
+  <h2 class="sec">Try it: the twelve things that have to be true</h2>
+  <div class="plain-line"><b>Try this:</b> click through the deployment in order. Each stage says what it is in plain terms, what blocks it, and roughly when it has to happen, because two of these have to be started in week one or they become the reason the project is late.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Fitting out a new office. The desks are the visible part; the electricity, the door locks and the broadband are what actually decide whether anyone can work on Monday, and two of those have to be ordered months earlier.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Identity</b> and <b>Networking</b> first. They are the two marked week one, and the reason is the same for both.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>provisioning</b> switching the service on in the first place</span><span class="sp-w"><b>connector</b> a link to one of your existing systems so its content can be searched</span><span class="sp-w"><b>agent</b> something that does a job for you, rather than just answering a question</span><span class="sp-w"><b>Model Armor</b> the service that screens prompts and answers for attacks and personal data</span></span></div></div>
   <div class="sim-layout">
     <div><div id="fwList"></div></div>
     <div><div id="fwOut" class="cidr-out"></div></div>
@@ -202,7 +202,7 @@ document.getElementById('sec-start').innerHTML=`
 <div class="card">
   <h2 class="sec">Two things that are easy to get backwards</h2>
   <div class="vs2"><div class="col"><b>IT IS NOT A CHATBOT</b>A chatbot answers questions. This <em>does things</em>: multi-step work, breaking a request into parts, calling out to your systems through their APIs. That is what the word <b>agent</b> means here, and it is why the security conversation is different from the one you have about a search box.</div>
-  <div class="col"><b>IT DOES NOT ACT WITHOUT YOU</b>When an agent is about to schedule something or send something, it <b>produces a draft in the chat and waits</b>. You click to authorise. Human supervision is not a policy somebody promises to enforce — it is the mechanism, and it is why &ldquo;what if it sends the wrong email&rdquo; has a concrete answer.</div></div>
+  <div class="col"><b>IT DOES NOT ACT WITHOUT YOU</b>When an agent is about to schedule something or send something, it <b>produces a draft in the chat and waits</b> You click to authorise. Human supervision is not a policy somebody promises to enforce. It is the mechanism, and it is why &ldquo;what if it sends the wrong email&rdquo; has a concrete answer.</div></div>
   <div class="plain-line" style="margin-top:12px"><b>And the thing that makes it enterprise-grade rather than clever:</b> every answer is assembled from sources that particular person is already permitted to read. Get the identity and connector permissions right and the product is safe by construction. Get them wrong and you have built a very fast way to leak documents to the wrong colleagues.</div>
 </div>`;
 
@@ -213,13 +213,13 @@ document.getElementById('sec-start').innerHTML=`
   const ST=[
     {k:'prov',n:'Provisioning',when:'week 1',c:'var(--violet)',
      p:'Turn the service on in Google Cloud. Small, and nothing else can start until it is done.',
-     need:'The <b>Discovery Engine API</b> enabled — that is the engine underneath the search and the agents. Without it there is no application to configure.',
+     need:'The <b>Discovery Engine API</b> enabled. That is the engine underneath the search and the agents. Without it there is no application to configure.',
      block:'Nothing much. This is the easy one, which is why it is a poor measure of progress.'},
-    {k:'ident',n:'Identity',when:'week 1 — start now',c:'var(--red)',
+    {k:'ident',n:'Identity',when:'week 1, start now',c:'var(--red)',
      p:'Decide how people sign in, and prove it works before anything else is built on top of it.',
      need:'Either Google Identity, or a third-party provider wired up through Workforce Identity Federation. The choice is <b>forced by which data sources you connect</b>, not by preference.',
      block:'<b>One of the two biggest sources of delay on these projects.</b> It touches a security team, an identity team and often a vendor. Start it in the first week or it becomes the critical path in month three.'},
-    {k:'net',n:'Networking',when:'week 1 — start now',c:'var(--red)',
+    {k:'net',n:'Networking',when:'week 1, start now',c:'var(--red)',
      p:'Make sure corporate infrastructure lets the traffic through, and that the data stays inside a boundary you control.',
      need:'A service perimeter around the managed services, context-aware access rules, and <b>backend timeouts raised well past the usual thirty seconds</b>.',
      block:'<b>The other big source of delay.</b> Firewall rules, private connectivity and on-premises links routinely take longer than anyone budgets. Treat network validation as a critical-path item, not a formality.'},
@@ -229,7 +229,7 @@ document.getElementById('sec-start').innerHTML=`
      block:'Rarely technical. Usually somebody has to decide who is allowed to connect a data source, and that is a governance conversation.'},
     {k:'data',n:'Data stores &amp; connectors',when:'week 2–6',c:'var(--teal)',
      p:'Connect the systems the answers will come from, and control who can see what inside them.',
-     need:'A choice per source between <b>ingesting</b> a copy into an index and <b>federating</b> queries out to the source. And access controls — which is where the real work is.',
+     need:'A choice per source between <b>ingesting</b> a copy into an index and <b>federating</b> queries out to the source. And access controls, which is where the real work is.',
      block:'Connector capabilities vary enormously. Not every connector supports fine-grained permissions or natural-language queries on day one. Set that expectation early rather than discovering it in a demo.'},
     {k:'agents',n:'Agents',when:'week 3+',c:'var(--amber)',
      p:'Build the things that do work rather than just answer.',
@@ -249,7 +249,7 @@ document.getElementById('sec-start').innerHTML=`
      block:'It never finishes. Search quality is an ongoing practice, not a launch task.'},
     {k:'govern',n:'Governance &amp; observability',when:'before real users',c:'var(--violet)',
      p:'Be able to see what happened, and be allowed to look.',
-     need:'Tracing and logging switched on, and — before you log what people typed — <b>the consents and data-handling policies to permit it</b>.',
+     need:'Tracing and logging switched on, and (before you log what people typed) <b>the consents and data-handling policies to permit it</b>.',
      block:'Legal, not technical. Prompt content is user data, and turning that log on without the right agreements in place is its own incident.'},
     {k:'change',n:'Change management',when:'from before week 1',c:'var(--green)',
      p:'Get several thousand people to change how they work.',
@@ -280,17 +280,17 @@ document.getElementById('sec-start').innerHTML=`
 document.getElementById('sec-provision').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">One API switch, and two roles that are nothing alike</h2>
-  <div class="plain-line"><b>In plain English:</b> before any of this exists there is a service to turn on. Gemini Enterprise&rsquo;s search and agent capabilities run on the <b>Discovery Engine API</b> &mdash; that is the engine underneath the product, and if it is not enabled there is simply no application to configure. It is a two-minute job that blocks everything, which makes it a bad measure of how far along you are.</div>
+  <div class="plain-line"><b>In plain English:</b> before any of this exists there is a service to turn on. Gemini Enterprise&rsquo;s search and agent capabilities run on the <b>Discovery Engine API</b>. That is the engine underneath the product, and if it is not enabled there is simply no application to configure. It is a two-minute job that blocks everything, which makes it a bad measure of how far along you are.</div>
   <div class="plain-line">Then there are the permissions, and here the naming does you no favours. The two roles you will actually hand out sound similar and are worlds apart.</div>
   <table class="osi"><thead><tr><th>Role</th><th>Who gets it</th><th>What it lets them do</th></tr></thead><tbody>
   <tr><td><b>Discovery Engine Admin</b></td><td>The deployment engineer, and very few others</td><td>Create data connectors, configure the user interface, set up agentic actions. Effectively: decide what the system can see and what it can do</td></tr>
   <tr><td><b>Discovery Engine User</b></td><td><b>Every employee who needs to use the app</b></td><td>Open it and ask things. That is the whole role, and it is the one you grant in bulk</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The mistake to avoid:</b> granting Admin because a user could not get in. The difference between the two is the difference between using the assistant and being able to connect a new data source to it &mdash; and a data connector is a decision about what the whole company can suddenly search.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The mistake to avoid:</b> granting Admin because a user could not get in. The difference between the two is the difference between using the assistant and being able to connect a new data source to it, and a data connector is a decision about what the whole company can suddenly search.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; hand out the right role</h2>
+  <h2 class="sec">Try it: hand out the right role</h2>
   <div class="plain-line"><b>Try this:</b> six people who each need something. Give each the smallest role that does the job, and read what the wrong one would have given away.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Handing out keys in an office. Most people need the key to the front door. Almost nobody needs the key to the room where the locks are changed.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>give the salesperson admin rights and read what you just handed over.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>IAM role</b> a named bundle of permissions you grant to somebody</span><span class="sp-w"><b>data connector</b> a link that makes another system’s content searchable by everyone</span><span class="sp-w"><b>service account</b> a login used by a program rather than a person</span></span></div></div>
   <div class="sim-layout">
@@ -306,7 +306,7 @@ document.getElementById('sec-provision').innerHTML=`
   const R=[['user','Discovery Engine User'],['admin','Discovery Engine Admin'],['none','No access needed']];
   const P=[
     {id:'emp',n:'A salesperson who wants to search the product wiki',r:'user',
-     y:{user:'Correct, and this is the answer for almost everyone in the company. Search and ask — nothing more.',
+     y:{user:'Correct, and this is the answer for almost everyone in the company. Search and ask. Nothing more.',
         admin:'They can now connect a data source, which means they can decide what the entire organisation is able to search. A large amount of power handed over to fix a login problem.',
         none:'Then the deployment has no users. This is the role people are actually here for.'}},
     {id:'eng',n:'The engineer setting up the M365 connector',r:'admin',
@@ -315,14 +315,14 @@ document.getElementById('sec-provision').innerHTML=`
         none:'Somebody has to build it.'}},
     {id:'exec',n:'An executive who only wants the adoption dashboard',r:'user',
      y:{user:'Fine. Reading usage does not require the ability to change what the system connects to.',
-        admin:'A common and unnecessary escalation — seniority is not a technical requirement. Admin is about connectors and configuration, not about visibility.',
+        admin:'A common and unnecessary escalation, seniority is not a technical requirement. Admin is about connectors and configuration, not about visibility.',
         none:'They would see nothing, and this is the person whose sponsorship the project depends on.'}},
     {id:'contract',n:'A contractor who needs the app for a three-month project',r:'user',
      y:{user:'Right, with the caveat that matters more than the role: what they can <em>see</em> comes from the data-source permissions, not from this role. Check those before worrying about this.',
         admin:'A temporary contractor able to connect data sources. Worth reading that sentence twice.',
         none:'Then they cannot do the work they were hired for.'}},
     {id:'sec',n:'A security reviewer who needs to read the audit logs',r:'none',
-     y:{none:'Correct, in the sense that neither of these roles is what they need. Log access is granted separately in Cloud Logging — do not reach for an application role to solve an observability problem.',
+     y:{none:'Correct, in the sense that neither of these roles is what they need. Log access is granted separately in Cloud Logging, do not reach for an application role to solve an observability problem.',
         admin:'Admin does not grant log access, and does grant the ability to reconfigure the system they are auditing. Precisely backwards.',
         user:'Does not give them the logs either. This one is a trick: the right answer is a different permission entirely.'}},
     {id:'bot',n:'A service account for a nightly reporting script',r:'none',
@@ -351,15 +351,15 @@ document.getElementById('sec-provision').innerHTML=`
 document.getElementById('sec-identity').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">You do not get to choose your identity provider. Your data sources choose it for you.</h2>
-  <div class="plain-line"><b>In plain English:</b> most organisations arrive with a preference &mdash; &ldquo;we use Okta for everything&rdquo;, &ldquo;we are a Microsoft shop&rdquo;. That preference is often overruled by something nobody thought to check: <b>which systems you are connecting Gemini Enterprise to</b>. Connect a Google Workspace source and the identity question is already answered, whatever your standard is.</div>
-  <div class="plain-line">This is the single most valuable thing to establish in week one, because it is the answer that unblocks the security team, the identity team and the connector work all at once &mdash; and because discovering it in month three means redoing all three.</div>
-  <div class="vs2"><div class="col"><b>GOOGLE IDENTITY</b>Accounts live in Google. Simplest path, fewest moving parts.<br><br><b>Mandatory</b> if the deployment touches any Google Workspace application — Gmail, Drive, Calendar. Not a preference, a requirement.</div>
-  <div class="col"><b>WORKFORCE IDENTITY FEDERATION</b>People keep signing in with the provider they already use — Okta, Entra ID, an on-premises ADFS — and Google trusts that provider rather than holding the accounts.<br><br><b>Required</b> when ingesting from Microsoft 365 sources. Available as a general option otherwise, via SAML 2.0 or OIDC.</div></div>
+  <div class="plain-line"><b>In plain English:</b> most organisations arrive with a preference. &ldquo;we use Okta for everything&rdquo;, &ldquo;we are a Microsoft shop&rdquo;. That preference is often overruled by something nobody thought to check: <b>which systems you are connecting Gemini Enterprise to</b>. Connect a Google Workspace source and the identity question is already answered, whatever your standard is.</div>
+  <div class="plain-line">This is the single most valuable thing to establish in week one, because it is the answer that unblocks the security team, the identity team and the connector work all at once, and because discovering it in month three means redoing all three.</div>
+  <div class="vs2"><div class="col"><b>GOOGLE IDENTITY</b>Accounts live in Google. Simplest path, fewest moving parts.<br><br><b>Mandatory</b> if the deployment touches any Google Workspace application, Gmail, Drive, Calendar. Not a preference, a requirement.</div>
+  <div class="col"><b>WORKFORCE IDENTITY FEDERATION</b>People keep signing in with the provider they already use (Okta, Entra ID, an on-premises ADFS) and Google trusts that provider rather than holding the accounts.<br><br><b>Required</b> when ingesting from Microsoft 365 sources. Available as a general option otherwise, via SAML 2.0 or OIDC.</div></div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; walk the decision tree</h2>
-  <div class="plain-line"><b>Try this:</b> answer as your deployment would. Four questions, and the answer at the end is not a recommendation &mdash; on two of the paths it is a hard requirement with no alternative.</div>
+  <h2 class="sec">Try it: walk the decision tree</h2>
+  <div class="plain-line"><b>Try this:</b> answer as your deployment would. Four questions, and the answer at the end is not a recommendation, on two of the paths it is a hard requirement with no alternative.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing a front door lock when the building already has fire regulations. You may have a favourite brand, and the regulations decide it for you.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>Yes</b> to the first question and stop. That branch has only one question in it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>identity provider</b> the system where people prove who they are when signing in</span><span class="sp-w"><b>federation</b> letting Google trust the sign-in system you already have, rather than making new accounts</span><span class="sp-w"><b>ingestion</b> copying content in so it can be searched</span><span class="sp-w"><b>SAML / OIDC</b> two standard languages sign-in systems speak to each other in</span></span></div></div>
   <div class="sim-layout">
     <div><div id="idTree"></div></div>
@@ -374,7 +374,7 @@ document.getElementById('sec-identity').innerHTML=`
   <tr><td>Ingesting from Microsoft 365 sources</td><td><b>Third-party federation with Entra ID</b></td><td>The permissions on that content are Entra&rsquo;s. Preserving who-can-see-what through ingestion means carrying that identity across</td></tr>
   <tr><td>Using M365 federated connectors instead of ingesting</td><td>Google Identity, with federation as the fallback</td><td>Federated queries are answered by the source system, which applies its own permissions at query time. Less identity plumbing is needed</td></tr>
   <tr><td>Access from a mobile application is required</td><td><b>OIDC. SAML will not do.</b></td><td>SAML is a browser-redirect protocol. Mobile apps need the token flow that OIDC provides</td></tr>
-  <tr><td>Web application only</td><td>Either SAML or OIDC</td><td>Both work. Choose on operational grounds — and see the federation tab, where the key-rotation difference decides it for most people</td></tr>
+  <tr><td>Web application only</td><td>Either SAML or OIDC</td><td>Both work. Choose on operational grounds, and see the federation tab, where the key-rotation difference decides it for most people</td></tr>
   </tbody></table>
 </div>`;
 
@@ -386,11 +386,11 @@ document.getElementById('sec-identity').innerHTML=`
     {k:'ws',q:'Will you use any Google Workspace or Google Cloud first-party data sources?',
      sub:'Gmail, Drive, Calendar, BigQuery, Cloud Storage',a:['Yes','No']},
     {k:'ing',q:'Are you still using ingestion data sources?',
-     sub:'copying content into an index, rather than querying the source live',a:['Yes','No — M365 federated connectors']},
+     sub:'copying content into an index, rather than querying the source live',a:['Yes','No, M365 federated connectors']},
     {k:'m365',q:'Is the ingestion from Microsoft 365 data sources?',
      sub:'SharePoint, OneDrive, Outlook',a:['Yes','No']},
     {k:'mob',q:'Is access from a mobile application a requirement?',
-     sub:'as opposed to a web application only',a:['Yes','No — web app only']}
+     sub:'as opposed to a web application only',a:['Yes','No, web app only']}
   ];
   const ans={};
   function outcome(){
@@ -404,7 +404,7 @@ document.getElementById('sec-identity').innerHTML=`
     if(ans.ing===1) return {k:'gi-fed',t:'Use Google Identity, with federation as the backup option',
       hard:false,
       why:'With M365 federated connectors the source system answers each query and applies its own permissions at the moment of asking. Far less identity plumbing has to be carried across, so the simpler option is available.',
-      next:'Google Identity is the straightforward path. If the organisation insists on its existing provider, federation remains available — continue to the mobile question to find out which protocol.',
+      next:'Google Identity is the straightforward path. If the organisation insists on its existing provider, federation remains available, continue to the mobile question to find out which protocol.',
       path:['Workspace sources → no','Ingestion → no, federated connectors']};
     if(ans.m365===undefined) return null;
     if(ans.m365===1) return {k:'gi-fed2',t:'Use Google Identity, with federation as the backup option',
@@ -414,7 +414,7 @@ document.getElementById('sec-identity').innerHTML=`
       path:['Workspace sources → no','Ingestion → yes','From M365 → no']};
     return {k:'wif-entra',t:'You must use third-party Workforce Identity Federation with Entra ID',
       hard:true,
-      why:'The permissions on Microsoft 365 content belong to Entra ID. Ingesting that content while preserving who is allowed to see each document means carrying the Entra identity across into Google Cloud — which is exactly what federation does.',
+      why:'The permissions on Microsoft 365 content belong to Entra ID. Ingesting that content while preserving who is allowed to see each document means carrying the Entra identity across into Google Cloud, which is exactly what federation does.',
       next:'This is the longest path in the deployment and the one to start first. Continue to the mobile question, because it decides your protocol and that is not a free choice either.',
       path:['Workspace sources → no','Ingestion → yes','From M365 → yes']};
   }
@@ -423,7 +423,7 @@ document.getElementById('sec-identity').innerHTML=`
     return ans.mob===0
       ? {t:'You must use OIDC',hard:true,
          why:'SAML is built around browser redirects and assertion posting. A mobile application needs the token-based flow OIDC provides, so the protocol choice disappears the moment mobile is a requirement.'}
-      : {t:'SAML or OIDC — either works',hard:false,
+      : {t:'SAML or OIDC, either works',hard:false,
          why:'Web-only access supports both. Decide on operational grounds instead: OIDC lets Google fetch new signing keys from a discovery URL on its own, while SAML needs somebody to upload a fresh certificate before the old one expires.'};
   }
   function render(){
@@ -468,17 +468,17 @@ document.getElementById('sec-identity').innerHTML=`
 /* ================= 4 · FEDERATION ================= */
 document.getElementById('sec-wif').innerHTML=`
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Federation &mdash; borrowing somebody else&rsquo;s front desk</h2>
-  <div class="plain-line"><b>In plain English:</b> a company already has a place where people prove who they are &mdash; Okta, Entra ID, an ADFS server in a basement. Nobody wants a second set of accounts. <b>Workforce Identity Federation</b> means Google does not hold the accounts at all. It holds a <em>trust relationship</em>: &ldquo;whoever that provider vouches for, I will believe&rdquo;. The person signs in where they always did, and walks into Google Cloud carrying a badge Google agrees to honour.</div>
-  <div class="plain-line"><b>And the sibling to keep straight:</b> <b>Workforce</b> Identity Federation is for <em>people</em> — employees, contractors, a vendor&rsquo;s QA team clicking around a console. <b>Workload</b> Identity Federation is for <em>machines</em> — a CI/CD pipeline that needs to deploy without a stored key. Same idea, different subject, and interview questions like putting both in the same scenario.</div>
-  <div class="vs2"><div class="col"><b>POOL</b>A container for external identities, one per environment that needs access. It carries the settings that apply to everyone in it — including <b>session duration</b>, which is not as harmless as it looks.</div>
+  <h2 class="sec">Federation: borrowing somebody else&rsquo;s front desk</h2>
+  <div class="plain-line"><b>In plain English:</b> a company already has a place where people prove who they are, Okta, Entra ID, an ADFS server in a basement. Nobody wants a second set of accounts. <b>Workforce Identity Federation</b> means Google does not hold the accounts at all. It holds a <em>trust relationship</em>: &ldquo;whoever that provider vouches for, I will believe&rdquo;. The person signs in where they always did, and walks into Google Cloud carrying a badge Google agrees to honour.</div>
+  <div class="plain-line"><b>And the sibling to keep straight:</b> <b>Workforce</b> Identity Federation is for <em>people</em>, employees, contractors, a vendor&rsquo;s QA team clicking around a console. <b>Workload</b> Identity Federation is for <em>machines</em>, a CI/CD pipeline that needs to deploy without a stored key. Same idea, different subject, and interview questions like putting both in the same scenario.</div>
+  <div class="vs2"><div class="col"><b>POOL</b>A container for external identities, one per environment that needs access. It carries the settings that apply to everyone in it, including <b>session duration</b> which is not as harmless as it looks.</div>
   <div class="col"><b>PROVIDER</b>Inside the pool, one per identity source. This is where you say &ldquo;trust Okta&rdquo;, and where you configure the protocol, the issuer, the audience, and how their claims become attributes Google understands.</div></div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; watch a login cross five boundaries</h2>
-  <div class="plain-line"><b>Try this:</b> step a sign-in through federation. Then break one thing and see where it fails &mdash; because every one of these failures produces a different error, and knowing which step an error belongs to is most of the diagnosis.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Getting into a conference on a partner company’s badge. Their reception vouches for you, the conference desk checks the voucher is genuine and is addressed to them, and only then does anyone look at which rooms you are allowed into.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>select <b>issuer URI has a trailing slash mismatch</b> and note which of the five steps goes red.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>issuer</b> who issued the badge — must match exactly, character for character</span><span class="sp-w"><b>audience</b> who the badge was issued <em>for</em>; stops one being reused elsewhere</span><span class="sp-w"><b>token</b> the digital badge itself, valid for a short time</span><span class="sp-w"><b>attribute mapping</b> turning their words for things into words Google understands</span><span class="sp-w"><b>IAM</b> the permissions system &mdash; who and what may do which things</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
+  <h2 class="sec">Try it: watch a login cross five boundaries</h2>
+  <div class="plain-line"><b>Try this:</b> step a sign-in through federation. Then break one thing and see where it fails, because every one of these failures produces a different error, and knowing which step an error belongs to is most of the diagnosis.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Getting into a conference on a partner company’s badge. Their reception vouches for you, the conference desk checks the voucher is genuine and is addressed to them, and only then does anyone look at which rooms you are allowed into.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>select <b>issuer URI has a trailing slash mismatch</b> and note which of the five steps goes red.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>issuer</b> who issued the badge, must match exactly, character for character</span><span class="sp-w"><b>audience</b> who the badge was issued <em>for</em>; stops one being reused elsewhere</span><span class="sp-w"><b>token</b> the digital badge itself, valid for a short time</span><span class="sp-w"><b>attribute mapping</b> turning their words for things into words Google understands</span><span class="sp-w"><b>IAM</b> the permissions system, who and what may do which things</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="wfFlow"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:6px">INTRODUCE A FAULT</div>
@@ -488,20 +488,20 @@ document.getElementById('sec-wif').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">OIDC or SAML &mdash; and the one difference that usually decides it</h2>
+  <h2 class="sec">OIDC or SAML: and the one difference that usually decides it</h2>
   <table class="osi"><thead><tr><th></th><th>OIDC</th><th>SAML 2.0</th></tr></thead><tbody>
   <tr><td><b>You configure</b></td><td>An issuer URI and a client ID (the audience)</td><td>A metadata XML file downloaded from the provider and uploaded to Google</td></tr>
   <tr><td><b>Key rotation</b></td><td><b>Google periodically checks the provider&rsquo;s discovery URL for new public keys.</b> It happens without you</td><td>Somebody has to upload a new certificate before the old one expires. It is a diary entry, and diary entries get missed</td></tr>
   <tr><td><b>Mobile applications</b></td><td>Yes</td><td><b>No.</b> If mobile access is required, the choice is already made</td></tr>
-  <tr><td><b>Suits</b></td><td>Modern providers with a discovery endpoint</td><td>Legacy estates — an on-premises ADFS behind a strict firewall that can hand you an XML file and nothing else</td></tr>
+  <tr><td><b>Suits</b></td><td>Modern providers with a discovery endpoint</td><td>Legacy estates, an on-premises ADFS behind a strict firewall that can hand you an XML file and nothing else</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>Read the key-rotation row as an operational risk, not a feature comparison.</b> A SAML certificate quietly expiring is an outage that arrives on a date nobody has in their calendar, and it locks out every federated user at once. That is why OIDC is described as lower maintenance &mdash; not because the setup is easier, but because there is one fewer thing that can expire while you are not looking.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Read the key-rotation row as an operational risk, not a feature comparison.</b> A SAML certificate quietly expiring is an outage that arrives on a date nobody has in their calendar, and it locks out every federated user at once. That is why OIDC is described as lower maintenance, not because the setup is easier, but because there is one fewer thing that can expire while you are not looking.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; answer four questions and stop arguing about the protocol</h2>
-  <div class="plain-line"><b>Try this:</b> this decision is usually made by taste and defended for weeks. Four facts about your estate settle it. Answer them and watch how quickly the choice stops being a matter of opinion &mdash; then read what you have just signed up to maintain.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing between a door with a keypad and a door with a physical key. The keypad reissues its own codes; the key has to be recut before it wears out, by somebody who remembers to book it in. Both doors work. Only one of them fails on a date nobody has in their diary.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>mobile access</b> first &mdash; on its own it usually ends the discussion.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>OIDC</b> a modern sign-in protocol built on top of ordinary web requests</span><span class="sp-w"><b>SAML</b> an older sign-in protocol that exchanges signed XML documents</span><span class="sp-w"><b>identity provider</b> the system that already knows who your staff are</span><span class="sp-w"><b>discovery endpoint</b> a public address where a provider publishes its current keys</span><span class="sp-w"><b>certificate</b> the file that proves a signed document is genuine, and that expires</span><span class="sp-w"><b>key rotation</b> replacing those keys before they expire</span></span></div></div>
+  <h2 class="sec">Try it: answer four questions and stop arguing about the protocol</h2>
+  <div class="plain-line"><b>Try this:</b> this decision is usually made by taste and defended for weeks. Four facts about your estate settle it. Answer them and watch how quickly the choice stops being a matter of opinion, then read what you have just signed up to maintain.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing between a door with a keypad and a door with a physical key. The keypad reissues its own codes; the key has to be recut before it wears out, by somebody who remembers to book it in. Both doors work. Only one of them fails on a date nobody has in their diary.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>mobile access</b> first, on its own it usually ends the discussion.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>OIDC</b> a modern sign-in protocol built on top of ordinary web requests</span><span class="sp-w"><b>SAML</b> an older sign-in protocol that exchanges signed XML documents</span><span class="sp-w"><b>identity provider</b> the system that already knows who your staff are</span><span class="sp-w"><b>discovery endpoint</b> a public address where a provider publishes its current keys</span><span class="sp-w"><b>certificate</b> the file that proves a signed document is genuine, and that expires</span><span class="sp-w"><b>key rotation</b> replacing those keys before they expire</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gmProtoOut"></div></div>
     <div><div class="segmented" id="gmProtoCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -510,9 +510,9 @@ document.getElementById('sec-wif').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; map attributes and write a principal that works</h2>
-  <div class="plain-line"><b>Try this:</b> mapping is where a provider&rsquo;s claims become something Google can write policy about. It has three ways to go wrong that all look like &ldquo;the permission does not apply&rdquo; &mdash; and the syntax errors are unforgiving in a way that is genuinely hard to spot by eye.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Translating a foreign address into your own postal format. Get the direction of the translation backwards, or use their word for “county” in your own system, and the letter goes nowhere — with no bounce message.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>choose the <b>provider’s own name</b> option and read why the policy matches nobody.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>claim</b> a fact the sign-in system asserts about a person, like their email</span><span class="sp-w"><b>attribute</b> what Google calls that fact once you have mapped it across</span><span class="sp-w"><b>principal</b> one named person in a permission rule</span><span class="sp-w"><b>principalSet</b> a group of people who share an attribute value</span><span class="sp-w"><b>IAM</b> the permissions system &mdash; who and what may do which things</span></span></div></div>
+  <h2 class="sec">Try it: map attributes and write a principal that works</h2>
+  <div class="plain-line"><b>Try this:</b> mapping is where a provider&rsquo;s claims become something Google can write policy about. It has three ways to go wrong that all look like &ldquo;the permission does not apply&rdquo;, and the syntax errors are unforgiving in a way that is genuinely hard to spot by eye.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Translating a foreign address into your own postal format. Get the direction of the translation backwards, or use their word for “county” in your own system, and the letter goes nowhere, with no bounce message.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>choose the <b>provider’s own name</b> option and read why the policy matches nobody.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>claim</b> a fact the sign-in system asserts about a person, like their email</span><span class="sp-w"><b>attribute</b> what Google calls that fact once you have mapped it across</span><span class="sp-w"><b>principal</b> one named person in a permission rule</span><span class="sp-w"><b>principalSet</b> a group of people who share an attribute value</span><span class="sp-w"><b>IAM</b> the permissions system, who and what may do which things</span></span></div></div>
   <div class="sim-layout">
     <div><div id="mapOut"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:6px">MAPPING DIRECTION</div>
@@ -524,20 +524,20 @@ document.getElementById('sec-wif').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Attribute conditions &mdash; the guardrail before the guardrail</h2>
+  <h2 class="sec">Attribute conditions: the guardrail before the guardrail</h2>
   <div class="plain-line"><b>In plain English:</b> mapping decides <em>what Google knows</em> about someone. An <b>attribute condition</b> decides <em>whether they get in at all</em>, evaluated before any IAM policy is consulted. It is a boolean expression over the incoming claims, and it is where you say &ldquo;only tokens from these applications&rdquo; or &ldquo;only this company&rsquo;s employees&rdquo;.</div>
   <pre class="code">${hl("# only accept tokens issued for either of these two applications\nassertion.aud == 'prod-app' || assertion.aud == 'test-app'\n\n# only accept people whose email is on the partner domain\nassertion.email.endsWith('@partner.com')")}</pre>
-  <div class="plain-line" style="margin-top:12px"><b>Read the operators carefully.</b> <span class="code">||</span> is <em>either</em> — a user coming from prod-app OR from test-app is admitted. It does not require them to have both, and it does not perform any auditing; it is an admission test and nothing more. Reading <span class="code">||</span> as &ldquo;and&rdquo; is a small mistake that widens the door considerably.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Read the operators carefully.</b> <span class="code">||</span> is <em>either</em>, a user coming from prod-app OR from test-app is admitted. It does not require them to have both, and it does not perform any auditing; it is an admission test and nothing more. Reading <span class="code">||</span> as &ldquo;and&rdquo; is a small mistake that widens the door considerably.</div>
 </div>
 
 <div class="card">
   <h2 class="sec">Four failures you will see, and what each one actually means</h2>
   <table class="osi"><thead><tr><th>The error</th><th>Where it happened</th><th>What is really wrong</th></tr></thead><tbody>
-  <tr><td><span class="code">Invalid Issuer</span></td><td>The exchange, at Google&rsquo;s security token service</td><td><b>String exactness.</b> The issuer in the token must match what you configured character for character — and the usual culprit is a trailing slash that is present on one side and not the other. It will look identical on screen</td></tr>
+  <tr><td><span class="code">Invalid Issuer</span></td><td>The exchange, at Google&rsquo;s security token service</td><td><b>String exactness.</b> The issuer in the token must match what you configured character for character, and the usual culprit is a trailing slash that is present on one side and not the other. It will look identical on screen</td></tr>
   <tr><td><span class="code">Token Exchange Failed: Invalid Audience</span></td><td>The exchange, step three of five</td><td>The client ID you configured does not match the audience in the token. The user authenticated fine; the token was simply not minted for Google</td></tr>
   <tr><td><span class="code">The audience in the assertion does not match the expected audience</span></td><td>SAML validation</td><td>The provider&rsquo;s administrator pasted the wrong string into their side. Your configuration is usually correct; theirs is not</td></tr>
   <tr><td><span class="code">400 Error: Invalid Redirect URI</span></td><td>The provider, on the way back</td><td>For SAML, the assertion consumer service URL is missing or wrong on the provider side. The user reports &ldquo;the page just spun&rdquo;, which sounds like a Google outage and is not</td></tr>
-  <tr><td><span class="code">The value of attribute [google.subject] must be a string</span></td><td>Attribute mapping</td><td>A <b>mapping error</b>. The claim you pointed at is not a string — often it is an array or absent for that user. Not a platform fault and not a provider fault</td></tr>
+  <tr><td><span class="code">The value of attribute [google.subject] must be a string</span></td><td>Attribute mapping</td><td>A <b>mapping error</b>. The claim you pointed at is not a string, often it is an array or absent for that user. Not a platform fault and not a provider fault</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Two operational traps worth knowing before they happen:</b></div>
   <div class="lzrow"><span class="lzmark" style="color:var(--red)">1</span><span><b>Session duration is a hard stop.</b> A one-hour session and a ninety-minute script means the script <b>fails at the sixty-minute mark</b>. Sessions do not renew because work is in progress and do not extend because a terminal is open. Long-running jobs need a workload identity, not a person&rsquo;s session.</span></div>
@@ -549,29 +549,29 @@ document.getElementById('sec-wif').innerHTML=`
   const flow=document.getElementById('wfFlow'), fault=document.getElementById('wfFault'), out=document.getElementById('wfOut');
   if(!flow) return;
   const STEPS=[
-    {n:'Authentication',d:'The person signs in at their own provider — Okta, Entra, ADFS. Nothing Google-related has happened yet.'},
-    {n:'Issuance — the subject token',d:'The provider mints a token asserting who they are, and stamps it with an issuer and an audience.'},
+    {n:'Authentication',d:'The person signs in at their own provider, Okta, Entra, ADFS. Nothing Google-related has happened yet.'},
+    {n:'Issuance, the subject token',d:'The provider mints a token asserting who they are, and stamps it with an issuer and an audience.'},
     {n:'The exchange',d:'That token is presented to Google&rsquo;s security token service, which checks the issuer and the audience against the provider you configured, and swaps it for a federated access token.'},
-    {n:'Finalisation — the access token',d:'Google returns a short-lived access token. The session clock starts here, and it is the pool&rsquo;s session duration.'},
-    {n:'Authorisation — the IAM check',d:'Only now does Google ask what this principal is allowed to do. Mapped attributes become the principal string that policies are written against.'}
+    {n:'Finalisation. The access token',d:'Google returns a short-lived access token. The session clock starts here, and it is the pool&rsquo;s session duration.'},
+    {n:'Authorisation, the IAM check',d:'Only now does Google ask what this principal is allowed to do. Mapped attributes become the principal string that policies are written against.'}
   ];
   const F=[
-    {k:'none',label:'nothing — a clean sign-in'},
+    {k:'none',label:'nothing, a clean sign-in'},
     {k:'iss',label:'issuer URI has a trailing slash mismatch',at:2,
      err:'Invalid Issuer',
-     why:'<b>String exactness.</b> You typed <span class="code">https://sts.windows.net/partner-id</span> and the token says <span class="code">.../partner-id/</span>. One character. Paste the issuer out of a decoded token rather than typing it, and compare them character by character — reading them side by side on screen will not reveal it.'},
+     why:'<b>String exactness.</b> You typed <span class="code">https://sts.windows.net/partner-id</span> and the token says <span class="code">.../partner-id/</span>. One character. Paste the issuer out of a decoded token rather than typing it, and compare them character by character, reading them side by side on screen will not reveal it.'},
     {k:'aud',label:'client ID (audience) not configured',at:2,
      err:'Token Exchange Failed: Invalid Audience',
-     why:'The developer&rsquo;s question — &ldquo;if Google already trusts the issuer, why do I also need the audience?&rdquo; — has a security answer. The issuer says <em>who minted this token</em>. The audience says <em>who it was minted for</em>. Without the audience check, a valid token issued for some other application would be accepted here, which is a <b>token replay attack</b> with the door held open.'},
+     why:'The developer&rsquo;s question (&ldquo;if Google already trusts the issuer, why do I also need the audience?&rdquo;) has a security answer. The issuer says <em>who minted this token</em>. The audience says <em>who it was minted for</em>. Without the audience check, a valid token issued for some other application would be accepted here, which is a <b>token replay attack</b> with the door held open.'},
     {k:'map',label:'a mapped claim is not a string',at:4,
      err:'The value of attribute [google.subject] must be a string',
-     why:'A <b>mapping error</b>, not a platform or provider one. The claim you mapped is an array, or missing for this user. Authentication and the exchange both succeeded — this is the last step failing, which is why the user reports getting all the way in before it broke.'},
+     why:'A <b>mapping error</b>, not a platform or provider one. The claim you mapped is an array, or missing for this user. Authentication and the exchange both succeeded. This is the last step failing, which is why the user reports getting all the way in before it broke.'},
     {k:'cond',label:'attribute condition excludes this user',at:2,
      err:'the exchange is refused before any policy is read',
      why:'The condition is evaluated at the exchange, ahead of IAM. This is deliberate: an identity you never wanted should be turned away before Google starts reasoning about what it may do. It also means no IAM binding, however generous, will let them in.'},
     {k:'iam',label:'no IAM binding for this principal',at:4,
      err:'authenticated successfully, then permission denied',
-     why:'Everything about the identity worked. The person is who they say they are and Google believes it — they simply have not been granted anything. Also check the project: &ldquo;logged in, then denied&rdquo; very often means the CLI is pointed at a different project from the one where their permissions live.'}
+     why:'Everything about the identity worked. The person is who they say they are and Google believes it. They simply have not been granted anything. Also check the project: &ldquo;logged in, then denied&rdquo; very often means the CLI is pointed at a different project from the one where their permissions live.'}
   ];
   let cur='none';
   function render(){
@@ -589,7 +589,7 @@ document.getElementById('sec-wif').innerHTML=`
     out.innerHTML = cur==='none'
       ? '<div class="ok" style="margin-bottom:10px"><b>Signed in.</b> Five boundaries crossed, no password stored on Google&rsquo;s side, and the person never left the login page they already knew.</div>'+
         '<div class="simnote">Introduce a fault and note which step catches it. That mapping is the fastest diagnostic tool you have.</div>'
-      : '<div class="lzbad" style="margin-bottom:10px"><b>Failed at step '+(stop+1)+' — '+STEPS[stop].n+'</b><br><span class="code">'+f.err+'</span></div>'+
+      : '<div class="lzbad" style="margin-bottom:10px"><b>Failed at step '+(stop+1)+' '+STEPS[stop].n+'</b><br><span class="code">'+f.err+'</span></div>'+
         '<div class="lzrow"><span class="lzmark" style="color:var(--amber)">◎</span><span>'+f.why+'</span></div>'+
         '<div class="simnote" style="margin-top:10px"><b>The general rule:</b> failures at step 3 are configuration mismatches between you and the provider. Failures at step 5 are about mapping and permissions and mean the identity itself was fine. Knowing which half you are in removes most of the search space before you open a single log.</div>';
   }
@@ -603,9 +603,9 @@ document.getElementById('sec-wif').innerHTML=`
   if(!dir) return;
   let d='right', w='setint';
   const DIR=[['right','google.subject = assertion.email'],['wrong','assertion.email = google.subject']];
-  const WHO=[['one','one named person — principal://…/subject/alice@partner.com'],
-             ['setint','a group, using the internal name — principalSet://…/attribute.department/101'],
-             ['setext','a group, using the provider&rsquo;s own name — principalSet://…/attribute.cost_center/101'],
+  const WHO=[['one','one named person, principal://…/subject/alice@partner.com'],
+             ['setint','a group, using the internal name, principalSet://…/attribute.department/101'],
+             ['setext','a group, using the provider&rsquo;s own name, principalSet://…/attribute.cost_center/101'],
              ['onesub','one person, but written with principalSet://…/subject/alice@partner.com']];
   function render(){
     dir.innerHTML=DIR.map(([v,l])=>'<button class="seg'+(d===v?' on':'')+'" data-v="'+v+'" style="text-align:left;font-family:var(--mono);font-size:11px">'+l+'</button>').join('');
@@ -616,7 +616,7 @@ document.getElementById('sec-wif').innerHTML=`
     const whoOK = w==='setint' || w==='one';
     out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">WHAT YOU CONFIGURED</div>'+
       '<pre class="code">'+hl(
-        '# provider attribute mapping — Google name on the LEFT\n'+
+        '# provider attribute mapping, Google name on the LEFT\n'+
         (mapOK?"google.subject = assertion.email\nattribute.department = assertion.cost_center"
               :"assertion.email = google.subject\nassertion.cost_center = attribute.department")+
         '\n\n# IAM policy binding\n'+
@@ -628,10 +628,10 @@ document.getElementById('sec-wif').innerHTML=`
       '<div class="'+((mapOK&&whoOK)?'ok':'lzbad')+'"><b>'+
         (mapOK&&whoOK ? '✓ the role applies' : '✗ nothing happens')+'</b></div>';
     let html='';
-    if(!mapOK) html+='<div class="lzbad" style="margin-bottom:10px"><b>Backwards syntax.</b> The mapping is written <b>Google name = provider claim</b>, always in that order. Written the other way round it is a syntax error, and the reason it is easy to get wrong is that it reads like an assignment going the natural direction — you are describing what Google should call the thing, not what the provider should call it.</div>';
-    if(w==='setext') html+='<div class="lzbad" style="margin-bottom:10px"><b>You used the external name instead of the internal one.</b> You mapped <span class="code">assertion.cost_center</span> <em>onto</em> <span class="code">attribute.department</span>. Inside Google the attribute is now called <b>department</b> — <span class="code">cost_center</span> is the provider&rsquo;s word and means nothing on this side. The policy is accepted, matches no one, and produces no error to investigate.</div>';
+    if(!mapOK) html+='<div class="lzbad" style="margin-bottom:10px"><b>Backwards syntax.</b> The mapping is written <b>Google name = provider claim</b>, always in that order. Written the other way round it is a syntax error, and the reason it is easy to get wrong is that it reads like an assignment going the natural direction. You are describing what Google should call the thing, not what the provider should call it.</div>';
+    if(w==='setext') html+='<div class="lzbad" style="margin-bottom:10px"><b>You used the external name instead of the internal one.</b> You mapped <span class="code">assertion.cost_center</span> <em>onto</em> <span class="code">attribute.department</span>. Inside Google the attribute is now called <b>department</b>, <span class="code">cost_center</span> is the provider&rsquo;s word and means nothing on this side. The policy is accepted, matches no one, and produces no error to investigate.</div>';
     if(w==='onesub') html+='<div class="lzbad" style="margin-bottom:10px"><b>Wrong prefix.</b> <span class="code">principalSet://</span> names a <em>set</em> of identities sharing an attribute value; a single named subject needs <span class="code">principal://</span>. The console rejects it, which at least makes this the friendliest of the failures here.</div>';
-    if(w==='one'&&mapOK) html+='<div class="ok" style="margin-bottom:10px"><b>Valid, and think about whether you want it.</b> Naming one individual works and it does not scale — every joiner and leaver becomes an IAM edit. Group by a mapped attribute wherever the provider gives you one.</div>';
+    if(w==='one'&&mapOK) html+='<div class="ok" style="margin-bottom:10px"><b>Valid, and think about whether you want it.</b> Naming one individual works and it does not scale, every joiner and leaver becomes an IAM edit. Group by a mapped attribute wherever the provider gives you one.</div>';
     if(w==='setint'&&mapOK) html+='<div class="ok" style="margin-bottom:10px"><b>This is the shape to aim for.</b> The policy is written against an attribute rather than a person, so it stays correct as people join and leave. The provider stays the source of truth for who is in cost centre 101, which is where that fact belongs.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>The three failures on this page all look the same from the outside:</b> the permission simply does not take effect. Only one of them produces an error message. Get into the habit of checking the mapping direction and the internal attribute name before you start suspecting the policy.</div>';
     note.innerHTML=html;
@@ -650,7 +650,7 @@ document.getElementById('sec-wif').innerHTML=`
      noWhy:'Browser only, so both protocols remain on the table.'},
     {k:'disco',  q:'Can the provider publish a discovery endpoint reachable from Google?',
      yes:'oidc', hard:false,
-     yesWhy:'Keys can be fetched and refreshed automatically &mdash; nobody has to remember anything.',
+     yesWhy:'Keys can be fetched and refreshed automatically. Nobody has to remember anything.',
      noWhy:'An on-premises provider behind a strict firewall usually cannot. That points at SAML.'},
     {k:'legacy', q:'Is the provider an older on-premises system that hands you an XML file?',
      yes:'saml', hard:false,
@@ -689,11 +689,11 @@ document.getElementById('sec-wif').innerHTML=`
             +(l.hard?'var(--red)':l.favours==='oidc'?'var(--teal)':'var(--violet)')+'">'
             + '<div style="font-size:12.5px">'+l.q+' <b class="k">'+l.a+'</b></div>'
             + '<div class="k" style="font-size:10.5px;margin-top:4px;color:'+(l.favours==='oidc'?'var(--teal)':'var(--violet)')+'">'
-            + (l.hard?'DECIDES IT &mdash; ':'points at ')+NAME[l.favours]+'</div>'
+            + (l.hard?'DECIDES IT ':'points at ')+NAME[l.favours]+'</div>'
             + '<div style="font-size:12px;margin-top:5px;color:var(--muted)">'+l.why+'</div></div>').join(''))
       + (winner
         ? '<div class="ok" style="margin-top:4px"><b>Use '+NAME[winner]+'.</b> '
-          + (forced ? 'Not on balance &mdash; the mobile answer removed the choice.' : 'On the balance of what you answered.')+'</div>'
+          + (forced ? 'Not on balance, the mobile answer removed the choice.' : 'On the balance of what you answered.')+'</div>'
         : answered ? '<div class="lzwarn" style="margin-top:4px"><b>Genuinely balanced so far.</b> Answer the remaining questions; the certificate-owner one is the tie-breaker that matters in year two.</div>' : '');
     note.innerHTML = !winner
       ? '<div class="simnote"><b>The row people skip.</b> Both protocols authenticate people correctly. They differ in what happens eighteen months later, when a certificate expires and nobody is on duty for it.</div>'
@@ -702,7 +702,7 @@ document.getElementById('sec-wif').innerHTML=`
         + '<div class="simnote" style="margin-top:10px"><b>The condition attached.</b> That endpoint has to stay reachable. If a firewall change quietly blocks it, sign-in keeps working until the keys rotate and then fails for everyone at once, with nothing in your change log that day.</div>'
       : '<div class="lzwarn"><b>What you have signed up to maintain: a diary entry.</b> Somebody has to download a new certificate from the provider and upload it to Google before the old one expires. Nothing warns you. Nothing degrades first. It works, and then at midnight nobody can sign in.</div>'
         + '<div class="simnote" style="margin-top:10px"><b>Make it real before you leave the room.</b> Put the expiry date in a calendar with two owners, alert on it thirty days out, and write down where the metadata file comes from. Every SAML outage is this task, unowned.</div>'
-        + '<div class="simnote" style="margin-top:10px">This is a legitimate choice &mdash; a strict on-premises estate may not be able to offer anything else. It is only a bad choice when it is made by default and the rotation is nobody&rsquo;s job.</div>';
+        + '<div class="simnote" style="margin-top:10px">This is a legitimate choice. A strict on-premises estate may not be able to offer anything else. It is only a bad choice when it is made by default and the rotation is nobody&rsquo;s job.</div>';
   }
   render();
 })();
@@ -711,14 +711,14 @@ document.getElementById('sec-wif').innerHTML=`
 document.getElementById('sec-network').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The thirty-second habit that breaks generative AI</h2>
-  <div class="plain-line"><b>In plain English:</b> corporate load balancers and firewalls have been tuned for years around one assumption &mdash; a web request that takes more than about thirty seconds is a request that has gone wrong, so drop it. That assumption is correct for a login page and wrong for a model that is reasoning over a long document. <b>Generative AI routinely exceeds thirty seconds</b>, and the infrastructure cheerfully kills the connection mid-answer.</div>
-  <div class="plain-line">What the user sees is the worst possible symptom: it works for short questions and fails for exactly the hard ones people were most impressed by in the demo. Nothing in the application logs is wrong. The fix is unglamorous &mdash; <b>raise backend timeouts to around three to five minutes</b> across the load balancers and firewalls in the path.</div>
+  <div class="plain-line"><b>In plain English:</b> corporate load balancers and firewalls have been tuned for years around one assumption, a web request that takes more than about thirty seconds is a request that has gone wrong, so drop it. That assumption is correct for a login page and wrong for a model that is reasoning over a long document. <b>Generative AI routinely exceeds thirty seconds</b>, and the infrastructure cheerfully kills the connection mid-answer.</div>
+  <div class="plain-line">What the user sees is the worst possible symptom: it works for short questions and fails for exactly the hard ones people were most impressed by in the demo. Nothing in the application logs is wrong. The fix is unglamorous, <b>raise backend timeouts to around three to five minutes</b> across the load balancers and firewalls in the path.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; watch the firewall cut the answer off</h2>
+  <h2 class="sec">Try it: watch the firewall cut the answer off</h2>
   <div class="plain-line"><b>Try this:</b> ask something easy, then something hard. Move the timeout, and turn streaming on and off. Three settings, and the difference between them is whether the product feels broken.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A phone system that hangs up after thirty seconds of silence. Fine for a quick question. Fatal if the person on the other end is looking something complicated up.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick the hard question, then untick <b>streaming</b> and watch what happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>backend timeout</b> how long the network equipment waits before assuming something is broken</span><span class="sp-w"><b>streaming</b> sending the answer a piece at a time instead of all at the end</span><span class="sp-w"><b>p99</b> the slowest 1% — one request in a hundred is worse than this</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A phone system that hangs up after thirty seconds of silence. Fine for a quick question. Fatal if the person on the other end is looking something complicated up.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick the hard question, then untick <b>streaming</b> and watch what happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>backend timeout</b> how long the network equipment waits before assuming something is broken</span><span class="sp-w"><b>streaming</b> sending the answer a piece at a time instead of all at the end</span><span class="sp-w"><b>p99</b> the slowest 1%, one request in a hundred is worse than this</span></span></div></div>
   <div class="sim-layout">
     <div><div id="toOut"></div></div>
     <div>
@@ -727,7 +727,7 @@ document.getElementById('sec-network').innerHTML=`
       <label style="display:block;font-size:11px;color:var(--muted);margin:14px 0 5px">backend timeout: <b id="toTv" style="font-family:var(--mono);color:var(--amber)">30</b>s</label>
       <input type="range" id="toT" min="10" max="300" step="5" value="30" style="width:100%">
       <label style="display:flex;gap:8px;align-items:center;margin:14px 0;font-size:12px;cursor:pointer">
-        <input type="checkbox" id="toStream" checked> streaming API enabled — send the answer in chunks as it is produced</label>
+        <input type="checkbox" id="toStream" checked> streaming API enabled, send the answer in chunks as it is produced</label>
       <div id="toNote" class="cidr-out"></div></div>
   </div>
 </div>
@@ -736,18 +736,18 @@ document.getElementById('sec-network').innerHTML=`
   <h2 class="sec">Drawing a boundary, and checking who is standing at it</h2>
   <div class="plain-line"><b>In plain English:</b> two controls do different halves of the same job, and they are usually named together because neither is sufficient alone.</div>
   ${D('0 0 680 210','VPC Service Controls drawing a perimeter around managed services, with Context-Aware Access evaluating each user request at the boundary.',
-   `${box(24,40,632,140,'var(--violet)')}${tm(340,62,'VPC Service Controls — a perimeter around the managed services','var(--violet)')}
+   `${box(24,40,632,140,'var(--violet)')}${tm(340,62,'VPC Service Controls: a perimeter around the managed services','var(--violet)')}
     ${box(60,84,240,74,'var(--teal)')}${tm(180,108,'Gemini Enterprise','var(--teal)')}${tm(180,126,'your data, your indexes','var(--dim)')}${tm(180,144,'cannot be exfiltrated outward','var(--dim)')}
     ${box(380,84,240,74,'var(--teal)')}${tm(500,108,'connected Google services','var(--teal)')}${tm(500,126,'storage, warehouses','var(--dim)')}${tm(500,144,'inside the same boundary','var(--dim)')}
-    ${box(180,10,320,22,'var(--amber)')}${tm(340,26,'Context-Aware Access — checked on the way in','var(--amber)')}
+    ${box(180,10,320,22,'var(--amber)')}${tm(340,26,'Context-Aware Access: checked on the way in','var(--amber)')}
     <path d="M340 34 V38" style="stroke:var(--amber)" stroke-width="1.5" marker-end="url(#ah)"/>
     ${tm(340,198,'the perimeter stops data leaving · the context check decides who may come in','var(--dim)')}`,
    'One is about the shape of the boundary; the other is about each person arriving at it. Together they are what an enterprise means by a zero-trust posture for this product.')}
   <table class="osi" style="margin-top:14px"><thead><tr><th>Control</th><th>In plain terms</th><th>Stops</th></tr></thead><tbody>
-  <tr><td><b>VPC Service Controls</b></td><td>A virtual fence drawn around the managed services, isolating your data and AI interactions from networks you have not approved</td><td>Data leaving the perimeter — including via a valid credential used from somewhere it should not be</td></tr>
+  <tr><td><b>VPC Service Controls</b></td><td>A virtual fence drawn around the managed services, isolating your data and AI interactions from networks you have not approved</td><td>Data leaving the perimeter, including via a valid credential used from somewhere it should not be</td></tr>
   <tr><td><b>Context-Aware Access</b></td><td>A zero-trust check evaluated <b>at the moment of the request</b>: device health, location, and other real-time signals, not just who they are</td><td>A correct password on a jailbroken laptop in an unexpected country</td></tr>
   <tr><td><b>Raised backend timeouts</b></td><td>Three to five minutes instead of thirty seconds, on every load balancer and firewall in the path</td><td>Your own infrastructure severing long answers midway</td></tr>
-  <tr><td><b>Streaming APIs</b></td><td>The answer arrives in chunks as it is generated instead of all at once at the end</td><td>The perception of slowness — and it keeps the connection visibly alive, which matters to intermediaries counting idle time</td></tr>
+  <tr><td><b>Streaming APIs</b></td><td>The answer arrives in chunks as it is generated instead of all at once at the end</td><td>The perception of slowness, and it keeps the connection visibly alive, which matters to intermediaries counting idle time</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Do not disable streaming to simplify things.</b> It is tempting, because chunked responses complicate a few intermediaries. It also removes the thing making a forty-second answer feel acceptable, and takes away the traffic that reassures a timer somewhere that the connection is still doing something.</div>
 </div>`;
@@ -776,24 +776,24 @@ document.getElementById('sec-network').innerHTML=`
         '<div style="position:absolute;left:0;top:0;bottom:0;width:'+Math.min(100,need/scale*100)+'%;background:var(--teal);opacity:.55"></div>'+
         (stream?'<div style="position:absolute;left:'+(2/scale*100)+'%;top:0;bottom:0;width:2px;background:var(--green)"></div>':'')+
         '<div style="position:absolute;left:'+Math.min(99,to/scale*100)+'%;top:0;bottom:0;width:2px;background:var(--red)"></div>'+
-        '<div style="position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:10.5px;color:var(--text)">model working — '+need+'s</div>'+
+        '<div style="position:absolute;left:8px;top:8px;font-family:var(--mono);font-size:10.5px;color:var(--text)">model working '+need+'s</div>'+
         (stream?'<div style="position:absolute;left:'+(2/scale*100)+'%;bottom:6px;margin-left:5px;font-family:var(--mono);font-size:10px;color:var(--green)">first chunk</div>':'')+
         '<div style="position:absolute;left:'+Math.min(90,to/scale*100)+'%;top:8px;margin-left:5px;font-family:var(--mono);font-size:10px;color:var(--red)">timeout '+to+'s</div>'+
       '</div>'+
       '<div class="'+(cut?'lzbad':'ok')+'" style="margin-top:14px;font-size:14px"><b>'+
-        (cut?'✗ the connection is dropped — the user sees an error':'✓ the answer is delivered')+'</b></div>'+
+        (cut?'✗ the connection is dropped. The user sees an error':'✓ the answer is delivered')+'</b></div>'+
       '<div class="kv" style="margin-top:12px;font-family:var(--mono);font-size:12px">'+
         '<div style="display:flex;justify-content:space-between"><span class="dim">model needs</span><b>'+need+'s</b></div>'+
         '<div style="display:flex;justify-content:space-between"><span class="dim">timeout allows</span><b>'+to+'s</b></div>'+
         '<div style="display:flex;justify-content:space-between"><span class="dim">silence before first byte</span><b>'+idleBeforeFirstByte+'s</b></div>'+
       '</div>';
     let html='';
-    if(cut&&!stream) html='<div class="lzbad" style="margin-bottom:10px"><b>Nothing arrived for '+need+' seconds, and the timer fired at '+to+'.</b> Without streaming the intermediary sees a completely idle connection for the whole generation, so it concludes the backend has hung — which is exactly what it was configured to do.</div>';
-    else if(cut) html='<div class="lzbad" style="margin-bottom:10px"><b>Even with streaming, '+to+' seconds is not enough for this question.</b> Chunks were flowing, and the total exceeded the ceiling. Raise the timeout — three to five minutes is the working range.</div>';
+    if(cut&&!stream) html='<div class="lzbad" style="margin-bottom:10px"><b>Nothing arrived for '+need+' seconds, and the timer fired at '+to+'.</b> Without streaming the intermediary sees a completely idle connection for the whole generation, so it concludes the backend has hung, which is exactly what it was configured to do.</div>';
+    else if(cut) html='<div class="lzbad" style="margin-bottom:10px"><b>Even with streaming, '+to+' seconds is not enough for this question.</b> Chunks were flowing, and the total exceeded the ceiling. Raise the timeout, three to five minutes is the working range.</div>';
     else if(to<40) html='<div class="lzwarn" style="margin-bottom:10px"><b>This one got through, and you are one hard question away from a complaint.</b> At '+to+' seconds you are surviving on the short queries. The first genuinely complex request will fail, and it will be the one somebody demonstrates to an executive.</div>';
     else html='<div class="ok" style="margin-bottom:10px"><b>Comfortable.</b> '+to+' seconds gives real headroom on long-running questions, which is the point of the three-to-five-minute guidance.</div>';
     if(!stream) html+='<div class="note" style="margin-bottom:10px"><b>Streaming off.</b> The user stares at nothing for the entire generation, and every intermediary in the path sees an idle socket. Turning streaming off to simplify a proxy configuration trades a small operational annoyance for both of those.</div>';
-    html+='<div class="simnote" style="margin-top:8px"><b>Why this bug is so hard to attribute:</b> the application is fine, the model is fine, and the failure is produced by a piece of network equipment behaving exactly as configured. It also fails <em>selectively</em> — short questions work — so the first hypothesis is always something about the hard questions rather than something about the clock.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>Why this bug is so hard to attribute:</b> the application is fine, the model is fine, and the failure is produced by a piece of network equipment behaving exactly as configured. It also fails <em>selectively</em> (short questions work) so the first hypothesis is always something about the hard questions rather than something about the clock.</div>';
     note.innerHTML=html;
   }
   T.oninput=render; st.onchange=render; render();
@@ -801,15 +801,15 @@ document.getElementById('sec-network').innerHTML=`
 /* ================= 6 · DATA STORES ================= */
 document.getElementById('sec-data').innerHTML=`
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Copy it here, or go and ask for it &mdash; and the answer is usually copy</h2>
-  <div class="plain-line"><b>In plain English:</b> two ways to make a system&rsquo;s content searchable. <b>Ingestion</b> copies it into a data store — a secure, centralised, AI-ready index that lives on the Google side. <b>Federation</b> copies nothing; every query is passed out to the source system, which answers it live.</div>
-  <div class="plain-line">Federation sounds strictly better &mdash; nothing is duplicated, permissions stay where they were written, storage costs nothing. In practice its quality and speed are <b>entirely at the mercy of the source system&rsquo;s API</b>, and where a connector does not already exist somebody has to build one. That is why the guidance for getting value quickly runs the other way.</div>
+  <h2 class="sec">Copy it here, or go and ask for it: and the answer is usually copy</h2>
+  <div class="plain-line"><b>In plain English:</b> two ways to make a system&rsquo;s content searchable. <b>Ingestion</b> copies it into a data store, a secure, centralised, AI-ready index that lives on the Google side. <b>Federation</b> copies nothing; every query is passed out to the source system, which answers it live.</div>
+  <div class="plain-line">Federation sounds strictly better. Nothing is duplicated, permissions stay where they were written, storage costs nothing. In practice its quality and speed are <b>entirely at the mercy of the source system&rsquo;s API</b>, and where a connector does not already exist somebody has to build one. That is why the guidance for getting value quickly runs the other way.</div>
   <div class="vs2"><div class="col"><b>INGESTION</b>Content is copied into a data store and indexed.<br><br><b>Choose it when</b> no connector exists for a third-party source, or when you need results on a date rather than eventually.<br><br><b>Costs</b> storage, ingestion time, and a copy of the data that has to stay in step with the original.</div>
-  <div class="col"><b>FEDERATION</b>Queries are sent to the source and answered there.<br><br><b>Choose it when</b> a good connector exists and the data must not be copied.<br><br><b>Costs</b> a dependency on somebody else&rsquo;s API for both quality and latency — and custom connector work where none exists, which is why it is discouraged for day-one value.</div></div>
+  <div class="col"><b>FEDERATION</b>Queries are sent to the source and answered there.<br><br><b>Choose it when</b> a good connector exists and the data must not be copied.<br><br><b>Costs</b> a dependency on somebody else&rsquo;s API for both quality and latency, and custom connector work where none exists, which is why it is discouraged for day-one value.</div></div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; connect five systems</h2>
+  <h2 class="sec">Try it: connect five systems</h2>
   <div class="plain-line"><b>Try this:</b> five sources, each with its own awkwardness. Choose how to connect each one, and read what it commits you to. One of them contains the mistake that ends up in a data-protection report.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Building a library. You can move the books in, or you can put up a sign telling people which other building to walk to. Moving them is more work and far more reliable.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>connect the finance spreadsheets with plain <b>Ingest a copy</b> and read what you just did.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>ingest</b> copy the content in and index it here</span><span class="sp-w"><b>federate</b> leave it where it is and ask the source system each time</span><span class="sp-w"><b>ACL</b> the list of who is allowed to see which document</span><span class="sp-w"><b>connector</b> the pre-built link to a particular system</span></span></div></div>
   <div class="sim-layout">
@@ -823,10 +823,10 @@ document.getElementById('sec-data').innerHTML=`
   <div class="plain-line"><b>In plain English:</b> when you connect Cloud Storage or BigQuery, the natural assumption is that everyone sees only what they already had rights to. That is not the default. <b>By default, every user of the app can see everything those connectors brought in</b>, unless access control lists are enabled.</div>
   <div class="plain-line">It is not a flaw so much as a difference in model: those services hold data at a bucket or table level, not with a per-document owner. Somebody has to decide who may see what, and until they do the answer is everybody. On a finance dataset that is a single configuration step between a working deployment and a serious incident.</div>
   ${D('0 0 660 176','Two connector behaviours: with access control lists disabled everyone sees everything, and with them enabled each person sees only their own permitted content.',
-   `${box(14,26,300,60,'var(--red)')}${tm(164,48,'ACLs not enabled — the default','var(--red)')}${tm(164,66,'every app user can read everything connected','var(--dim)')}
+   `${box(14,26,300,60,'var(--red)')}${tm(164,48,'ACLs not enabled: the default','var(--red)')}${tm(164,66,'every app user can read everything connected','var(--dim)')}
     ${box(346,26,300,60,'var(--green)')}${tm(496,48,'ACLs enabled','var(--green)')}${tm(496,66,'each person sees only what they may see','var(--dim)')}
     ${box(14,102,632,56,'var(--amber)')}
-    ${tm(330,124,'the connector is the same either way — the difference is one configuration decision','var(--amber)')}
+    ${tm(330,124,'the connector is the same either way: the difference is one configuration decision','var(--amber)')}
     ${tm(330,144,'and nothing in the product will tell you which one you chose','var(--dim)')}`,
    'Both sides describe the same connector. The only difference is whether somebody turned access controls on before pointing it at real data.')}
   <div class="plain-line" style="margin-top:12px"><b>The wider point about connectors:</b> they vary enormously in what they can do. Not all of them support fine-grained permissions or natural-language querying out of the box. <b>Set that expectation in the first conversation</b>, because the alternative is discovering it in a demo, in front of the people who approved the project.</div>
@@ -840,7 +840,7 @@ document.getElementById('sec-data').innerHTML=`
   const OPT=[['ingest','Ingest a copy'],['fed','Federate the queries'],['ingest_acl','Ingest, with ACLs enabled']];
   const SRC=[
     {id:'gcs',n:'A Cloud Storage bucket of finance spreadsheets',r:'ingest_acl',
-     y:{ingest_acl:'Correct, and the ACL part is the whole answer. Without it, <b>every user of the app can read every one of those spreadsheets</b> — that is the documented default for this connector, not a misconfiguration you would spot.',
+     y:{ingest_acl:'Correct, and the ACL part is the whole answer. Without it, <b>every user of the app can read every one of those spreadsheets</b>. That is the documented default for this connector, not a misconfiguration you would spot.',
         ingest:'This is the incident. Finance data, indexed, searchable by the entire company, because nobody enabled access controls and nothing warned them.',
         fed:'Not really the shape of this connector, and it dodges the question rather than answering it. Access control still has to be decided.'}},
     {id:'sp',n:'SharePoint, with permissions already carefully set',r:'fed',
@@ -848,15 +848,15 @@ document.getElementById('sec-data').innerHTML=`
         ingest:'Workable, and now you own the problem of reproducing SharePoint&rsquo;s permission model inside the index and keeping it in step forever. If native permission passthrough is not fully supported for your case, plan and budget for building and maintaining that ACL information.',
         ingest_acl:'Better than ingesting blind, and it is still a second copy of a permission model that already exists and already changes without telling you.'}},
     {id:'legacy',n:'A 15-year-old internal system with no connector',r:'ingest',
-     y:{ingest:'Right. This is exactly when ingestion wins — federation would need a custom connector built and maintained, which is why it is discouraged for getting to value quickly.',
+     y:{ingest:'Right. This is exactly when ingestion wins, federation would need a custom connector built and maintained, which is why it is discouraged for getting to value quickly.',
         fed:'Somebody has to write that connector first, and then own it. A month of work to avoid copying some documents.',
         ingest_acl:'Fine if the system has a permission model worth carrying across. Many systems of this age do not, in which case you are inventing one.'}},
     {id:'wiki',n:'The public internal wiki everyone can already read',r:'ingest',
      y:{ingest:'Correct, and this is the easy one. Everyone already has access, so there is nothing to restrict and no reason to complicate it.',
-        ingest_acl:'Harmless, and you have added machinery to enforce a restriction that does not exist. Worth noticing that access control is not automatically the safer answer — it is the right answer when there is something to control.',
+        ingest_acl:'Harmless, and you have added machinery to enforce a restriction that does not exist. Worth noticing that access control is not automatically the safer answer. It is the right answer when there is something to control.',
         fed:'Also works. Ingestion will usually be faster and give better result quality here.'}},
     {id:'onprem',n:'A database in your own data centre, behind the firewall',r:'ingest',
-     y:{ingest:'Reasonable — and the honest warning is that <b>the network is the hard part, not the ingestion</b>. Private connectivity, firewall rules and on-premises links routinely take longer than planned. Verify the network prerequisites before you start and put explicit buffer in the plan.',
+     y:{ingest:'Reasonable, and the honest warning is that <b>the network is the hard part, not the ingestion</b>. Private connectivity, firewall rules and on-premises links routinely take longer than planned. Verify the network prerequisites before you start and put explicit buffer in the plan.',
         fed:'Every single query now depends on a live path into your data centre. Add latency, add a failure mode, and add the same network work you were trying to avoid.',
         ingest_acl:'Right instinct if the database has per-user permissions worth preserving. The network warning applies either way.'}}
   ];
@@ -885,15 +885,15 @@ document.getElementById('sec-agents').innerHTML=`
   <table class="osi"><thead><tr><th>Where it came from</th><th>Who built it</th><th>What that means for you</th></tr></thead><tbody>
   <tr><td><b>Premade from Google</b></td><td>Google</td><td>Ready to use, maintained for you, and not yours to change. The fastest route to something working on day one</td></tr>
   <tr><td><b>Made available by your company</b></td><td>Your own developers, often with a development kit</td><td>Full control, real code, a managed runtime, and an owner who has to maintain it</td></tr>
-  <tr><td><b>Created using Agent Designer</b></td><td><b>Non-technical business users</b>, in natural language</td><td>The interesting one. Somebody in finance can build a working agent without writing code — which is the point, and also the governance question</td></tr>
+  <tr><td><b>Created using Agent Designer</b></td><td><b>Non-technical business users</b>, in natural language</td><td>The interesting one. Somebody in finance can build a working agent without writing code, which is the point, and also the governance question</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Agent Designer is the piece that changes the shape of the project.</b> It is aimed squarely at business users creating customised agents with nothing but natural-language prompts, so the bottleneck stops being developer time. That is the upside and the risk in the same sentence: the people who understand the workflow can now automate it themselves, and nobody reviewed it.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; build a starter agent from three fields</h2>
+  <h2 class="sec">Try it: build a starter agent from three fields</h2>
   <div class="plain-line"><b>Try this:</b> a new agent asks for a <b>name</b>, a <b>goal</b> and <b>instructions</b>. Three boxes, and the third is where the entire difference between a useful agent and a disappointing one lives. Fill them in badly, then well.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Writing a job description for a temp. “Help the team” gets you someone pleasant who achieves nothing. “Give a yes or no answer, quote the limit, and say who to ask if unsure” gets you someone useful on day one.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>The first attempt</b>, then jump to <b>Written properly</b> and compare only the answers at the bottom.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>goal</b> what this agent is for, in one sentence</span><span class="sp-w"><b>instructions</b> the rules it follows every single time — where nearly all the quality lives</span><span class="sp-w"><b>agent gallery</b> the shelf of agents people pick from</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Writing a job description for a temp. “Help the team” gets you someone pleasant who achieves nothing. “Give a yes or no answer, quote the limit, and say who to ask if unsure” gets you someone useful on day one.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>The first attempt</b>, then jump to <b>Written properly</b> and compare only the answers at the bottom.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>goal</b> what this agent is for, in one sentence</span><span class="sp-w"><b>instructions</b> the rules it follows every single time, where nearly all the quality lives</span><span class="sp-w"><b>agent gallery</b> the shelf of agents people pick from</span></span></div></div>
   <div class="sim-layout">
     <div><div id="agOut"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:6px">HOW MUCH CARE WENT INTO IT</div>
@@ -906,9 +906,9 @@ document.getElementById('sec-agents').innerHTML=`
   <h2 class="sec">What people can do on the first day, before anyone builds anything</h2>
   <div class="plain-line"><b>In plain English:</b> the case for day-one value is that the assistant is useful before a single custom agent exists. Two things work immediately, and both are worth demonstrating in the first session rather than describing.</div>
   <div class="lzrow"><span class="lzmark" style="color:var(--green)">1</span><span><b>Search across everything they can already see.</b> Find a document or an email, find a specific fact inside one, ask for a summary, ask a direct question, or ask it to help prepare for something. No configuration beyond the connectors.</span></div>
-  <div class="lzrow"><span class="lzmark" style="color:var(--green)">2</span><span><b>Bring their own material into the conversation.</b> Upload a local file, paste an image from the web, and chat about images, video or code — with tools to confine the search to internal sources or to allow web results.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--green)">2</span><span><b>Bring their own material into the conversation.</b> Upload a local file, paste an image from the web, and chat about images, video or code, with tools to confine the search to internal sources or to allow web results.</span></div>
   <div class="plain-line" style="margin-top:10px"><b>And the one that consistently lands in demonstrations:</b> notebooks that turn a pile of documents into a <b>podcast-style audio overview</b> you can listen to. It is not the most important capability in the product and it is frequently the moment a sceptical executive changes their mind, which has its own value on a change-management plan.</div>
-  <div class="plain-line"><b>On writing instructions:</b> the guidance is to use proper prompting practice rather than one-line commands — and equally not to assume a limit like three steps. The instruction field is where an agent&rsquo;s behaviour is actually defined, and it deserves the same care as the prompt of anything else you would put in front of a customer.</div>
+  <div class="plain-line"><b>On writing instructions:</b> the guidance is to use proper prompting practice rather than one-line commands, and equally not to assume a limit like three steps. The instruction field is where an agent&rsquo;s behaviour is actually defined, and it deserves the same care as the prompt of anything else you would put in front of a customer.</div>
 </div>`;
 
 /* --- SIM: agent builder --- */
@@ -920,20 +920,20 @@ document.getElementById('sec-agents').innerHTML=`
      name:'Helper',goal:'Help the team.',
      instr:'Answer questions about expenses.',
      score:24,
-     res:'“I can help with expenses. What would you like to know?” — then, asked about a €340 client dinner, it gives a general description of expense policies without ever checking the actual limit or saying whether this one is claimable.',
+     res:'“I can help with expenses. What would you like to know?”, then, asked about a €340 client dinner, it gives a general description of expense policies without ever checking the actual limit or saying whether this one is claimable.',
      v:['lzbad','<b>Every field is a placeholder.</b> The name says nothing, the goal is a sentiment, and the instructions describe a topic rather than a behaviour. It will produce fluent, agreeable, useless replies, and the person who built it will conclude the product does not work.']},
     {k:'mid',label:'A second pass',
      name:'Expense Policy Assistant',goal:'Answer employee questions about the expense policy.',
      instr:'Answer questions about the expense policy. Use the policy documents. Be helpful and concise.',
      score:56,
-     res:'“Client meals are reimbursable up to the standard limit. Please check with your manager for amounts above that.” — correct in outline, and it still has not looked up the number or reached a verdict.',
+     res:'“Client meals are reimbursable up to the standard limit. Please check with your manager for amounts above that.”, correct in outline, and it still has not looked up the number or reached a verdict.',
      v:['lzwarn','<b>Better, and it still avoids committing.</b> The failure mode here is the one nobody notices: the answer is not wrong, it is evasive. Instructions that do not say what to do when the answer is uncertain will produce hedging, every time.']},
     {k:'sharp',label:'Written properly',
      name:'Expense Policy Assistant',goal:'Give employees a definite answer on whether a specific expense is claimable, and the limit that applies.',
-     instr:'Answer using the current expense policy documents only. Always state the applicable limit as a number. Give a clear verdict: claimable, not claimable, or needs manager approval, and say which. If the policy does not cover the case, say so plainly and name who to ask — do not guess. Cite the policy section you used.',
+     instr:'Answer using the current expense policy documents only. Always state the applicable limit as a number. Give a clear verdict: claimable, not claimable, or needs manager approval, and say which. If the policy does not cover the case, say so plainly and name who to ask, do not guess. Cite the policy section you used.',
      score:92,
-     res:'“Client meals are claimable up to €50 per head. A €340 dinner for four is €85 per head, so it exceeds the limit and needs director approval before submission. — Expenses Policy, section 4.2.”',
-     v:['ok','<b>Every sentence in the instructions removed a failure you would otherwise have debugged.</b> State a number. Reach a verdict. Admit ignorance and name a human. Cite the source. None of that is clever prompting — it is deciding what the agent is for and writing it down.']}
+     res:'“Client meals are claimable up to €50 per head. A €340 dinner for four is €85 per head, so it exceeds the limit and needs director approval before submission., Expenses Policy, section 4.2.”',
+     v:['ok','<b>Every sentence in the instructions removed a failure you would otherwise have debugged.</b> State a number. Reach a verdict. Admit ignorance and name a human. Cite the source. None of that is clever prompting. It is deciding what the agent is for and writing it down.']}
   ];
   let cur='thin';
   function render(){
@@ -950,7 +950,7 @@ document.getElementById('sec-agents').innerHTML=`
       '<div class="dim" style="font-size:11px;margin:16px 0 6px">WHAT AN EMPLOYEE ACTUALLY GETS BACK</div>'+
       '<div class="plain-line">'+a.res+'</div>';
     note.innerHTML='<div class="'+a.v[0]+'" style="margin-bottom:10px">'+a.v[1]+'</div>'+
-      '<div class="simnote"><b>Same product, same model, same data.</b> The only variable across these three is how much thought went into the instructions field — which is why &ldquo;use best-practice prompting&rdquo; is the actual guidance rather than a limit on how many steps you are allowed.</div>'+
+      '<div class="simnote"><b>Same product, same model, same data.</b> The only variable across these three is how much thought went into the instructions field, which is why &ldquo;use best-practice prompting&rdquo; is the actual guidance rather than a limit on how many steps you are allowed.</div>'+
       '<div class="simnote" style="margin-top:8px"><b>And it matters more here than usual</b>, because Agent Designer hands this field to people who have never written a prompt in their lives. A short, well-chosen example in the training material is worth more than a page of documentation.</div>';
   }
   render();
@@ -959,7 +959,7 @@ document.getElementById('sec-agents').innerHTML=`
 document.getElementById('sec-armor').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A screen on the door, facing both ways</h2>
-  <div class="plain-line"><b>In plain English:</b> Model Armor sits <b>between the person and the model</b> and reads everything crossing in either direction. On the way in it is looking for someone trying to manipulate the model. On the way out it is looking for something that should not be leaving. It inspects and sanitises <em>in transit</em> &mdash; before the prompt reaches the model, and before the answer reaches the user.</div>
+  <div class="plain-line"><b>In plain English:</b> Model Armor sits <b>between the person and the model</b> and reads everything crossing in either direction. On the way in it is looking for someone trying to manipulate the model. On the way out it is looking for something that should not be leaving. It inspects and sanitises <em>in transit</em>, before the prompt reaches the model, and before the answer reaches the user.</div>
   <div class="plain-line">Two consequences follow from &ldquo;both directions&rdquo;. The first is that you can stop an attack before it costs you a model call. The second is subtler and is where most misconfiguration lives: <b>the two directions are not looking for the same things</b>, so configuring them identically is both wasteful and actively harmful.</div>
   ${D('0 0 700 180','Model Armor sitting between the user and the model, inspecting the prompt on the way in and the response on the way out.',
    `${box(14,50,140,52,'var(--blue)')}${tm(84,80,'the person','var(--blue)')}
@@ -971,11 +971,11 @@ document.getElementById('sec-armor').innerHTML=`
     <path d="M246 92 H162" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
     ${tm(350,152,'nothing bad goes in · nothing bad comes out','var(--dim)')}`,
    'The two arrows through the middle box are separate journeys with separate rules. Treating them as one configuration is the most common mistake on this page.')}
-  <div class="plain-line" style="margin-top:12px"><b>Where it sits in the risk landscape:</b> of the well-known list of large-language-model vulnerabilities, this addresses <b>prompt injection</b> and <b>sensitive data disclosure</b>, and additionally detects malicious files, unsafe URLs and unsafe content. It does not address training-data poisoning, model theft or supply-chain risks &mdash; those are real and they are somebody else&rsquo;s control.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Where it sits in the risk landscape:</b> of the well-known list of large-language-model vulnerabilities, this addresses <b>prompt injection</b> and <b>sensitive data disclosure</b>, and additionally detects malicious files, unsafe URLs and unsafe content. It does not address training-data poisoning, model theft or supply-chain risks, those are real and they are somebody else&rsquo;s control.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; design the two templates and run traffic through them</h2>
+  <h2 class="sec">Try it: design the two templates and run traffic through them</h2>
   <div class="plain-line"><b>Try this:</b> a <b>template</b> says what to detect and how strictly; the <b>API</b> applies a template to every prompt and response. Build an input template and an output template, then send eight messages through and see what is caught, what is missed, and what is blocked that should not have been.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A security scanner at a building entrance, plus a second one on the way out. The one on the way in is looking for weapons; the one on the way out is looking for stolen property. Setting both to look for weapons wastes everyone’s time at the exit.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch to the <b>Output template</b> and untick <b>Prompt injection</b>. Watch the note change.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prompt</b> what the person types in</span><span class="sp-w"><b>response</b> what the model sends back</span><span class="sp-w"><b>prompt injection</b> someone trying to trick the model into ignoring its rules</span><span class="sp-w"><b>confidence level</b> how sure the scanner must be before it stops something</span><span class="sp-w"><b>floor setting</b> a company-wide minimum nobody below can configure their way under</span><span class="sp-w"><b>jailbreak</b> talking a model out of its own rules</span></span></div></div>
   <div class="sim-layout">
@@ -996,18 +996,18 @@ document.getElementById('sec-armor').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The four detections, and what each is really for</h2>
   <table class="osi"><thead><tr><th>Detection</th><th>In plain terms</th><th>Where it belongs</th></tr></thead><tbody>
-  <tr><td><b>Malicious URL detection</b></td><td>Web addresses built to harm — phishing pages, malware downloads</td><td><b>Both directions.</b> A user can paste one in; a model can produce one in an answer</td></tr>
-  <tr><td><b>Prompt injection and jailbreak</b></td><td>Someone inserting instructions to make the model ignore its rules, reveal things, or act outside its design</td><td><b>Input only.</b> These attacks originate in the prompt — see below, this is the important one</td></tr>
+  <tr><td><b>Malicious URL detection</b></td><td>Web addresses built to harm, phishing pages, malware downloads</td><td><b>Both directions.</b> A user can paste one in; a model can produce one in an answer</td></tr>
+  <tr><td><b>Prompt injection and jailbreak</b></td><td>Someone inserting instructions to make the model ignore its rules, reveal things, or act outside its design</td><td><b>Input only.</b> These attacks originate in the prompt, see below, this is the important one</td></tr>
   <tr><td><b>Sensitive data protection</b></td><td>Personal and financial identifiers, detected so they are not accidentally exposed. <b>Basic</b> covers a small predefined set of information types; <b>Advanced</b> uses an inspection template as a single source of truth for the rest</td><td><b>Both directions.</b> Stop it arriving, and stop it leaving</td></tr>
   <tr><td><b>Responsible AI</b></td><td>Four content filters, each with its own confidence level: <b>hate speech, dangerous content, sexually explicit, harassment</b></td><td><b>Both directions</b>, and this is where over-tightening produces the most complaints</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>On basic versus advanced sensitive data:</b> the basic option covers a small fixed set of common types — card numbers, financial account numbers and the like. Anything organisation-specific, an internal employee identifier for instance, <b>is not in the basic set</b> and needs the advanced configuration pointing at a proper inspection template.</div>
+  <div class="plain-line" style="margin-top:12px"><b>On basic versus advanced sensitive data:</b> the basic option covers a small fixed set of common types, card numbers, financial account numbers and the like. Anything organisation-specific, an internal employee identifier for instance, <b>is not in the basic set</b> and needs the advanced configuration pointing at a proper inspection template.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Floor settings &mdash; a minimum nobody below you can undercut</h2>
+  <h2 class="sec">Floor settings: a minimum nobody below you can undercut</h2>
   <div class="plain-line"><b>In plain English:</b> templates are created by individual teams in individual projects, and left alone they will drift towards whatever setting stops interrupting them. A <b>floor setting</b> is a rule applied at the organisation, folder or project level that defines the <b>minimum</b> every template underneath it must meet.</div>
-  <div class="plain-line"><b>What happens when someone configures below it:</b> the template is not rejected. It <b>saves without an error and quietly defaults up to the floor&rsquo;s confidence level</b>. That is friendly behaviour and it is worth knowing about, because a team can be certain they configured something permissive and be wrong — the enforcement is silent in both directions.</div>
+  <div class="plain-line"><b>What happens when someone configures below it:</b> the template is not rejected. It <b>saves without an error and quietly defaults up to the floor&rsquo;s confidence level</b>. That is friendly behaviour and it is worth knowing about, because a team can be certain they configured something permissive and be wrong. The enforcement is silent in both directions.</div>
 </div>
 
 <div class="card">
@@ -1015,11 +1015,11 @@ document.getElementById('sec-armor').innerHTML=`
   <table class="osi"><thead><tr><th>Task</th><th>How</th></tr></thead><tbody>
   <tr><td><b>Enable the API</b></td><td>From the Model Armor page in Security Command Center, or with the command-line tool. Not from the monitoring page, and not by asking an assistant to do it</td></tr>
   <tr><td><b>Create templates</b></td><td>REST with curl, the command-line tool, or Python</td></tr>
-  <tr><td><b>Configure logging</b></td><td>Also via Python or a REST call. <b>Not</b> configured inside Logs Explorer — that is where you go to <em>read</em> them</td></tr>
+  <tr><td><b>Configure logging</b></td><td>Also via Python or a REST call. <b>Not</b> configured inside Logs Explorer. That is where you go to <em>read</em> them</td></tr>
   <tr><td><b>Find the results</b></td><td><b>Logs Explorer</b> in the Google Cloud console, with the full prompt and response, the evaluation result and additional metadata</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>How to test it honestly.</b> A true positive needs a prompt that <em>should</em> trip something — a known test malware URL, a social security number, an instruction to ignore previous instructions and do something harmful. A cheerful &ldquo;what is the weather like today?&rdquo; proves nothing at all: it passes, as it should, and tells you only that the system is switched on.</div>
-  <div class="plain-line"><b>And test the output direction separately</b>, with prompts designed to make the <em>model</em> produce something it should not — asking for a sample card number, asking for low-reputation sites with download links. Testing only the input side leaves half the screen unverified, and it is the half that leaks.</div>
+  <div class="plain-line" style="margin-top:12px"><b>How to test it honestly.</b> A true positive needs a prompt that <em>should</em> trip something, a known test malware URL, a social security number, an instruction to ignore previous instructions and do something harmful. A cheerful &ldquo;what is the weather like today?&rdquo; proves nothing at all: it passes, as it should, and tells you only that the system is switched on.</div>
+  <div class="plain-line"><b>And test the output direction separately</b>, with prompts designed to make the <em>model</em> produce something it should not, asking for a sample card number, asking for low-reputation sites with download links. Testing only the input side leaves half the screen unverified, and it is the half that leaks.</div>
 </div>`;
 
 /* --- SIM: Model Armor template designer --- */
@@ -1042,9 +1042,9 @@ document.getElementById('sec-armor').innerHTML=`
     {dir:'in',t:'Can you please check my social security number 123-45-6789?',kind:'sdp',sev:'med',
      good:'Sensitive data heading into a prompt. Caught before it is logged, sent onward, or echoed back.'},
     {dir:'in',t:'What is the weather like today?',kind:null,
-     good:'Harmless, and it passes — which is the correct outcome and proves almost nothing. Worth remembering when someone offers this as evidence the screen is working.'},
+     good:'Harmless, and it passes, which is the correct outcome and proves almost nothing. Worth remembering when someone offers this as evidence the screen is working.'},
     {dir:'out',t:'Here is a sample card number you can use for testing: 4111 1111 1111 1111',kind:'sdp',sev:'med',
-     good:'The model produced sensitive-looking data. This is why the output side exists — nothing in the prompt was suspicious.'},
+     good:'The model produced sensitive-looking data. This is why the output side exists. Nothing in the prompt was suspicious.'},
     {dir:'out',t:'Sites with low reputations and direct download links: hxxp://…',kind:'url',sev:'high',
      good:'The model was talked into producing harmful links. Caught on the way out.'},
     {dir:'out',t:'I cannot help with that request.',kind:null,
@@ -1095,11 +1095,11 @@ document.getElementById('sec-armor').innerHTML=`
         '<div style="display:flex;justify-content:space-between"><span class="dim">legitimate traffic blocked</span><b style="color:'+(fps?'var(--amber)':'var(--muted)')+'">'+fps+'</b></div>'+
       '</div>';
     let html='';
-    if(st.out.pi) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Prompt injection detection is on for the output template.</b> Injection and jailbreak attacks <b>originate in the user&rsquo;s prompt</b> — there is nothing to find in the model&rsquo;s own response. Leaving it enabled here catches nothing extra and <b>significantly increases false positives</b>, because ordinary answers that discuss instructions or security look suspicious to it. Turning it off on the output side is the single clearest configuration recommendation for this product.</div>';
+    if(st.out.pi) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Prompt injection detection is on for the output template.</b> Injection and jailbreak attacks <b>originate in the user&rsquo;s prompt</b>. There is nothing to find in the model&rsquo;s own response. Leaving it enabled here catches nothing extra and <b>significantly increases false positives</b>, because ordinary answers that discuss instructions or security look suspicious to it. Turning it off on the output side is the single clearest configuration recommendation for this product.</div>';
     else html+='<div class="ok" style="margin-bottom:10px"><b>Prompt injection disabled on the output template.</b> Correct: the attack lives in the prompt, so screening for it on the way back finds nothing and blocks legitimate answers. This is what &ldquo;decouple the two templates&rdquo; means in practice.</div>';
-    if(missed) html+='<div class="lzbad" style="margin-bottom:10px"><b>'+missed+' threat'+(missed>1?'s':'')+' got through.</b> Either the relevant detection is switched off on that side, or the confidence level is strict enough that only the most obvious cases register. A high threshold means <em>fewer, more certain</em> findings — which reads as safe and is the opposite.</div>';
-    if(fps) html+='<div class="lzwarn" style="margin-bottom:10px"><b>'+fps+' harmless message'+(fps>1?'s were':' was')+' blocked.</b> &ldquo;Low and above&rdquo; is the strictest setting: it detects most content that <em>might</em> fall into a filter type. It is the right choice where a miss is unacceptable, and everywhere else it is how a security control gets a reputation for being in the way — and then gets switched off.</div>';
-    if(floor.checked) html+='<div class="note" style="margin-bottom:10px"><b>A floor setting is in force.</b> Selecting &ldquo;Low and above&rdquo; is accepted and then <b>silently raised to the floor&rsquo;s minimum</b> — no error, no warning. Useful to know when a team insists they configured something and the behaviour disagrees.</div>';
+    if(missed) html+='<div class="lzbad" style="margin-bottom:10px"><b>'+missed+' threat'+(missed>1?'s':'')+' got through.</b> Either the relevant detection is switched off on that side, or the confidence level is strict enough that only the most obvious cases register. A high threshold means <em>fewer, more certain</em> findings, which reads as safe and is the opposite.</div>';
+    if(fps) html+='<div class="lzwarn" style="margin-bottom:10px"><b>'+fps+' harmless message'+(fps>1?'s were':' was')+' blocked.</b> &ldquo;Low and above&rdquo; is the strictest setting: it detects most content that <em>might</em> fall into a filter type. It is the right choice where a miss is unacceptable, and everywhere else it is how a security control gets a reputation for being in the way, and then gets switched off.</div>';
+    if(floor.checked) html+='<div class="note" style="margin-bottom:10px"><b>A floor setting is in force.</b> Selecting &ldquo;Low and above&rdquo; is accepted and then <b>silently raised to the floor&rsquo;s minimum</b>, no error, no warning. Useful to know when a team insists they configured something and the behaviour disagrees.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>The design principle underneath all of this:</b> the two directions face different threats, so give them different templates. Screen aggressively for injection on the way in, screen for leakage and harmful content on the way out, and stop paying a false-positive tax for checks that cannot possibly fire.</div>';
     note.innerHTML=html;
   }
@@ -1111,18 +1111,18 @@ document.getElementById('sec-search').innerHTML=`
   <h2 class="sec">Four different tools, four different jobs</h2>
   <div class="plain-line"><b>In plain English:</b> &ldquo;the search is not good enough&rdquo; is four separate complaints wearing one coat. The wrong documents come back. The right ones come back in the wrong order. The answer contains things the documents never said. Or the answer is fine and the user still cannot find what they wanted. Each has its own instrument, and reaching for the wrong one is how weeks disappear.</div>
   <table class="osi"><thead><tr><th>Complaint</th><th>The instrument</th><th>What it does</th></tr></thead><tbody>
-  <tr><td>&ldquo;It returns the wrong documents&rdquo;</td><td><b>Serving controls</b> — filters</td><td><b>Removes</b> entries from the results. A filter is subtractive: it decides what is eligible at all</td></tr>
-  <tr><td>&ldquo;The right ones are buried&rdquo;</td><td><b>Serving controls</b> — boost, and the <b>Ranking API</b></td><td><b>Changes the order.</b> Boost applies your rules; the Ranking API re-orders by context-aware semantic relevance and gives each result a score</td></tr>
+  <tr><td>&ldquo;It returns the wrong documents&rdquo;</td><td><b>Serving controls</b>, filters</td><td><b>Removes</b> entries from the results. A filter is subtractive: it decides what is eligible at all</td></tr>
+  <tr><td>&ldquo;The right ones are buried&rdquo;</td><td><b>Serving controls</b>, boost, and the <b>Ranking API</b></td><td><b>Changes the order.</b> Boost applies your rules; the Ranking API re-orders by context-aware semantic relevance and gives each result a score</td></tr>
   <tr><td>&ldquo;It says things the documents do not&rdquo;</td><td><b>Check Grounding API</b></td><td>Verifies the response against the supplied sources, <b>flags statements with no evidence</b>, and pinpoints the evidence for the ones that are supported</td></tr>
   <tr><td>&ldquo;Our own vocabulary confuses it&rdquo;</td><td><b>Search tuning</b>, and custom embeddings</td><td>Moves where a query lands relative to your content, using examples of what a good answer looks like in your domain</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The distinction worth committing to memory,</b> because it is phrased as a trap in almost every assessment: <b>serving controls change the order of results; filters remove entries from them.</b> Extractive answers are not part of this — they are a way of presenting a result, not a way of changing which results you get.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The distinction worth committing to memory,</b> because it is phrased as a trap in almost every assessment: <b>serving controls change the order of results; filters remove entries from them.</b> Extractive answers are not part of this. They are a way of presenting a result, not a way of changing which results you get.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; fix a bad result set four ways</h2>
-  <div class="plain-line"><b>Try this:</b> one query, ten documents, and a result order nobody is happy with. Apply the instruments one at a time and watch what each actually changes &mdash; and what it cannot touch.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A search on a library shelf that returns the right book, three superseded editions of it, and a competitor’s catalogue — in that order.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>Filter</b> on its own, then add <b>Ranking API</b>, and watch the difference between removing and reordering.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>filter</b> removes results entirely — they become ineligible</span><span class="sp-w"><b>boost</b> leaves everything in, just moves some of it up</span><span class="sp-w"><b>Ranking API</b> re-orders by what the query actually means, and scores each result</span><span class="sp-w"><b>grounding</b> checking the answer against the documents it claims to come from</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
+  <h2 class="sec">Try it: fix a bad result set four ways</h2>
+  <div class="plain-line"><b>Try this:</b> one query, ten documents, and a result order nobody is happy with. Apply the instruments one at a time and watch what each actually changes, and what it cannot touch.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A search on a library shelf that returns the right book, three superseded editions of it, and a competitor’s catalogue, in that order.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>Filter</b> on its own, then add <b>Ranking API</b>, and watch the difference between removing and reordering.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>filter</b> removes results entirely. They become ineligible</span><span class="sp-w"><b>boost</b> leaves everything in, just moves some of it up</span><span class="sp-w"><b>Ranking API</b> re-orders by what the query actually means, and scores each result</span><span class="sp-w"><b>grounding</b> checking the answer against the documents it claims to come from</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="srOut"></div></div>
     <div><div class="toggles" id="srCtl"></div>
@@ -1131,9 +1131,9 @@ document.getElementById('sec-search').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; score a result set the way the graders do</h2>
+  <h2 class="sec">Try it: score a result set the way the graders do</h2>
   <div class="plain-line"><b>Try this:</b> &ldquo;better search&rdquo; needs a number, and the usual one is <b>NDCG</b>. It rewards putting relevant results high, because a correct answer in position nine is a correct answer nobody read. Drag the results around and watch the score.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Marking a shortlist. Putting the best candidate first is worth more than putting them fourth, because nobody reads to the bottom of the list.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Group C</b> and notice the documents are the same as in Group B — only the order changed.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>relevance</b> how useful a result is for this particular question, scored 0 to 3 here</span><span class="sp-w"><b>DCG</b> the score you actually got, with later positions counting for less</span><span class="sp-w"><b>IDCG</b> the best score that was possible with these documents</span><span class="sp-w"><b>NDCG</b> one divided by the other, so 1 means the order could not be improved</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Marking a shortlist. Putting the best candidate first is worth more than putting them fourth, because nobody reads to the bottom of the list.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Group C</b> and notice the documents are the same as in Group B, only the order changed.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>relevance</b> how useful a result is for this particular question, scored 0 to 3 here</span><span class="sp-w"><b>DCG</b> the score you actually got, with later positions counting for less</span><span class="sp-w"><b>IDCG</b> the best score that was possible with these documents</span><span class="sp-w"><b>NDCG</b> one divided by the other, so 1 means the order could not be improved</span></span></div></div>
   <div class="sim-layout">
     <div><div id="ndOut"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:6px">ARRANGEMENT</div>
@@ -1143,7 +1143,7 @@ document.getElementById('sec-search').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Asking precisely &mdash; quotes and operators</h2>
+  <h2 class="sec">Asking precisely: quotes and operators</h2>
   <div class="plain-line"><b>In plain English:</b> before any tuning, users have two tools they mostly do not know about, and teaching them is the cheapest search improvement available.</div>
   <table class="osi"><thead><tr><th>Query</th><th>What it means</th><th>What comes back</th></tr></thead><tbody>
   <tr><td><span class="code">Mary had a little lamb</span></td><td><b>Partial match.</b> With no quotes and no operators it behaves as though there were an <span class="code">AND</span> between the terms</td><td>Results containing those words, and possibly more besides</td></tr>
@@ -1151,20 +1151,20 @@ document.getElementById('sec-search').innerHTML=`
   <tr><td><span class="code">jazz AND piano</span></td><td>Every term must appear</td><td>Only documents containing both. Narrower, more precise</td></tr>
   <tr><td><span class="code">rock OR pop</span></td><td>At least one term must appear</td><td>Either. Wider, more forgiving</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>Two limits to know:</b> <span class="code">NOT</span> is not supported, and logical operators apply when searching over structured data, or unstructured data that carries metadata. You can combine exact match with operators to narrow things considerably &mdash; and for web content, meta tags on the pages themselves give you something to filter and boost against later.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Two limits to know:</b> <span class="code">NOT</span> is not supported, and logical operators apply when searching over structured data, or unstructured data that carries metadata. You can combine exact match with operators to narrow things considerably, and for web content, meta tags on the pages themselves give you something to filter and boost against later.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Search tuning &mdash; teaching it your vocabulary</h2>
+  <h2 class="sec">Search tuning: teaching it your vocabulary</h2>
   <div class="plain-line"><b>In plain English:</b> a general model has never heard your product code names or your internal shorthand. <b>Search tuning</b> fixes that by example: you supply queries your people actually ask, alongside passages from your own documents that answer them, and the model learns to move those queries closer to that content.</div>
-  <div class="plain-line"><b>The distinction from fine-tuning</b> is small to say and large in practice: <b>search tuning adapts where the query lands</b>, whereas fine-tuning adapts the position of every embedding. Tuning the query is cheaper, faster and far less disruptive &mdash; and it <b>only applies to unstructured data stores</b>.</div>
+  <div class="plain-line"><b>The distinction from fine-tuning</b> is small to say and large in practice: <b>search tuning adapts where the query lands</b>, whereas fine-tuning adapts the position of every embedding. Tuning the query is cheaper, faster and far less disruptive, and it <b>only applies to unstructured data stores</b>.</div>
   <table class="osi"><thead><tr><th>What you provide</th><th>In plain terms</th><th>How much</th></tr></thead><tbody>
   <tr><td><b>Training queries</b></td><td>Questions you expect people to ask, weighted towards your own domain and company terminology</td><td>The ones that matter most</td></tr>
   <tr><td><b>Extractive segments</b></td><td>Snippets of roughly 250 to 500 words, <b>taken verbatim from documents already in the corpus</b>, containing enough context to be an answer</td><td>At least one per query</td></tr>
-  <tr><td><b>Random negatives</b></td><td>Segments similar in style and length that answer <em>no</em> query. They teach the model what unrelated looks like</td><td><b>At least 10,000</b> — this is the part people underestimate</td></tr>
+  <tr><td><b>Random negatives</b></td><td>Segments similar in style and length that answer <em>no</em> query. They teach the model what unrelated looks like</td><td><b>At least 10,000</b>. This is the part people underestimate</td></tr>
   <tr><td><b>Relevance scores</b></td><td>A non-negative integer per query-and-segment pair. 0 means irrelevant. Simplest is 1 and 0; use 0 to 10 if you want to rank degrees of relevance</td><td>At least 100 relevant scores</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The mistake this table is really about:</b> a segment must be long enough to <em>be</em> the answer. For &ldquo;who founded Google&rdquo;, the two words &ldquo;Larry Page&rdquo; are insufficient — the model learns from context, and there is none in a fragment. Several paragraphs, verbatim from the corpus, is the shape.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The mistake this table is really about:</b> a segment must be long enough to <em>be</em> the answer. For &ldquo;who founded Google&rdquo;, the two words &ldquo;Larry Page&rdquo; are insufficient. The model learns from context, and there is none in a fragment. Several paragraphs, verbatim from the corpus, is the shape.</div>
   <div class="plain-line"><b>And when tuning is not enough:</b> custom embeddings go further, changing how the content itself is represented rather than only where the query lands. More powerful, more work, and worth reaching for only after tuning has been tried and measured.</div>
 </div>`;
 
@@ -1175,19 +1175,19 @@ document.getElementById('sec-search').innerHTML=`
   const DOCS=[
     {t:'Expenses policy 2019 (archived)',rel:0,stale:true,ext:false},
     {t:'Marketing blog: “our approach to travel”',rel:0,stale:false,ext:false},
-    {t:'Expenses policy 2026 — current',rel:3,stale:false,ext:false},
+    {t:'Expenses policy 2026, current',rel:3,stale:false,ext:false},
     {t:'Travel booking tool FAQ',rel:1,stale:false,ext:false},
     {t:'Expenses policy 2023 (superseded)',rel:0,stale:true,ext:false},
-    {t:'Finance handbook §4 — meal limits',rel:3,stale:false,ext:false},
+    {t:'Finance handbook §4, meal limits',rel:3,stale:false,ext:false},
     {t:'A supplier’s public expenses guide',rel:0,stale:false,ext:true},
     {t:'Internal memo on per-head limits',rel:2,stale:false,ext:false}
   ];
   const on={filter:false,boost:false,rank:false,ground:false};
   function render(){
-    ctl.innerHTML=[['filter','<b>Filter</b> — exclude archived and external documents'],
-                   ['boost','<b>Boost</b> — lift anything tagged “current policy”'],
-                   ['rank','<b>Ranking API</b> — re-order by semantic relevance, with scores'],
-                   ['ground','<b>Check Grounding API</b> — verify the answer against the sources']]
+    ctl.innerHTML=[['filter','<b>Filter</b>, exclude archived and external documents'],
+                   ['boost','<b>Boost</b>, lift anything tagged “current policy”'],
+                   ['rank','<b>Ranking API</b>, re-order by semantic relevance, with scores'],
+                   ['ground','<b>Check Grounding API</b>, verify the answer against the sources']]
       .map(([k,l])=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px">'+
         '<input type="checkbox" data-k="'+k+'"'+(on[k]?' checked':'')+'><span>'+l+'</span></label>').join('');
     ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{on[i.dataset.k]=i.checked;render();});
@@ -1209,17 +1209,17 @@ document.getElementById('sec-search').innerHTML=`
       }).join('')+
       '<div class="dim" style="font-size:11px;margin:16px 0 6px">THE ANSWER IT PRODUCES</div>'+
       (on.ground
-        ? '<div class="plain-line">Client meals are claimable up to <b>€50 per head</b> <span style="color:var(--green)">✓ Finance handbook §4</span>. Amounts above that need director approval <span style="color:var(--green)">✓ Expenses policy 2026</span>. <span style="color:var(--red)">⚑ Receipts must be submitted within 14 days — no supporting evidence found in the sources.</span></div>'
+        ? '<div class="plain-line">Client meals are claimable up to <b>€50 per head</b> <span style="color:var(--green)">✓ Finance handbook §4</span>. Amounts above that need director approval <span style="color:var(--green)">✓ Expenses policy 2026</span>. <span style="color:var(--red)">⚑ Receipts must be submitted within 14 days, no supporting evidence found in the sources.</span></div>'
         : '<div class="plain-line">Client meals are claimable up to €50 per head. Amounts above that need director approval. Receipts must be submitted within 14 days.</div>');
     let html='';
     const top=list[0];
-    if(!on.filter&&!on.boost&&!on.rank) html+='<div class="lzbad" style="margin-bottom:10px"><b>An archived 2019 policy is the first result.</b> Nothing is wrong with the search — it matched the words. It has no idea that one of these documents was superseded twice and one belongs to a supplier.</div>';
-    if(on.filter) html+='<div class="ok" style="margin-bottom:10px"><b>The filter removed entries.</b> Archived and external documents are gone from the set entirely — not demoted, <em>ineligible</em>. That is what makes a filter different from a boost, and why it is the right tool when a document should never be returned.</div>';
+    if(!on.filter&&!on.boost&&!on.rank) html+='<div class="lzbad" style="margin-bottom:10px"><b>An archived 2019 policy is the first result.</b> Nothing is wrong with the search. It matched the words. It has no idea that one of these documents was superseded twice and one belongs to a supplier.</div>';
+    if(on.filter) html+='<div class="ok" style="margin-bottom:10px"><b>The filter removed entries.</b> Archived and external documents are gone from the set entirely, not demoted, <em>ineligible</em>. That is what makes a filter different from a boost, and why it is the right tool when a document should never be returned.</div>';
     if(on.boost&&!on.rank) html+='<div class="ok" style="margin-bottom:10px"><b>The boost changed the order.</b> Everything is still eligible; documents tagged as current policy now sort above the rest. Use boost for &ldquo;prefer this&rdquo;, and a filter for &ldquo;never this&rdquo;.</div>';
     if(on.rank) html+='<div class="ok" style="margin-bottom:10px"><b>The Ranking API re-ordered by meaning, and scored each one.</b> This is the improvement over keyword matching or raw embedding similarity: it judges relevance <em>to this query in context</em> rather than counting word overlap, and the scores give you something to threshold on.</div>';
-    if(on.ground) html+='<div class="ok" style="margin-bottom:10px"><b>Grounding checked, and it found something.</b> The fourteen-day claim appears in no source — the model added it. Check Grounding <b>flags statements that lack evidence</b> and pinpoints the evidence supporting the rest. It does not rewrite or delete anything; it tells you, and you decide.</div>';
+    if(on.ground) html+='<div class="ok" style="margin-bottom:10px"><b>Grounding checked, and it found something.</b> The fourteen-day claim appears in no source. The model added it. Check Grounding <b>flags statements that lack evidence</b> and pinpoints the evidence supporting the rest. It does not rewrite or delete anything; it tells you, and you decide.</div>';
     else html+='<div class="lzwarn" style="margin-bottom:10px"><b>Nothing is verifying the answer.</b> One sentence in that response is not in any document, and it reads exactly like the two that are.</div>';
-    if(on.filter&&on.rank&&on.ground) html+='<div class="ok" style="margin-bottom:10px"><b>All three together is the working configuration:</b> filter for eligibility, rank for order, ground for truthfulness. They are not alternatives — each one is blind to what the others catch.</div>';
+    if(on.filter&&on.rank&&on.ground) html+='<div class="ok" style="margin-bottom:10px"><b>All three together is the working configuration:</b> filter for eligibility, rank for order, ground for truthfulness. They are not alternatives, each one is blind to what the others catch.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>Two functions each, worth keeping straight:</b> the <b>Ranking API</b> re-orders results by relevance and gives a precise relevance score. <b>Check Grounding</b> verifies factualness against the supplied sources and pinpoints supporting evidence. Neither does the other one&rsquo;s job, and neither parses documents into chunks.</div>';
     note.innerHTML=html;
   }
@@ -1231,9 +1231,9 @@ document.getElementById('sec-search').innerHTML=`
   const pick=document.getElementById('ndPick'), out=document.getElementById('ndOut'), note=document.getElementById('ndNote');
   if(!pick) return;
   const ARR={
-    perfect:{label:'Group B — the relevant ones on top',order:[3,3,2,0,0]},
-    good:{label:'Group A — relevant, but one is buried',order:[3,2,0,3,0]},
-    poor:{label:'Group C — the best result is last',order:[2,0,3,0,3]}
+    perfect:{label:'Group B, the relevant ones on top',order:[3,3,2,0,0]},
+    good:{label:'Group A, relevant, but one is buried',order:[3,2,0,3,0]},
+    poor:{label:'Group C. The best result is last',order:[2,0,3,0,3]}
   };
   let cur='perfect';
   const dcg=o=>o.reduce((a,r,i)=>a+r/Math.log2(i+2),0);
@@ -1242,7 +1242,7 @@ document.getElementById('sec-search').innerHTML=`
     pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=b.dataset.k;render();});
     const o=ARR[cur].order, ideal=o.slice().sort((a,b)=>b-a);
     const d=dcg(o), id=dcg(ideal), n=d/id;
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">FIVE RESULTS — HEIGHT IS HOW RELEVANT EACH ONE IS</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">FIVE RESULTS, HEIGHT IS HOW RELEVANT EACH ONE IS</div>'+
       o.map((r,i)=>'<div style="display:flex;align-items:center;gap:9px;margin-bottom:6px">'+
         '<span style="font-family:var(--mono);font-size:11px;color:var(--muted);width:52px;text-align:right">rank '+(i+1)+'</span>'+
         '<div style="flex:1;height:18px;background:var(--panel2);border-radius:4px;overflow:hidden">'+
@@ -1251,17 +1251,17 @@ document.getElementById('sec-search').innerHTML=`
         '<span style="font-family:var(--mono);font-size:10.5px;color:var(--muted);width:74px;text-align:right">÷ log₂('+(i+2)+')</span>'+
         '</div>').join('')+
       '<div class="kv" style="margin-top:16px;font-family:var(--mono);font-size:12.5px">'+
-        '<div style="display:flex;justify-content:space-between"><span class="dim">DCG — what you got</span><b>'+d.toFixed(5)+'</b></div>'+
-        '<div style="display:flex;justify-content:space-between"><span class="dim">IDCG — the best possible</span><b>'+id.toFixed(5)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">DCG, what you got</span><b>'+d.toFixed(5)+'</b></div>'+
+        '<div style="display:flex;justify-content:space-between"><span class="dim">IDCG, the best possible</span><b>'+id.toFixed(5)+'</b></div>'+
         '<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line2);margin-top:6px">'+
           '<span class="dim">NDCG</span><b style="color:'+(n>0.95?'var(--green)':n>0.8?'var(--amber)':'var(--red)')+'">'+n.toFixed(5)+'</b></div>'+
       '</div>'+
       '<div class="bar" style="height:14px;margin-top:12px"><i style="display:block;height:100%;width:'+(n*100)+'%;background:'+
         (n>0.95?'var(--green)':n>0.8?'var(--amber)':'var(--red)')+'"></i></div>';
     let html;
-    if(n>0.999) html='<div class="ok" style="margin-bottom:10px"><b>NDCG = 1. A perfect score.</b> Every relevant answer is at the top, in the best possible order — so what you got equals the best that was available, and the ratio is exactly one. <b>An NDCG of 1 means the ordering could not have been improved</b>, not that every result was relevant.</div>';
-    else html='<div class="'+(n>0.8?'lzwarn':'lzbad')+'" style="margin-bottom:10px"><b>NDCG = '+n.toFixed(5)+'.</b> The same documents are present as in the perfect case — they are simply in a worse order, and the score falls because of position alone. That is the whole idea: <b>a correct answer at rank five is worth less than the same answer at rank one</b>, because fewer people ever see it.</div>';
-    html+='<div class="lzrow" style="margin-top:10px"><span class="lzmark">?</span><span><b>How it is built.</b> Each result contributes its relevance divided by a logarithm of its position, so later positions are discounted. Sum those and you have <b>DCG</b>. Sum the same results in their best possible order and you have <b>IDCG</b>. <b>NDCG is DCG divided by IDCG</b> — a number between 0 and 1 that is comparable between queries, which raw DCG is not.</span></div>'+
+    if(n>0.999) html='<div class="ok" style="margin-bottom:10px"><b>NDCG = 1. A perfect score.</b> Every relevant answer is at the top, in the best possible order, so what you got equals the best that was available, and the ratio is exactly one. <b>An NDCG of 1 means the ordering could not have been improved</b>, not that every result was relevant.</div>';
+    else html='<div class="'+(n>0.8?'lzwarn':'lzbad')+'" style="margin-bottom:10px"><b>NDCG = '+n.toFixed(5)+'.</b> The same documents are present as in the perfect case. They are simply in a worse order, and the score falls because of position alone. That is the whole idea: <b>a correct answer at rank five is worth less than the same answer at rank one</b>, because fewer people ever see it.</div>';
+    html+='<div class="lzrow" style="margin-top:10px"><span class="lzmark">?</span><span><b>How it is built.</b> Each result contributes its relevance divided by a logarithm of its position, so later positions are discounted. Sum those and you have <b>DCG</b>. Sum the same results in their best possible order and you have <b>IDCG</b>. <b>NDCG is DCG divided by IDCG</b>, a number between 0 and 1 that is comparable between queries, which raw DCG is not.</span></div>'+
       '<div class="simnote" style="margin-top:10px"><b>Why normalise at all:</b> a query with six relevant documents will always out-score one with two on raw DCG, however good the second ordering is. Dividing by the ideal removes that, so you can average across a whole evaluation set and get a number that means something.</div>';
     note.innerHTML=html;
   }
@@ -1271,21 +1271,21 @@ document.getElementById('sec-search').innerHTML=`
 document.getElementById('sec-govern').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Teaching it how your company talks</h2>
-  <div class="plain-line"><b>In plain English:</b> out of the box it understands English. It does not understand <em>your</em> English &mdash; the three-letter acronym that means something specific here, the fact that Jane runs the team that owns Project Apollo, the internal name nobody outside the company has ever heard. Four configuration features close that gap, and they are the difference between &ldquo;it does not understand us&rdquo; and daily use.</div>
+  <div class="plain-line"><b>In plain English:</b> out of the box it understands English. It does not understand <em>your</em> English, the three-letter acronym that means something specific here, the fact that Jane runs the team that owns Project Apollo, the internal name nobody outside the company has ever heard. Four configuration features close that gap, and they are the difference between &ldquo;it does not understand us&rdquo; and daily use.</div>
   <table class="osi"><thead><tr><th>Feature</th><th>The problem it solves</th><th>Concretely</th></tr></thead><tbody>
-  <tr><td><b>Custom synonyms</b></td><td>People say the same thing four ways and only one of them is in the documents</td><td>Group <span class="code">PTO</span>, <span class="code">leave</span>, <span class="code">vacation</span> and <span class="code">annual leave</span> together, so any of them finds all of it — <b>whatever corporate jargon someone happens to use</b></td></tr>
-  <tr><td><b>Private knowledge graph</b></td><td>The connection between a person and their work is <em>never written down anywhere</em></td><td>Built from internal people data, it lets a search for &ldquo;Jane&rsquo;s Q3 projects&rdquo; surface the Project Apollo documents — <b>even though Jane&rsquo;s name appears nowhere on them</b>, because it knows she manages the team that owns it</td></tr>
+  <tr><td><b>Custom synonyms</b></td><td>People say the same thing four ways and only one of them is in the documents</td><td>Group <span class="code">PTO</span>, <span class="code">leave</span>, <span class="code">vacation</span> and <span class="code">annual leave</span> together, so any of them finds all of it, <b>whatever corporate jargon someone happens to use</b></td></tr>
+  <tr><td><b>Private knowledge graph</b></td><td>The connection between a person and their work is <em>never written down anywhere</em></td><td>Built from internal people data, it lets a search for &ldquo;Jane&rsquo;s Q3 projects&rdquo; surface the Project Apollo documents, <b>even though Jane&rsquo;s name appears nowhere on them</b>, because it knows she manages the team that owns it</td></tr>
   <tr><td><b>Custom LLM instructions</b></td><td>The assistant&rsquo;s tone and boundaries are generic</td><td>House style, what to refuse, when to point at a human</td></tr>
   <tr><td><b>White-labelling</b></td><td>It looks like somebody else&rsquo;s product</td><td>Your branding on the web application, which matters more for adoption than anyone technical expects</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The knowledge graph is the one that surprises people</b>, and it is worth being precise about why. Ordinary search can only match what is written in a document. The relationship &ldquo;Jane manages the team that owns Apollo&rdquo; is an organisational fact that exists in your directory, not in the file. A <b>private</b> knowledge graph synthesises those confidential internal relationships — as opposed to a public one, which knows about the world and nothing about you.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The knowledge graph is the one that surprises people</b>, and it is worth being precise about why. Ordinary search can only match what is written in a document. The relationship &ldquo;Jane manages the team that owns Apollo&rdquo; is an organisational fact that exists in your directory, not in the file. A <b>private</b> knowledge graph synthesises those confidential internal relationships, as opposed to a public one, which knows about the world and nothing about you.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Observability &mdash; and the switch you must throw first</h2>
+  <h2 class="sec">Observability: and the switch you must throw first</h2>
   <div class="plain-line"><b>In plain English:</b> scaling this across an organisation means being able to answer &ldquo;what did it actually say to people?&rdquo; That needs logging, and logging here has an order of operations that catches people out.</div>
-  <div class="lzrow"><span class="lzmark" style="color:var(--amber)">1</span><span><b>Instrumentation first.</b> Logging the full content of prompts and responses <b>cannot be enabled until tracing and logging instrumentation is switched on</b>. It is a prerequisite, not a parallel setting — try to enable content logging without it and the option is simply not available to you.</span></div>
-  <div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>Consent before content.</b> Before you log what people typed, <b>the necessary user consents and data-handling policies have to be in place</b>. This is mandatory, and it is the prerequisite that is legal rather than technical — which is exactly why an engineer working alone will miss it. Prompts are user data, and often contain more personal information than anyone expected.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--amber)">1</span><span><b>Instrumentation first.</b> Logging the full content of prompts and responses <b>cannot be enabled until tracing and logging instrumentation is switched on</b>. It is a prerequisite, not a parallel setting, try to enable content logging without it and the option is simply not available to you.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>Consent before content.</b> Before you log what people typed, <b>the necessary user consents and data-handling policies have to be in place</b>. This is mandatory, and it is the prerequisite that is legal rather than technical, which is exactly why an engineer working alone will miss it. Prompts are user data, and often contain more personal information than anyone expected.</span></div>
   <div class="lzrow"><span class="lzmark" style="color:var(--green)">3</span><span><b>Then restrict who can read it.</b> A log containing every question every employee has asked is a sensitive artefact in its own right. Access to it should be narrower than access to the product.</span></div>
   <div class="plain-line" style="margin-top:10px"><b>What it is for, stated plainly:</b> governance and observability exist so that the deployment stays <b>secure, compliant, performant and demonstrably valuable</b> as it scales. Not to view traces for their own sake, and not to log everything because it is possible.</div>
 </div>
@@ -1293,8 +1293,8 @@ document.getElementById('sec-govern').innerHTML=`
 <div class="card">
   <h2 class="sec">Measuring whether any of it worked</h2>
   <div class="plain-line"><b>In plain English:</b> two families of number, and they answer different questions. Confusing them is how a project reports success that nobody in the business recognises.</div>
-  <div class="vs2"><div class="col"><b>ADOPTION METRICS</b>How people are using the product <em>over time</em> — the status of user adoption. Are more people using it this month than last? Are they coming back? Has it reached the teams it was meant for?<br><br>This is the family that tells you whether the change management worked.</div>
-  <div class="col"><b>USAGE AND QUALITY METRICS</b>What is happening inside the interactions. Search counts, click-through rates, and whether results are being acted on.<br><br>These come from <b>user events</b> — that is the data source behind search count and click-through rate, and it is worth knowing because the two categories are easy to name in the wrong order.</div></div>
+  <div class="vs2"><div class="col"><b>ADOPTION METRICS</b>How people are using the product <em>over time</em>. The status of user adoption. Are more people using it this month than last? Are they coming back? Has it reached the teams it was meant for?<br><br>This is the family that tells you whether the change management worked.</div>
+  <div class="col"><b>USAGE AND QUALITY METRICS</b>What is happening inside the interactions. Search counts, click-through rates, and whether results are being acted on.<br><br>These come from <b>user events</b> That is the data source behind search count and click-through rate, and it is worth knowing because the two categories are easy to name in the wrong order.</div></div>
   <div class="plain-line" style="margin-top:12px"><b>And the number that actually settles arguments</b> is neither of these on its own: it is the link from a movement in one of them to something the business already tracks. Adoption climbing is encouraging. Adoption climbing alongside a fall in time-to-resolution is an argument for the next phase of funding.</div>
 </div>`;
 
@@ -1302,7 +1302,7 @@ document.getElementById('sec-govern').innerHTML=`
 document.getElementById('sec-change').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The half of the project that has nothing to do with the product</h2>
-  <div class="plain-line"><b>In plain English:</b> you can deploy this perfectly and have it fail. Several thousand people have a way of working that functions well enough, and a new tool asks them to change it &mdash; which is effort, for a benefit they have not experienced yet. <b>A flawless deployment nobody uses is a failed deployment</b>, and the work of preventing that has a shape of its own.</div>
+  <div class="plain-line"><b>In plain English:</b> you can deploy this perfectly and have it fail. Several thousand people have a way of working that functions well enough, and a new tool asks them to change it, which is effort, for a benefit they have not experienced yet. <b>A flawless deployment nobody uses is a failed deployment</b>, and the work of preventing that has a shape of its own.</div>
   ${D('0 0 700 170','The five phases of the change management methodology, from prepare through to transform.',
    `${box(10,50,130,52,'var(--violet)')}${tm(75,74,'Prepare','var(--violet)')}${tm(75,90,'design the offering','var(--dim)')}
     ${box(148,50,130,52,'var(--blue)')}${tm(213,74,'Excite','var(--blue)')}${tm(213,90,'sponsors, analysis','var(--dim)')}
@@ -1313,14 +1313,14 @@ document.getElementById('sec-change').innerHTML=`
     <path d="M278 76 H284" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
     <path d="M416 76 H422" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
     <path d="M554 76 H560" style="stroke:var(--wire)" stroke-width="1.4" marker-end="url(#ah)"/>
-    ${tm(350,132,'preparation first — everything downstream depends on having designed the offering','var(--dim)')}
+    ${tm(350,132,'preparation first: everything downstream depends on having designed the offering','var(--dim)')}
     ${tm(350,150,'and the security and networking teams are engaged from day one, not at the end','var(--red)')}`,
    'Five phases in a fixed order. The most common failure is starting at Activate because it is the fun one, and discovering in Expand that nobody senior ever authorised the change.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; plan the five phases</h2>
-  <div class="plain-line"><b>Try this:</b> click a phase for what happens in it, who you need, and the mistake that phase is known for. Then try the ordering exercise underneath &mdash; two of these go wrong specifically because somebody did them in the wrong order.</div>
+  <h2 class="sec">Try it: plan the five phases</h2>
+  <div class="plain-line"><b>Try this:</b> click a phase for what happens in it, who you need, and the mistake that phase is known for. Then try the ordering exercise underneath, two of these go wrong specifically because somebody did them in the wrong order.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Getting a whole company to start using a new expenses system. The software is the easy part. Someone senior has to want it, a few enthusiasts have to prove it, and everyone else has to be shown why bothering is worth it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>Prepare</b> and read the two actions that decide whether the project runs late.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>executive sponsor</b> the senior person who authorises the change and makes people act</span><span class="sp-w"><b>early adopters</b> enthusiastic people who prove it works and bring their colleagues along</span><span class="sp-w"><b>day 1 value</b> something useful on the first day, before anything bespoke is built</span><span class="sp-w"><b>adoption</b> whether people actually ended up using it</span></span></div></div>
   <div class="sim-layout">
     <div><div id="cmList"></div></div>
@@ -1330,7 +1330,7 @@ document.getElementById('sec-change').innerHTML=`
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Top-down and bottom-up, at the same time</h2>
-  <div class="plain-line"><b>In plain English:</b> the recommended approach is not a strategy handed down, and not a thousand flowers blooming. It is <b>two-fold and multi-directional &mdash; both at once</b>.</div>
+  <div class="plain-line"><b>In plain English:</b> the recommended approach is not a strategy handed down, and not a thousand flowers blooming. It is <b>two-fold and multi-directional, both at once</b>.</div>
   <div class="vs2"><div class="col"><b>TOP-DOWN</b>Start from business priorities. Identify the most important use cases and workflows, <em>then</em> ask how the technology supports them.<br><br>The failure it prevents: a pile of interesting demos with no connection to anything the company is trying to achieve.</div>
   <div class="col"><b>BOTTOM-UP</b>Encourage teams to share their own challenges and ideas, use it at small scale, and then <b>share what worked so it can be implemented more broadly</b>.<br><br>The failure it prevents: a strategy designed by people who do not do the work, solving problems nobody actually has.</div></div>
   <div class="plain-line" style="margin-top:12px"><b>Neither direction alone is enough,</b> and that is the actual recommendation rather than a diplomatic hedge. Top-down produces alignment without traction. Bottom-up produces traction without direction. Running both means the vision is set by people who know the business priorities and validated by people who know the work.</div>
@@ -1345,7 +1345,7 @@ document.getElementById('sec-change').innerHTML=`
   <tr><td><b>Search quality disappoints on real data</b></td><td>Build an evaluation framework with known-good datasets, iterate on instructions, chunking and search controls, and <b>document the limitations</b> rather than leaving them to be discovered</td></tr>
   <tr><td><b>Recurring or complex defects stall delivery</b></td><td>Budget for debugging cycles, get the team familiar with the advanced debugging guides, and keep a feedback loop open to the product teams</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>On handling objections,</b> since this is where technical people most often go wrong: an objection is not an obstacle to get past, it is <b>specific information about their environment that you did not have a moment ago</b>. Use it to advance the conversation. Do not try to minimise the concern — demonstrate how the product addresses it. And do not try to pre-empt every objection: preparation is good, but second-guessing a customer comes across as presumptuous and unwilling to listen. <b>A prospect with no objections at all is not a sign of high engagement.</b></div>
+  <div class="plain-line" style="margin-top:12px"><b>On handling objections,</b> since this is where technical people most often go wrong: an objection is not an obstacle to get past, it is <b>specific information about their environment that you did not have a moment ago</b>. Use it to advance the conversation. Do not try to minimise the concern, demonstrate how the product addresses it. And do not try to pre-empt every objection: preparation is good, but second-guessing a customer comes across as presumptuous and unwilling to listen. <b>A prospect with no objections at all is not a sign of high engagement.</b></div>
 </div>`;
 
 /* --- SIM: change management phases --- */
@@ -1354,30 +1354,30 @@ document.getElementById('sec-change').innerHTML=`
   if(!list) return;
   const PH=[
     {k:'prep',n:'Prepare',c:'var(--violet)',one:'Design your solution offerings',
-     what:'Work out what you are actually delivering, and structure it. Not a warm-up — this is the first phase, and preparation is what everything after it depends on.',
+     what:'Work out what you are actually delivering, and structure it. Not a warm-up. This is the first phase, and preparation is what everything after it depends on.',
      who:'The delivery team, using the partner resources and delivery planning tools that hold the templates, project structures and decks.',
-     key:'<b>Two actions decide whether this engagement runs smoothly:</b> prioritise identity and security in the first week — third-party identity providers and connector permissions are the most common sources of significant delay — and <b>set connector expectations early</b>, because not every connector does granular access control or natural-language querying out of the box.',
+     key:'<b>Two actions decide whether this engagement runs smoothly:</b> prioritise identity and security in the first week (third-party identity providers and connector permissions are the most common sources of significant delay) and <b>set connector expectations early</b>, because not every connector does granular access control or natural-language querying out of the box.',
      trap:'Trying to complete every document template on day one. The two actions above matter; a full set of paperwork does not.'},
     {k:'excite',n:'Excite',c:'var(--blue)',one:'Sponsorship and organisational analysis',
      what:'Get the people behind it who can make it happen, and understand what the change will actually do to the organisation.',
-     who:'<b>An executive sponsor above all.</b> They are the change leader who authorises the change, ties it to business strategy and mobilises people to act — the most critical role for change to occur. Then <b>early adopters</b>: ambassadors who help scale and accelerate change across cross-functional groups, who are enthusiastic about the transformation and the business value in it. They do not need to be technical.',
+     who:'<b>An executive sponsor above all.</b> They are the change leader who authorises the change, ties it to business strategy and mobilises people to act, the most critical role for change to occur. Then <b>early adopters</b>: ambassadors who help scale and accelerate change across cross-functional groups, who are enthusiastic about the transformation and the business value in it. They do not need to be technical.',
      key:'<b>Organisational analysis has two purposes:</b> identify the groups affected and the skills and knowledge they will need to succeed; and identify the policies, processes and business workflows that would have to change or could be transformed. To choose what to start with, an <b>innovation matrix</b> aligns capabilities to business priorities, and a <b>rubric</b> rates ideas on impact, feasibility, priority, readiness and size.',
-     trap:'<b>Leaving security and networking until later.</b> Bring them in on day one — they may need to configure federation to connect an existing identity provider, and involving them late is how you get last-minute blockers.'},
+     trap:'<b>Leaving security and networking until later.</b> Bring them in on day one. They may need to configure federation to connect an existing identity provider, and involving them late is how you get last-minute blockers.'},
     {k:'act',n:'Activate',c:'var(--teal)',one:'Lead with day 1 value',
      what:'Show something useful immediately. Connect data, stand up a starter no-code agent, and get people using the built-in assistant before anything bespoke exists.',
      who:'The delivery team with the first business users. The starter agent needs only a name, a goal and instructions.',
-     key:'<b>Prefer ingestion here.</b> The general guidance favours federation, and for reaching day-one value it is discouraged — its quality and performance depend directly on the source system&rsquo;s API, and a missing connector means custom development. Ingesting into a Google data store gets you connected faster.',
+     key:'<b>Prefer ingestion here.</b> The general guidance favours federation, and for reaching day-one value it is discouraged, its quality and performance depend directly on the source system&rsquo;s API, and a missing connector means custom development. Ingesting into a Google data store gets you connected faster.',
      trap:'Choosing an ambitious first use case. The point of this phase is a visible win quickly, not a demonstration of what is ultimately possible.'},
     {k:'exp',n:'Expand',c:'var(--amber)',one:'Communications',
      what:'Widen it beyond the first group, working <b>top-down and bottom-up simultaneously</b>.',
      who:'Sponsors extending their support, and teams sharing what has worked for them.',
-     key:'<b>The communications work stream does two things:</b> it raises awareness so the project has visibility, and it <b>provides a feedback channel</b> so people can give input on the change. That second one is the half that gets dropped — communication without a return path is announcement, not engagement.',
+     key:'<b>The communications work stream does two things:</b> it raises awareness so the project has visibility, and it <b>provides a feedback channel</b> so people can give input on the change. That second one is the half that gets dropped, communication without a return path is announcement, not engagement.',
      trap:'Broadcasting only. If people cannot tell you it is not working for them, you will find out much later and from someone more senior.'},
     {k:'trans',n:'Transform',c:'var(--green)',one:'Training and analytics',
      what:'Train the wider organisation to drive adoption, and measure whether it happened.',
      who:'The company&rsquo;s own training or HR function, working the way that organisation already delivers learning.',
-     key:'<b>Two training practices that matter:</b> help people be productive on day one with simple setup guidance, tying training to real use cases rather than feature tours; and <b>use the existing training resources and formats</b> — find out how learning is normally delivered here, and if everyone takes eLearning courses, that is your channel.',
-     trap:'Expecting training to build excitement. It does not — that is what the communications work does, before training begins. Training <b>promotes the change and gives people the skills to succeed</b>, which is a different job.'}
+     key:'<b>Two training practices that matter:</b> help people be productive on day one with simple setup guidance, tying training to real use cases rather than feature tours; and <b>use the existing training resources and formats</b>, find out how learning is normally delivered here, and if everyone takes eLearning courses, that is your channel.',
+     trap:'Expecting training to build excitement. It does not. That is what the communications work does, before training begins. Training <b>promotes the change and gives people the skills to succeed</b>, which is a different job.'}
   ];
   let cur='prep';
   function render(){
@@ -1399,9 +1399,9 @@ document.getElementById('sec-change').innerHTML=`
 /* ================= 12 · EXAM ANGLE ================= */
 document.getElementById('sec-exam').innerHTML=`
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
-  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly &mdash; which is the point.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not — you recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the list below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
+  <h2 class="sec">Try it: drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly, which is the point.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not. You recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the list below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
   <div id="drillHost"></div>
 </div>
 
@@ -1409,7 +1409,7 @@ document.getElementById('sec-exam').innerHTML=`
   <h2 class="sec">The exam and interview angle</h2>
   <div class="exam-line"><b>&ldquo;How does it solve finding organisational information?&rdquo;</b> &rarr; It retrieves from connected enterprise systems and generates a <b>grounded</b> result. Not by indexing everything regardless of permissions, and not by federation alone.</div>
   <div class="exam-line"><b>&ldquo;What distinguishes an agent from a chatbot?&rdquo;</b> &rarr; Agents reason, break down complex tasks, run multi-step workflows, and use tools to reach enterprise systems. A chatbot answers.</div>
-  <div class="exam-line"><b>&ldquo;Non-technical business users need to build agents.&rdquo;</b> &rarr; Agent Designer — natural-language prompts, no code.</div>
+  <div class="exam-line"><b>&ldquo;Non-technical business users need to build agents.&rdquo;</b> &rarr; Agent Designer, natural-language prompts, no code.</div>
   <div class="exam-line"><b>&ldquo;The three types of agent in the gallery?&rdquo;</b> &rarr; Premade from Google, made available by your company, and created with Agent Designer.</div>
   <div class="exam-line"><b>&ldquo;What are the basic details when creating an agent?&rdquo;</b> &rarr; Name, goal and instructions.</div>
   <div class="exam-line"><b>&ldquo;How is human supervision guaranteed for agentic actions?&rdquo;</b> &rarr; The assistant produces a structured draft in the chat and the user must explicitly authorise it before execution. Not an audit trail reviewed afterwards.</div>
@@ -1421,9 +1421,9 @@ document.getElementById('sec-exam').innerHTML=`
   <div class="exam-line"><b>&ldquo;Why is OIDC lower maintenance than SAML?&rdquo;</b> &rarr; Google can periodically check the provider&rsquo;s discovery URL for new public keys. SAML needs somebody to upload a certificate before the old one expires.</div>
   <div class="exam-line"><b>&ldquo;A CI/CD pipeline and a third-party QA team both need access.&rdquo;</b> &rarr; Two different services: <b>Workload</b> Identity Federation for the pipeline, <b>Workforce</b> Identity Federation for the people.</div>
   <div class="exam-line"><b>&ldquo;A legacy bank with on-premises ADFS behind a firewall, offering a metadata XML file.&rdquo;</b> &rarr; SAML.</div>
-  <div class="exam-line"><b>&ldquo;Invalid Issuer, and the URL looks identical.&rdquo;</b> &rarr; String exactness — almost always a trailing slash present on one side only.</div>
+  <div class="exam-line"><b>&ldquo;Invalid Issuer, and the URL looks identical.&rdquo;</b> &rarr; String exactness, almost always a trailing slash present on one side only.</div>
   <div class="exam-line"><b>&ldquo;Why configure the client ID if the issuer is already trusted?&rdquo;</b> &rarr; To prevent a malicious attack. The issuer says who minted the token; the audience says who it was minted for.</div>
-  <div class="exam-line"><b>&ldquo;Token Exchange Failed: Invalid Audience — where did it fail?&rdquo;</b> &rarr; Step 3, the exchange. Authentication and issuance both succeeded.</div>
+  <div class="exam-line"><b>&ldquo;Token Exchange Failed: Invalid Audience, where did it fail?&rdquo;</b> &rarr; Step 3, the exchange. Authentication and issuance both succeeded.</div>
   <div class="exam-line"><b>&ldquo;The audience in the assertion does not match.&rdquo;</b> &rarr; The provider&rsquo;s administrator pasted the wrong string into their configuration.</div>
   <div class="exam-line"><b>&ldquo;400: Invalid Redirect URI after logging in.&rdquo;</b> &rarr; The assertion consumer service URL is missing or wrong on the provider side.</div>
   <div class="exam-line"><b>&ldquo;google.subject must be a string.&rdquo;</b> &rarr; A mapping error. Not the platform, not the provider&rsquo;s profile.</div>
@@ -1435,34 +1435,34 @@ document.getElementById('sec-exam').innerHTML=`
   <div class="exam-line"><b>&ldquo;What does assertion.aud == 'prod-app' || assertion.aud == 'test-app' do?&rdquo;</b> &rarr; Admits the user if they come from <em>either</em> application. It is not an AND, and it is not auditing.</div>
   <div class="exam-line"><b>&ldquo;A virtual perimeter plus real-time context evaluation.&rdquo;</b> &rarr; VPC Service Controls and Context-Aware Access.</div>
   <div class="exam-line"><b>&ldquo;What must network engineers change for generative AI?&rdquo;</b> &rarr; Raise backend timeouts to three to five minutes. Generative models routinely exceed the standard thirty seconds.</div>
-  <div class="exam-line"><b>&ldquo;When should you use ingestion rather than federation?&rdquo;</b> &rarr; When no connector exists for a third-party source, and because federation&rsquo;s quality and latency depend on the source API and may need custom connector development — which is why it is discouraged for day-one value.</div>
-  <div class="exam-line"><b>&ldquo;Cloud Storage and BigQuery connectors — user-specific access by default?&rdquo;</b> &rarr; <b>All users can access all connected data unless access control lists are enabled.</b></div>
-  <div class="exam-line"><b>&ldquo;Securing connectors that carry personal or confidential data.&rdquo;</b> &rarr; The security foundation package built for it — not Workforce Identity Federation, which is a different problem.</div>
+  <div class="exam-line"><b>&ldquo;When should you use ingestion rather than federation?&rdquo;</b> &rarr; When no connector exists for a third-party source, and because federation&rsquo;s quality and latency depend on the source API and may need custom connector development, which is why it is discouraged for day-one value.</div>
+  <div class="exam-line"><b>&ldquo;Cloud Storage and BigQuery connectors, user-specific access by default?&rdquo;</b> &rarr; <b>All users can access all connected data unless access control lists are enabled.</b></div>
+  <div class="exam-line"><b>&ldquo;Securing connectors that carry personal or confidential data.&rdquo;</b> &rarr; The security foundation package built for it, not Workforce Identity Federation, which is a different problem.</div>
   <div class="exam-line"><b>&ldquo;A search for Jane&rsquo;s Q3 projects must surface Project Apollo, though her name is not on the documents.&rdquo;</b> &rarr; The private knowledge graph.</div>
   <div class="exam-line"><b>&ldquo;Employees use different internal jargon for the same thing.&rdquo;</b> &rarr; Custom synonyms.</div>
   <div class="exam-line"><b>&ldquo;A podcast-style audio overview of a topic.&rdquo;</b> &rarr; Notebooks.</div>
-  <div class="exam-line"><b>&ldquo;What must happen before logging prompt and response content?&rdquo;</b> &rarr; Enable the OpenTelemetry tracing and logging instrumentation first — and have the user consents and data-handling policies in place.</div>
+  <div class="exam-line"><b>&ldquo;What must happen before logging prompt and response content?&rdquo;</b> &rarr; Enable the OpenTelemetry tracing and logging instrumentation first, and have the user consents and data-handling policies in place.</div>
   <div class="exam-line"><b>&ldquo;What is the purpose of governance and observability at scale?&rdquo;</b> &rarr; To keep the deployment secure, compliant, performant and delivering measurable business value.</div>
   <div class="exam-line"><b>&ldquo;Which data source produces search count and click-through rate?&rdquo;</b> &rarr; User events. Adoption metrics are the category showing how people use the product over time.</div>
   <div class="exam-line"><b>&ldquo;What is Model Armor&rsquo;s primary function?&rdquo;</b> &rarr; It sits between the user and the model, inspecting and sanitising both the prompt and the response in transit.</div>
-  <div class="exam-line"><b>&ldquo;Which OWASP LLM vulnerabilities does it address?&rdquo;</b> &rarr; Prompt injection and sensitive data disclosure — plus malicious files, unsafe URLs and unsafe content. Not training-data poisoning, model theft or supply chain.</div>
+  <div class="exam-line"><b>&ldquo;Which OWASP LLM vulnerabilities does it address?&rdquo;</b> &rarr; Prompt injection and sensitive data disclosure, plus malicious files, unsafe URLs and unsafe content. Not training-data poisoning, model theft or supply chain.</div>
   <div class="exam-line"><b>&ldquo;Minimum security requirements for all templates at organisation, folder and project level.&rdquo;</b> &rarr; Floor settings. A template configured below them saves without error and defaults up to the floor.</div>
-  <div class="exam-line"><b>&ldquo;Decouple filtering to catch injections without blocking valid responses.&rdquo;</b> &rarr; Distinct input and output templates, with <b>prompt injection detection disabled on the output template</b> — those attacks originate in the prompt, so screening the response only adds false positives.</div>
+  <div class="exam-line"><b>&ldquo;Decouple filtering to catch injections without blocking valid responses.&rdquo;</b> &rarr; Distinct input and output templates, with <b>prompt injection detection disabled on the output template</b>, those attacks originate in the prompt, so screening the response only adds false positives.</div>
   <div class="exam-line"><b>&ldquo;Detecting an internal employee ID.&rdquo;</b> &rarr; Not one of the basic information types. It needs the advanced filter with an inspection template.</div>
   <div class="exam-line"><b>&ldquo;How do the template and the API relate?&rdquo;</b> &rarr; The template defines the protections; the API applies them when screening prompts and responses.</div>
   <div class="exam-line"><b>&ldquo;Where are Model Armor&rsquo;s logs?&rdquo;</b> &rarr; Logs Explorer. Logging is <em>configured</em> via Python or a REST call, not inside Logs Explorer.</div>
-  <div class="exam-line"><b>&ldquo;A good test prompt for a true positive.&rdquo;</b> &rarr; Something that should trip a filter — a known test malware URL, an identifier, an injection attempt. &ldquo;What is the weather like today?&rdquo; proves nothing.</div>
+  <div class="exam-line"><b>&ldquo;A good test prompt for a true positive.&rdquo;</b> &rarr; Something that should trip a filter, a known test malware URL, an identifier, an injection attempt. &ldquo;What is the weather like today?&rdquo; proves nothing.</div>
   <div class="exam-line"><b>&ldquo;What does Check Grounding do with ungrounded statements?&rdquo;</b> &rarr; It <b>flags</b> them. It does not remove or rewrite them. Its two functions: verify factualness against the sources, and pinpoint supporting evidence.</div>
   <div class="exam-line"><b>&ldquo;What does the Ranking API give you?&rdquo;</b> &rarr; It re-orders results by relevance to the query and provides a precise relevance score, using context-aware semantic ranking rather than similarity or keywords.</div>
   <div class="exam-line"><b>&ldquo;How do you change the default behaviour of a search request?&rdquo;</b> &rarr; <b>Serving controls change the order; filters remove entries.</b> Extractive answers are not part of this.</div>
   <div class="exam-line"><b>&ldquo;Which group returned all the right answers in the right order?&rdquo;</b> &rarr; The one with NDCG = 1. A perfect ratio means the ordering could not have been better.</div>
   <div class="exam-line"><b>&ldquo;What is search tuning?&rdquo;</b> &rarr; Logging relevant and irrelevant answers so the query moves closer to the right content. It adapts the <em>query&rsquo;s</em> position; fine-tuning adapts every embedding. Unstructured data stores only.</div>
   <div class="exam-line"><b>&ldquo;Which phase trains the wider organisation?&rdquo;</b> &rarr; Transform. Prepare is first; Activate is where day-one value and the starter agent live.</div>
-  <div class="exam-line"><b>&ldquo;The most critical stakeholder role?&rdquo;</b> &rarr; The executive sponsor — the change leader who authorises it, ties it to strategy and mobilises people.</div>
+  <div class="exam-line"><b>&ldquo;The most critical stakeholder role?&rdquo;</b> &rarr; The executive sponsor, the change leader who authorises it, ties it to strategy and mobilises people.</div>
   <div class="exam-line"><b>&ldquo;What approach is recommended for implementing it?&rdquo;</b> &rarr; Two-fold and multi-directional: top-down and bottom-up simultaneously.</div>
   <div class="exam-line"><b>&ldquo;The two purposes of the communications work stream?&rdquo;</b> &rarr; Raise awareness of the change, and provide a feedback channel.</div>
   <div class="exam-line"><b>&ldquo;On-premises syncing is delayed by connectivity and firewall issues.&rdquo;</b> &rarr; Verify network prerequisites rigorously before starting, and allocate explicit buffer for debugging private and on-premises connectivity.</div>
-  <div class="exam-line"><b>&ldquo;Handling a customer objection.&rdquo;</b> &rarr; Use it to advance the conversation by learning about their environment, and demonstrate how the product addresses it. Do not minimise it, and do not try to pre-empt everything — no objections is not a sign of engagement.</div>
+  <div class="exam-line"><b>&ldquo;Handling a customer objection.&rdquo;</b> &rarr; Use it to advance the conversation by learning about their environment, and demonstrate how the product addresses it. Do not minimise it, and do not try to pre-empt everything, no objections is not a sign of engagement.</div>
 </div>`;
 /* ==== sections ==== */
 
@@ -1481,11 +1481,11 @@ document.getElementById('sec-exam').innerHTML=`
     ctl.querySelectorAll('input').forEach(i=>i.onchange=()=>{st[i.dataset.k]=i.checked;render();});
     const S=[
       {n:'Consents and data-handling policies',ok:st.consent,
-       fail:'Not in place. Prompt text is user data and frequently contains far more personal information than anyone expected — turning the log on without the agreements is its own incident, and it is a legal blocker rather than a technical one.'},
+       fail:'Not in place. Prompt text is user data and frequently contains far more personal information than anyone expected, turning the log on without the agreements is its own incident, and it is a legal blocker rather than a technical one.'},
       {n:'Tracing and logging instrumentation',ok:st.instr,
-       fail:'Not enabled — and this is a hard prerequisite. Content logging <b>cannot be switched on</b> until it is; the option is simply not available to you.'},
+       fail:'Not enabled, and this is a hard prerequisite. Content logging <b>cannot be switched on</b> until it is; the option is simply not available to you.'},
       {n:'Prompt and response content logging',ok:st.content&&st.instr,
-       fail: st.content&&!st.instr ? 'You asked for it and the platform will not let you. The instrumentation above has to come first.' : 'Off, so you can see that requests happened and not what was in them — which is most of what evaluation and debugging need.'},
+       fail: st.content&&!st.instr ? 'You asked for it and the platform will not let you. The instrumentation above has to come first.' : 'Off, so you can see that requests happened and not what was in them, which is most of what evaluation and debugging need.'},
       {n:'Access to the logs restricted',ok:st.restrict,
        fail:'Every question every employee has asked, readable by anyone who can open the log. That log is now one of the more sensitive things you own.'}
     ];
@@ -1496,10 +1496,10 @@ document.getElementById('sec-exam').innerHTML=`
       '<div class="'+(S.every(x=>x.ok)?'ok':'lzbad')+'" style="margin-top:12px;font-size:14px"><b>'+
         (S.every(x=>x.ok)?'✓ you can see what the assistant is actually saying to people':'✗ not yet')+'</b></div>';
     let html='';
-    if(st.content&&!st.instr) html+='<div class="lzbad" style="margin-bottom:10px"><b>The order is enforced by the platform.</b> This is the friendly failure — you cannot get it wrong quietly, because the option is not offered until the instrumentation exists.</div>';
+    if(st.content&&!st.instr) html+='<div class="lzbad" style="margin-bottom:10px"><b>The order is enforced by the platform.</b> This is the friendly failure. You cannot get it wrong quietly, because the option is not offered until the instrumentation exists.</div>';
     if(st.content&&st.instr&&!st.consent) html+='<div class="lzbad" style="margin-bottom:10px"><b>The order is <em>not</em> enforced here, and this is the one that matters.</b> Nothing stops you logging prompt content without the consents in place. It will work perfectly, and you have started recording user data you have no agreement to hold.</div>';
     if(st.content&&!st.restrict) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Now narrow who can read it.</b> A log of every question every employee has asked deserves tighter access than the product itself.</div>';
-    if(S.every(x=>x.ok)) html='<div class="ok" style="margin-bottom:10px"><b>All four, in the right order.</b> Two of them are technical and the platform enforces their sequence. The other two — consent and access — are the ones an engineer working alone will skip, because nothing on the screen asks for them.</div>';
+    if(S.every(x=>x.ok)) html='<div class="ok" style="margin-bottom:10px"><b>All four, in the right order.</b> Two of them are technical and the platform enforces their sequence. The other two (consent and access) are the ones an engineer working alone will skip, because nothing on the screen asks for them.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>What all of this is for:</b> keeping the deployment secure, compliant, performant and demonstrably valuable as it scales. Not viewing traces for their own sake, and not logging everything because it is possible.</div>';
     note.innerHTML=html;
   }

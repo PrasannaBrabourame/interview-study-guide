@@ -1,4 +1,4 @@
-/* Shared lab chrome — theme toggle, tab deep links, the scenario drill and the
+/* Shared lab chrome, theme toggle, tab deep links, the scenario drill and the
    navigation interface. This lived in all thirteen lab pages as thirteen
    identical copies, which is how two bugs got in: a callout that needed a size
    rule needed thirteen separate patches, and one lab shipped a stale copy of a
@@ -111,9 +111,9 @@
       host.innerHTML='<div class="drl">'+
         '<div style="font-family:var(--display);font-size:22px;margin-bottom:8px">'+right+' of '+score.length+'</div>'+
         '<div class="plain-line" style="margin-bottom:12px">'+
-          (right===score.length?'Every one. Worth re-running it — the questions come back in a different order and the wrong answers move around.'
+          (right===score.length?'Every one. Worth re-running it. The questions come back in a different order and the wrong answers move around.'
            :right/score.length>=0.7?'Solid. The ones you missed are the ones worth reading again, and they are the ones an interviewer will reach for.'
-           :'Worth another pass. These are not memory questions — each one has a reason underneath it, and the reason is what makes the next one answerable.')+
+           :'Worth another pass. These are not memory questions, each one has a reason underneath it, and the reason is what makes the next one answerable.')+
         '</div><button class="btn" id="drlAgain">run it again</button></div>';
       host.querySelector('#drlAgain').onclick=build; return;
     }
@@ -137,7 +137,7 @@
 })();
 
 /* ================= INTERFACE =================
-   Navigation and orientation only. Nothing here touches what a simulation does — and it is
+   Navigation and orientation only. Nothing here touches what a simulation does, and it is
    wrapped so that if any of it fails, the content and the simulations still work. */
 (function(){
  try{
@@ -195,7 +195,7 @@
       const h=c.querySelector('h2.sec'); if(!h) return;
       if(!h.id) h.id='s-'+pane.id.replace('pane-','')+'-'+i;
       rows.push({id:h.id, sim:c.querySelectorAll('.simplain').length>0,
-                 txt:h.textContent.replace(/^Try it\s*[—–-]\s*/,'').trim()});
+                 txt:h.textContent.replace(/^Try it\s*[, –-]\s*/,'').trim()});
     });
     const heads=rows.map(r=>document.getElementById(r.id)).filter(Boolean);
     rail.innerHTML=rows.map(r=>
@@ -312,16 +312,16 @@
 (function(){
   const TRACKS = [
     { name:'Build, run and govern an agent', labs:[
-      ['adk.html',       'ADK — building an agent that behaves'],
-      ['agentcore.html', 'AgentCore — an agent you can trust'],
+      ['adk.html',       'ADK, building an agent that behaves'],
+      ['agentcore.html', 'AgentCore. An agent you can trust'],
       ['agentbuild.html','Agents building agents'],
-      ['evals.html',     'Evaluation — how do you know it got better?'],
+      ['evals.html',     'Evaluation, how do you know it got better?'],
       ['govern.html',    'Govern and secure an estate of agents'],
       ['gemini.html',    'Rolling it out to a whole company'],
-      ['peakweek.html',  'Peak Week — one agent, all the way through'] ] },
+      ['peakweek.html',  'Peak Week, one agent, all the way through'] ] },
     { name:'Cloud and architecture', labs:[
       ['cloud.html',            'How the cloud actually works'],
-      ['design.html',           'Diagrams — a picture that argues'],
+      ['design.html',           'Diagrams, a picture that argues'],
       ['cloud.html#pane-pca',   'GCP Architect exam'],
       ['cloud.html#pane-cheat', 'SAP-C02 cheatsheet'] ] },
     { name:'Under the hood', labs:[
