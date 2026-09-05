@@ -233,6 +233,17 @@ document.getElementById('sec-spec').innerHTML=`
     And it routes to human approval after the LLM review`)}</code></pre></div>
   <div class="plain-line" style="margin-top:12px"><b>The part worth noticing:</b> these same scenarios become your evaluation dataset later. The thing that told the coding agent what to build is the thing that grades the agent once it is running. Write them once, use them twice — and it means the definition of correct never drifts between the two.</div>
   <div class="plain-line"><b>Prompting against a spec is short:</b> <code>Review specs/expense-agent.md and implement Scenario 2. Confirm which files you changed.</code> The spec does the work; the prompt is just a pointer to it. And after the agent builds something, ask it to explain what it built <em>before</em> moving on — that explanation is your verification step, and it is where you catch &ldquo;more than $100&rdquo; when you said &ldquo;$100 or more&rdquo;.</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; the same requirement, vague and precise</h2>
+  <div class="plain-line"><b>Try this:</b> one requirement, written four ways. Each is handed to a coding agent. Read what gets built and, more importantly, what nobody can check afterwards &mdash; the argument does not disappear, it just moves to code review.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Asking somebody to &ldquo;book a sensible restaurant&rdquo;. They book one. It is sensible to them. Everything you meant by sensible &mdash; near the station, before eight, nothing with chilli &mdash; only becomes visible when it is wrong, and by then somebody has paid a deposit.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>a sentence</b>, then jump to <b>Given / When / Then</b> and count the questions that stopped being askable.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>specification</b> the written description of what is to be built</span><span class="sp-w"><b>Gherkin</b> a way of writing an example as Given, When, Then</span><span class="sp-w"><b>acceptance test</b> a check that proves the requirement is met</span><span class="sp-w"><b>edge case</b> a situation at the boundary, where behaviour is easiest to get wrong</span><span class="sp-w"><b>ambiguity</b> wording that two reasonable people read differently</span><span class="sp-w"><b>rework</b> building it twice because the first build met a different reading</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="abGherkinOut"></div></div>
+    <div><div class="segmented" id="abGherkinCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="abGherkinNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
 </div>`;
 
 /* SIM 1: how good is the description? */
@@ -270,6 +281,77 @@ function specPaint(){
 document.getElementById('specPick').addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(!b)return;
   specI=Number(b.dataset.i); document.querySelectorAll('#specPick .seg').forEach(x=>x.classList.remove('on')); b.classList.add('on'); specPaint();});
 specPaint();
+
+/* --- SIM: the same requirement, vague and precise --- */
+(function(){
+  const ctl=document.getElementById('abGherkinCtl'), out=document.getElementById('abGherkinOut'),
+        note=document.getElementById('abGherkinNote');
+  if(!ctl) return;
+  /* One requirement, four levels of precision. The open questions are the
+     point: they are the same questions in every version, and they are answered
+     by the specification, by the agent guessing, or by an argument in review. */
+  const Q=[
+    'What counts as a receipt — a photo, a PDF, an email?',
+    'Over what amount does approval kick in?',
+    'Whose approval — the line manager, or finance?',
+    'What happens to a claim in a different currency?',
+    'What does the claimant see while it is waiting?',
+    'What if the approver never responds?'
+  ];
+  const V=[
+    {k:'sentence', n:'a sentence', tag:'what most tickets look like',
+     text:'Build an expense agent that handles receipts and approvals.',
+     answered:[], build:'An agent that accepts any attachment, approves everything under £100 because that number appeared in its training data, and has no waiting state at all.',
+     tests:0, risk:'high'},
+    {k:'bullets', n:'a list of bullets', tag:'a careful ticket',
+     text:'&bull; accept a receipt<br>&bull; require approval for large claims<br>&bull; notify the claimant<br>&bull; store the outcome',
+     answered:[0], build:'Attachments are validated. &ldquo;Large&rdquo; is still the agent&rsquo;s guess, approval routes to whoever the agent thinks is a manager, and there is no timeout.',
+     tests:1, risk:'high'},
+    {k:'prose', n:'a paragraph of detail', tag:'a real specification, in prose',
+     text:'Claimants attach a PDF or photo receipt. Claims over £75 go to the line manager for approval. Foreign currency is converted at the date of purchase. The claimant sees a pending state until it resolves.',
+     answered:[0,1,2,3,4], build:'Very close to right. But &ldquo;until it resolves&rdquo; is doing a lot of work, and nothing says what happens if it never does.',
+     tests:3, risk:'med'},
+    {k:'gherkin', n:'Given / When / Then', tag:'an example nobody can misread',
+     text:'<b>Given</b> a claimant with a £120 receipt dated 3 March<br><b>When</b> they submit it<br><b>Then</b> the claim is marked pending<br><b>And</b> the line manager is notified within 5 minutes<br><b>And</b> if no response in 3 working days it escalates to finance',
+     answered:[0,1,2,3,4,5], build:'The behaviour is pinned to a worked example with real numbers. Every branch has a stated outcome, including the one where nobody replies.',
+     tests:6, risk:'low'}
+  ];
+  let cur=0;
+  const RISK={high:['var(--red)','high — expect rework'],med:['var(--amber)','some — one branch undefined'],low:['var(--green)','low — the example decides it']};
+  function render(){
+    ctl.innerHTML=V.map((v,i)=>'<button class="seg'+(i===cur?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
+      +'<b>'+v.n+'</b><br><span style="font-size:11px;color:var(--dim)">'+v.tag+'</span></button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;render();});
+    const v=V[cur], open=Q.length-v.answered.length;
+    out.innerHTML =
+      '<div class="lzhop" style="display:block;padding:11px 13px;margin-bottom:10px;border-left-color:var(--violet)">'
+      + '<b>What you hand the agent</b><div style="margin-top:6px;font-size:12.5px;line-height:1.6">'+v.text+'</div></div>'
+      + '<div class="lzhop" style="display:block;padding:11px 13px;margin-bottom:10px;border-left-color:'+RISK[v.risk][0]+'">'
+      + '<b>What comes back</b><div style="margin-top:5px;font-size:12.5px">'+v.build+'</div></div>'
+      + '<div class="simnote" style="margin-bottom:6px">The six questions this requirement raises. '
+      + '<b style="color:'+(open?'var(--red)':'var(--green)')+'">'+open+' still unanswered</b> &mdash; somebody decides these, and if it is not you it is the agent.</div>'
+      + Q.map((q,i)=>{
+          const ok=v.answered.indexOf(i)>=0;
+          return '<div style="display:flex;gap:8px;align-items:baseline;padding:5px 0;font-size:12.5px;color:'
+            +(ok?'var(--muted)':'var(--text)')+'">'
+            + '<span style="color:'+(ok?'var(--green)':'var(--red)')+'">'+(ok?'&#10003;':'&#10007;')+'</span><span>'+q+'</span></div>';
+        }).join('');
+    note.innerHTML =
+      '<div class="'+(v.risk==='low'?'ok':v.risk==='med'?'lzwarn':'lzbad')+'"><b>Acceptance tests you can write from this: '+v.tests+' of 6.</b> '
+      + (v.tests===0
+        ? 'You cannot test &ldquo;handles receipts&rdquo;. There is no sentence you could write that would fail.'
+        : v.tests<6
+        ? 'You can check some of it. The rest becomes an opinion in code review, held by whoever is most confident.'
+        : 'Every line is already a test. The specification and the test suite are the same document, which is the actual trick.')
+      + '</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Rework risk: <span style="color:'+RISK[v.risk][0]+'">'+RISK[v.risk][1]+'</span>.</b> '
+      + 'The agent is fast enough that building the wrong thing is cheap. Discovering it is the wrong thing three weeks later, after other work is built on top, is not.</div>'
+      + (cur===3
+        ? '<div class="simnote" style="margin-top:10px"><b>Why Given / When / Then and not just more prose.</b> The format is a forcing function. You cannot write <em>Given</em> without stating the starting state, or <em>Then</em> without committing to an outcome. Prose lets you write &ldquo;handled appropriately&rdquo; and feel finished.</div>'
+        : '<div class="simnote" style="margin-top:10px">Notice that the arguing never disappeared. It moved &mdash; from the specification, where it is cheap and everybody can join in, to code review, where it is expensive and only two people are looking.</div>');
+  }
+  render();
+})();
 
 /* ================= 3 · ANTIGRAVITY & SKILLS ================= */
 document.getElementById('sec-anti').innerHTML=`

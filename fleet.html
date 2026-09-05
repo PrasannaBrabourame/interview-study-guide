@@ -236,6 +236,19 @@ document.getElementById('sec-fldisc').innerHTML=`
   <div class="plain-line"><b>The subtle part is <em>ready</em> versus <em>alive</em>.</b> A worker that has registered but is still loading weights will accept a request and sit on it. A worker that is alive but has a full KV cache should not be sent more work. Health is not one bit, and treating it as one is behind a lot of mysterious latency.</div>
 </div>
 
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; how stale is your list of workers right now?</h2>
+  <div class="plain-line"><b>Try this:</b> workers come and go on their own. Set how often you check on them, then watch what fraction of requests get sent to a worker that is already gone. Checking constantly is not free either &mdash; watch the second number.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A taxi rank board that lists which cars are free. It is right at the moment it is printed. Print it once an hour and you send people to cars that left forty minutes ago; print it every two seconds and you spend all day printing.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the check every <b>30s</b> and read the wasted requests, then drag down to <b>1s</b> and watch the health-check load.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>worker</b> one machine running one copy of the engine</span><span class="sp-w"><b>service discovery</b> the list of which workers exist right now</span><span class="sp-w"><b>health check</b> a small request asking a worker whether it is alive</span><span class="sp-w"><b>stale</b> correct when it was written, wrong now</span><span class="sp-w"><b>draining</b> refusing new work while finishing what is in flight</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="flStaleOut"></div></div>
+    <div><label class="ctl" style="display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:6px">check every <b id="flStaleVal" style="color:var(--accent)">10s</b></label>
+      <input id="flStaleRange" type="range" min="0" max="5" step="1" value="3" style="width:100%">
+      <div class="segmented" id="flStaleChurn" style="flex-direction:column;align-items:stretch;margin-top:12px"></div>
+      <div id="flStaleNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
 <div class="card">
   <h2 class="sec">Try it &mdash; take workers away and see what the router believes</h2>
   <div class="plain-line"><b>Try this:</b> four workers and a router. Kill one, start one, let one hang mid-load, and watch the gap between what is true and what the router has noticed &mdash; because that gap is where the failed requests live.</div>
@@ -303,6 +316,73 @@ document.getElementById('sec-fldisc').innerHTML=`
       : '<div class="simnote"><b>Advance a few ticks and then kill a worker.</b> The interesting part is not that the router notices &mdash; it is how long it takes, and what happens to the requests sent during the gap.</div>'+
         '<div class="note" style="margin-top:10px"><b>Draining is the graceful case, and it is a different state.</b> The worker keeps serving what it has and stops being offered anything new. Without it, a routine deployment kills conversations mid-sentence &mdash; which is a rollout problem rather than a failure.</div>';
   }
+  render();
+})();
+
+/* --- SIM: how stale is the worker list --- */
+(function(){
+  const rng=document.getElementById('flStaleRange'), out=document.getElementById('flStaleOut'),
+        note=document.getElementById('flStaleNote'), val=document.getElementById('flStaleVal'),
+        churnCtl=document.getElementById('flStaleChurn');
+  if(!rng) return;
+  const INT=[1,2,5,10,30,60];                       /* seconds between checks */
+  const CHURN=[
+    {k:'calm',  n:'a calm day',            mtbf:3600, lbl:'one worker leaves an hour'},
+    {k:'scale', n:'scaling in and out',    mtbf:300,  lbl:'one leaves every five minutes'},
+    {k:'spot',  n:'pre-emptible machines', mtbf:90,   lbl:'one leaves every ninety seconds'}
+  ];
+  let ci=1;
+  const RPS=2000, N=20;
+  function render(){
+    const s=INT[+rng.value], c=CHURN[ci];
+    val.textContent = s<60 ? s+'s' : '60s';
+    churnCtl.innerHTML=CHURN.map((x,i)=>'<button class="seg'+(i===ci?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
+      +x.n+' &mdash; <span style="color:var(--dim)">'+x.lbl+'</span></button>').join('');
+    churnCtl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{ci=+b.dataset.i;render();});
+
+    /* A worker that dies is discovered after half a check interval on average.
+       Expected dead-but-listed workers = deaths per second × mean detection lag. */
+    const lag=s/2, deathsPerSec=N/c.mtbf, deadListed=deathsPerSec*lag;
+    const wastedPct=Math.min(99,deadListed/N*100);
+    const wastedRps=Math.round(RPS*wastedPct/100);
+    /* below one a second this reads better as a period than as a rate */
+    const cps=N/s, checkRate = cps>=1 ? Math.round(cps)+' health checks a second' : N+' health checks every '+s+' seconds';
+    const col = wastedPct>2?'var(--red)':wastedPct>0.5?'var(--amber)':'var(--green)';
+    /* deadListed is an expected value, so it is usually fractional. Rounding it
+       to zero and painting twenty green squares next to "1.67% wasted" would be
+       a lie; the part-dead worker gets its own colour instead. */
+    const cell=(st)=>'<span title="'+(st==='dead'?'gone, still on the list':st==='part'?'gone part of the time':'alive')
+      +'" style="display:inline-block;width:15px;height:15px;margin:2px;border-radius:4px;background:'
+      +(st==='dead'?'var(--red)':st==='part'?'var(--amber)':'var(--green)')+';opacity:'+(st==='alive'?.55:1)+'"></span>';
+    const dead=Math.min(N,Math.floor(deadListed)), part=(deadListed-dead)>0.05 && dead<N ? 1 : 0;
+    out.innerHTML =
+      '<div class="simnote" style="margin-bottom:8px">Twenty workers on the router&rsquo;s list. Red means the router still believes in a worker that has already gone; amber means one that is gone some of the time.</div>'
+      + '<div style="margin-bottom:6px">'+Array.from({length:N},(_,i)=>cell(i<dead?'dead':i<dead+part?'part':'alive')).join('')+'</div>'
+      + '<div class="k" style="font-size:10.5px;color:var(--dim);margin-bottom:12px">on average <b>'+deadListed.toFixed(2)
+      + '</b> of the twenty are gone but still being routed to, at any instant'
+      + (part?' &mdash; the amber one is gone part of the time':'')+'</div>'
+      + '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:'+col+'">'
+      + '<b>Requests sent to a worker that is not there</b>'
+      + '<div style="margin-top:5px;font-size:12.5px"><span class="k" style="color:'+col+';font-size:15px">'
+      + wastedPct.toFixed(2)+'%</span> of traffic &mdash; about <b>'+wastedRps.toLocaleString('en-GB')
+      + ' requests a second</b> at '+RPS.toLocaleString('en-GB')+' rps. Each one fails, retries, and pays the latency twice.</div></div>'
+      + '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:9px;border-left-color:var(--violet)">'
+      + '<b>What the checking itself costs</b>'
+      + '<div style="margin-top:5px;font-size:12.5px"><span class="k">'+checkRate+'</span>'
+      + ' across the fleet, forever, whether anything is wrong or not'
+      + (s<=2?' &mdash; and every one of them competes with real work on a busy GPU.':'.')+'</div></div>';
+    note.innerHTML =
+      '<div class="'+(wastedPct>2?'lzbad':'ok')+'"><b>'+(s<60?s+' second':'60 second')+' checks, '+c.n+'.</b> '
+      + (wastedPct>2
+        ? 'More than one request in fifty is being handed to a machine that no longer exists. Users see this as random, unreproducible failures &mdash; the worst kind to debug, because by the time you look, the worker is genuinely gone and the list is correct again.'
+        : wastedPct>0.5
+        ? 'Small but not invisible. This is the band where you see a thin, steady error rate that nobody can attribute to anything.'
+        : 'Losses are in the noise. Check whether the health-check load above is a price you actually want to pay.')
+      + '</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The move that beats tuning this dial.</b> Polling is guessing. A worker that is shutting down can <em>say so</em> &mdash; stop accepting new requests, finish what it is holding, then leave. That is draining, and it takes the interesting part of this number to zero without any polling at all. The dial still matters for workers that die without warning, which is exactly what pre-emptible machines do.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Why this is worse for inference than for ordinary web services.</b> A dead web worker costs you one retried request. A dead inference worker also takes its KV cache with it, so the retry re-runs prefill from scratch on another machine &mdash; the user waits for the whole prompt to be processed a second time.</div>';
+  }
+  rng.addEventListener('input',render);
   render();
 })();
 

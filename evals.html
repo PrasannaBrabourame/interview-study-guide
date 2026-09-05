@@ -295,6 +295,17 @@ document.getElementById('sec-methods').innerHTML=`
   <div class="plain-line" style="margin-top:12px"><b>The practical rule:</b> use side-by-side when the question is &ldquo;did this change help?&rdquo; and absolute ratings when the question is &ldquo;is this good enough to ship?&rdquo;. Only one of the two produces data you can still use next quarter.</div>
 </div>
 
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; score the same five answers both ways</h2>
+  <div class="plain-line"><b>Try this:</b> five answers from two versions of an agent. Score them out of five, then compare them in pairs instead. The two methods disagree about which version is better, and only one of them can see the change you actually shipped.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Marking essays. Give each one a grade out of ten and everything lands on seven, because seven is where a careful marker hides. Put two side by side and ask which is better, and you answer instantly &mdash; without ever agreeing what a seven is.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read the <b>absolute</b> column, then switch to <b>side by side</b> and look at answer 3.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>absolute rating</b> a score given to one answer on its own</span><span class="sp-w"><b>side-by-side</b> two answers compared directly, one wins</span><span class="sp-w"><b>autorater</b> a model asked to do the scoring instead of a person</span><span class="sp-w"><b>rubric</b> a written marking scheme a person follows</span><span class="sp-w"><b>win rate</b> how often one version is preferred over the other</span><span class="sp-w"><b>regression</b> a change that made something worse</span><span class="sp-w"><b>central tendency</b> the habit of putting everything near the middle of the scale</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="evPairOut"></div></div>
+    <div><div class="segmented" id="evPairCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="evPairNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
 <div class="card" style="margin-top:16px">
   <h2 class="sec">The metrics nobody assigns to anyone, and everybody needs</h2>
   <div class="plain-line"><b>In plain English:</b> alongside &ldquo;was the answer good&rdquo; there is a second family of numbers that describe how the agent <em>behaved</em>. They are cheap, they come straight from your traces, and they catch a class of failure that quality scoring misses entirely.</div>
@@ -347,6 +358,65 @@ document.getElementById('sec-methods').innerHTML=`
     note.innerHTML='<div class="'+(c.v[0]==='ok'?'ok':c.v[0]==='note'?'note':'lzbad')+'" style="margin-bottom:10px">'+c.v[1]+'</div>'+
       '<div class="simnote"><b>Why this matters beyond the numbers:</b> whatever you measure is what the system will be tuned towards. Optimise against string similarity on open-ended text and you will reliably get a system that is worse at its job and better at the metric.</div>'+
       '<div class="simnote" style="margin-top:8px"><b>Where these metrics are still right:</b> anywhere there genuinely is one correct answer — a structured field, an extracted value, a tool call&rsquo;s arguments. Keep them for those, and stop asking them to judge prose.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: absolute ratings vs side-by-side --- */
+(function(){
+  const ctl=document.getElementById('evPairCtl'), out=document.getElementById('evPairOut'),
+        note=document.getElementById('evPairNote');
+  if(!ctl) return;
+  /* Version B is genuinely a small improvement. The absolute scores cannot see
+     it, because a careful rater puts almost everything on 4. */
+  const Q=[
+    {q:'What is our refund window?',            a:4, b:4, win:'tie', why:'Both correct and both short. Nothing to separate them, and both methods agree.'},
+    {q:'Refund window for a pre-order?',        a:4, b:4, win:'B',   why:'B names the exception; A gives the general rule and stops. Both are &ldquo;correct&rdquo;, so both score 4 &mdash; but a reader shown the pair picks B every time.'},
+    {q:'Customer is outside the window, angry', a:4, b:4, win:'B',   why:'A quotes policy. B quotes policy and offers the one thing the agent is allowed to offer. Identical on a rubric that asks &ldquo;is it accurate?&rdquo;'},
+    {q:'Do you ship to the Isle of Man?',       a:3, b:3, win:'tie', why:'Both hedge. The scale caught that something is wrong; neither method tells you what.'},
+    {q:'Cancel my order and my subscription',   a:4, b:3, win:'A',   why:'B did the second half and forgot the first. This is a real regression, and it is the one case where the absolute score sees it too.'}
+  ];
+  let mode='abs';
+  const avg=k=>(Q.reduce((s,x)=>s+x[k],0)/Q.length);
+  function render(){
+    ctl.innerHTML=[['abs','score each answer on its own'],['sbs','put the two side by side']]
+      .map(m=>'<button class="seg'+(mode===m[0]?' on':'')+'" data-m="'+m[0]+'" style="text-align:left;font-size:12px">'+m[1]+'</button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{mode=b.dataset.m;render();});
+    const aA=avg('a'), aB=avg('b');
+    const wins=Q.filter(x=>x.win==='B').length, losses=Q.filter(x=>x.win==='A').length, ties=Q.filter(x=>x.win==='tie').length;
+    const winRate=Math.round((wins+ties*0.5)/Q.length*100);
+    if(mode==='abs'){
+      out.innerHTML='<div class="simnote" style="margin-bottom:9px">Each answer scored 1&ndash;5 on its own, against the rubric.</div>'
+        + Q.map((x,i)=>{
+            const same=x.a===x.b;
+            return '<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:7px;border-left-color:'
+              +(same?'var(--wire)':'var(--amber)')+'">'
+              + '<div style="font-size:12.5px">'+(i+1)+'. '+x.q+'</div>'
+              + '<div class="k" style="font-size:11px;margin-top:5px">A <b>'+x.a+'</b>/5 &nbsp; B <b>'+x.b+'</b>/5'
+              + (same?' <span style="color:var(--dim)">— identical score</span>':' <span style="color:var(--amber)">— a difference the scale can see</span>')
+              +'</div></div>';
+          }).join('')
+        + '<div class="lzbad" style="margin-top:4px"><b>A averages '+aA.toFixed(1)+'. B averages '+aB.toFixed(1)+'.</b> '
+        + 'On this evidence B is <em>worse</em>, and you would not ship it.</div>';
+    } else {
+      out.innerHTML='<div class="simnote" style="margin-bottom:9px">The same five questions, both answers shown together, one judgement each.</div>'
+        + Q.map((x,i)=>{
+            const col = x.win==='B'?'var(--green)':x.win==='A'?'var(--red)':'var(--wire)';
+            const lbl = x.win==='tie'?'too close to call':x.win+' is better';
+            return '<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:7px;border-left-color:'+col+'">'
+              + '<div style="font-size:12.5px">'+(i+1)+'. '+x.q+'</div>'
+              + '<div class="k" style="font-size:11px;margin-top:5px;color:'+col+'">'+lbl+'</div>'
+              + '<div style="font-size:12px;margin-top:5px;color:var(--muted)">'+x.why+'</div></div>';
+          }).join('')
+        + '<div class="ok" style="margin-top:4px"><b>B wins '+wins+', loses '+losses+', ties '+ties+' &mdash; a '+winRate+'% win rate.</b> '
+        + 'The same five answers, and now B is clearly the better version, with one real regression to go and fix.</div>';
+    }
+    note.innerHTML = mode==='abs'
+      ? '<div class="lzbad"><b>Four of the five scored identically.</b> Not because the answers are identical &mdash; because a careful rater working to a rubric puts almost everything on 4. That is central tendency, and it is not a flaw in your rubric, it is what happens to any absolute scale used honestly.</div>'
+        + '<div class="simnote" style="margin-top:10px">The improvement you shipped is invisible here, and the one regression drags the average down. Absolute scoring told you to roll back a better version.</div>'
+      : '<div class="ok"><b>The comparison never has to define what a 4 is.</b> It only has to answer &ldquo;which of these two?&rdquo;, which people and autoraters both do far more consistently than they assign numbers.</div>'
+        + '<div class="simnote" style="margin-top:10px"><b>So why keep absolute scores at all?</b> Because a win rate is relative and cannot tell you whether <em>either</em> version is acceptable. Two terrible answers still produce a 50% win rate. You need the absolute scale to answer &ldquo;is this good enough to ship?&rdquo; and the comparison to answer &ldquo;is this better than what we have?&rdquo; They are different questions and they are not interchangeable.</div>'
+        + '<div class="simnote" style="margin-top:10px"><b>The trap to know about.</b> Side-by-side raters are sensitive to which answer they see first. Run every pair in both orders and average, or you will measure your own presentation order.</div>';
   }
   render();
 })();

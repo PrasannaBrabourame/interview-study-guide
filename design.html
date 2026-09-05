@@ -446,6 +446,17 @@ document.getElementById('sec-notation').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; one picture, five arrows, five different systems</h2>
+  <div class="plain-line"><b>Try this:</b> the boxes and the lines never change. Only what an arrow is agreed to mean changes &mdash; and each meaning describes a different system with different failure modes. Every reader assumes one of these, and the diagram does not say which.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>An arrow drawn between two names on a whiteboard. To the person who drew it, it meant &ldquo;sends an order to&rdquo;. To the person reading it on Monday, it meant &ldquo;cannot start without&rdquo;. Both are reasonable readings of the same arrow, and only one of them is true.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>a synchronous call</b>, then switch to <b>an async message</b> and watch the failure question change completely.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>synchronous</b> the caller waits for it to finish</span><span class="sp-w"><b>asynchronous</b> the caller hands the work off and carries on</span><span class="sp-w"><b>dependency</b> something that has to be there for this to work</span><span class="sp-w"><b>coupling</b> how much one thing has to know about another</span><span class="sp-w"><b>back pressure</b> a slow consumer pushing the delay back up the chain</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="dgArrowOut"></div></div>
+    <div><div class="segmented" id="dgArrowCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="dgArrowNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; build the legend and watch the diagram change meaning</h2>
   <div class="plain-line"><b>Try this:</b> the same six boxes and six arrows every time. Choose what your notation means and see how much the reader can work out &mdash; and which questions become answerable that were not before.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Road signs. The same junction with no markings, then with arrows, then with lane directions and destinations. Nothing about the road changed and everything about your ability to use it did.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>Solid is synchronous, dashed is asynchronous</b> on its own first — it does the most work of the four.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>synchronous</b> the caller waits for it to finish</span><span class="sp-w"><b>asynchronous</b> the caller hands it over and carries on</span><span class="sp-w"><b>edge</b> a line between two boxes</span><span class="sp-w"><b>protocol</b> how two things talk — HTTPS, SQL, a message on a queue</span></span></div></div>
@@ -522,6 +533,69 @@ document.getElementById('sec-notation').innerHTML=`
     if(n===4) html+='<div class="ok" style="margin-bottom:10px"><b>Four conventions, and the page went from “these things are connected” to a story somebody can act on.</b> None of them changed a single box.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>Whatever you choose, put it in the legend.</b> These conventions are not standards — there is no universal meaning for a dashed line. They work because the page says what they mean, and a reader who guesses wrong will never tell you they did.</div>';
     note.innerHTML=html;
+  }
+  render();
+})();
+
+/* --- SIM: one picture, five arrow meanings --- */
+(function(){
+  const ctl=document.getElementById('dgArrowCtl'), out=document.getElementById('dgArrowOut'),
+        note=document.getElementById('dgArrowNote');
+  if(!ctl) return;
+  /* The geometry is fixed on purpose. Only the semantics of the line change,
+     which is the entire point: the picture cannot tell you which one it is. */
+  const M=[
+   {k:'sync', n:'a synchronous call', dash:'', head:'url(#ah)', col:'var(--blue)',
+    reads:'Checkout calls Pricing and waits for the answer before it can reply to the customer.',
+    fail:'If Pricing is slow, <b>Checkout is slow</b>. If Pricing is down, Checkout is down. The customer feels every millisecond.',
+    ask:'What is the timeout, and what does Checkout do when it fires?',
+    risk:'high', risktxt:'Availability multiplies. Three of these in a row and 99.9% each becomes 99.7%.'},
+   {k:'async', n:'an async message', dash:'stroke-dasharray:5 4', head:'url(#ah)', col:'var(--teal)',
+    reads:'Checkout puts a message on a queue. Pricing picks it up whenever it can.',
+    fail:'If Pricing is down, <b>Checkout does not notice</b>. The work piles up and is done later.',
+    ask:'How deep can the queue get, and who is told when it stops draining?',
+    risk:'low', risktxt:'Availability is decoupled, but so is correctness — the customer may be told &ldquo;done&rdquo; before it is.'},
+   {k:'dep', n:'a build or deploy dependency', dash:'stroke-dasharray:2 3', head:'url(#ah)', col:'var(--violet)',
+    reads:'Checkout cannot be built, or cannot start, without Pricing&rsquo;s library or schema.',
+    fail:'Nothing fails at runtime. It fails <b>in the pipeline</b>, or at start-up, on a Friday.',
+    ask:'Are these versioned independently, or does one release force the other?',
+    risk:'med', risktxt:'This arrow is about your release process, not your traffic. Very often drawn on the same page as the others.'},
+   {k:'data', n:'data flowing', dash:'', head:'url(#ah)', col:'var(--green)',
+    reads:'Order records move from Checkout to Pricing. It says nothing about who initiated it.',
+    fail:'Pricing might be <b>pulling</b> on a schedule, and the arrow would look identical.',
+    ask:'Who starts this — push or pull? And how stale is the copy allowed to be?',
+    risk:'med', risktxt:'The most commonly meant and least commonly stated. A data arrow with no direction of control is half a diagram.'},
+   {k:'own', n:'ownership or trust', dash:'stroke-dasharray:8 3', head:'', col:'var(--amber)',
+    reads:'The Checkout team owns Pricing, or Checkout is allowed to call it.',
+    fail:'Nothing fails. This arrow describes <b>people and permissions</b>, not machines.',
+    ask:'Is this an org chart wearing an architecture diagram&rsquo;s clothes?',
+    risk:'low', risktxt:'Legitimate on a boundary diagram. Mixed in with call arrows, it is the single most confusing thing on the page.'}
+  ];
+  let cur=0;
+  const RISK={high:['var(--red)','couples availability'],med:['var(--amber)','couples something'],low:['var(--green)','decoupled at runtime']};
+  function render(){
+    ctl.innerHTML=M.map((m,i)=>'<button class="seg'+(i===cur?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
+      +'the arrow means &mdash; <b>'+m.n+'</b></button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;render();});
+    const m=M[cur];
+    out.innerHTML = D('0 0 600 168',
+      'Three boxes joined by two arrows, whose meaning changes with the selected legend entry.',
+      box(14,44,168,56,'var(--wire)')+t(98,70,'Checkout',SANS)+tm(98,88,'what customers touch','var(--dim)')
+      + box(216,44,168,56,m.col)+t(300,70,'Pricing',SANS)+tm(300,88,'works out the total','var(--dim)')
+      + box(418,44,168,56,'var(--wire)')+t(502,70,'Ledger',SANS)+tm(502,88,'writes it down','var(--dim)')
+      + '<path d="M184 72 H214" style="stroke:'+m.col+';'+m.dash+'" stroke-width="2"'+(m.head?' marker-end="'+m.head+'"':'')+'/>'
+      + '<path d="M386 72 H416" style="stroke:'+m.col+';'+m.dash+'" stroke-width="2"'+(m.head?' marker-end="'+m.head+'"':'')+'/>'
+      + tm(300,30,'the legend says: '+m.n.replace(/&rsquo;/g,'’'),m.col)
+      + tm(300,132,'identical boxes · identical lines · five incompatible systems','var(--dim)'),
+      'Only the legend changed between these five. If your diagram has no legend, the reader picks one of them for you.')
+      + '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:'+m.col+'">'
+      + '<b>How a reader would read it</b><div style="margin-top:5px;font-size:12.5px">'+m.reads+'</div></div>'
+      + '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:9px;border-left-color:'+RISK[m.risk][0]+'">'
+      + '<b>What happens when Pricing has a bad day</b><div style="margin-top:5px;font-size:12.5px">'+m.fail+'</div></div>';
+    note.innerHTML =
+      '<div class="ok"><b>The question this arrow makes a reviewer ask</b><div style="margin-top:5px">&ldquo;'+m.ask+'&rdquo;</div></div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Runtime coupling:</b> <span style="color:'+RISK[m.risk][0]+'">'+RISK[m.risk][1]+'</span>. '+m.risktxt+'</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The cheapest fix in this whole lab.</b> Pick two arrow styles, say what they mean in a corner of the page, and stop. A solid line for &ldquo;calls and waits&rdquo; and a dashed line for &ldquo;sends and forgets&rdquo; removes most of this ambiguity for the cost of one text box.</div>';
   }
   render();
 })();

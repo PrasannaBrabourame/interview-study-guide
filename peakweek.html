@@ -230,6 +230,17 @@ document.getElementById('sec-s0').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; spend twelve minutes of groundwork</h2>
+  <div class="plain-line"><b>Try this:</b> you have twelve minutes before the build starts and five things you could do with them. You cannot do all five. Pick, then read what the next ninety minutes look like &mdash; every skipped item comes back, and it comes back larger.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>The ten minutes before you start cooking for eight people. Reading the recipe through, checking you have the oven dish, and getting things out of the fridge feels like not-cooking. Skipping it is why you discover at half past seven that something needed two hours.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick only <b>get the data in front of you</b> and read what the next ninety minutes cost.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>groundwork</b> the setup done before any building starts</span><span class="sp-w"><b>scope</b> what you are deliberately not covering</span><span class="sp-w"><b>credential</b> the secret that proves you may use something</span><span class="sp-w"><b>schema</b> the shape of the data &mdash; which fields exist, and their types</span><span class="sp-w"><b>rework</b> building it twice because the first version was built on a wrong assumption</span><span class="sp-w"><b>smoke test</b> a quick run that proves the thing starts and answers once</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="pwBudgetOut"></div></div>
+    <div><div class="segmented" id="pwBudgetCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="pwBudgetNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; the join that makes the agent an agent</h2>
   <div class="plain-line"><b>Try this:</b> two files. One says what should happen, the other says what is happening. Click a cutoff and watch them reconcile on <span class="k">leg_id</span> &mdash; then look at the row that <em>isn&rsquo;t</em> disrupted, because false positives are as damaging as misses.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A printed cutoff board and a member of staff with a radio. The board says what was planned this morning; the radio says what happened twenty minutes ago. You need both, matched up run by run.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click the <b>20:45 to Bristol</b> — the one outside the failure window. It is the case that catches an over-eager agent.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>the network plan</b> the standard format the routing plan files are published in</span><span class="sp-w"><b>leg_id</b> the identifier for one individual run service</span><span class="sp-w"><b>join</b> matching rows from two datasets by a shared key</span><span class="sp-w"><b>reconcile</b> deciding what is true when two sources disagree</span></span></div></div>
@@ -342,6 +353,71 @@ document.getElementById('sec-s0').innerHTML=`
           (cur==='off'?'var(--red)':'var(--green)')+';color:'+(cur==='off'?'var(--red)':'var(--green)')+'">'+c+'</span>').join('')+'</div>';
     note.innerHTML='<div class="'+m.v[0]+'" style="margin-bottom:10px">'+m.v[1]+'</div>'+
       '<div class="simnote"><b>Worth lifting into your own work:</b> the instruction that does the heavy lifting is not &ldquo;make a plan&rdquo;, it is <em>&ldquo;do one step only when I send a prompt starting with Stage X Step Y, and update the file before you reply&rdquo;</em>. A plan the agent writes and ignores is decoration; a plan it must edit before answering is a gate.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: spend twelve minutes of groundwork --- */
+(function(){
+  const ctl=document.getElementById('pwBudgetCtl'), out=document.getElementById('pwBudgetOut'),
+        note=document.getElementById('pwBudgetNote');
+  if(!ctl) return;
+  const BUDGET=12;
+  const T=[
+    {k:'data', n:'Get the data in front of you', cost:4,
+     pays:'You find the loading-bay column does not exist before you write a tool that reads it.',
+     costs:'You write the route tool against a column you assumed. It fails at the demo, and the fix is not small &mdash; the whole approach depended on it.', lost:22},
+    {k:'creds', n:'Check the credentials actually work', cost:2,
+     pays:'One command, one answer. You know the deploy will authenticate.',
+     costs:'Everything works locally and the deploy fails on permissions. Twenty minutes of that is spent believing it is your code.', lost:20},
+    {k:'scope', n:'Write down what you are not doing', cost:2,
+     pays:'When the interesting tangent appears at minute fifty, you already decided it was out.',
+     costs:'You spend twenty-five minutes on a feature nobody asked for, and it is the most enjoyable part of the session.', lost:25},
+    {k:'shape', n:'Decide the answer&rsquo;s shape', cost:2,
+     pays:'The tool returns something the next step can use without reshaping it.',
+     costs:'Two tools disagree about what a leg looks like, and you write conversion code between your own functions.', lost:14},
+    {k:'smoke', n:'Prove the empty agent runs', cost:2,
+     pays:'The scaffolding is known good, so every later failure is definitely yours.',
+     costs:'The first failure could be anything. You debug the framework and your code at the same time.', lost:16}
+  ];
+  const on={data:false,creds:false,scope:false,shape:false,smoke:false};
+  function render(){
+    const spent=T.filter(t=>on[t.k]).reduce((s,t)=>s+t.cost,0);
+    ctl.innerHTML=T.map(t=>{
+      const would=spent+(on[t.k]?0:t.cost), over=!on[t.k]&&would>BUDGET;
+      return '<button class="seg'+(on[t.k]?' on':'')+'" data-k="'+t.k+'" style="text-align:left;font-size:12px;opacity:'+(over?.45:1)+'">'
+        +(on[t.k]?'&#9679; ':'&#9675; ')+t.n+'<br><span class="k" style="font-size:10.5px;color:var(--dim)">'+t.cost+' min'
+        +(over?' — over budget':'')+'</span></button>';
+    }).join('')
+      + '<div class="k" style="font-size:11px;margin-top:8px;color:'+(spent>BUDGET?'var(--red)':'var(--muted)')+'">'
+      + spent+' of '+BUDGET+' minutes spent</div>';
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      const t=T.find(x=>x.k===b.dataset.k);
+      const would=T.filter(x=>on[x.k]).reduce((s,x)=>s+x.cost,0)+(on[t.k]?-t.cost:t.cost);
+      if(would<=BUDGET) { on[t.k]=!on[t.k]; render(); }
+      else { on[t.k]=false; render(); }
+    });
+    const lost=T.filter(t=>!on[t.k]).reduce((s,t)=>s+t.lost,0);
+    const build=90+lost;
+    out.innerHTML =
+      T.map(t=>'<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:8px;border-left-color:'
+        +(on[t.k]?'var(--green)':'var(--red)')+'">'
+        + '<div style="font-size:12.5px">'+(on[t.k]?'&#10003; ':'&#10007; ')+t.n
+        + ' <span class="k" style="font-size:10.5px;color:var(--dim)">'+t.cost+' min</span></div>'
+        + '<div style="font-size:12px;margin-top:5px;color:'+(on[t.k]?'var(--muted)':'var(--red)')+'">'
+        + (on[t.k]?t.pays:'<b>+'+t.lost+' min later.</b> '+t.costs)+'</div></div>').join('')
+      + '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:'+(lost>30?'var(--red)':lost>0?'var(--amber)':'var(--green)')+'">'
+      + '<b>The next ninety minutes</b><div style="margin-top:6px;font-size:12.5px">'
+      + 'planned <span class="k">90 min</span> &nbsp;+&nbsp; rework <span class="k" style="color:'
+      + (lost?'var(--red)':'var(--green)')+'">'+lost+' min</span> &nbsp;=&nbsp; <b style="font-size:15px">'+build+' minutes</b>'
+      + (lost?' &mdash; you are '+lost+' minutes over, and you found out late.':' &mdash; on plan.')+'</div></div>';
+    note.innerHTML =
+      (lost===0
+        ? '<div class="ok"><b>All five, inside the budget.</b> Groundwork is the only part of this session where the cheap version and the correct version are the same thing.</div>'
+        : '<div class="'+(lost>30?'lzbad':'lzwarn')+'"><b>You saved '+(BUDGET-T.filter(t=>on[t.k]).reduce((s,t)=>s+t.cost,0))
+          +' minutes and spent '+lost+'.</b> Every skipped item came back, and none of them came back the same size they went away.</div>')
+      + '<div class="simnote" style="margin-top:10px"><b>Why this is not a lecture about being organised.</b> Look at the exchange rates. Four minutes of reading the data buys back twenty-two, because a wrong assumption about the data is not a bug &mdash; it is a different design. Two minutes of writing down what you are not doing buys back twenty-five, because scope creep is the most enjoyable way to lose a session and nothing stops it in the moment.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The one people always cut.</b> Proving the empty agent runs feels like doing nothing, and it is the item that decides whether your first real failure takes two minutes or twenty &mdash; because it is the difference between one unknown and two.</div>';
   }
   render();
 })();

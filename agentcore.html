@@ -161,6 +161,17 @@
       <h2 class="sec">Policy, Registry, Browser, Code Interpreter, Payments</h2>
       <div id="acRest"></div>
     </div>
+    <div class="card">
+  <h2 class="sec">Try it &mdash; eight jobs, and the primitive each one actually needs</h2>
+  <div class="plain-line"><b>Try this:</b> eight things somebody will ask an agent to do. Pick the primitive you would reach for, then see what the job really needs. Three of these are commonly given to the wrong one, and each wrong answer fails in a way that looks like the model being stupid.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A toolbox where three of the tools look interchangeable. A screwdriver will turn a bolt, badly, once. The job still gets done, so nobody notices the wrong tool was used until the bolt is rounded off.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>read the latest figures off a supplier&rsquo;s website</b> &mdash; almost everyone picks the wrong one first.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>primitive</b> one of the managed building blocks the platform gives you</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>Browser</b> a real cloud browser the agent can click and read</span><span class="sp-w"><b>Code Interpreter</b> a sandbox that runs code the agent wrote</span><span class="sp-w"><b>Gateway</b> one front door that turns existing systems into tools</span><span class="sp-w"><b>Memory</b> what the agent still knows in a later conversation</span><span class="sp-w"><b>sandbox</b> an isolated space where code cannot reach anything else</span><span class="sp-w"><b>API</b> a defined way for one system to ask another for something</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="acPrimOut"></div></div>
+    <div><div class="segmented" id="acPrimCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="acPrimNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
   </section>
   <section class="pane" id="pane-memory">
     <div class="card" style="margin-bottom:16px">
@@ -929,6 +940,82 @@ function gatePaint(){
    : `<b>The average fell,</b> which is the easy case. The harder one is when it rises while a critical metric drops — turn the critical check off and watch this ship.`;
 }
 document.getElementById('gateOpts').addEventListener('change',gatePaint); gatePaint();
+
+/* ================= SIM: eight jobs, which primitive ================= */
+(function(){
+  const ctl=document.getElementById('acPrimCtl'), out=document.getElementById('acPrimOut'),
+        note=document.getElementById('acPrimNote');
+  if(!ctl) return;
+  const P=[
+    {k:'browser', n:'Browser'}, {k:'code', n:'Code Interpreter'},
+    {k:'gateway', n:'Gateway'}, {k:'memory', n:'Memory'}
+  ];
+  const JOBS=[
+    {n:'Read the latest figures off a supplier&rsquo;s website', a:'browser', trap:'code',
+     why:'There is no API. Somebody has to load the page, wait for it to render and read what is on it.',
+     trapWhy:'Code Interpreter can fetch the HTML, and will happily return a page that renders its numbers in JavaScript &mdash; so you get a confident answer built from an empty table.'},
+    {n:'Cross-check that four totals in a report add up', a:'code', trap:null,
+     why:'Arithmetic over data you already have. Deterministic, checkable, and exactly what a sandbox is for.',
+     trapWhy:''},
+    {n:'Let the agent call the existing claims system', a:'gateway', trap:'code',
+     why:'The system already exists and already has an interface. Gateway turns it into a tool with auth handled, without writing a client.',
+     trapWhy:'Writing a bespoke HTTP client in the sandbox works on day one and becomes the thing nobody wants to maintain, with the credentials in it.'},
+    {n:'Remember this customer prefers email over phone', a:'memory', trap:null,
+     why:'A fact that has to survive to a conversation next week. Nothing else here persists.',
+     trapWhy:''},
+    {n:'Submit a form on a portal that has no API at all', a:'browser', trap:'gateway',
+     why:'Clicking and typing on a page a human was meant to use. This is the case Browser exists for.',
+     trapWhy:'Gateway needs something to talk to. A portal with no API has nothing to expose.'},
+    {n:'Turn twelve internal APIs into tools the agent can pick from', a:'gateway', trap:null,
+     why:'One front door, one auth story, twelve tools. Doing this by hand is twelve integrations and twelve places to get it wrong.',
+     trapWhy:''},
+    {n:'Run the model&rsquo;s own generated Python on a customer file', a:'code', trap:'browser',
+     why:'Untrusted code has to run somewhere it cannot reach anything. That is the sandbox.',
+     trapWhy:'A browser is also isolated, but it is the wrong isolation &mdash; it renders pages, it does not execute your data pipeline.'},
+    {n:'Stop asking the customer their account number every turn', a:'memory', trap:'gateway',
+     why:'The value was established once and needs to be there next time. That is what memory is.',
+     trapWhy:'Fetching it again from the source system every turn works, and quietly asks the customer to identify themselves repeatedly.'}
+  ];
+  const picked={}; let show=false;
+  function render(){
+    ctl.innerHTML = JOBS.map((j,i)=>
+      '<div style="margin-bottom:8px"><div style="font-size:12px;margin-bottom:4px">'+(i+1)+'. '+j.n+'</div>'
+      + '<div style="display:flex;gap:4px;flex-wrap:wrap">'
+      + P.map(p=>'<button class="seg'+(picked[i]===p.k?' on':'')+'" data-i="'+i+'" data-k="'+p.k+'" style="font-size:11px;padding:5px 8px">'+p.n+'</button>').join('')
+      + '</div></div>').join('')
+      + '<button class="seg" id="acPrimShow" style="width:100%;margin-top:6px;font-size:12px">'
+      + (show?'hide the answers':'show what each job needs')+'</button>';
+    ctl.querySelectorAll('.seg[data-i]').forEach(b=>b.onclick=()=>{picked[+b.dataset.i]=b.dataset.k;render();});
+    const sb=document.getElementById('acPrimShow'); if(sb) sb.onclick=()=>{show=!show;render();};
+    const answered=Object.keys(picked).length;
+    const right=JOBS.filter((j,i)=>picked[i]===j.a).length;
+    const trapped=JOBS.filter((j,i)=>j.trap&&picked[i]===j.trap).length;
+    out.innerHTML = JOBS.map((j,i)=>{
+      const p=picked[i], ok=p===j.a, trap=j.trap&&p===j.trap, name=k=>(P.find(x=>x.k===k)||{}).n;
+      const col = !p&&!show ? 'var(--wire)' : ok ? 'var(--green)' : trap ? 'var(--red)' : (p?'var(--amber)':'var(--teal)');
+      return '<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:8px;border-left-color:'+col+'">'
+        + '<div style="font-size:12.5px">'+(i+1)+'. '+j.n+'</div>'
+        + (p ? '<div class="k" style="font-size:10.5px;margin-top:4px;color:'+col+'">you picked '+name(p)
+               +(ok?' &mdash; right':trap?' &mdash; the common wrong one':' &mdash; not this')+'</div>' : '')
+        + ((p||show) ? '<div class="k" style="font-size:10.5px;margin-top:3px;color:var(--teal)">needs '+name(j.a)+'</div>'
+             + '<div style="font-size:12px;margin-top:5px;color:var(--muted)">'+j.why+'</div>'
+             + (trap||(show&&j.trapWhy) ? '<div style="font-size:12px;margin-top:5px;color:var(--red)"><b>Why the other one fails:</b> '+j.trapWhy+'</div>' : '')
+           : '')
+        + '</div>';
+    }).join('')
+    + (answered ? '<div class="'+(right===JOBS.length?'ok':'lzwarn')+'" style="margin-top:4px"><b>'+right+' of '+answered+' answered correctly'
+        + (trapped?', '+trapped+' on the common wrong one':'')+'.</b></div>' : '');
+    note.innerHTML =
+      (answered===0
+        ? '<div class="ok"><b>Pick one for each.</b> All four are legitimate for something, and three of the eight are routinely given to the wrong one.</div>'
+        : right===JOBS.length
+        ? '<div class="ok"><b>All eight.</b> The distinctions here are the ones that decide whether a design survives contact with a portal that has no API.</div>'
+        : '<div class="lzwarn"><b>The three that catch people</b> are the website with no API, the existing system that already has one, and the value the customer should not have to repeat. Each has a plausible wrong answer that works in a demo.</div>')
+      + '<div class="simnote" style="margin-top:10px"><b>The rule underneath all eight.</b> Ask what the job needs, not what it resembles. <em>Is there already an interface?</em> &rarr; Gateway. <em>Is there only a page a human was meant to read?</em> &rarr; Browser. <em>Does something have to be computed rather than recalled?</em> &rarr; Code Interpreter. <em>Does it have to still be true next week?</em> &rarr; Memory.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Why the wrong choice is hard to spot.</b> Every wrong answer here produces a working demo. Scraping a JavaScript page returns something; a hand-written client calls the API successfully; re-fetching the account number is correct every time. They fail later, on a page that changes, a credential that rotates, or a customer who gets tired of repeating themselves.</div>';
+  }
+  render();
+})();
 
 /* ================= SIM: one conversation, four strategies ================= */
 const MEMCONV=[

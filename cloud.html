@@ -390,6 +390,19 @@
     </div>
 
     <div id="sec-lz6"></div>
+
+    <div class="card" style="margin-top:16px">
+  <h2 class="sec">Try it &mdash; the same traffic, four routes, four bills</h2>
+  <div class="plain-line"><b>Try this:</b> your private servers need to read files from object storage. Nothing about the application changes in any of these four &mdash; only the route the bytes take. Move the volume up and watch three of the four bills stop being rounding errors.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Four ways to get stock from the warehouse next door. Walk it across the yard, drive it round the ring road, post it, or courier it. The goods are identical and so is the destination. One of them charges you by the parcel and by the hour, and nobody notices until the volume grows.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>leave it on <b>NAT gateway</b> and drag the volume to <b>50 TB</b>, then switch to <b>gateway endpoint</b> without moving anything else.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>NAT gateway</b> a managed box that lets private machines reach out without being reachable</span><span class="sp-w"><b>gateway endpoint</b> a private door to object storage, added to your route table</span><span class="sp-w"><b>interface endpoint</b> a private address inside your network for a service</span><span class="sp-w"><b>availability zone</b> one physically separate data centre in a region</span><span class="sp-w"><b>egress</b> traffic going out &mdash; your side reaching out</span><span class="sp-w"><b>object storage</b> a service that holds files, addressed by name</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="osiBillOut"></div></div>
+    <div><label class="ctl" style="display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:6px">traffic a month <b id="osiBillVal" style="color:var(--accent)">1 TB</b></label>
+      <input id="osiBillRange" type="range" min="0" max="5" step="1" value="2" style="width:100%">
+      <div class="segmented" id="osiBillCtl" style="flex-direction:column;align-items:stretch;margin-top:12px"></div>
+      <div id="osiBillNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
   </section>
 
   <!-- ================= VPC DESIGN ================= -->
@@ -1798,6 +1811,78 @@ document.getElementById('jprev').onclick=()=>{jStop(); jRender(jI-1);};
 jlist.addEventListener('click',e=>{const b=e.target.closest('.jitem'); if(b){jStop(); jRender(Number(b.dataset.i));}});
 jsvg.addEventListener('click',e=>{const g=e.target.closest('.jnode'); if(g){jStop(); jRender(Number(g.dataset.i));}});
 jRender(0);
+
+/* ================= SIM: the same traffic, four routes, four bills ================= */
+(function(){
+  const rng=document.getElementById('osiBillRange'), out=document.getElementById('osiBillOut'),
+        note=document.getElementById('osiBillNote'), val=document.getElementById('osiBillVal'),
+        ctl=document.getElementById('osiBillCtl');
+  if(!rng) return;
+  /* Illustrative US list prices, stated on screen. Regions differ and these
+     change; the shape of the answer does not, which is the point. */
+  const HRS=730;
+  const GB=[100,500,1000,10000,50000,100000];
+  const LBL=['100 GB','500 GB','1 TB','10 TB','50 TB','100 TB'];
+  const R=[
+    {k:'nat', n:'NAT gateway', sub:'the default in most reference diagrams',
+     fixed:0.045*HRS, per:0.045, col:'var(--red)',
+     what:'Private servers reach object storage by going out through a NAT gateway. The traffic never leaves the provider&rsquo;s network, but the gateway still charges to process every byte.',
+     note:'Charged twice over: an hourly rate whether you use it or not, and a per-gigabyte processing fee on everything through it.'},
+    {k:'gw', n:'gateway endpoint', sub:'a route-table entry to object storage',
+     fixed:0, per:0, col:'var(--green)',
+     what:'A gateway endpoint puts object storage on your route table directly. Traffic goes straight there, privately.',
+     note:'No hourly charge and no per-gigabyte charge. It is a route, not a box, and it is the single largest easy saving in this list.'},
+    {k:'if', n:'interface endpoint', sub:'a private address for a service',
+     fixed:0.01*HRS*2, per:0.01, col:'var(--amber)',
+     what:'An interface endpoint gives the service a private address inside your subnets &mdash; one per zone, so two zones means two.',
+     note:'Cheaper than NAT per gigabyte and far more private than the internet, but it is a real resource with an hourly cost. Necessary for services with no gateway endpoint.'},
+    {k:'igw', n:'out over the internet', sub:'public route, public addresses',
+     fixed:0, per:0.09, col:'var(--red)',
+     what:'The servers have public addresses and reach the service over the internet like anyone else.',
+     note:'The most expensive per gigabyte, and the traffic leaves your network to get somewhere it could have reached privately.'}
+  ];
+  let cur=0;
+  const money=v=>v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v.toFixed(v<10?2:0);
+  function render(){
+    const gb=GB[+rng.value];
+    val.textContent=LBL[+rng.value];
+    ctl.innerHTML=R.map((r,i)=>'<button class="seg'+(i===cur?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
+      +'<b>'+r.n+'</b><br><span style="font-size:11px;color:var(--dim)">'+r.sub+'</span></button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;render();});
+    const bills=R.map(r=>({r, total:r.fixed+r.per*gb}));
+    const max=Math.max.apply(null,bills.map(b=>b.total))||1;
+    const cheapest=bills.reduce((a,b)=>b.total<a.total?b:a);
+    const sel=bills[cur];
+    out.innerHTML =
+      '<div class="simnote" style="margin-bottom:10px">The same '+LBL[+rng.value]+' a month, moved four ways. Illustrative US list prices &mdash; regions differ, the shape does not.</div>'
+      + bills.map((b,i)=>{
+          const isSel=i===cur, best=b===cheapest;
+          return '<div style="margin-bottom:11px;opacity:'+(isSel?1:.72)+'">'
+            + '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">'
+            + '<span>'+(isSel?'<b>'+b.r.n+'</b>':b.r.n)+(best?' <span class="k" style="font-size:10px;color:var(--green)">cheapest</span>':'')+'</span>'
+            + '<span class="k" style="color:'+(best?'var(--green)':b.total>500?'var(--red)':'var(--amber)')+'">'+money(b.total)+'/mo</span></div>'
+            + '<div style="height:9px;background:var(--panel2);border-radius:99px;overflow:hidden">'
+            + '<div style="height:100%;width:'+Math.max(1,b.total/max*100)+'%;background:'
+            + (best?'var(--green)':b.total>500?'var(--red)':'var(--amber)')+';border-radius:99px"></div></div>'
+            + '<div class="k" style="font-size:10.5px;color:var(--dim);margin-top:3px">'
+            + (b.r.fixed?money(b.r.fixed)+' fixed':'no fixed cost')+' + '
+            + (b.r.per?'$'+b.r.per.toFixed(3)+'/GB':'no per-GB charge')+'</div></div>';
+        }).join('')
+      + '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:'+sel.r.col+'">'
+      + '<b>'+sel.r.n+'</b><div style="margin-top:5px;font-size:12.5px">'+sel.r.what+'</div></div>';
+    const natBill=bills[0].total, gwBill=bills[1].total, saving=natBill-gwBill;
+    note.innerHTML =
+      '<div class="'+(sel.r.k==='gw'?'ok':'lzwarn')+'"><b>'+sel.r.n+'.</b> '+sel.r.note+'</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The comparison worth remembering.</b> At '+LBL[+rng.value]
+      + ' a month, routing this through a NAT gateway costs <b>'+money(natBill)+'</b> and a gateway endpoint costs <b>'
+      + money(gwBill)+'</b> &mdash; a difference of <b style="color:var(--red)">'+money(saving)+' a month</b>, or about '
+      + money(saving*12)+' a year, for a one-line change to a route table.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Why this is on the bill of almost every estate.</b> The private-subnet pattern is correct, and a NAT gateway is the right way to let private machines reach the internet. It is the wrong way to reach a service that is <em>already inside the provider&rsquo;s network</em> &mdash; and nothing in the architecture diagram distinguishes those two cases, because on the diagram both are just an arrow pointing outward.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The one this simulation does not show.</b> Traffic between availability zones is charged in both directions. It is small per gigabyte and it is on top of everything above, so a chatty service split across two zones for resilience pays a standing tax for that resilience. Worth knowing before somebody proposes three zones.</div>';
+  }
+  rng.addEventListener('input',render);
+  render();
+})();
 
 /* ================= NETWORK SIMULATOR ================= */
 /* Nodes are anchored at percentage coordinates and centred with a transform, so the packet

@@ -288,6 +288,17 @@ document.getElementById('sec-tools').innerHTML=`
   <div class="plain-line" style="margin-top:12px"><b>The one about <span class="code">skip_summarization</span>:</b> by default the model rewrites every tool result into prose. When your tool already returns exactly the JSON the caller needs, that rewrite is where precision goes to die &mdash; numbers get rounded, fields get dropped. Setting it tells ADK to pass the result straight through.</div>
 </div>
 
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; give the tool hands, one power at a time</h2>
+  <div class="plain-line"><b>Try this:</b> six jobs somebody will ask a tool to do. A plain function can do none of them. Switch on one power at a time and watch which jobs become possible &mdash; and notice that two of them still need a second power on top.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A contractor who can only work with what you hand them at the door. Give them a key and they can come back tomorrow; give them a filing cabinet and they can leave you something; give them your account and they can order parts. Each one is a separate decision, and each one is a separate risk.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch on <b>state</b> alone and read which two jobs light up, then add <b>actions</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>ADK</b> the Agent Development Kit &mdash; the framework the agent is built with</span><span class="sp-w"><b>ToolContext</b> an extra parameter ADK fills in, which the model never sees</span><span class="sp-w"><b>state</b> a shared notebook that survives across turns</span><span class="sp-w"><b>artifact</b> a real file the agent saved or loaded</span><span class="sp-w"><b>escalate</b> break out of a loop and hand the decision upward</span><span class="sp-w"><b>credential</b> the secret that proves the agent may act as someone</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="adkCtxOut"></div></div>
+    <div><div class="segmented" id="adkCtxCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="adkCtxNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
 <div class="card">
   <h2 class="sec">Four kinds of tool, and when to reach for each</h2>
   <table class="osi"><thead><tr><th>Kind</th><th>What it is</th><th>Reach for it when</th></tr></thead><tbody>
@@ -368,6 +379,64 @@ document.getElementById('sec-tools').innerHTML=`
   }
   render();
 })();
+/* --- SIM: ToolContext, one power at a time --- */
+(function(){
+  const ctl=document.getElementById('adkCtxCtl'), out=document.getElementById('adkCtxOut'),
+        note=document.getElementById('adkCtxNote');
+  if(!ctl) return;
+  const P=[
+    {k:'state',   n:'state',      d:'tool_context.state[…]'},
+    {k:'actions', n:'actions',    d:'tool_context.actions'},
+    {k:'art',     n:'artifacts',  d:'save_artifact / load_artifact'},
+    {k:'auth',    n:'credentials',d:'tool_context.get_auth_response()'}
+  ];
+  const JOBS=[
+    {n:'Remember the customer ID so no later step asks for it again', need:['state'],
+     why:'One value, written once, read by every later tool. That is the shared notebook and nothing else.'},
+    {n:'Stop asking the model to re-summarise a table it already formatted', need:['actions'],
+     why:'<span class="k">skip_summarization</span> returns the tool result untouched. Without it the model paraphrases your careful output.'},
+    {n:'Hand a refund over £500 to the specialist agent', need:['actions'],
+     why:'<span class="k">transfer_to_agent</span> changes the flow from inside a tool. A plain function can only return a value and hope.'},
+    {n:'Attach the generated PDF to the reply', need:['art'],
+     why:'A file is not a string. Artifacts store real bytes the model never has to hold in its context.'},
+    {n:'Read yesterday&rsquo;s uploaded spreadsheet and compare it with today&rsquo;s', need:['art','state'],
+     why:'Two powers. Artifacts hold the file; state holds <em>which</em> file, so the second turn knows what &ldquo;yesterday&rsquo;s&rdquo; means.'},
+    {n:'Call the customer&rsquo;s own calendar as that customer', need:['auth','state'],
+     why:'Two powers. Credentials get the token; state remembers you already have one so the user is not asked to log in on every turn.'}
+  ];
+  const on={state:false,actions:false,art:false,auth:false};
+  function render(){
+    ctl.innerHTML=P.map(p=>'<button class="seg'+(on[p.k]?' on':'')+'" data-k="'+p.k+'" style="text-align:left;font-size:12px">'
+      +(on[p.k]?'&#9679; ':'&#9675; ')+'<b>'+p.n+'</b><br><span class="k" style="font-size:10.5px;color:var(--dim)">'+p.d+'</span></button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{on[b.dataset.k]=!on[b.dataset.k];render();});
+    const nOn=P.filter(p=>on[p.k]).length;
+    const done=JOBS.filter(j=>j.need.every(k=>on[k])).length;
+    out.innerHTML =
+      '<div class="simnote" style="margin-bottom:9px">Six jobs. A plain function &mdash; no ToolContext at all &mdash; can do <b>none</b> of them.</div>'
+      + JOBS.map(j=>{
+          const ok=j.need.every(k=>on[k]);
+          const missing=j.need.filter(k=>!on[k]).map(k=>P.find(p=>p.k===k).n);
+          return '<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:8px;border-left-color:'
+            +(ok?'var(--green)':'var(--wire)')+'">'
+            + '<div style="font-size:12.5px;color:'+(ok?'var(--text)':'var(--dim)')+'">'
+            + (ok?'&#10003; ':'&#10007; ')+j.n+'</div>'
+            + '<div class="k" style="font-size:10.5px;margin-top:4px;color:'+(ok?'var(--green)':'var(--dim)')+'">'
+            + (ok? 'needs '+j.need.map(k=>P.find(p=>p.k===k).n).join(' + ')
+                 : 'still missing: '+missing.join(' + '))+'</div>'
+            + (ok?'<div style="font-size:12px;margin-top:6px;color:var(--muted)">'+j.why+'</div>':'')
+            + '</div>';
+        }).join('')
+      + '<div class="ok" style="margin-top:4px"><b>'+done+' of 6</b> possible with '+nOn+' power'+(nOn===1?'':'s')+' switched on.</div>';
+    note.innerHTML =
+      (nOn===0
+        ? '<div class="lzbad"><b>Nothing works yet.</b> A tool with no ToolContext is a calculator: inputs in, answer out, no memory of the last call and no way to affect what happens next. That is genuinely the right shape for most tools, and it is why the powers are opt-in.</div>'
+        : '<div class="ok"><b>Each power is a separate parameter and a separate risk.</b> You are not switching on features, you are widening what a bug in this tool can reach.</div>')
+      + '<div class="simnote" style="margin-top:10px"><b>The bit that surprises people.</b> ADK fills <span class="k">tool_context</span> in itself and hides it from the model, so it never appears in the tool schema. The model cannot pass it, cannot see it, and cannot be talked into changing it &mdash; which is exactly why it is safe to give a tool state and actions but not safe to take them as ordinary arguments.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Two of these jobs need two powers.</b> That is the honest shape of real work: files without state give you bytes nobody can name, and credentials without state make the user log in again on every turn.</div>';
+  }
+  render();
+})();
+
 /* ================= 4 · STATE ================= */
 document.getElementById('sec-state').innerHTML=`
 <div class="card" style="margin-bottom:16px">
