@@ -31,17 +31,19 @@ colour then carries meaning. Tiles remain sorted alphabetically.
 index.html        Page shell, topbar, dashboard, and browse-view markup
 assets/styles.css Styling (light/dark theme, aurora backdrop, tiles, print)
 assets/fonts/     Self-hosted Inter and Newsreader subsets (woff2, 352 KB)
-cloud.html        Cloud lab, request journey, OSI, landing zone (VPC tiers,
-                  proxies, private link, CIDR, security groups and policy
-                  evaluation), VPC design (how many, public vs private,
-                  subnet sizing, component advice), network simulator, NGINX,
-                  IAM, SAP-C02 cheatsheet, pillars, DR simulator, translator, what the data physically is
-                  at each layer (data, segment, packet, frame, bits)
-agentcore.html    AgentCore lab (running agents in production: runtime,
-                  identity, gateway, memory, evaluation, multi-agent patterns
-agentbuild.html   Agents-building-agents lab (spec-driven development with a
+cloud.html        Cloud lab: request journey, OSI (including what the data
+                  physically is at each layer, from data to segment, packet,
+                  frame and bits), landing zone (VPC tiers, proxies, private
+                  link, CIDR, security groups and policy evaluation), VPC
+                  design (how many, public vs private, subnet sizing,
+                  component advice), network simulator, NGINX, IAM, SAP-C02
+                  cheatsheet, pillars, DR simulator, translator
+agentcore.html    AgentCore lab: running agents in production, covering
+                  runtime, identity, gateway, memory, evaluation and
+                  multi-agent patterns
+agentbuild.html   Agents-building-agents lab: spec-driven development with a
                   coding agent, the ADK loop, and the Managed Agents API
-adk.html          ADK lab) agents, tools and tool schemas, session state,
+adk.html          ADK lab: agents, tools and tool schemas, session state,
                   callbacks and plugins, orchestration and delegation,
                   grounding and MCP, the Agent Sandbox, skills, deployment
 evals.html        Evaluation lab, why testing breaks on generative systems,
@@ -150,7 +152,7 @@ guide, this lab's related topics, all labs, and the theme and search controls.
 The twelve sibling-lab links that used to sit above every title are behind
 **⊞ all labs**, grouped into the same three tracks the dashboard uses and
 numbered in the same order. Under the title, a line says where the reader is
-standing `Under the hood · lab 2 of 4 · next: The engine, not the model`) 
+standing: `Under the hood · lab 2 of 4 · next: The engine, not the model`,
 so the reading order the dashboard sets survives past the front door. Both are
 generated from one table in `assets/lab.js`, so adding a lab is one edit.
 
