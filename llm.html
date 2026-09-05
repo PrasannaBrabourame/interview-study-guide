@@ -293,6 +293,17 @@ document.getElementById('sec-lmtok').innerHTML=`
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Worth knowing rather than memorising:</b> the numbers move with every model generation. What does not move is the shape of the trade, and the fact that it is fixed before training and cannot be revised afterwards without retraining the model that sits on top of it.</div>
 </div>
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; pick a vocabulary size and pay for it twice</h2>
+  <div class="plain-line"><b>Try this:</b> move the vocabulary size and watch two numbers move in opposite directions. There is no setting that makes both good, which is the whole point &mdash; this is a trade somebody has to choose, once, before training starts.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding how many pre-printed forms to keep at a counter. Stock a form for every situation and each customer is served in one step, but the cabinet is enormous and you pay for it every day. Stock five general forms and the cabinet is tiny, but everybody fills in three of them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag to <b>32k</b> and read the Tamil and code rows, then drag to <b>256k</b> and watch the parameter cost.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>vocabulary</b> the fixed list of tokens a model is allowed to use</span><span class="sp-w"><b>token</b> one entry from that vocabulary</span><span class="sp-w"><b>embedding table</b> one row of numbers per vocabulary entry</span><span class="sp-w"><b>output layer</b> the final matrix that scores every vocabulary entry</span><span class="sp-w"><b>parameter</b> one trained number the model has to store</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="lmVocabOut"></div></div>
+    <div><label class="ctl" style="display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-bottom:6px">vocabulary size <b id="lmVocabVal" style="color:var(--accent)">100k</b></label>
+      <input id="lmVocabRange" type="range" min="0" max="4" step="1" value="2" style="width:100%">
+      <div id="lmVocabNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
 
 <div class="card">
   <h2 class="sec">Try it &mdash; the model behaviours that are really tokenisation</h2>
@@ -559,6 +570,70 @@ document.getElementById('sec-lmtok').innerHTML=`
       '<div class="ok" style="margin-top:10px"><b>The general lesson is worth more than any of the four.</b> When a model is strangely bad at something that looks easy, an early question is whether the thing you are asking about survived tokenisation at all. A surprising amount of apparent stupidity is a question about characters put to something that only ever saw chunks.</div>'+
       '<div class="note" style="margin-top:10px"><b>Splits shown are illustrative</b> &mdash; exact boundaries differ between tokenisers and change with each generation. The failure mode does not.</div>';
   }
+  render();
+})();
+
+/* --- SIM: vocabulary size, paid for twice --- */
+(function(){
+  const rng=document.getElementById('lmVocabRange'), out=document.getElementById('lmVocabOut'),
+        note=document.getElementById('lmVocabNote'), val=document.getElementById('lmVocabVal');
+  if(!rng) return;
+  /* Five real vocabulary sizes. Token counts are for the same fixed sample of
+     each kind of text, so the rows are comparable down a column. d_model 4096
+     and fp16 are stated on screen, because the parameter figure means nothing
+     without them. */
+  const DM=4096, BYTES=2;
+  const V=[
+    {v:32000,  n:'32k',  lbl:'an older open model',              eng:14, code:41, tam:96, emoji:22},
+    {v:50000,  n:'50k',  lbl:'the GPT-2 generation',             eng:13, code:34, tam:78, emoji:18},
+    {v:100000, n:'100k', lbl:'a mid-generation frontier model',  eng:12, code:24, tam:46, emoji:11},
+    {v:150000, n:'150k', lbl:'a recent multilingual model',      eng:12, code:22, tam:31, emoji:8},
+    {v:256000, n:'256k', lbl:'a large multilingual vocabulary',  eng:11, code:21, tam:24, emoji:6}
+  ];
+  const ROWS=[
+    ['eng','plain English','the quick brown fox jumped'],
+    ['code','a line of Python','def _get(self, k): return self._d[k]'],
+    ['tam','Tamil','வணக்கம் உலகம்'],
+    ['emoji','emoji and symbols','&#128578;&#128640; &#8594; &#8721;']
+  ];
+  const fmt=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?Math.round(n/1e6)+'M':n.toLocaleString('en-GB');
+  function render(){
+    const c=V[+rng.value], base=V[2];
+    val.textContent=c.n;
+    const params=c.v*DM*2, mem=params*BYTES;            /* embedding table + output layer */
+    const worst=Math.max.apply(null,V.map(x=>Math.max(x.eng,x.code,x.tam,x.emoji)));
+    out.innerHTML =
+      '<div class="simnote" style="margin-bottom:10px">The same four samples, tokenised by each vocabulary. Shorter bars are better &mdash; fewer tokens for the same meaning.</div>'
+      + ROWS.map(function(r){
+          const k=r[0], name=r[1], sample=r[2];
+          const n=c[k], w=Math.round(n/worst*100), rel=n-base[k];
+          const col = n<=14?'var(--green)':n<=40?'var(--amber)':'var(--red)';
+          return '<div style="margin-bottom:11px">'
+            + '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">'
+            + '<span>'+name+'</span><span class="k" style="color:'+col+'">'+n+' tokens'
+            + (rel===0?'':' <span style="color:var(--dim)">('+(rel>0?'+':'')+rel+' vs 100k)</span>')+'</span></div>'
+            + '<div style="height:9px;background:var(--panel2);border-radius:99px;overflow:hidden">'
+            + '<div style="height:100%;width:'+w+'%;background:'+col+';border-radius:99px"></div></div>'
+            + '<div class="k" style="font-size:10.5px;color:var(--dim);margin-top:3px">'+sample+'</div></div>';
+        }).join('')
+      + '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:var(--violet)">'
+      + '<b>What the vocabulary costs before a single word is generated</b>'
+      + '<div style="margin-top:6px;font-size:12.5px">embedding table + output layer = '
+      + '<span class="k">'+c.v.toLocaleString('en-GB')+' &times; 4096 &times; 2</span> = <b>'+fmt(params)+' parameters</b>'
+      + ' &mdash; about <b>'+(mem/1e9).toFixed(1)+' GB</b> at fp16, resident for every request.</div></div>';
+    const dP=params-base.v*DM*2;
+    note.innerHTML =
+      '<div class="ok"><b>'+c.n+' &mdash; '+c.lbl+'.</b> '
+      + (c.v<=50000
+         ? 'English is barely affected. Tamil costs <b>'+c.tam+' tokens</b> for two words, and code fragments badly. Somebody writing Tamil pays several times more per sentence than somebody writing English for the same meaning &mdash; same bill, same context window, less said.'
+         : c.v>=200000
+         ? 'Every language compresses well now. You paid <b>'+fmt(dP)+' extra parameters</b> against the 100k baseline for it, and that memory is occupied whether or not anyone sends Tamil.'
+         : 'A middle setting. English is near its floor, code and Tamil are tolerable, and the table is still affordable.')
+      + '</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Why both directions hurt.</b> Fewer tokens per sentence means more meaning fits in the context window, and fewer forward passes to say the same thing &mdash; cheaper per request. But the embedding table and the output layer are both <span class="k">vocabulary &times; d_model</span>, and the output layer scores every entry on <em>every</em> token generated. Doubling the vocabulary does not double the model, but it does add memory you never get back.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The part that is a fairness question rather than a performance one.</b> The vocabulary is chosen from a training corpus. Whatever is under-represented there fragments at inference time, permanently &mdash; no prompt fixes it. That is a large part of why vocabularies grew.</div>';
+  }
+  rng.addEventListener('input',render);
   render();
 })();
 
