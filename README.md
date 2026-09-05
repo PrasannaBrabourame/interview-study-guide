@@ -94,9 +94,11 @@ design.html       Diagram lab — audiences, levels of zoom, anatomy, notation,
                   behind the picture, surviving a review, diagram rot, the
                   do's and don'ts, and the whiteboard interview
 assets/lab.css    Styling shared by all thirteen lab pages — theme tokens,
-                  layout, tabs, callouts, the plain-English on-ramp, diagrams
+                  layout, the top bar, tabs, callouts, the plain-English
+                  on-ramp, diagrams
 assets/lab.js     Behaviour shared by all thirteen lab pages — theme toggle,
-                  tab deep links, the scenario drill, the navigation rail
+                  tab deep links, the scenario drill, the navigation rail,
+                  the labs menu and the track line
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking, lab-to-topic mapping
@@ -124,6 +126,32 @@ reading three labs is not asked to re-learn "blast radius" each time. Where
 it means genuinely different things — an LLM token and an access token, a
 GPU block and a cache block — the definitions stay different, and a wording
 that names something on its own screen keeps that clause.
+
+## Reading the theme
+
+The visual design is trying to get out of the way. Three rules hold it
+together:
+
+**One accent.** Everything the reader can act on — links, the active tab, the
+focus ring — is the same teal (`--accent`). It used to be three: amber tabs,
+teal links and a violet eyebrow, none of which meant anything. Colour inside a
+simulation still carries meaning, and is left alone: green, amber and red are
+pass, warn and fail, and the provider blues and oranges identify AWS, Azure and
+GCP.
+
+**One measure.** Prose is capped at a readable line length rather than running
+the full 1280px column, which is about 150 characters and roughly twice what is
+comfortable. Diagrams, simulations, tables and code keep the whole width — they
+are read by scanning, not line by line.
+
+**One place to navigate from.** Each lab opens with a single row: back to the
+guide, this lab's related topics, all labs, and the theme and search controls.
+The twelve sibling-lab links that used to sit above every title are behind
+**⊞ all labs**, grouped into the same three tracks the dashboard uses and
+numbered in the same order. Under the title, a line says where the reader is
+standing — `Under the hood · lab 2 of 4 · next: The engine, not the model` —
+so the reading order the dashboard sets survives past the front door. Both are
+generated from one table in `assets/lab.js`, so adding a lab is one edit.
 
 ## Labs and topics are linked
 
