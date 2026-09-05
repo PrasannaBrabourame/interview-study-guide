@@ -2238,6 +2238,7 @@ const OSIROLE={"l7lb": "reads the HTTP request and routes on it","cdn": "caches 
 
 const OSI=[
 {n:7,name:'Application',sub:'the actual request',
+ unit:'data', unitLong:'just data, and it is still readable', carry:'A message your program understands, and nothing more. An HTTP request at this point is readable text you could type by hand: a line saying <span class="code">GET /path</span>, some headers, maybe a JSON body. Nothing has been encoded, cut up or put on a wire yet.',
  q:'What does the message mean?', met:'HTTP, DNS, SSH, your curl, and the page Apache serves',
  plain:'The conversation itself: a GET for a page, a gRPC call, a DNS lookup. This is the only layer your application code normally thinks about.',
  touch:'Routing on path and host, TLS certificates, authentication, rate limits, WAF rules, caching headers.',
@@ -2246,6 +2247,7 @@ const OSI=[
  breaks:'A 404 from a rule that matched the wrong target group, a 502 when the target is healthy at TCP level but returning garbage, an expired certificate.',
  test:'curl -v https://host/path'},
 {n:6,name:'Presentation',sub:'encoding and encryption',
+ unit:'data', unitLong:'still data, now as bytes', carry:'The same message turned into a definite sequence of <b>bytes</b>. Characters become UTF-8, the body may be compressed, and TLS encrypts the result into ciphertext that looks like random bytes to everyone in between. This is where text stops being text.',
  q:'What format, and is it encrypted?', met:'TLS, JSON, gzip, UTF-8',
  plain:'How the payload is dressed before it travels: TLS encryption, gzip or brotli compression, JSON or protobuf serialisation.',
  touch:'Where TLS terminates, which cipher policy you allow, certificate issuance and renewal, whether you compress.',
@@ -2254,6 +2256,7 @@ const OSI=[
  breaks:'A handshake failure with an old client because you disabled a cipher, or content compressed twice and arriving as gibberish.',
  test:'openssl s_client -connect host:443'},
 {n:5,name:'Session',sub:'keeping the conversation open',
+ unit:'data', unitLong:'still data, one stream', carry:'Still one unbroken stream of bytes, now tagged with which conversation it belongs to. That tagging is why two downloads over the same connection do not arrive shuffled together.',
  q:'Are we in an ongoing conversation?', met:'Cookies, login sessions, RPC',
  plain:'Starting a conversation, keeping it alive and closing it: TLS resumption, a WebSocket that stays open, an SSH session, a VPN tunnel.',
  touch:'Sticky sessions, idle timeouts, keep-alives, connection draining during a deploy, IKE negotiation for VPN.',
@@ -2262,6 +2265,7 @@ const OSI=[
  breaks:'Users randomly logged out because there is no stickiness, or a long poll that dies at exactly sixty seconds, a number that round is a timeout setting, never a bug in your code.',
  test:'watch when it fails: a suspiciously round number of seconds is a configured timeout'},
 {n:4,name:'Transport',sub:'ports and delivery',
+ unit:'segment', unitLong:'a segment, or a datagram on UDP', carry:'The stream is cut into numbered chunks. TCP calls them <b>segments</b>, UDP calls them <b>datagrams</b>. Each carries the port numbers saying which program it is for, and TCP adds a sequence number so the far end can put them back in order and ask again for anything missing.',
  q:'Which app on that machine, and did it all arrive?', met:'TCP port 80, UDP, retransmits the pieces that went missing',
  plain:'Getting bytes to the right program on the right machine: TCP with its handshake and retransmits, or UDP which just fires and hopes.',
  touch:'Port rules, listener protocols, target group ports, health check type, TCP versus UDP.',
@@ -2270,6 +2274,7 @@ const OSI=[
  breaks:'The distinction that finds the bug fastest: <b>connection refused</b> means you reached the host and nothing was listening; <b>connection timed out</b> means a firewall dropped you silently and never replied.',
  test:'nc -vz host 443'},
 {n:3,name:'Network',sub:'addresses and routes',
+ unit:'packet', unitLong:'a packet', carry:'Each segment is wrapped into a <b>packet</b>, with a source and destination IP address and a hop limit on the outside. Routers read that wrapper and nothing else, which is why a router can forward your traffic without being able to read it.',
  q:'Which machine, across networks?', met:'IP addresses and routers, 35.244.40.212',
  plain:'Where things live and how to get there: IP addresses, CIDR blocks, subnets and the routes between them. Almost all cloud networking design happens here.',
  touch:'VPC and subnet CIDRs, route tables, internet and NAT gateways, peering, transit, private endpoints.',
@@ -2278,6 +2283,7 @@ const OSI=[
  breaks:'No route to the destination, or two networks with overlapping CIDRs that can never be peered, which is why address planning happens before anything is built.',
  test:'ping (ICMP) and traceroute; then Reachability Analyzer or Connectivity Tests'},
 {n:2,name:'Data link',sub:'the local segment',
+ unit:'frame', unitLong:'a frame', carry:'The packet is wrapped again into a <b>frame</b>, carrying the hardware addresses of just this one hop and a checksum. That wrapper is thrown away and rewritten at every hop, and the frame has to fit the link&rsquo;s MTU or it is fragmented, or silently dropped.',
  q:'Which device on this one hop?', met:'MAC addresses, Ethernet, Wi-Fi, switches',
  plain:'Moving frames between directly connected devices: MAC addresses, ARP, VLANs and the maximum size a frame may be.',
  touch:'Almost nothing, the cloud hides it. Except MTU, which will genuinely ruin a day.',
@@ -2286,6 +2292,7 @@ const OSI=[
  breaks:'The classic: small requests work perfectly and large uploads hang forever. That is an MTU mismatch with fragmentation blocked, and it is almost never the application.',
  test:'ping -M do -s 1472 host, shrink until it stops failing to find the real path MTU'},
 {n:1,name:'Physical',sub:'cables and buildings',
+ unit:'bits', unitLong:'bits', carry:'The frame becomes <b>binary</b>, a stream of ones and zeros, and each bit becomes a physical event: a voltage change on copper, a pulse of light down fibre, or a modulated radio wave over Wi-Fi or a mobile network. This is the only layer where anything actually moves.',
  q:'Which electrical or optical signal?', met:'Cables, radio waves, fibre',
  plain:'Fibre, copper, radio, power and the data centres they run through. Real, and entirely someone else’s problem.',
  touch:'Nothing directly. You choose placement instead: which regions, how many availability zones, whether you take a cross-connect.',
@@ -2296,7 +2303,8 @@ const OSI=[
 
 const stackEl=document.getElementById('osiStack'), detEl=document.getElementById('osiDetail');
 stackEl.innerHTML=OSI.map((l,i)=>`<button class="osi-l${i===0?' on':''}" data-i="${i}">
-  <span class="lv">L${l.n}</span><span>${l.name}<small>${l.sub}</small></span></button>`).join('');
+  <span class="lv">L${l.n}</span><span>${l.name}<small>${l.sub}</small></span>
+  <span class="osi-unit" title="what the data is called at this layer">${l.unit}</span></button>`).join('');
 function osiRender(i){
   const l=OSI[i];
   document.querySelectorAll('.osi-l').forEach((b,k)=>b.classList.toggle('on',k===i));
@@ -2307,6 +2315,10 @@ function osiRender(i){
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin:8px 0 3px">WHERE YOU HAVE MET IT</div>
       <span style="font-size:12.5px;color:var(--muted)">${l.met}</span></div>
     <div class="plain-line"><b>In plain English:</b> ${l.plain}</div>
+    <h4>What the data actually is here</h4>
+    <div class="lzhop" style="display:block;padding:10px 12px;border-left-color:var(--teal);margin-bottom:12px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">BY THIS POINT IT IS ${l.unitLong.toUpperCase()}</div>
+      <span style="font-size:13px;line-height:1.65">${l.carry}</span></div>
     <h4>What you actually configure</h4><p style="font-size:13px;color:var(--muted);line-height:1.65">${l.touch}</p>
     <h4>Cloud-native services that live here</h4>
     <p class="simnote" style="margin:0 0 10px">Click any of them. You get what it is, why it belongs at this layer, and what does the same job in the other two clouds.</p>
