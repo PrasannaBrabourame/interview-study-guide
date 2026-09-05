@@ -301,3 +301,78 @@
   });
  }catch(err){ if(window.console) console.warn('interface enhancements unavailable:', err); }
 })();
+
+/* ================= LABS MENU =================
+   The thirteen labs, grouped and ordered exactly as the dashboard groups and
+   orders them. This table is the reason the header could shrink: the twelve
+   sibling-lab chips each page used to carry are generated from here instead,
+   behind one control, and the page can tell the reader where they are standing.
+   pca and sap are tabs inside the cloud lab rather than pages of their own,
+   which is why they are deep links. */
+(function(){
+  const TRACKS = [
+    { name:'Build, run and govern an agent', labs:[
+      ['adk.html',       'ADK — building an agent that behaves'],
+      ['agentcore.html', 'AgentCore — an agent you can trust'],
+      ['agentbuild.html','Agents building agents'],
+      ['evals.html',     'Evaluation — how do you know it got better?'],
+      ['govern.html',    'Govern and secure an estate of agents'],
+      ['gemini.html',    'Rolling it out to a whole company'],
+      ['peakweek.html',  'Peak Week — one agent, all the way through'] ] },
+    { name:'Cloud and architecture', labs:[
+      ['cloud.html',            'How the cloud actually works'],
+      ['design.html',           'Diagrams — a picture that argues'],
+      ['cloud.html#pane-pca',   'GCP Architect exam'],
+      ['cloud.html#pane-cheat', 'SAP-C02 cheatsheet'] ] },
+    { name:'Under the hood', labs:[
+      ['gpu.html',     'The machine underneath'],
+      ['llm.html',     'One token at a time'],
+      ['serving.html', 'The engine, not the model'],
+      ['fleet.html',   'Twenty engines, one endpoint'] ] }
+  ];
+
+  const btn = document.getElementById('labsBtn');
+  const wrap = document.getElementById('labsWrap');
+  if (!btn || !wrap) return;
+  const here = ((location.pathname || '').split('/').pop() || 'index.html');
+
+  const menu = document.createElement('div');
+  menu.className = 'labmenu'; menu.id = 'labMenu'; menu.hidden = true;
+  menu.setAttribute('role','group');
+  menu.setAttribute('aria-label','All labs, in reading order');
+  menu.innerHTML = TRACKS.map(t => {
+    const items = t.labs.map(([href, title], i) => {
+      const on = href === here;   // deep links into cloud never match, by design
+      return `<a href="${href}"${on ? ' class="here" aria-current="page"' : ''}>`
+           + `<i>${i + 1}</i><span>${title}</span></a>`;
+    }).join('');
+    return `<div class="lmgrp"><h4>${t.name} · ${t.labs.length} labs, in order</h4>`
+         + `<div class="lmlist">${items}</div></div>`;
+  }).join('');
+  wrap.appendChild(menu);
+
+  const open = v => {
+    menu.hidden = !v;
+    btn.setAttribute('aria-expanded', String(v));
+    btn.classList.toggle('on', v);
+    if (v) { const a = menu.querySelector('a.here') || menu.querySelector('a'); if (a) a.focus(); }
+  };
+  btn.addEventListener('click', e => { e.stopPropagation(); open(menu.hidden); });
+  document.addEventListener('click', e => { if (!menu.hidden && !wrap.contains(e.target)) open(false); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !menu.hidden) { open(false); btn.focus(); }
+  });
+
+  /* the track line under the title: which track this lab is in, and where in it */
+  const line = document.getElementById('trackLine');
+  if (line) {
+    for (const t of TRACKS) {
+      const i = t.labs.findIndex(([h]) => h === here);
+      if (i < 0) continue;
+      const nxt = t.labs[i + 1];
+      line.innerHTML = `<span class="tkname">${t.name}</span> · lab ${i + 1} of ${t.labs.length}`
+        + (nxt ? ` · next: <a href="${nxt[0]}">${nxt[1]}</a>` : ' · last in this track');
+      break;
+    }
+  }
+})();

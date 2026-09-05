@@ -59,25 +59,19 @@
 </defs></svg>
 <div class="wrap">
   <header>
-    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
-    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
-    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
-    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a><a href="index.html#lab=fleet" style="display:inline-block;margin-bottom:12px;margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--teal);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▤ related topics</a>
-    <a href="gpu.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▮ gpu lab</a>
-    <a href="llm.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◫ llm lab</a>
-    <a href="serving.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◨ serving lab</a>
-    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
-    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
-    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
-    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
-    <a href="evals.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◈ evals lab</a>
-    <a href="gemini.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◉ gemini lab</a>
-    <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
-    <a href="design.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▦ diagram lab</a>
-    <a href="peakweek.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◐ peak week lab</a>
-    
+    <nav class="topnav" aria-label="Lab navigation">
+      <a class="tn" href="index.html">&larr; guide</a>
+      <a class="tn tn-accent" href="index.html#lab=fleet">&#9636; related topics</a>
+      <span class="labwrap" id="labsWrap"><button class="tn" id="labsBtn" type="button"
+        aria-expanded="false" aria-haspopup="true">&#8862; all labs</button></span>
+      <span class="tnspace"></span>
+      <a class="tn tn-quiet" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame &#8599;</a>
+      <button class="tn tn-quiet" id="themeBtn" type="button" title="Toggle light / dark (d)">&#127769; theme</button>
+      <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
+    </nav>
     <div class="eyebrow">discovery · routing · state transfer · control loops</div>
     <h1>Twenty engines, one endpoint <span class="thin">— the layer that decides which of them gets your request</span></h1>
+    <p class="track" id="trackLine"></p>
     <p class="sub">The <a href="serving.html">serving lab</a> is about one engine replica deciding what to run this step. Everything changes at twenty replicas. Which worker gets this request? Does any of them already hold the first two thousand tokens of it? Is it cheaper to move that state across the network or recompute it? Do prefill and decode scale together, or separately? And when a worker dies mid-stream, what does the person watching the text actually see? None of that happens inside an engine, and all of it decides whether the fleet is affordable. Eight sections, each with something you can operate.</p>
     <div class="note" style="margin-top:14px"><b>Where this sits.</b> Engines &mdash; vLLM, SGLang, TensorRT-LLM &mdash; schedule work <em>inside</em> one replica. This lab is the layer around them, the part usually called an inference gateway, router or orchestrator. The mechanisms are described generally; named systems appear where a concrete implementation makes the idea clearer.</div>
   </header>

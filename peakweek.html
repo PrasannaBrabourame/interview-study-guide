@@ -59,25 +59,19 @@
 </defs></svg>
 <div class="wrap">
   <header>
-    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
-    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
-    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
-    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a><a href="index.html#lab=peakweek" style="display:inline-block;margin-bottom:12px;margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--teal);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▤ related topics</a>
-    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
-    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
-    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
-    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
-    <a href="evals.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◈ evals lab</a>
-    <a href="gemini.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◉ gemini lab</a>
-    <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
-    <a href="design.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▦ diagram lab</a>
-    <a href="gpu.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▮ gpu lab</a>
-    <a href="llm.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◫ llm lab</a>
-    <a href="serving.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◨ serving lab</a>
-    <a href="fleet.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◑ fleet lab</a>
-    
+    <nav class="topnav" aria-label="Lab navigation">
+      <a class="tn" href="index.html">&larr; guide</a>
+      <a class="tn tn-accent" href="index.html#lab=peakweek">&#9636; related topics</a>
+      <span class="labwrap" id="labsWrap"><button class="tn" id="labsBtn" type="button"
+        aria-expanded="false" aria-haspopup="true">&#8862; all labs</button></span>
+      <span class="tnspace"></span>
+      <a class="tn tn-quiet" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame &#8599;</a>
+      <button class="tn tn-quiet" id="themeBtn" type="button" title="Toggle light / dark (d)">&#127769; theme</button>
+      <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
+    </nav>
     <div class="eyebrow">build → scale → govern → optimise → engage</div>
     <h1>One agent, all the way through <span class="thin">— the handoffs nobody shows you</span></h1>
+    <p class="track" id="trackLine"></p>
     <p class="sub">A sorter has failed at Coventry on the busiest night of the year, and several hundred thousand parcels are on the wrong side of it. A chatbot cannot answer that &mdash; not because it is not clever enough, but because it has no way to find out what is actually happening. This lab follows one agent from an empty console to something a colleague with no technical background can chat with. Six stages, in order. The interesting part is what happens <em>between</em> them &mdash; the places where one stage quietly sets something up that a later stage needs. Three are worth watching for. Deploying the agent is what puts it in the company catalogue, though nothing tells you so. A small file you paste in at stage two is the reason the thing can be published at stage five. And the permissions it ends up with are the one thing nobody hands you &mdash; you have to go and check those yourself.</p>
   </header>
 

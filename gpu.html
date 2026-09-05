@@ -59,25 +59,19 @@
 </defs></svg>
 <div class="wrap">
   <header>
-    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
-    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
-    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
-    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← learning guide</a><a href="index.html#lab=gpu" style="display:inline-block;margin-bottom:12px;margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--teal);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▤ related topics</a>
-    <a href="cloud.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">☁ cloud lab</a>
-    <a href="agentcore.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◆ agentcore lab</a>
-    <a href="agentbuild.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬡ agents lab</a>
-    <a href="adk.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◇ adk lab</a>
-    <a href="evals.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◈ evals lab</a>
-    <a href="gemini.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◉ gemini lab</a>
-    <a href="govern.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">⬢ govern lab</a>
-    <a href="design.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▦ diagram lab</a>
-    <a href="peakweek.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◐ peak week lab</a>
-    <a href="llm.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◫ llm lab</a>
-    <a href="serving.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◨ serving lab</a>
-    <a href="fleet.html" style="display:inline-block;margin:0 0 12px 8px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">◑ fleet lab</a>
-    
+    <nav class="topnav" aria-label="Lab navigation">
+      <a class="tn" href="index.html">&larr; guide</a>
+      <a class="tn tn-accent" href="index.html#lab=gpu">&#9636; related topics</a>
+      <span class="labwrap" id="labsWrap"><button class="tn" id="labsBtn" type="button"
+        aria-expanded="false" aria-haspopup="true">&#8862; all labs</button></span>
+      <span class="tnspace"></span>
+      <a class="tn tn-quiet" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame &#8599;</a>
+      <button class="tn tn-quiet" id="themeBtn" type="button" title="Toggle light / dark (d)">&#127769; theme</button>
+      <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
+    </nav>
     <div class="eyebrow">threads · memory · arithmetic intensity · kernels</div>
     <h1>The machine underneath <span class="thin">— what a GPU is actually doing while your model runs</span></h1>
+    <p class="track" id="trackLine"></p>
     <p class="sub">Almost everything else in this guide sits on top of this layer and never looks down at it. That is usually fine, right up until someone asks why inference gets cheaper per request when you batch it, why a model that &ldquo;fits in 40&nbsp;GB&rdquo; does not fit, or why the expensive card is idle 70% of the time. Those are all the same question, and it has one answer: a GPU is enormously fast at arithmetic and comparatively slow at fetching the numbers to do arithmetic on. Nine sections, plain English first, with the arithmetic worked on a named machine so you can check it.</p>
     <div class="note" style="margin-top:14px"><b>The reference machine.</b> Where a number is needed, this lab uses an <b>NVIDIA A100 80&nbsp;GB (SXM)</b>: 108 streaming multiprocessors, 2.0&nbsp;TB/s of memory bandwidth, 19.5&nbsp;TFLOP/s of ordinary FP32 arithmetic and 312&nbsp;TFLOP/s of FP16 tensor-core arithmetic. Different cards move the numbers; none of them change the shape of the argument. Where a figure is approximate or varies by generation, it says so.</div>
   </header>

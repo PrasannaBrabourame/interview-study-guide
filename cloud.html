@@ -93,12 +93,19 @@
 </defs></svg>
 <div class="wrap">
   <header>
-    <span class="kbdhint" title="Find a section on this page"><b>⌘K</b> find a section</span>
-    <button class="btn" id="themeBtn" title="Toggle light / dark (d)" style="float:right">🌙 theme</button>
-    <a href="index.html" style="display:inline-block;margin-bottom:12px;font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">← back to the learning guide</a><a href="index.html#lab=cloud" style="display:inline-block;margin-bottom:12px;margin-left:8px;font-family:var(--mono);font-size:12px;color:var(--accent);text-decoration:none;border:1px solid var(--line2);border-radius:7px;padding:6px 12px">▤ related topics</a>
-    <a class="profile-link" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame ↗</a>
+    <nav class="topnav" aria-label="Lab navigation">
+      <a class="tn" href="index.html">&larr; guide</a>
+      <a class="tn tn-accent" href="index.html#lab=cloud">&#9636; related topics</a>
+      <span class="labwrap" id="labsWrap"><button class="tn" id="labsBtn" type="button"
+        aria-expanded="false" aria-haspopup="true">&#8862; all labs</button></span>
+      <span class="tnspace"></span>
+      <a class="tn tn-quiet" href="https://prasannabrabourame.github.io/PrasannaBrabourame/" target="_blank" rel="noopener">Prasanna Brabourame &#8599;</a>
+      <button class="tn tn-quiet" id="themeBtn" type="button" title="Toggle light / dark (d)">&#127769; theme</button>
+      <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
+    </nav>
     <div class="eyebrow">solutions architect · study hub</div>
     <h1>How the cloud actually works <span class="thin">— one request, every pillar, across AWS, GCP and Azure</span></h1>
+    <p class="track" id="trackLine"></p>
     <p class="sub">Companion to the network visualizer. Five sections: a step-by-step walk of one request from phone to database (start here if any of this is new), the non-networking exam domains as decision-oriented cards with a diagram each, an animated disaster-recovery failover simulator, a searchable service translator across AWS, GCP and Azure, and the deep conceptual differences between the three clouds that actually change your architecture. Every diagram has a plain-English caption — no cloud background assumed.</p>
   </header>
 
