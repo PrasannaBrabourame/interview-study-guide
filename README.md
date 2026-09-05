@@ -35,7 +35,8 @@ cloud.html        Cloud lab, request journey, OSI, landing zone (VPC tiers,
                   proxies, private link, CIDR, security groups and policy
                   evaluation), VPC design (how many, public vs private,
                   subnet sizing, component advice), network simulator, NGINX,
-                  IAM, SAP-C02 cheatsheet, pillars, DR simulator, translator
+                  IAM, SAP-C02 cheatsheet, pillars, DR simulator, translator, what the data physically is
+                  at each layer (data, segment, packet, frame, bits)
 agentcore.html    AgentCore lab (running agents in production: runtime,
                   identity, gateway, memory, evaluation, multi-agent patterns
 agentbuild.html   Agents-building-agents lab (spec-driven development with a
