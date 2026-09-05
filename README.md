@@ -93,6 +93,10 @@ design.html       Diagram lab — audiences, levels of zoom, anatomy, notation,
                   choosing services, what people leave out, the questions
                   behind the picture, surviving a review, diagram rot, the
                   do's and don'ts, and the whiteboard interview
+assets/lab.css    Styling shared by all thirteen lab pages — theme tokens,
+                  layout, tabs, callouts, the plain-English on-ramp, diagrams
+assets/lab.js     Behaviour shared by all thirteen lab pages — theme toggle,
+                  tab deep links, the scenario drill, the navigation rail
 assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
                   mode, flashcard drills, command palette (Cmd/Ctrl+K),
                   progress rings + streak tracking, lab-to-topic mapping
@@ -114,6 +118,13 @@ simulations' answers and are read by someone who has already passed those
 screens; glossing the whole page's vocabulary there buries the entries
 that matter.
 
+Per-simulation does not mean per-simulation wording. Where a term means the
+same thing on two screens it is worded the same way on both, so that someone
+reading three labs is not asked to re-learn "blast radius" each time. Where
+it means genuinely different things — an LLM token and an access token, a
+GPU block and a cache block — the definitions stay different, and a wording
+that names something on its own screen keeps that clause.
+
 ## Labs and topics are linked
 
 Each hands-on lab card carries a **related-topics** strip showing how many of
@@ -131,6 +142,15 @@ returns half the site is the problem it was meant to fix.
 Data, styling, and behaviour are split into separate files so each can be
 edited and diffed independently — e.g. adding a topic only touches
 `data/topics.json`.
+
+The thirteen labs are self-contained pages, but the chrome around the content
+is not copied into each one: it lives in `assets/lab.css` and `assets/lab.js`,
+which every lab links. That split exists because the copies drifted — a callout
+that needed a size rule needed thirteen separate patches, and one lab shipped
+with a stale copy of a rule because it was generated from an older snapshot.
+Each lab still carries its own `<style>` after `lab.css`, holding only the rules
+that lab actually needs, and its own inline `<script>` before `lab.js`, which
+reads what that script rendered.
 
 ## View locally
 
