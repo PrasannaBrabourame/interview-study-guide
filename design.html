@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Diagram lab — drawing architecture that survives contact</title>
+<title>Diagram lab, drawing architecture that survives contact</title>
 <link rel="stylesheet" href="assets/lab.css">
 <style>
 
@@ -68,7 +68,7 @@
       <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
     </nav>
     <div class="eyebrow">architecture diagrams · production grade</div>
-    <h1>A diagram is an argument, not a picture <span class="thin">— drawing systems people can act on</span></h1>
+    <h1>A diagram is an argument, not a picture: <span class="thin">drawing systems people can act on</span></h1>
     <p class="track" id="trackLine"></p>
     <p class="sub">Almost every architecture diagram is drawn for the person who drew it. It shows everything they were thinking about, at every level of detail at once, on the day it happened to be true. Then it is presented to four different audiences who each needed a different picture, reviewed by someone whose first five questions it cannot answer, and consulted at three in the morning by an on-call engineer who finds it is eleven months out of date. Eleven sections on drawing the other kind.</p>
   </header>
@@ -117,8 +117,8 @@
   <section class="pane" id="pane-rules">
     <div id="sec-rules"></div>
     <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; score a diagram you have actually got</h2>
-  <div class="plain-line"><b>Try this:</b> think of a diagram in your own repository or wiki and tick what is genuinely true of it. The score is less interesting than the order the missing items come back in &mdash; some of these cost far more than others.</div>
+  <h2 class="sec">Try it: score a diagram you have actually got</h2>
+  <div class="plain-line"><b>Try this:</b> think of a diagram in your own repository or wiki and tick what is genuinely true of it. The score is less interesting than the order the missing items come back in. Some of these cost far more than others.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A car's MOT checklist. The tyres matter more than the wing mirrors, and a list that treats them equally is not much help when you have an hour.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick nothing at first and read the top item on the missing list.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>legend</b> the key saying what a line, colour or shape means</span><span class="sp-w"><b>stale</b> the diagram no longer matches the real system</span><span class="sp-w"><b>critical path</b> the route through the system that actually matters</span></span></div></div>
   <div class="sim-layout">
     <div><div id="dgScoreOut"></div></div>
@@ -131,8 +131,8 @@
   <section class="pane" id="pane-board">
     <div id="sec-board"></div>
     <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; spend the first ten minutes</h2>
-  <div class="plain-line"><b>Try this:</b> forty minutes on the clock and six things you could do. Pick them in the order you would actually do them, and watch the clock &mdash; the commonest mistake is not a wrong answer, it is starting to draw in minute one.</div>
+  <h2 class="sec">Try it: spend the first ten minutes</h2>
+  <div class="plain-line"><b>Try this:</b> forty minutes on the clock and six things you could do. Pick them in the order you would actually do them, and watch the clock. The commonest mistake is not a wrong answer, it is starting to draw in minute one.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A doctor's appointment. Ten minutes, and the ones who ask three questions before reaching for the prescription pad are not being slow.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>draw the containers</b> first and read what it says.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>context diagram</b> your whole system as one box, and who talks to it</span><span class="sp-w"><b>containers</b> each separately deployable piece</span><span class="sp-w"><b>scope</b> what you are deliberately not covering</span></span></div></div>
   <div class="sim-layout">
     <div><div id="dgBoardOut"></div></div>
@@ -178,24 +178,24 @@ const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
 document.getElementById('sec-start').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <div class="note" style="margin-bottom:14px;padding:10px 12px;border-left:3px solid var(--amber);background:var(--panel2);border-radius:0 8px 8px 0">
-    <b>A note on sourcing.</b> The other labs here are built from specific course material and say so. This one is not &mdash; it is a synthesis of practice, and everything in it is an argument you are free to disagree with rather than a fact somebody certified.
+    <b>A note on sourcing.</b> The other labs here are built from specific course material and say so. This one is not. It is a synthesis of practice, and everything in it is an argument you are free to disagree with rather than a fact somebody certified.
   </div>
   <h2 class="sec">The first question is not “what does the system do”</h2>
   <div class="plain-line"><b>In plain English:</b> before a single box is drawn there is a question that decides everything else, and it is almost never asked: <b>who is going to look at this, and what decision are they trying to make?</b> A diagram is not a description of a system. It is <em>an argument aimed at somebody</em>. Change the somebody and you should be drawing a different picture.</div>
-  <div class="plain-line">The commonest failure in this whole discipline is one diagram trying to serve four audiences at once. It ends up with sixty boxes, every service anyone mentioned, three levels of detail on one page, and it serves none of them &mdash; the executive cannot find the point, the reviewer cannot find the boundaries, the engineer cannot find the configuration, and the person paged at three in the morning cannot find anything at all.</div>
+  <div class="plain-line">The commonest failure in this whole discipline is one diagram trying to serve four audiences at once. It ends up with sixty boxes, every service anyone mentioned, three levels of detail on one page, and it serves none of them. The executive cannot find the point, the reviewer cannot find the boundaries, the engineer cannot find the configuration, and the person paged at three in the morning cannot find anything at all.</div>
   ${D('0 0 700 200','Four audiences, each needing a different diagram of the same system.',
    `${box(14,26,160,64,'var(--violet)')}${tm(94,50,'the sponsor','var(--violet)')}${tm(94,66,'what it does, what it','var(--dim)')}${tm(94,80,'costs, what the risk is','var(--dim)')}
     ${box(188,26,160,64,'var(--blue)')}${tm(268,50,'the reviewer','var(--blue)')}${tm(268,66,'boundaries, failure','var(--dim)')}${tm(268,80,'modes, the trade-offs','var(--dim)')}
     ${box(362,26,160,64,'var(--teal)')}${tm(442,50,'the engineer','var(--teal)')}${tm(442,66,'exact services, the','var(--dim)')}${tm(442,80,'settings that matter','var(--dim)')}
     ${box(536,26,150,64,'var(--amber)')}${tm(611,50,'on call, 3am','var(--amber)')}${tm(611,66,'what talks to what,','var(--dim)')}${tm(611,80,'where to look first','var(--dim)')}
     ${box(14,116,672,32,'var(--red)')}${tm(350,136,'one diagram trying to be all four is sixty boxes that answer nobody’s question','var(--red)')}
-    ${tm(350,176,'four diagrams of the same system is not duplication — it is four different arguments','var(--dim)')}`,
+    ${tm(350,176,'four diagrams of the same system is not duplication: it is four different arguments','var(--dim)')}`,
    'Same system in every case. What changes is which facts are relevant, and that is a much bigger difference than it looks.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; pick an audience and see what belongs on their page</h2>
-  <div class="plain-line"><b>Try this:</b> fourteen things you could put on a diagram of the same system. Choose who is looking at it, and see which of the fourteen earn their place &mdash; then read what showing the wrong ones does to that meeting.</div>
+  <h2 class="sec">Try it: pick an audience and see what belongs on their page</h2>
+  <div class="plain-line"><b>Try this:</b> fourteen things you could put on a diagram of the same system. Choose who is looking at it, and see which of the fourteen earn their place, then read what showing the wrong ones does to that meeting.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Giving directions to your house. What you tell a taxi driver, a delivery van, a friend walking from the station and a plumber looking for the stopcock are four different sets of facts about the same house.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>The sponsor</b> and read the two lines at the bottom about what happens if you show them the wrong one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>audience</b> who is going to look at this and what they need to decide</span><span class="sp-w"><b>trust boundary</b> a point where something has to prove who it is</span><span class="sp-w"><b>dependency</b> something your system needs in order to work</span></span></div></div>
   <div class="sim-layout">
     <div><div id="audOut"></div></div>
@@ -206,9 +206,9 @@ document.getElementById('sec-start').innerHTML=`
 
 <div class="card">
   <h2 class="sec">The question the diagram is answering, written down</h2>
-  <div class="plain-line"><b>In plain English:</b> the single cheapest improvement available to any diagram is a sentence at the top saying what question it answers. Not a title like &ldquo;Payments Architecture&rdquo;, which tells you the subject and nothing else &mdash; an actual question.</div>
-  <div class="vs2"><div class="col"><b>A TITLE</b>&ldquo;Payments Platform &mdash; Architecture&rdquo;<br><br>Tells you the subject. Tells you nothing about what you are supposed to conclude, so every reader invents their own purpose for it and half of them are disappointed.</div>
-  <div class="col"><b>A QUESTION</b>&ldquo;How does a card payment reach the ledger, and what happens to it when the ledger is down?&rdquo;<br><br>Now the diagram has a job. Anything that does not help answer it can come off the page &mdash; which is the only reliable way to decide what to leave out.</div></div>
+  <div class="plain-line"><b>In plain English:</b> the single cheapest improvement available to any diagram is a sentence at the top saying what question it answers. Not a title like &ldquo;Payments Architecture&rdquo;, which tells you the subject and nothing else, an actual question.</div>
+  <div class="vs2"><div class="col"><b>A TITLE</b>&ldquo;Payments Platform, Architecture&rdquo;<br><br>Tells you the subject. Tells you nothing about what you are supposed to conclude, so every reader invents their own purpose for it and half of them are disappointed.</div>
+  <div class="col"><b>A QUESTION</b>&ldquo;How does a card payment reach the ledger, and what happens to it when the ledger is down?&rdquo;<br><br>Now the diagram has a job. Anything that does not help answer it can come off the page, which is the only reliable way to decide what to leave out.</div></div>
   <div class="plain-line" style="margin-top:12px"><b>That last sentence is the practical value.</b> &ldquo;What should I leave out?&rdquo; is unanswerable in the abstract and trivial once there is a question on the page. Everything that does not serve it goes, and you stop having the argument about whether the Redis cache deserves a box.</div>
 </div>`;
 
@@ -221,7 +221,7 @@ document.getElementById('sec-start').innerHTML=`
     {n:'The users and the systems outside it',a:['spon','rev']},
     {n:'Roughly what it costs to run',a:['spon']},
     {n:'The one risk worth knowing about',a:['spon','rev']},
-    {n:'Trust boundaries — where auth is required',a:['rev','eng']},
+    {n:'Trust boundaries, where auth is required',a:['rev','eng']},
     {n:'What happens when each dependency is down',a:['rev','oc']},
     {n:'Synchronous or asynchronous, per hop',a:['rev','eng','oc']},
     {n:'Which data is personal or regulated',a:['rev']},
@@ -233,9 +233,9 @@ document.getElementById('sec-start').innerHTML=`
     {n:'What to check first when it is broken',a:['oc']}
   ];
   const A={
-    spon:{label:'The sponsor — signing it off',n:'sponsor',
+    spon:{label:'The sponsor, signing it off',n:'sponsor',
       want:'Whether this is worth doing, roughly what it costs, and what could go badly.',
-      wrong:'<b>Show them the engineer’s diagram</b> and the meeting becomes a discussion of instance sizes. They will not say they are lost — they will approve it and ask a different question next month, which is worse.'},
+      wrong:'<b>Show them the engineer’s diagram</b> and the meeting becomes a discussion of instance sizes. They will not say they are lost. They will approve it and ask a different question next month, which is worse.'},
     rev:{label:'The architecture reviewer',n:'reviewer',
       want:'Boundaries, failure behaviour, trade-offs, and what you have deliberately not done.',
       wrong:'<b>Show them the sponsor’s diagram</b> and you get an hour of questions the picture cannot answer, none of which is about architecture. The review does not conclude and you come back in two weeks.'},
@@ -244,7 +244,7 @@ document.getElementById('sec-start').innerHTML=`
       wrong:'<b>Show them the reviewer’s diagram</b> and they will make forty decisions on your behalf, quietly, none of them written down. Every one of those is a thing you will discover in production.'},
     oc:{label:'Somebody on call at three in the morning',n:'on-call engineer',
       want:'What talks to what, in which direction, and where to look first.',
-      wrong:'<b>Show them anything with sixty boxes</b> and they will close it and start guessing. The diagram was there, it was accurate, and it did not help — which is how diagrams get a reputation.'}
+      wrong:'<b>Show them anything with sixty boxes</b> and they will close it and start guessing. The diagram was there, it was accurate, and it did not help, which is how diagrams get a reputation.'}
   };
   let cur='rev';
   function render(){
@@ -253,13 +253,13 @@ document.getElementById('sec-start').innerHTML=`
     const inc=EL.filter(e=>e.a.includes(cur)), exc=EL.filter(e=>!e.a.includes(cur));
     out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">BELONGS ON THIS DIAGRAM</div>'+
       inc.map(e=>'<div class="lzrow" style="margin-bottom:5px"><span class="lzmark" style="color:var(--green)">✓</span><span>'+e.n+'</span></div>').join('')+
-      '<div class="dim" style="font-size:11px;margin:16px 0 6px">LEAVE IT OFF — IT BELONGS ON A DIFFERENT PAGE</div>'+
+      '<div class="dim" style="font-size:11px;margin:16px 0 6px">LEAVE IT OFF. IT BELONGS ON A DIFFERENT PAGE</div>'+
       exc.map(e=>'<div class="lzrow" style="margin-bottom:5px;opacity:.6"><span class="lzmark" style="color:var(--red)">✗</span><span>'+e.n+'</span></div>').join('')+
       '<div class="kv" style="margin-top:14px;font-family:var(--mono);font-size:12.5px">'+
         '<div style="display:flex;justify-content:space-between"><span class="dim">on the page</span><b>'+inc.length+' of 14</b></div></div>';
     note.innerHTML='<div class="lzrow"><span class="lzmark">?</span><span><b>What the '+A[cur].n+' is trying to decide.</b> '+A[cur].want+'</span></div>'+
       '<div class="lzrow" style="margin-top:10px"><span class="lzmark" style="color:var(--red)">✗</span><span><b>Give them the wrong one.</b> '+A[cur].wrong+'</span></div>'+
-      '<div class="simnote" style="margin-top:10px"><b>Notice that no element appears on all four lists</b> except the one-line statement of what the system is for. That is not an accident — it is the reason a single diagram cannot do this job, and the reason drawing four is less work than it sounds. Each one is small.</div>';
+      '<div class="simnote" style="margin-top:10px"><b>Notice that no element appears on all four lists</b> except the one-line statement of what the system is for. That is not an accident. It is the reason a single diagram cannot do this job, and the reason drawing four is less work than it sounds. Each one is small.</div>';
   }
   render();
 })();
@@ -267,14 +267,14 @@ document.getElementById('sec-start').innerHTML=`
 document.getElementById('sec-levels').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Zoom is a setting, and you only get one per page</h2>
-  <div class="plain-line"><b>In plain English:</b> think about maps. A world map, a road atlas and a street plan describe the same planet and you would never combine them &mdash; a page showing continents, motorway junctions and individual front doors at once is unreadable, and nobody has to be told that. <b>Architecture diagrams break this rule constantly</b>, and the result is a page with a browser, a load balancer, a Kubernetes cluster and a Java class on it.</div>
-  <div class="plain-line">The fix is a rule with no exceptions: <b>one diagram, one level of zoom.</b> If something on the page is a level deeper than everything else, it belongs on a different page &mdash; and drawing that other page is usually five minutes.</div>
+  <div class="plain-line"><b>In plain English:</b> think about maps. A world map, a road atlas and a street plan describe the same planet and you would never combine them, a page showing continents, motorway junctions and individual front doors at once is unreadable, and nobody has to be told that. <b>Architecture diagrams break this rule constantly</b>, and the result is a page with a browser, a load balancer, a Kubernetes cluster and a Java class on it.</div>
+  <div class="plain-line">The fix is a rule with no exceptions: <b>one diagram, one level of zoom.</b> If something on the page is a level deeper than everything else, it belongs on a different page, and drawing that other page is usually five minutes.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; the same system at four zoom levels</h2>
+  <h2 class="sec">Try it: the same system at four zoom levels</h2>
   <div class="plain-line"><b>Try this:</b> one payments system, drawn four ways, then drawn badly. The last option is what most real diagrams actually look like, and seeing it next to the others is the point of this simulation.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Maps. A world map, a road atlas and a street plan describe the same planet, and nobody would combine them onto one page.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>All of them at once</b> last, and look at the “kinds of thing mixed” count.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>context</b> your whole system as one box, and everything outside it</span><span class="sp-w"><b>container</b> each separately deployable piece — an app, a database, a queue</span><span class="sp-w"><b>component</b> the parts inside one of those pieces</span><span class="sp-w"><b>deployment view</b> where it all actually runs — regions, networks, cloud services</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Maps. A world map, a road atlas and a street plan describe the same planet, and nobody would combine them onto one page.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>All of them at once</b> last, and look at the “kinds of thing mixed” count.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>context</b> your whole system as one box, and everything outside it</span><span class="sp-w"><b>container</b> each separately deployable piece, an app, a database, a queue</span><span class="sp-w"><b>component</b> the parts inside one of those pieces</span><span class="sp-w"><b>deployment view</b> where it all actually runs, regions, networks, cloud services</span></span></div></div>
   <div class="sim-layout">
     <div><div id="lvOut"></div></div>
     <div><div class="segmented" id="lvPick" style="flex-direction:column;align-items:stretch"></div>
@@ -286,7 +286,7 @@ document.getElementById('sec-levels').innerHTML=`
   <h2 class="sec">The four levels, and which ones you will actually draw</h2>
   <table class="osi"><thead><tr><th>Level</th><th>What is a box</th><th>Draw it?</th></tr></thead><tbody>
   <tr><td><b>1 · Context</b></td><td><b>Your whole system is one box.</b> Everything else on the page is a user or an external system</td><td><b>Always.</b> It takes ten minutes, it settles what is in scope, and it is the only diagram most stakeholders ever need</td></tr>
-  <tr><td><b>2 · Container</b></td><td>Each separately deployable thing: the web app, the API, the worker, the database, the queue</td><td><b>Always.</b> This is the workhorse — the one people mean by &ldquo;the architecture diagram&rdquo;</td></tr>
+  <tr><td><b>2 · Container</b></td><td>Each separately deployable thing: the web app, the API, the worker, the database, the queue</td><td><b>Always.</b> This is the workhorse. The one people mean by &ldquo;the architecture diagram&rdquo;</td></tr>
   <tr><td><b>3 · Component</b></td><td>The pieces inside <em>one</em> container</td><td><b>Sometimes.</b> Worth it for the one or two containers that are genuinely complicated. Drawing it for all of them is how a diagram set dies</td></tr>
   <tr><td><b>4 · Code</b></td><td>Classes and functions</td><td><b>Almost never.</b> It is out of date the day after it is drawn, and the code is right there</td></tr>
   <tr><td><b>Deployment</b><br><span class="dim">a separate view, not a fifth level</span></td><td>Where the containers actually run: regions, zones, networks, the managed services</td><td><b>Always, for production.</b> This is where cloud service names belong, and keeping it separate is what stops level 2 filling up with vendor icons</td></tr>
@@ -299,15 +299,15 @@ document.getElementById('sec-levels').innerHTML=`
   const pick=document.getElementById('lvPick'), out=document.getElementById('lvOut'), note=document.getElementById('lvNote');
   if(!pick) return;
   const L={
-    ctx:{label:'Level 1 — Context',
+    ctx:{label:'Level 1, Context',
       boxes:[['Customer','person'],['Payments platform','you'],['Card network','ext'],['Core banking','ext'],['Fraud service','ext']],
       cap:'Your whole system is one box. Everything else is somebody you talk to.',
-      v:['ok','<b>Five boxes, and it settles the argument about scope.</b> Anyone can read this, including people who do not work in technology — which is exactly who needs to agree what is in and out before anything is built.']},
-    cont:{label:'Level 2 — Container',
+      v:['ok','<b>Five boxes, and it settles the argument about scope.</b> Anyone can read this, including people who do not work in technology, which is exactly who needs to agree what is in and out before anything is built.']},
+    cont:{label:'Level 2, Container',
       boxes:[['Web app','you'],['Payments API','you'],['Settlement worker','you'],['Payments database','store'],['Event queue','store'],['Card network','ext']],
       cap:'Each separately deployable thing gets a box. Still no vendor names.',
       v:['ok','<b>The workhorse.</b> This is what people mean when they say “the architecture diagram”. Note what is <em>not</em> here: no cloud services, no instance sizes, no classes. Those are other pages, and keeping them off this one is what makes it readable.']},
-    comp:{label:'Level 3 — Component, one container only',
+    comp:{label:'Level 3, Component, one container only',
       boxes:[['Auth filter','you'],['Payment controller','you'],['Idempotency store','store'],['Ledger client','you'],['Card network client','you']],
       cap:'Inside the Payments API, and nothing else.',
       v:['note','<b>Only worth drawing for the container that is genuinely complicated.</b> Here it earns its place because idempotency is the hard part of payments and it deserves a picture. Drawing this for all six containers is how a diagram set becomes a burden and then a lie.']},
@@ -315,7 +315,7 @@ document.getElementById('sec-levels').innerHTML=`
       boxes:[['Global load balancer','svc'],['Managed containers, 3 zones','svc'],['Managed Postgres, multi-zone','svc'],['Managed queue','svc'],['Private endpoint','svc'],['Card network over private link','ext']],
       cap:'Where it all actually runs. This is the page cloud service names belong on.',
       v:['ok','<b>Separate on purpose.</b> Level 2 said “the API talks to the order database”. This says how that is actually achieved. Both are true; on one page they are unreadable, and the deployment view is the one that changes most often.']},
-    mess:{label:'All of them at once — the usual reality',
+    mess:{label:'All of them at once, the usual reality',
       boxes:[['Customer','person'],['React SPA','you'],['Global load balancer','svc'],['Payments API','you'],['Auth filter','you'],['OrderRepository class','code'],['Managed Postgres db.r6g.xlarge','svc'],['Card network','ext'],['Redis','store'],['Settlement worker','you'],['Kafka topic payments.v2','store'],['Fraud service','ext']],
       cap:'Twelve boxes spanning four levels of zoom. Nobody drew this deliberately.',
       v:['lzbad','<b>This is what most real diagrams look like, and nobody chose it.</b> It happened one box at a time, each addition reasonable on the day. A class name sits beside a load balancer sits beside an external company. There is no zoom level at which all of this is the right amount of detail, so every reader is simultaneously overwhelmed and missing something.']}
@@ -340,7 +340,7 @@ document.getElementById('sec-levels').innerHTML=`
         '<div style="display:flex;justify-content:space-between"><span class="dim">boxes on the page</span><b>'+l.boxes.length+'</b></div>'+
         '<div style="display:flex;justify-content:space-between"><span class="dim">kinds of thing mixed</span><b style="color:'+(kinds.length>3?'var(--red)':'var(--green)')+'">'+kinds.length+'</b></div></div>';
     note.innerHTML='<div class="'+l.v[0]+'" style="margin-bottom:10px">'+l.v[1]+'</div>'+
-      '<div class="simnote"><b>The count at the bottom is the tell.</b> A diagram at one level mixes two or three kinds of thing. Once it is mixing five, no reader can hold the page in their head — and the fix is never to redraw it more neatly, it is to split it.</div>';
+      '<div class="simnote"><b>The count at the bottom is the tell.</b> A diagram at one level mixes two or three kinds of thing. Once it is mixing five, no reader can hold the page in their head, and the fix is never to redraw it more neatly, it is to split it.</div>';
   }
   render();
 })();
@@ -349,9 +349,9 @@ document.getElementById('sec-levels').innerHTML=`
 document.getElementById('sec-anatomy').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Seven things every diagram needs, and six of them are free</h2>
-  <div class="plain-line"><b>In plain English:</b> most of what makes a diagram trustworthy is not the drawing. It is the small print around it &mdash; who owns it, when it was true, what it deliberately leaves out. All of it takes about two minutes and almost nobody does it, which is why almost no diagram is trusted.</div>
+  <div class="plain-line"><b>In plain English:</b> most of what makes a diagram trustworthy is not the drawing. It is the small print around it, who owns it, when it was true, what it deliberately leaves out. All of it takes about two minutes and almost nobody does it, which is why almost no diagram is trusted.</div>
   ${D('0 0 700 250','The parts of a well-formed architecture diagram: title question, date and owner, the drawing, the legend, boundaries and an out-of-scope note.',
-   `${box(14,20,672,44,'var(--violet)')}${tm(350,40,'the question this page answers — not a title, a question','var(--violet)')}${tm(350,56,'“how does a payment reach the ledger, and what happens when the ledger is down?”','var(--dim)')}
+   `${box(14,20,672,44,'var(--violet)')}${tm(350,40,'the question this page answers: not a title, a question','var(--violet)')}${tm(350,56,'“how does a payment reach the ledger, and what happens when the ledger is down?”','var(--dim)')}
     ${box(14,72,330,26,'var(--dim)')}${tm(179,90,'owner · team · contact','var(--dim)')}
     ${box(356,72,330,26,'var(--dim)')}${tm(521,90,'last true on · version · where it lives','var(--dim)')}
     ${box(14,106,470,96,'var(--teal)')}${tm(249,150,'the drawing itself','var(--teal)')}${tm(249,168,'boxes, arrows, boundaries','var(--dim)')}
@@ -364,15 +364,15 @@ document.getElementById('sec-anatomy').innerHTML=`
   <tr><td><b>Date and version</b></td><td>Lets a reader judge how much to trust it</td><td><b>The single biggest cause of diagrams being ignored.</b> Undated means unknowable, and unknowable means treat as fiction</td></tr>
   <tr><td><b>Where it lives</b></td><td>A link to the source, so the next person edits rather than redraws</td><td>Four versions of the same diagram in four documents, quietly disagreeing</td></tr>
   <tr><td><b>The legend</b></td><td>Says what a line, a colour and a box shape mean <em>on this page</em></td><td>Every reader guesses. Most guess wrong, and none of them mention it</td></tr>
-  <tr><td><b>Boundaries</b></td><td>Account, network, region, trust &mdash; the crossings are where the interesting questions live</td><td>A reviewer cannot tell what is inside what, which is most of what they came to check</td></tr>
+  <tr><td><b>Boundaries</b></td><td>Account, network, region, trust. The crossings are where the interesting questions live</td><td>A reviewer cannot tell what is inside what, which is most of what they came to check</td></tr>
   <tr><td><b>What is not shown</b></td><td>An explicit list of deliberate omissions</td><td>Twenty minutes of a review spent establishing scope, every time, with a different person</td></tr>
   </tbody></table>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; find what is wrong with this one</h2>
-  <div class="plain-line"><b>Try this:</b> a real-looking diagram with eight defects in it. Click anything you think is wrong. Nothing is a trick &mdash; every one of them is a mistake that appears in production documentation constantly.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Proofreading somebody else’s document. The spelling is fine and the facts are right; what is missing is a date, a name, and any indication of what it is for.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click the first item — the title — and read why a subject is not a question.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>legend</b> the key saying what a line, colour or shape means</span><span class="sp-w"><b>boundary</b> a box drawn around other boxes: an account, a network, a region</span><span class="sp-w"><b>scope note</b> one line saying what you deliberately left out</span><span class="sp-w"><b>failure path</b> what happens when something does not answer</span></span></div></div>
+  <h2 class="sec">Try it: find what is wrong with this one</h2>
+  <div class="plain-line"><b>Try this:</b> a real-looking diagram with eight defects in it. Click anything you think is wrong. Nothing is a trick, every one of them is a mistake that appears in production documentation constantly.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Proofreading somebody else’s document. The spelling is fine and the facts are right; what is missing is a date, a name, and any indication of what it is for.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click the first item (the title) and read why a subject is not a question.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>legend</b> the key saying what a line, colour or shape means</span><span class="sp-w"><b>boundary</b> a box drawn around other boxes: an account, a network, a region</span><span class="sp-w"><b>scope note</b> one line saying what you deliberately left out</span><span class="sp-w"><b>failure path</b> what happens when something does not answer</span></span></div></div>
   <div class="sim-layout">
     <div><div id="docOut"></div></div>
     <div><div id="docNote" class="cidr-out"></div>
@@ -395,25 +395,25 @@ document.getElementById('sec-anatomy').innerHTML=`
      bad:'There are solid arrows and dashed arrows on this page and nothing says what the difference is. Every reader guesses, most guess wrong, and none of them will mention it.',
      fix:'A legend saying what each line style, colour and box shape means on this page.'},
     {k:'mix',label:'“OrderRepository” beside “Global load balancer”',kind:'box',
-     bad:'A class name and a piece of cloud infrastructure on the same page. Four levels of zoom at once — the map problem.',
+     bad:'A class name and a piece of cloud infrastructure on the same page. Four levels of zoom at once, the map problem.',
      fix:'The class belongs on a component diagram of one container, if it is worth drawing at all.'},
     {k:'arrow',label:'unlabelled arrows',kind:'edge',
      bad:'An arrow with no label could mean a request, a dependency, a data flow or a deployment. Six arrows, six guesses.',
      fix:'Label every edge with the protocol and what it carries: “HTTPS · payment intent”.'},
     {k:'happy',label:'no failure paths anywhere',kind:'edge',
      bad:'Every arrow is the happy path. The diagram cannot answer the question anyone actually opens it to ask, which is what happens when something is down.',
-     fix:'Mark the retries, the timeouts, the fallbacks and the dead-letter path — at least on the critical route.'},
+     fix:'Mark the retries, the timeouts, the fallbacks and the dead-letter path, at least on the critical route.'},
     {k:'bound',label:'no boundaries drawn',kind:'box',
      bad:'Nothing shows which things are in which account, network or region. The crossings are exactly where the security and latency questions live, and they are invisible.',
      fix:'Draw the account, network and region boundaries as containers, and let the crossings be visible.'},
     {k:'scope',label:'no “not shown” note',kind:'meta',
-     bad:'Monitoring, CI/CD and the admin console are all absent. A reader cannot tell whether they were forgotten or deliberately excluded, so they will ask — every reader, every time.',
+     bad:'Monitoring, CI/CD and the admin console are all absent. A reader cannot tell whether they were forgotten or deliberately excluded, so they will ask, every reader, every time.',
      fix:'One line at the bottom: “Not shown: monitoring, CI/CD, the internal admin console.”'}
   ];
   let found={};
   function render(){
     const n=Object.keys(found).length;
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE DIAGRAM AS PRESENTED — CLICK ANYTHING WRONG</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE DIAGRAM AS PRESENTED, CLICK ANYTHING WRONG</div>'+
       '<div style="border:1px dashed var(--line2);border-radius:11px;padding:14px;background:var(--panel2)">'+
       D.map(d=>'<button class="svc'+(found[d.k]?' on':'')+'" data-k="'+d.k+'" style="display:block;width:100%;margin-bottom:6px">'+
         (found[d.k]?'✓ ':'')+d.label+'</button>').join('')+
@@ -430,8 +430,8 @@ document.getElementById('sec-anatomy').innerHTML=`
       html='<div class="lzbad" style="margin-bottom:10px"><b>'+d.label+'</b><br>'+d.bad+'</div>'+
            '<div class="ok" style="margin-bottom:10px"><b>Instead.</b> '+d.fix+'</div>'; }
     if(Object.keys(found).length===D.length)
-      html+='<div class="ok" style="margin-bottom:10px"><b>All eight.</b> Notice that only three of them are about the drawing. The other five are the small print — the question, the date, the legend, the boundaries and the scope note — and every one of those takes under a minute.</div>';
-    html+='<div class="simnote" style="margin-top:8px"><b>The uncomfortable part:</b> a diagram with all eight of these defects can still be <em>accurate</em>. Every box correct, every line real. Accuracy is not the problem with most architecture diagrams and never has been — usability is.</div>';
+      html+='<div class="ok" style="margin-bottom:10px"><b>All eight.</b> Notice that only three of them are about the drawing. The other five are the small print (the question, the date, the legend, the boundaries and the scope note) and every one of those takes under a minute.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The uncomfortable part:</b> a diagram with all eight of these defects can still be <em>accurate</em>. Every box correct, every line real. Accuracy is not the problem with most architecture diagrams and never has been, usability is.</div>';
     note.innerHTML=html;
   }
   rst.onclick=()=>{found={};render();};
@@ -441,13 +441,13 @@ document.getElementById('sec-anatomy').innerHTML=`
 document.getElementById('sec-notation').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">An arrow is the most overloaded symbol in engineering</h2>
-  <div class="plain-line"><b>In plain English:</b> draw an arrow from A to B and you have said something. The trouble is that nobody agrees what. It might mean A calls B, or A depends on B, or data flows from A to B, or A deploys to B &mdash; and those are <em>different and sometimes opposite</em>. A read from a database is a call from the app to the database and a flow of data from the database to the app. Same two boxes, opposite arrows, both correct.</div>
+  <div class="plain-line"><b>In plain English:</b> draw an arrow from A to B and you have said something. The trouble is that nobody agrees what. It might mean A calls B, or A depends on B, or data flows from A to B, or A deploys to B, and those are <em>different and sometimes opposite</em>. A read from a database is a call from the app to the database and a flow of data from the database to the app. Same two boxes, opposite arrows, both correct.</div>
   <div class="plain-line"><b>Pick one meaning and write it down.</b> The most useful convention is <b>the arrow points the way the request goes</b>, and the label says what is carried. Then a reader can work out data direction from the label, and there is never an ambiguous edge on the page.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; one picture, five arrows, five different systems</h2>
-  <div class="plain-line"><b>Try this:</b> the boxes and the lines never change. Only what an arrow is agreed to mean changes &mdash; and each meaning describes a different system with different failure modes. Every reader assumes one of these, and the diagram does not say which.</div>
+  <h2 class="sec">Try it: one picture, five arrows, five different systems</h2>
+  <div class="plain-line"><b>Try this:</b> the boxes and the lines never change. Only what an arrow is agreed to mean changes, and each meaning describes a different system with different failure modes. Every reader assumes one of these, and the diagram does not say which.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>An arrow drawn between two names on a whiteboard. To the person who drew it, it meant &ldquo;sends an order to&rdquo;. To the person reading it on Monday, it meant &ldquo;cannot start without&rdquo;. Both are reasonable readings of the same arrow, and only one of them is true.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>a synchronous call</b>, then switch to <b>an async message</b> and watch the failure question change completely.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>synchronous</b> the caller waits for it to finish</span><span class="sp-w"><b>asynchronous</b> the caller hands the work off and carries on</span><span class="sp-w"><b>dependency</b> something that has to be there for this to work</span><span class="sp-w"><b>coupling</b> how much one thing has to know about another</span><span class="sp-w"><b>back pressure</b> a slow consumer pushing the delay back up the chain</span></span></div></div>
   <div class="sim-layout">
     <div><div id="dgArrowOut"></div></div>
@@ -457,9 +457,9 @@ document.getElementById('sec-notation').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; build the legend and watch the diagram change meaning</h2>
-  <div class="plain-line"><b>Try this:</b> the same six boxes and six arrows every time. Choose what your notation means and see how much the reader can work out &mdash; and which questions become answerable that were not before.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Road signs. The same junction with no markings, then with arrows, then with lane directions and destinations. Nothing about the road changed and everything about your ability to use it did.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>Solid is synchronous, dashed is asynchronous</b> on its own first — it does the most work of the four.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>synchronous</b> the caller waits for it to finish</span><span class="sp-w"><b>asynchronous</b> the caller hands it over and carries on</span><span class="sp-w"><b>edge</b> a line between two boxes</span><span class="sp-w"><b>protocol</b> how two things talk — HTTPS, SQL, a message on a queue</span></span></div></div>
+  <h2 class="sec">Try it: build the legend and watch the diagram change meaning</h2>
+  <div class="plain-line"><b>Try this:</b> the same six boxes and six arrows every time. Choose what your notation means and see how much the reader can work out, and which questions become answerable that were not before.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Road signs. The same junction with no markings, then with arrows, then with lane directions and destinations. Nothing about the road changed and everything about your ability to use it did.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>Solid is synchronous, dashed is asynchronous</b> on its own first. It does the most work of the four.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>synchronous</b> the caller waits for it to finish</span><span class="sp-w"><b>asynchronous</b> the caller hands it over and carries on</span><span class="sp-w"><b>edge</b> a line between two boxes</span><span class="sp-w"><b>protocol</b> how two things talk, HTTPS, SQL, a message on a queue</span></span></div></div>
   <div class="sim-layout">
     <div><div id="ntOut"></div></div>
     <div><div class="toggles" id="ntCtl"></div>
@@ -471,15 +471,15 @@ document.getElementById('sec-notation').innerHTML=`
   <h2 class="sec">The conventions worth adopting, and why each earns its ink</h2>
   <table class="osi"><thead><tr><th>Convention</th><th>What it buys</th></tr></thead><tbody>
   <tr><td><b>Arrow direction = the request</b></td><td>One unambiguous meaning. Data direction is then readable from the label, which you were going to write anyway</td></tr>
-  <tr><td><b>Solid = synchronous, dashed = asynchronous</b></td><td><b>The highest-value distinction on the page.</b> It tells you which failures cascade immediately and which are absorbed by a queue &mdash; two completely different failure stories, visible at a glance</td></tr>
+  <tr><td><b>Solid = synchronous, dashed = asynchronous</b></td><td><b>The highest-value distinction on the page.</b> It tells you which failures cascade immediately and which are absorbed by a queue, two completely different failure stories, visible at a glance</td></tr>
   <tr><td><b>Label every edge with protocol and payload</b></td><td>&ldquo;HTTPS &middot; payment intent&rdquo; answers three questions at once: what carries it, what is on it, and roughly how big the coupling is</td></tr>
-  <tr><td><b>Boxes for things you build, a different shape for things you buy</b></td><td>The reader instantly knows what you control and what you merely depend on &mdash; which is most of the risk conversation</td></tr>
+  <tr><td><b>Boxes for things you build, a different shape for things you buy</b></td><td>The reader instantly knows what you control and what you merely depend on, which is most of the risk conversation</td></tr>
   <tr><td><b>Boundaries as containers, not as colours</b></td><td>Nesting is unambiguous. A colour needs a legend and gets lost when somebody prints it in greyscale</td></tr>
-  <tr><td><b>Colour for one thing only</b></td><td>Data sensitivity, or ownership, or environment &mdash; pick one. Colour carrying two meanings carries none</td></tr>
+  <tr><td><b>Colour for one thing only</b></td><td>Data sensitivity, or ownership, or environment, pick one. Colour carrying two meanings carries none</td></tr>
   <tr><td><b>Numbered steps on the critical path</b></td><td>Turns a picture into a narrative. The reader follows 1, 2, 3 instead of choosing their own route through your edges</td></tr>
-  <tr><td><b>Vendor icons as decoration, never as information</b></td><td>The label is the information. Icons help someone who already knows them and are noise to everyone else &mdash; and they are useless the moment somebody prints it</td></tr>
+  <tr><td><b>Vendor icons as decoration, never as information</b></td><td>The label is the information. Icons help someone who already knows them and are noise to everyone else, and they are useless the moment somebody prints it</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The one to adopt first if you adopt nothing else</b> is solid against dashed. A page where you can see at a glance which calls block and which do not is a page that can answer &ldquo;what happens when this is slow?&rdquo; &mdash; and that is the question behind most production incidents.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The one to adopt first if you adopt nothing else</b> is solid against dashed. A page where you can see at a glance which calls block and which do not is a page that can answer &ldquo;what happens when this is slow?&rdquo;, and that is the question behind most production incidents.</div>
 </div>`;
 
 /* --- SIM: notation --- */
@@ -517,8 +517,8 @@ document.getElementById('sec-notation').innerHTML=`
           '<span style="width:118px;color:var(--muted)">'+e.b+'</span></div>';
       }).join('')+
       (on.sync?'<div style="display:flex;gap:16px;margin-top:14px;font-family:var(--mono);font-size:10.5px">'+
-        '<span style="color:var(--violet)">━━ synchronous — the caller waits</span>'+
-        '<span style="color:var(--teal)">╌╌ asynchronous — it does not</span></div>':'')+
+        '<span style="color:var(--violet)">━━ synchronous. The caller waits</span>'+
+        '<span style="color:var(--teal)">╌╌ asynchronous. It does not</span></div>':'')+
       '<div class="dim" style="font-size:11px;margin:18px 0 6px">WHAT A READER CAN NOW WORK OUT</div>'+
       [['dir','which side initiates each conversation'],
        ['sync','which failures cascade immediately and which a queue absorbs'],
@@ -527,11 +527,11 @@ document.getElementById('sec-notation').innerHTML=`
       .map(([k,t])=>'<div class="lzrow" style="margin-bottom:4px"><span class="lzmark" style="color:var('+(on[k]?'--green':'--red')+')">'+(on[k]?'✓':'✗')+'</span><span'+(on[k]?'':' style="opacity:.5"')+'>'+t+'</span></div>').join('');
     let html='';
     const n=Object.values(on).filter(Boolean).length;
-    if(n===0) html='<div class="lzbad" style="margin-bottom:10px"><b>Six lines between six boxes, and that is all you have said.</b> A reader cannot tell who calls whom, what is carried, what blocks, or in what order. This is a picture of the fact that these things are connected — which almost nobody needed telling.</div>';
-    if(on.sync) html+='<div class="ok" style="margin-bottom:10px"><b>Solid against dashed is doing the heaviest lifting here.</b> You can now see that a slow fraud check stalls every payment, and a slow settlement worker does not — because a queue sits in between. That is two entirely different incident stories, readable at a glance.</div>';
-    if(on.label&&on.dir) html+='<div class="ok" style="margin-bottom:10px"><b>Direction plus labels removes the last ambiguity.</b> The API calls the database and the data comes back the other way — obvious from “SQL · write intent” without drawing a second arrow for it.</div>';
+    if(n===0) html='<div class="lzbad" style="margin-bottom:10px"><b>Six lines between six boxes, and that is all you have said.</b> A reader cannot tell who calls whom, what is carried, what blocks, or in what order. This is a picture of the fact that these things are connected, which almost nobody needed telling.</div>';
+    if(on.sync) html+='<div class="ok" style="margin-bottom:10px"><b>Solid against dashed is doing the heaviest lifting here.</b> You can now see that a slow fraud check stalls every payment, and a slow settlement worker does not, because a queue sits in between. That is two entirely different incident stories, readable at a glance.</div>';
+    if(on.label&&on.dir) html+='<div class="ok" style="margin-bottom:10px"><b>Direction plus labels removes the last ambiguity.</b> The API calls the database and the data comes back the other way, obvious from “SQL · write intent” without drawing a second arrow for it.</div>';
     if(n===4) html+='<div class="ok" style="margin-bottom:10px"><b>Four conventions, and the page went from “these things are connected” to a story somebody can act on.</b> None of them changed a single box.</div>';
-    html+='<div class="simnote" style="margin-top:8px"><b>Whatever you choose, put it in the legend.</b> These conventions are not standards — there is no universal meaning for a dashed line. They work because the page says what they mean, and a reader who guesses wrong will never tell you they did.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>Whatever you choose, put it in the legend.</b> These conventions are not standards. There is no universal meaning for a dashed line. They work because the page says what they mean, and a reader who guesses wrong will never tell you they did.</div>';
     note.innerHTML=html;
   }
   render();
@@ -554,7 +554,7 @@ document.getElementById('sec-notation').innerHTML=`
     reads:'Checkout puts a message on a queue. Pricing picks it up whenever it can.',
     fail:'If Pricing is down, <b>Checkout does not notice</b>. The work piles up and is done later.',
     ask:'How deep can the queue get, and who is told when it stops draining?',
-    risk:'low', risktxt:'Availability is decoupled, but so is correctness — the customer may be told &ldquo;done&rdquo; before it is.'},
+    risk:'low', risktxt:'Availability is decoupled, but so is correctness. The customer may be told &ldquo;done&rdquo; before it is.'},
    {k:'dep', n:'a build or deploy dependency', dash:'stroke-dasharray:2 3', head:'url(#ah)', col:'var(--violet)',
     reads:'Checkout cannot be built, or cannot start, without Pricing&rsquo;s library or schema.',
     fail:'Nothing fails at runtime. It fails <b>in the pipeline</b>, or at start-up, on a Friday.',
@@ -563,7 +563,7 @@ document.getElementById('sec-notation').innerHTML=`
    {k:'data', n:'data flowing', dash:'', head:'url(#ah)', col:'var(--green)',
     reads:'Order records move from Checkout to Pricing. It says nothing about who initiated it.',
     fail:'Pricing might be <b>pulling</b> on a schedule, and the arrow would look identical.',
-    ask:'Who starts this — push or pull? And how stale is the copy allowed to be?',
+    ask:'Who starts this, push or pull? And how stale is the copy allowed to be?',
     risk:'med', risktxt:'The most commonly meant and least commonly stated. A data arrow with no direction of control is half a diagram.'},
    {k:'own', n:'ownership or trust', dash:'stroke-dasharray:8 3', head:'', col:'var(--amber)',
     reads:'The Checkout team owns Pricing, or Checkout is allowed to call it.',
@@ -575,7 +575,7 @@ document.getElementById('sec-notation').innerHTML=`
   const RISK={high:['var(--red)','couples availability'],med:['var(--amber)','couples something'],low:['var(--green)','decoupled at runtime']};
   function render(){
     ctl.innerHTML=M.map((m,i)=>'<button class="seg'+(i===cur?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
-      +'the arrow means &mdash; <b>'+m.n+'</b></button>').join('');
+      +'the arrow means, <b>'+m.n+'</b></button>').join('');
     ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;render();});
     const m=M[cur];
     out.innerHTML = D('0 0 600 168',
@@ -605,13 +605,13 @@ document.getElementById('sec-services').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Boring by default</h2>
   <div class="plain-line"><b>In plain English:</b> a diagram is a proposal, and every box in it is something a team will operate at three in the morning for the next four years. The bar for putting something interesting on the page should therefore be high, and the honest default is: <b>the most boring managed service that meets the requirement</b>, run by the fewest people, doing one job.</div>
-  <div class="plain-line">That is not conservatism for its own sake. Every additional distinct technology on a diagram costs you a body of expertise, an upgrade path, a set of failure modes nobody has seen yet, and one more thing to check during an incident. <b>If something exotic is on the page, the diagram should say why in writing</b> &mdash; and if you cannot write that sentence, it should come off.</div>
+  <div class="plain-line">That is not conservatism for its own sake. Every additional distinct technology on a diagram costs you a body of expertise, an upgrade path, a set of failure modes nobody has seen yet, and one more thing to check during an incident. <b>If something exotic is on the page, the diagram should say why in writing</b>, and if you cannot write that sentence, it should come off.</div>
   <div class="vs2"><div class="col"><b>REACH FOR MANAGED</b>Somebody else patches it, scales it and gets paged for it at four in the morning.<br><br><b>The trade:</b> less control, a pricing model you did not design, and a limit you will one day discover.<br><br><b>The default answer</b> unless there is a stated reason otherwise.</div>
   <div class="col"><b>REACH FOR SELF-RUN</b>You need something the managed version cannot do, or you have a portability requirement somebody has written down.<br><br><b>The trade:</b> you own patching, scaling, backups, upgrades and the pager.<br><br><b>Needs a sentence on the page</b> saying which requirement forced it.</div></div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; fill the boxes for a real requirement</h2>
+  <h2 class="sec">Try it: fill the boxes for a real requirement</h2>
   <div class="plain-line"><b>Try this:</b> eight requirements from an ordinary production system. For each, see the boring default in all three clouds, the tempting alternative, and the question that decides between them.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing a van for a business. There is a sensible one that everyone can drive and the garage knows, and there is a fascinating one. The second needs a reason written down.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>Store transactional data</b> and read the question that decides it.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>managed service</b> one the cloud provider runs, patches and gets paged for</span><span class="sp-w"><b>self-run</b> one you install, patch, scale and carry the pager for</span><span class="sp-w"><b>operational load</b> the ongoing human cost of keeping something alive</span></span></div></div>
   <div class="sim-layout">
@@ -624,7 +624,7 @@ document.getElementById('sec-services').innerHTML=`
 <div class="card">
   <h2 class="sec">The questions that actually pick the service</h2>
   <div class="lzrow"><span class="lzmark">1</span><span><b>Does the team already run one of these?</b> The strongest argument in the room, and the one most often left out of the design document. A slightly worse technology your people already understand beats a slightly better one they do not.</span></div>
-  <div class="lzrow"><span class="lzmark">2</span><span><b>What is the failure behaviour, and can we live with it?</b> Not the uptime figure &mdash; what actually happens to <em>your</em> users during the failure, and how long it lasts.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>What is the failure behaviour, and can we live with it?</b> Not the uptime figure, what actually happens to <em>your</em> users during the failure, and how long it lasts.</span></div>
   <div class="lzrow"><span class="lzmark">3</span><span><b>What does it cost at ten times this volume?</b> Some services are cheap until a threshold and then are not. Worth knowing before it is on a diagram somebody approved.</span></div>
   <div class="lzrow"><span class="lzmark">4</span><span><b>How would we get off it?</b> Not because you plan to, but because the answer tells you how much you are betting. &ldquo;Rewrite six services&rdquo; and &ldquo;change a connection string&rdquo; are very different bets.</span></div>
   <div class="lzrow"><span class="lzmark">5</span><span><b>Who gets paged, and do they know?</b> A box on a diagram is a future on-call rota entry. If nobody has agreed to own it, it is not a design, it is a wish.</span></div>
@@ -643,7 +643,7 @@ document.getElementById('sec-services').innerHTML=`
     {k:'sql',n:'Store transactional data with relationships',
      dull:{aws:'RDS or Aurora PostgreSQL',az:'Azure Database for PostgreSQL',gcp:'Cloud SQL or AlloyDB'},
      shiny:'A distributed SQL database with global consistency',
-     q:'Do you genuinely need writes in more than one region at once? Almost nobody does, and the ones who do know it — the requirement is loud, not subtle.'},
+     q:'Do you genuinely need writes in more than one region at once? Almost nobody does, and the ones who do know it. The requirement is loud, not subtle.'},
     {k:'queue',n:'Decouple two services so one can be slow',
      dull:{aws:'SQS',az:'Azure Service Bus or Storage Queues',gcp:'Pub/Sub'},
      shiny:'A self-run event streaming platform',
@@ -651,11 +651,11 @@ document.getElementById('sec-services').innerHTML=`
     {k:'file',n:'Store files users upload',
      dull:{aws:'S3',az:'Blob Storage',gcp:'Cloud Storage'},
      shiny:'A network file share, because the code expects a filesystem',
-     q:'This one is usually not a technology decision at all — it is whether you are willing to change the code. Object storage is cheaper, safer and more durable, and it is not a filesystem.'},
+     q:'This one is usually not a technology decision at all. It is whether you are willing to change the code. Object storage is cheaper, safer and more durable, and it is not a filesystem.'},
     {k:'secret',n:'Hold credentials the application needs',
      dull:{aws:'Secrets Manager or Parameter Store',az:'Key Vault',gcp:'Secret Manager'},
      shiny:'Environment variables set at deploy time',
-     q:'Not really tempting, and extremely common. The question is whether you can rotate a credential without a deployment — if not, you will not rotate it.'},
+     q:'Not really tempting, and extremely common. The question is whether you can rotate a credential without a deployment, if not, you will not rotate it.'},
     {k:'batch',n:'Run something on a schedule every night',
      dull:{aws:'EventBridge Scheduler + a container task',az:'Logic Apps or a Container Apps job',gcp:'Cloud Scheduler + Cloud Run job'},
      shiny:'A workflow orchestrator with a DAG editor',
@@ -663,11 +663,11 @@ document.getElementById('sec-services').innerHTML=`
     {k:'search',n:'Let users search a large catalogue',
      dull:{aws:'OpenSearch Service',az:'Azure AI Search',gcp:'Vertex AI Search'},
      shiny:'A vector database and your own embedding pipeline',
-     q:'Is a keyword search with filters actually insufficient? Try it first — it is a week of work, and it is frequently the answer.'},
+     q:'Is a keyword search with filters actually insufficient? Try it first. It is a week of work, and it is frequently the answer.'},
     {k:'cache',n:'Take read load off the database',
      dull:{aws:'ElastiCache for Redis',az:'Azure Cache for Redis',gcp:'Memorystore'},
      shiny:'A cache in the application process',
-     q:'This one inverts: the boring answer is the managed cache, and the tempting shortcut is in-process. In-process is faster and gives every instance a different answer — which is only fine until it is not.'}
+     q:'This one inverts: the boring answer is the managed cache, and the tempting shortcut is in-process. In-process is faster and gives every instance a different answer, which is only fine until it is not.'}
   ];
   let cur='sql';
   const CN={aws:'AWS',az:'Azure',gcp:'Google Cloud'};
@@ -683,7 +683,7 @@ document.getElementById('sec-services').innerHTML=`
       '<div class="dim" style="font-size:11px;margin-bottom:6px">WHAT SOMEBODY WILL PROPOSE INSTEAD</div>'+
       '<div style="border:1.5px solid var(--amber);color:var(--amber);border-radius:9px;padding:9px 12px;font-size:12.5px">'+r.shiny+'</div>';
     note.innerHTML='<div class="lzrow"><span class="lzmark" style="color:var(--amber)">?</span><span><b>The question that decides it.</b> '+r.q+'</span></div>'+
-      '<div class="simnote" style="margin-top:10px"><b>The alternative is not wrong.</b> Every one of these is the right answer for somebody — the point is that it needs a stated reason on the page, and the boring option does not. Defaults should be free; departures should cost a sentence.</div>'+
+      '<div class="simnote" style="margin-top:10px"><b>The alternative is not wrong.</b> Every one of these is the right answer for somebody. The point is that it needs a stated reason on the page, and the boring option does not. Defaults should be free; departures should cost a sentence.</div>'+
       '<div class="simnote" style="margin-top:8px"><b>And write the reason down where the diagram lives.</b> Not in a chat message and not in somebody’s head. In eighteen months the person asking “why on earth did we choose this?” will be you.</div>';
   }
   render();
@@ -692,14 +692,14 @@ document.getElementById('sec-services').innerHTML=`
 document.getElementById('sec-missing').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The happy path is the one nobody needed a diagram for</h2>
-  <div class="plain-line"><b>In plain English:</b> almost every architecture diagram shows the system working. Request comes in, goes through four boxes, answer goes out. That is the version everyone already has in their head &mdash; nobody opens a diagram at three in the morning to find out how it works when it works. <b>They open it to find out what happens when one of the boxes is not answering</b>, and that is exactly what the page does not say.</div>
+  <div class="plain-line"><b>In plain English:</b> almost every architecture diagram shows the system working. Request comes in, goes through four boxes, answer goes out. That is the version everyone already has in their head. Nobody opens a diagram at three in the morning to find out how it works when it works. <b>They open it to find out what happens when one of the boxes is not answering</b>, and that is exactly what the page does not say.</div>
   <div class="plain-line">Drawing the failure paths is more work, and it is the difference between a picture of a system and a document somebody can act on.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; break one dependency at a time</h2>
-  <div class="plain-line"><b>Try this:</b> a happy-path diagram, and a switch to break each dependency. Read what the user experiences, and then read what the diagram should have shown &mdash; because in every case there is a single annotation that would have answered it.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A fire drill. The building plan showing where the rooms are is not the same document as the one showing where to go when the alarm sounds — and only one of them is ever used under pressure.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>The event queue is unavailable</b> — the failure where the user sees nothing at all.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>dependency</b> something your system needs in order to work</span><span class="sp-w"><b>timeout</b> how long you wait before giving up on something</span><span class="sp-w"><b>retry</b> trying again after a failure</span><span class="sp-w"><b>retention</b> how long a queue can hold messages before dropping them</span><span class="sp-w"><b>blast radius</b> the most damage something can do if it goes wrong</span></span></div></div>
+  <h2 class="sec">Try it: break one dependency at a time</h2>
+  <div class="plain-line"><b>Try this:</b> a happy-path diagram, and a switch to break each dependency. Read what the user experiences, and then read what the diagram should have shown, because in every case there is a single annotation that would have answered it.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A fire drill. The building plan showing where the rooms are is not the same document as the one showing where to go when the alarm sounds, and only one of them is ever used under pressure.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>The event queue is unavailable</b>. The failure where the user sees nothing at all.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>dependency</b> something your system needs in order to work</span><span class="sp-w"><b>timeout</b> how long you wait before giving up on something</span><span class="sp-w"><b>retry</b> trying again after a failure</span><span class="sp-w"><b>retention</b> how long a queue can hold messages before dropping them</span><span class="sp-w"><b>blast radius</b> the most damage something can do if it goes wrong</span></span></div></div>
   <div class="sim-layout">
     <div><div id="fpOut"></div></div>
     <div><div class="segmented" id="fpPick" style="flex-direction:column;align-items:stretch"></div>
@@ -718,7 +718,7 @@ document.getElementById('sec-missing').innerHTML=`
   <tr><td><b>Volume and latency on the hot path</b></td><td>Which of these is the one that matters?</td><td>Annotate the busiest route with requests per second and a latency budget per hop</td></tr>
   <tr><td><b>What is deliberately not shown</b></td><td>Did you forget monitoring, or leave it out on purpose?</td><td>One line at the bottom. Saves twenty minutes in every review, with every reviewer</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>You do not need all seven on one page</b> &mdash; that is how you get back to sixty boxes. Pick the ones that serve the question at the top. A diagram answering &ldquo;what happens when the ledger is down&rdquo; needs failure behaviour and sync-versus-async, and can leave data classification for the page that asks about compliance.</div>
+  <div class="plain-line" style="margin-top:12px"><b>You do not need all seven on one page</b>. That is how you get back to sixty boxes. Pick the ones that serve the question at the top. A diagram answering &ldquo;what happens when the ledger is down&rdquo; needs failure behaviour and sync-versus-async, and can leave data classification for the page that asks about compliance.</div>
 </div>`;
 
 /* --- SIM: failure paths --- */
@@ -732,7 +732,7 @@ document.getElementById('sec-missing').innerHTML=`
      v:['ok','<b>This is the diagram everybody draws.</b> It is accurate and it answers a question nobody was asking, because this is the version already in their heads.']},
     {k:'fraud',label:'The fraud service is slow',
      hops:[['Web app','ok'],['Payments API','wait'],['Fraud check','slow'],['Payments DB','ok'],['Event queue','ok'],['Settlement worker','ok']],
-     user:'<b>Every payment hangs for thirty seconds and then fails.</b> Not just the fraudulent ones — all of them, because the call is synchronous and there is no timeout on the page.',
+     user:'<b>Every payment hangs for thirty seconds and then fails.</b> Not just the fraudulent ones, all of them, because the call is synchronous and there is no timeout on the page.',
      v:['lzbad','<b>A synchronous call to a third party with no stated timeout is the commonest way a whole product goes down.</b> The diagram showed the arrow and said nothing about what happens when the other end does not answer.'],
      fix:'One annotation on that edge: <span class="code">timeout 2s · 1 retry · fail open to manual review</span>. Now the reader knows the blast radius before the incident, and so does whoever is designing it.'},
     {k:'db',label:'The database fails over',
@@ -743,16 +743,16 @@ document.getElementById('sec-missing').innerHTML=`
     {k:'queue',label:'The event queue is unavailable',
      hops:[['Web app','ok'],['Payments API','ok'],['Fraud check','ok'],['Payments DB','ok'],['Event queue','down'],['Settlement worker','idle']],
      user:'<b>Nothing. Payments carry on working normally.</b> Settlement stops silently, and nobody finds out until the reconciliation the next morning.',
-     v:['lzwarn','<b>The most interesting failure on this page, precisely because the user sees nothing.</b> An asynchronous boundary absorbed the failure — which is what it is for — and in doing so hid it. This is the failure that is discovered by accounting rather than by monitoring.'],
+     v:['lzwarn','<b>The most interesting failure on this page, precisely because the user sees nothing.</b> An asynchronous boundary absorbed the failure (which is what it is for) and in doing so hid it. This is the failure that is discovered by accounting rather than by monitoring.'],
      fix:'Draw the dashed line so the absorption is visible, and annotate the consumer with what to alert on: queue depth, and age of the oldest unprocessed message. Silence is not success.'},
     {k:'bank',label:'Core banking is down for four hours',
      hops:[['Web app','ok'],['Payments API','ok'],['Fraud check','ok'],['Payments DB','ok'],['Event queue','build'],['Settlement worker','stuck']],
-     user:'Payments still work. The queue builds up for four hours and drains afterwards — <b>if</b> it can hold four hours of messages, which nothing on the diagram says.',
+     user:'Payments still work. The queue builds up for four hours and drains afterwards, <b>if</b> it can hold four hours of messages, which nothing on the diagram says.',
      v:['lzbad','<b>The question the diagram cannot answer is the only one that matters here:</b> how long can the buffer hold? A queue with a message retention shorter than the outage does not delay the problem, it deletes it.'],
      fix:'Annotate the queue with retention and expected drain rate. &ldquo;Holds 24h at peak&rdquo; converts an unbounded worry into a known limit, and tells whoever is on call when to escalate.'}
   ];
   const COL={ok:'var(--green)',wait:'var(--amber)',slow:'var(--red)',down:'var(--red)',idle:'var(--dim)',build:'var(--amber)',stuck:'var(--red)'};
-  const LBL={ok:'fine',wait:'blocked, waiting',slow:'slow',down:'down',idle:'idle — nothing arriving',build:'filling up',stuck:'cannot deliver'};
+  const LBL={ok:'fine',wait:'blocked, waiting',slow:'slow',down:'down',idle:'idle. Nothing arriving',build:'filling up',stuck:'cannot deliver'};
   let cur='fraud';
   function render(){
     pick.innerHTML=F.map(f=>'<button class="seg'+(cur===f.k?' on':'')+'" data-k="'+f.k+'" style="text-align:left">'+f.label+'</button>').join('');
@@ -767,7 +767,7 @@ document.getElementById('sec-missing').innerHTML=`
       '<div class="plain-line">'+f.user+'</div>';
     note.innerHTML='<div class="'+f.v[0]+'" style="margin-bottom:10px">'+f.v[1]+'</div>'+
       (f.fix?'<div class="ok" style="margin-bottom:10px"><b>What the diagram should have said.</b> '+f.fix+'</div>':'')+
-      '<div class="simnote" style="margin-top:8px"><b>Every one of these fixes is an annotation, not a redrawing.</b> The boxes and arrows were already right. What was missing was a handful of words on the edges — timeouts, retention, what happens when the retries run out — and those words are the entire difference between a picture and a document you can act on.</div>';
+      '<div class="simnote" style="margin-top:8px"><b>Every one of these fixes is an annotation, not a redrawing.</b> The boxes and arrows were already right. What was missing was a handful of words on the edges (timeouts, retention, what happens when the retries run out) and those words are the entire difference between a picture and a document you can act on.</div>';
   }
   render();
 })();
@@ -776,14 +776,14 @@ document.getElementById('sec-missing').innerHTML=`
 document.getElementById('sec-nfr').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The diagram is the answer. These are the questions.</h2>
-  <div class="plain-line"><b>In plain English:</b> an architecture is a set of answers to questions about how well the thing has to work &mdash; how fast, how available, how much data you can lose, what it may cost, where it may live. Draw the diagram before answering them and you have guessed, and the guesses are invisible in the picture. <b>Every box on a page is an answer to a question somebody should have asked.</b></div>
+  <div class="plain-line"><b>In plain English:</b> an architecture is a set of answers to questions about how well the thing has to work, how fast, how available, how much data you can lose, what it may cost, where it may live. Draw the diagram before answering them and you have guessed, and the guesses are invisible in the picture. <b>Every box on a page is an answer to a question somebody should have asked.</b></div>
   <div class="plain-line">The useful thing about writing the questions down first is that most of them have a <em>cheap</em> answer and an <em>expensive</em> one, and the difference is usually a single sentence from somebody in the business who was never asked.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; answer eight questions and watch the architecture move</h2>
-  <div class="plain-line"><b>Try this:</b> the questions a reviewer will ask, in the order they will ask them. Answer each and see what it forces onto the page &mdash; and what it costs. Two of these change the design more than any technology choice you will make.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Specifying a house before it is built. How many bedrooms is a cheap question; whether it must survive a flood is an expensive one, and both are answered by somebody who is not the architect.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>5 minutes</b> and <b>zero</b> to the first two and read what that pair costs.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>RTO</b> how long you can be down before it really hurts</span><span class="sp-w"><b>RPO</b> how much recent data you can afford to lose</span><span class="sp-w"><b>residency</b> rules about which country the data may live in</span><span class="sp-w"><b>p99</b> the slowest 1% — one request in a hundred is worse than this</span></span></div></div>
+  <h2 class="sec">Try it: answer eight questions and watch the architecture move</h2>
+  <div class="plain-line"><b>Try this:</b> the questions a reviewer will ask, in the order they will ask them. Answer each and see what it forces onto the page, and what it costs. Two of these change the design more than any technology choice you will make.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Specifying a house before it is built. How many bedrooms is a cheap question; whether it must survive a flood is an expensive one, and both are answered by somebody who is not the architect.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>5 minutes</b> and <b>zero</b> to the first two and read what that pair costs.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>RTO</b> how long you can be down before it really hurts</span><span class="sp-w"><b>RPO</b> how much recent data you can afford to lose</span><span class="sp-w"><b>residency</b> rules about which country the data may live in</span><span class="sp-w"><b>p99</b> the slowest 1%, one request in a hundred is worse than this</span></span></div></div>
   <div class="sim-layout">
     <div><div id="nfOut"></div></div>
     <div><div id="nfCtl"></div>
@@ -793,7 +793,7 @@ document.getElementById('sec-nfr').innerHTML=`
 
 <div class="card">
   <h2 class="sec">Where the answers belong</h2>
-  <div class="plain-line"><b>In plain English:</b> these answers should not live in the diagram. A picture is a bad container for numbers &mdash; they make it cluttered and they change on a different schedule from the boxes. They belong <em>next to</em> it, in a short table, in the same file.</div>
+  <div class="plain-line"><b>In plain English:</b> these answers should not live in the diagram. A picture is a bad container for numbers. They make it cluttered and they change on a different schedule from the boxes. They belong <em>next to</em> it, in a short table, in the same file.</div>
   <div class="plain-line"><b>The exception worth making:</b> put the two or three that shape the drawing directly on the drawing. If the recovery objective is what forced a second region, write it beside the second region. A reader who can see <em>why</em> a box exists will not spend the review asking whether it is necessary.</div>
   <div class="plain-line"><b>And record what you were told, not what you assumed.</b> &ldquo;Four hours, agreed with the payments product owner, March&rdquo; is a very different sentence from &ldquo;four hours&rdquo;, and only one of them survives being questioned eighteen months later by somebody who was not there.</div>
 </div>`;
@@ -846,12 +846,12 @@ document.getElementById('sec-nfr').innerHTML=`
     let html='';
     if(!done.length) html='<div class="simnote">Eight questions. Two of them move the design more than any technology choice.</div>';
     else {
-      if(ans.rto==='d'&&ans.rpo==='d') html+='<div class="lzbad" style="margin-bottom:10px"><b>Five minutes to recover and zero data loss together is the most expensive pair on this page.</b> It forces a second live region with synchronous replication, which means every single write now pays the speed of light between two places. That is not a cost line, it is a change to how the application behaves — and it is worth checking whether anyone actually asked for both.</div>';
+      if(ans.rto==='d'&&ans.rpo==='d') html+='<div class="lzbad" style="margin-bottom:10px"><b>Five minutes to recover and zero data loss together is the most expensive pair on this page.</b> It forces a second live region with synchronous replication, which means every single write now pays the speed of light between two places. That is not a cost line, it is a change to how the application behaves, and it is worth checking whether anyone actually asked for both.</div>';
       else if(ans.rto==='d') html+='<div class="lzwarn" style="margin-bottom:10px"><b>Five minutes forces a second region running hot.</b> Roughly double the infrastructure, and a traffic-steering mechanism somebody has to test regularly. This one number decides more of the diagram than any technology choice on it.</div>';
       if(ans.geo==='d') html+='<div class="lzwarn" style="margin-bottom:10px"><b>Residency is a constraint that arrives late and invalidates work.</b> It rules out managed services that are not available in the region and quietly removes several boxes you had already drawn. Ask it first, not last.</div>';
-      if(ans.ops==='d') html+='<div class="lzwarn" style="margin-bottom:10px"><b>Two people covering 24 hours is a design constraint, not a staffing detail.</b> It should remove technologies from the page — every distinct thing on the diagram is something both of them must know at four in the morning.</div>';
+      if(ans.ops==='d') html+='<div class="lzwarn" style="margin-bottom:10px"><b>Two people covering 24 hours is a design constraint, not a staffing detail.</b> It should remove technologies from the page, every distinct thing on the diagram is something both of them must know at four in the morning.</div>';
       if(ans.cost==='d'&&weight>10) html+='<div class="lzbad" style="margin-bottom:10px"><b>A firm budget with these other answers is a contradiction, and better to find here than in month five.</b> Something has to give, and the useful move is to take the two most expensive answers back to whoever gave them and ask which one they actually meant.</div>';
-      if(!forced.length) html+='<div class="ok" style="margin-bottom:10px"><b>Every answer is the relaxed one, and the architecture is correspondingly small.</b> That is a completely legitimate outcome — most systems are like this, and over-engineering usually starts with nobody bothering to ask.</div>';
+      if(!forced.length) html+='<div class="ok" style="margin-bottom:10px"><b>Every answer is the relaxed one, and the architecture is correspondingly small.</b> That is a completely legitimate outcome, most systems are like this, and over-engineering usually starts with nobody bothering to ask.</div>';
     }
     html+='<div class="simnote" style="margin-top:8px"><b>The point of asking before drawing:</b> each of these has a cheap answer and an expensive one, and the difference is a sentence from somebody in the business. Guess the expensive answer and you build twice what was needed. Guess the cheap one and you find out during an incident.</div>';
     note.innerHTML=html;
@@ -862,14 +862,14 @@ document.getElementById('sec-nfr').innerHTML=`
 document.getElementById('sec-review').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A review is not an exam, and it is not an ambush either</h2>
-  <div class="plain-line"><b>In plain English:</b> the point of an architecture review is not to prove your design is right. It is to find the thing you did not think of, cheaply, while it is still a drawing. Which means <b>the best possible outcome is somebody finding a problem</b> &mdash; and the instinct to defend the design is the instinct that wastes the meeting.</div>
+  <div class="plain-line"><b>In plain English:</b> the point of an architecture review is not to prove your design is right. It is to find the thing you did not think of, cheaply, while it is still a drawing. Which means <b>the best possible outcome is somebody finding a problem</b>, and the instinct to defend the design is the instinct that wastes the meeting.</div>
   <div class="plain-line">Reviewers ask a fairly predictable set of questions. Knowing them in advance is not gaming the process; it is preparing properly, and it changes the meeting from a defence into a conversation.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; present it and take the questions</h2>
-  <div class="plain-line"><b>Try this:</b> eight questions a reviewer will actually ask, and three ways of answering each. One is what you want to say, one is what you should say, and one ends the review early &mdash; not always in the way you expect.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A viva. You are not being tested on whether the work is perfect — you are being tested on whether you know which part of it is weakest, and whether you will say so.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick the fraud question and try the confident answer first, then the honest one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>review</b> a meeting where people try to find the problem before it is built</span><span class="sp-w"><b>bottleneck</b> the part that limits everything else</span><span class="sp-w"><b>canary</b> releasing a change to a small slice of traffic first</span><span class="sp-w"><b>rollback</b> going back to the previous version when a change goes wrong</span></span></div></div>
+  <h2 class="sec">Try it: present it and take the questions</h2>
+  <div class="plain-line"><b>Try this:</b> eight questions a reviewer will actually ask, and three ways of answering each. One is what you want to say, one is what you should say, and one ends the review early, not always in the way you expect.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A viva. You are not being tested on whether the work is perfect. You are being tested on whether you know which part of it is weakest, and whether you will say so.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick the fraud question and try the confident answer first, then the honest one.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>review</b> a meeting where people try to find the problem before it is built</span><span class="sp-w"><b>bottleneck</b> the part that limits everything else</span><span class="sp-w"><b>canary</b> releasing a change to a small slice of traffic first</span><span class="sp-w"><b>rollback</b> going back to the previous version when a change goes wrong</span></span></div></div>
   <div class="sim-layout">
     <div><div id="rvOut"></div></div>
     <div><div class="segmented" id="rvPick" style="flex-direction:column;align-items:stretch"></div>
@@ -893,23 +893,23 @@ document.getElementById('sec-review').innerHTML=`
   if(!pick) return;
   const Q=[
     {k:'why',q:'“Why this and not the obvious alternative?”',
-     opts:[['def','It defends itself — this is industry standard.','lzbad','A non-answer, and the room hears it as one. &ldquo;Standard&rdquo; is not a reason, it is a way of avoiding giving one — and now the reviewer is curious rather than satisfied.'],
-           ['good','We considered it. It lost on operational load — nobody here runs one today.','ok','<b>The right shape:</b> name the alternative, name the criterion, name the verdict. It also shows you did the work, which buys you credibility on the next seven questions.'],
+     opts:[['def','It defends itself. This is industry standard.','lzbad','A non-answer, and the room hears it as one. &ldquo;Standard&rdquo; is not a reason, it is a way of avoiding giving one, and now the reviewer is curious rather than satisfied.'],
+           ['good','We considered it. It lost on operational load. Nobody here runs one today.','ok','<b>The right shape:</b> name the alternative, name the criterion, name the verdict. It also shows you did the work, which buys you credibility on the next seven questions.'],
            ['hon','I inherited this decision and have not revisited it.','note','Honest, and worth saying out loud rather than bluffing. Follow it with &ldquo;should we?&rdquo; and you have turned an awkward moment into a decision the room can make together.']]},
     {k:'fail',q:'“What happens when the payment provider is down?”',
-     opts:[['def','It has 99.99% uptime.','lzbad','This answers a different question. Their uptime is not your failure behaviour — <b>what does your system do during those minutes?</b> Quoting somebody else’s number is the classic way of not having thought about it.'],
-           ['good','Two-second timeout, one retry, then we queue and tell the user we will confirm by email.','ok','A real answer with a real user experience attached. It also reveals whether the queue path has been built or merely imagined — which is the follow-up, and you should be ready for it.'],
-           ['hon','I do not know. It is not on the diagram and I have not tested it.','note','Better than inventing something. The right next sentence is &ldquo;I will find out and add it&rdquo; — and then actually do, because this is the question that becomes an incident.']]},
+     opts:[['def','It has 99.99% uptime.','lzbad','This answers a different question. Their uptime is not your failure behaviour, <b>what does your system do during those minutes?</b> Quoting somebody else’s number is the classic way of not having thought about it.'],
+           ['good','Two-second timeout, one retry, then we queue and tell the user we will confirm by email.','ok','A real answer with a real user experience attached. It also reveals whether the queue path has been built or merely imagined, which is the follow-up, and you should be ready for it.'],
+           ['hon','I do not know. It is not on the diagram and I have not tested it.','note','Better than inventing something. The right next sentence is &ldquo;I will find out and add it&rdquo;, and then actually do, because this is the question that becomes an incident.']]},
     {k:'scale',q:'“What happens at ten times this volume?”',
-     opts:[['def','It scales horizontally.','lzbad','Almost nothing scales horizontally all the way through. There is a bottleneck — usually the database, sometimes a third party with a rate limit — and the reviewer is asking you to name it.'],
+     opts:[['def','It scales horizontally.','lzbad','Almost nothing scales horizontally all the way through. There is a bottleneck (usually the database, sometimes a third party with a rate limit) and the reviewer is asking you to name it.'],
            ['good','The API scales out; the database is the ceiling at roughly six times, and then we shard by merchant.','ok','<b>Naming your own bottleneck is the strongest answer available.</b> It shows you have looked, it gives the room something concrete to challenge, and it makes every other claim more believable.'],
            ['hon','We have not load tested. Current peak is 200 a second and I am assuming linear.','note','Honest and useful, provided you say what would change your mind. An untested assumption stated as an assumption is fine; stated as a fact it is a problem.']]},
     {k:'cost',q:'“What does this cost?”',
      opts:[['def','It is serverless, so it scales to zero.','lzbad','Scaling to zero says something about the floor and nothing about the ceiling, which is what was asked. Serverless is frequently more expensive at steady high volume, and a reviewer who knows that now doubts the rest.'],
-           ['good','About £3,100 a month at current volume; the two biggest lines are the database and cross-zone traffic.','ok','A number, and the two things driving it. That second half matters more than the total — it tells the room where to push if the number is wrong.'],
+           ['good','About £3,100 a month at current volume; the two biggest lines are the database and cross-zone traffic.','ok','A number, and the two things driving it. That second half matters more than the total. It tells the room where to push if the number is wrong.'],
            ['hon','I have not costed it yet.','note','Acceptable early, and not at an approval. If money is being committed, this answer means the review should be rescheduled, and saying so yourself is better than being told.']]},
     {k:'sec',q:'“Where does personal data cross a boundary?”',
-     opts:[['def','Everything is encrypted in transit and at rest.','lzbad','Answers a checkbox, not the question. <b>Where it crosses</b> determines who can see it, which jurisdictions are involved, and what a breach would cost — encryption is a control, not an answer.'],
+     opts:[['def','Everything is encrypted in transit and at rest.','lzbad','Answers a checkbox, not the question. <b>Where it crosses</b> determines who can see it, which jurisdictions are involved, and what a breach would cost, encryption is a control, not an answer.'],
            ['good','Three places, all marked. One goes to a third party, and that is the one with a data processing agreement.','ok','Specific, traceable on the page, and it shows the diagram carries data classification. The follow-up will be about the third party, and you have already flagged it.'],
            ['hon','I have not marked them. Let me add that and come back.','note','Reasonable, and this is one where coming back is genuinely better than answering from memory. Getting it wrong out loud in a review is worse than not knowing.']]},
     {k:'ops',q:'“Who gets paged when this breaks?”',
@@ -917,11 +917,11 @@ document.getElementById('sec-review').innerHTML=`
            ['good','Our team, and we have written the runbook for the three most likely failures.','ok','<b>The answer that separates a design from a proposal.</b> A box on a diagram is a future rota entry, and somebody has to have said yes.'],
            ['hon','That has not been agreed. I should sort it before this ships.','note','Correct, and worth raising in the review specifically because the people who can settle it are usually the ones sitting there.']]},
     {k:'simple',q:'“Could this be simpler?”',
-     opts:[['def','Every component is necessary.','lzbad','Almost never true, and it reads as defensiveness. This question is usually a genuine offer of help — treating it as an attack wastes it.'],
-           ['good','Probably. The cache is there for a latency budget I have not verified — if the budget is softer, it comes out.','ok','<b>Excellent.</b> You have named a candidate for removal and the condition under which it goes. That is exactly the conversation the review exists to have.'],
+     opts:[['def','Every component is necessary.','lzbad','Almost never true, and it reads as defensiveness. This question is usually a genuine offer of help, treating it as an attack wastes it.'],
+           ['good','Probably. The cache is there for a latency budget I have not verified, if the budget is softer, it comes out.','ok','<b>Excellent.</b> You have named a candidate for removal and the condition under which it goes. That is exactly the conversation the review exists to have.'],
            ['hon','Yes, and I am not sure where. What would you take out?','note','A completely legitimate move, and it uses the room properly. The risk is only that you have to mean it.']]},
     {k:'change',q:'“How do you deploy a change safely?”',
-     opts:[['def','We have CI/CD.','lzbad','That is a pipeline, not a safety property. The question is what happens when a bad change reaches production — and &ldquo;we have CI/CD&rdquo; suggests nobody has thought past the pipeline.'],
+     opts:[['def','We have CI/CD.','lzbad','That is a pipeline, not a safety property. The question is what happens when a bad change reaches production, and &ldquo;we have CI/CD&rdquo; suggests nobody has thought past the pipeline.'],
            ['good','Canary to 5%, automatic rollback on error rate, and the schema changes are backwards compatible for one release.','ok','Answers the real question: what happens when the change is wrong. The backwards-compatibility detail is the one most people forget and the one that makes rollback actually possible.'],
            ['hon','Rollback is a redeploy of the previous version, and we have not tested it under load.','note','Honest, and it names a specific gap somebody can act on. Untested rollback is a common and completely fixable weakness.']]}
   ];
@@ -943,7 +943,7 @@ document.getElementById('sec-review').innerHTML=`
     else { const o=q.opts.find(x=>x[0]===pickd);
       html='<div class="'+o[2]+'" style="margin-bottom:10px">'+o[3]+'</div>'; }
     const n=Object.keys(chosen).length, good=Object.entries(chosen).filter(([k,v])=>v==='good').length;
-    if(n>=4) html+='<div class="note" style="margin-bottom:10px"><b>'+good+' of '+n+' answered the question as asked.</b> Notice that the honest &ldquo;I do not know&rdquo; is never the worst option on this page. The worst is always the confident deflection — because it costs you the reviewer’s trust on everything you say afterwards.</div>';
+    if(n>=4) html+='<div class="note" style="margin-bottom:10px"><b>'+good+' of '+n+' answered the question as asked.</b> Notice that the honest &ldquo;I do not know&rdquo; is never the worst option on this page. The worst is always the confident deflection, because it costs you the reviewer’s trust on everything you say afterwards.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>The pattern across all eight:</b> the bad answer is always <em>true</em> and answers a different question. &ldquo;It has 99.99% uptime.&rdquo; &ldquo;It scales horizontally.&rdquo; &ldquo;We have CI/CD.&rdquo; Every one is a fact, and every one substitutes a general reassurance for a specific answer. Reviewers notice, and the substitution is what they remember.</div>';
     note.innerHTML=html;
   }
@@ -954,14 +954,14 @@ document.getElementById('sec-review').innerHTML=`
 document.getElementById('sec-rot').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Every diagram starts lying, on a schedule</h2>
-  <div class="plain-line"><b>In plain English:</b> a diagram is true on the day it is drawn and gets less true every week. Not because anyone is careless &mdash; because the system changes and the picture does not. After about a year the gap is wide enough that people stop trusting the diagram, and once trust is gone nobody updates it either, because why maintain something nobody reads.</div>
+  <div class="plain-line"><b>In plain English:</b> a diagram is true on the day it is drawn and gets less true every week. Not because anyone is careless, because the system changes and the picture does not. After about a year the gap is wide enough that people stop trusting the diagram, and once trust is gone nobody updates it either, because why maintain something nobody reads.</div>
   <div class="plain-line">The failure is not that diagrams go stale. It is that <b>a stale diagram is worse than no diagram</b>: it sends an on-call engineer to a service that was decommissioned in March, at three in the morning, with confidence.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; run a year and see what happens to the picture</h2>
+  <h2 class="sec">Try it: run a year and see what happens to the picture</h2>
   <div class="plain-line"><b>Try this:</b> twelve months of ordinary changes to an ordinary system. Compare a diagram drawn in a drawing tool with one kept as text alongside the code, and watch the gap open.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A recipe book in the kitchen against one in a drawer upstairs. Both start correct. Only one gets a note added when you change how you make the sauce.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run the drawing-tool version first and look at the two entries near the bottom — the incident and the new joiner.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>drift</b> the growing gap between the diagram and the real system</span><span class="sp-w"><b>repository</b> where the code lives, and where changes are reviewed</span><span class="sp-w"><b>pull request</b> a proposed code change somebody reviews before it lands</span><span class="sp-w"><b>diagrams as code</b> writing the picture as text so it is rendered automatically</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A recipe book in the kitchen against one in a drawer upstairs. Both start correct. Only one gets a note added when you change how you make the sauce.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run the drawing-tool version first and look at the two entries near the bottom, the incident and the new joiner.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>drift</b> the growing gap between the diagram and the real system</span><span class="sp-w"><b>repository</b> where the code lives, and where changes are reviewed</span><span class="sp-w"><b>pull request</b> a proposed code change somebody reviews before it lands</span><span class="sp-w"><b>diagrams as code</b> writing the picture as text so it is rendered automatically</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="rtOut"></div></div>
     <div><div class="segmented" id="rtPick" style="flex-direction:column;align-items:stretch"></div>
@@ -970,7 +970,7 @@ document.getElementById('sec-rot').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Diagrams as code &mdash; what it actually buys</h2>
+  <h2 class="sec">Diagrams as code: what it actually buys</h2>
   <div class="plain-line"><b>In plain English:</b> write the diagram as text, in a file, next to the code it describes, and render it automatically. The drawing becomes a build artefact rather than a document.</div>
   <pre class="code">${hl("graph LR\n  web[Web app] -->|HTTPS · payment intent| api[Payments API]\n  api -->|gRPC · 2s timeout, 1 retry| fraud[Fraud check]\n  api -->|SQL| db[(Payments DB)]\n  api -.->|publish · payment.authorised| q[[Event queue]]\n  q -.-> worker[Settlement worker]\n\n%% not shown: monitoring, CI/CD, the admin console\n%% owner: payments team · last reviewed 2026-08")}</pre>
   <table class="osi" style="margin-top:14px"><thead><tr><th>What it buys</th><th>Why it matters more than the tidiness</th></tr></thead><tbody>
@@ -980,7 +980,7 @@ document.getElementById('sec-rot').innerHTML=`
   <tr><td><b>Anybody can edit it</b></td><td>No licence, no proprietary file, no &ldquo;only Priya has the source&rdquo;. The most common reason a diagram is not updated is that the person who could is not there any more</td></tr>
   <tr><td><b>It is diffable</b></td><td>A reviewer sees three lines changed rather than a new image and a guess about what moved</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The honest limitation:</b> automatic layout is worse than what you would draw by hand, and for a level-1 context diagram going in front of an executive that matters. Use a drawing tool for the two or three pictures that need to be beautiful, and text for the ones that need to be <em>true</em> &mdash; which is nearly all of them, and certainly every one an engineer will open under pressure.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The honest limitation:</b> automatic layout is worse than what you would draw by hand, and for a level-1 context diagram going in front of an executive that matters. Use a drawing tool for the two or three pictures that need to be beautiful, and text for the ones that need to be <em>true</em>, which is nearly all of them, and certainly every one an engineer will open under pressure.</div>
   <div class="plain-line"><b>And put a review date on it regardless.</b> &ldquo;Last reviewed August 2026&rdquo; is not as good as being automatically correct, and it is enormously better than nothing: it lets a reader calibrate how much to believe, which is the whole thing being asked of a diagram.</div>
 </div>`;
 
@@ -995,7 +995,7 @@ document.getElementById('sec-rot').innerHTML=`
     ['month 6','The settlement worker is split into two','both'],
     ['month 8','The original author leaves the company','author'],
     ['month 9','A queue is replaced with a managed alternative','both'],
-    ['month 11','An incident at 3am — somebody opens the diagram','incident'],
+    ['month 11','An incident at 3am. Somebody opens the diagram','incident'],
     ['month 12','A new joiner is handed the diagram to get oriented','joiner']
   ];
   let cur='tool';
@@ -1009,7 +1009,7 @@ document.getElementById('sec-rot').innerHTML=`
     const rows=EV.map(([m,e,t])=>{
       let st, txt;
       if(t==='author'){ st = code?'ok':'bad';
-        txt = code ? 'No impact — the file is in the repository and anybody can edit it.'
+        txt = code ? 'No impact. The file is in the repository and anybody can edit it.'
                    : '<b>The source file was on their laptop.</b> From here the diagram can only be replaced, not updated.'; }
       else if(t==='incident'){ st = drift>2?'bad':'ok';
         txt = drift>2 ? '<b>The diagram sends them to a service that no longer exists.</b> Twenty minutes lost, at the worst possible time, and everyone now knows not to trust it.'
@@ -1032,8 +1032,8 @@ document.getElementById('sec-rot').innerHTML=`
         '<b style="color:'+(drift?'var(--red)':'var(--green)')+'">'+drift+' of 5</b></div></div>';
     note.innerHTML = code
       ? '<div class="ok" style="margin-bottom:10px"><b>Nothing dramatic happened, which is the point.</b> Each change updated the picture because the picture was in the file being changed, and a reviewer would have noticed if it had not. The author leaving was a non-event.</div>'+
-        '<div class="simnote"><b>The mechanism is not the file format.</b> It is that the diagram lives where the work happens and is reviewed with the work. A drawing tool with the same discipline would do as well — it just never has it, because opening a separate tool is a separate decision and separate decisions do not get made.</div>'
-      : '<div class="lzbad" style="margin-bottom:10px"><b>Five changes shipped and none reached the diagram.</b> No individual failure — every one was a reasonable afternoon in which updating a picture in another tool was the least urgent thing available.</div>'+
+        '<div class="simnote"><b>The mechanism is not the file format.</b> It is that the diagram lives where the work happens and is reviewed with the work. A drawing tool with the same discipline would do as well. It just never has it, because opening a separate tool is a separate decision and separate decisions do not get made.</div>'
+      : '<div class="lzbad" style="margin-bottom:10px"><b>Five changes shipped and none reached the diagram.</b> No individual failure, every one was a reasonable afternoon in which updating a picture in another tool was the least urgent thing available.</div>'+
         '<div class="lzbad" style="margin-bottom:10px"><b>Then the two moments the diagram existed for both arrive after it stopped being true.</b> The incident and the new joiner are the entire return on drawing it, and both landed on a document that was confidently wrong.</div>'+
         '<div class="simnote"><b>This is why a stale diagram is worse than none.</b> With no diagram the on-call engineer knows they must go and look. With a wrong one they believe they already have, and act on it.</div>';
   }
@@ -1043,18 +1043,18 @@ document.getElementById('sec-rot').innerHTML=`
 document.getElementById('sec-rules').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The whole thing, as a list you can check against</h2>
-  <div class="plain-line"><b>In plain English:</b> everything in this lab, condensed. Not rules for their own sake &mdash; each one is here because ignoring it costs something specific, and the cost is in the third column.</div>
+  <div class="plain-line"><b>In plain English:</b> everything in this lab, condensed. Not rules for their own sake, each one is here because ignoring it costs something specific, and the cost is in the third column.</div>
   <table class="osi"><thead><tr><th style="width:31%">Do</th><th style="width:31%">Don&rsquo;t</th><th>Because</th></tr></thead><tbody>
   <tr><td>Write the <b>question</b> the diagram answers at the top</td><td>Give it a subject as a title and stop there</td><td>Without a question you cannot decide what to leave out, and that decision is the whole craft</td></tr>
   <tr><td>Draw a <b>different diagram per audience</b></td><td>Make one picture serve four of them</td><td>Sixty boxes answers nobody&rsquo;s question. Four small diagrams is less work than one big one</td></tr>
   <tr><td>Keep <b>one level of zoom per page</b></td><td>Put a class name beside a load balancer</td><td>There is no zoom at which both are the right detail, so every reader is overwhelmed and missing something at once</td></tr>
   <tr><td>Keep the <b>deployment view separate</b></td><td>Fill the container diagram with vendor icons</td><td>They change on different schedules, and the combined page becomes unreadable and un-updateable</td></tr>
-  <tr><td>Put <b>date, owner and where it lives</b> on every page</td><td>Ship an undated diagram</td><td>Undated is unknowable, and unknowable gets treated as fiction &mdash; the commonest reason a correct diagram is ignored</td></tr>
+  <tr><td>Put <b>date, owner and where it lives</b> on every page</td><td>Ship an undated diagram</td><td>Undated is unknowable, and unknowable gets treated as fiction, the commonest reason a correct diagram is ignored</td></tr>
   <tr><td>Include a <b>legend</b> saying what your lines and colours mean</td><td>Assume dashed obviously means what you meant</td><td>There is no standard. Readers guess, most guess wrong, and none of them will mention it</td></tr>
   <tr><td>Use <b>solid for synchronous, dashed for asynchronous</b></td><td>Draw every edge identically</td><td>It is the highest-value distinction available, free to add, and it makes the failure story visible at a glance</td></tr>
   <tr><td><b>Label every edge</b> with protocol and payload</td><td>Leave bare arrows</td><td>An unlabelled arrow could mean four different things, two of which point the opposite way</td></tr>
   <tr><td>Show <b>failure paths</b> on the critical route</td><td>Draw only the happy path</td><td>Nobody opens a diagram to find out how it works when it works</td></tr>
-  <tr><td>Draw <b>boundaries as containers</b> &mdash; account, network, region, trust</td><td>Imply them with colour alone</td><td>Nesting is unambiguous; colour needs a legend and disappears when printed</td></tr>
+  <tr><td>Draw <b>boundaries as containers</b>, account, network, region, trust</td><td>Imply them with colour alone</td><td>Nesting is unambiguous; colour needs a legend and disappears when printed</td></tr>
   <tr><td>Mark <b>who owns each box</b></td><td>Leave ownership to be worked out during an incident</td><td>A box is a future on-call rota entry. If nobody has said yes, it is a wish rather than a design</td></tr>
   <tr><td>State <b>what is deliberately not shown</b></td><td>Let readers guess whether you forgot it</td><td>One line at the bottom saves twenty minutes in every review, with every reviewer, forever</td></tr>
   <tr><td>Annotate the <b>hot path</b> with volume and a latency budget</td><td>Treat every route as equally important</td><td>Most diagrams have one path that matters and twelve that do not, and the reader cannot tell which</td></tr>
@@ -1069,7 +1069,7 @@ document.getElementById('sec-rules').innerHTML=`
 <div class="card">
   <h2 class="sec">Five ways a diagram fails, and the tell for each</h2>
   <div class="lzrow"><span class="lzmark" style="color:var(--red)">1</span><span><b>It is beautiful and nobody uses it.</b> The tell: it lives in a slide deck. Usually drawn for one presentation, never opened again, and gorgeous.</span></div>
-  <div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>It is complete and unreadable.</b> The tell: it has a scroll bar, or somebody has printed it on A3. Completeness is not the goal &mdash; answering the question is.</span></div>
+  <div class="lzrow"><span class="lzmark" style="color:var(--red)">2</span><span><b>It is complete and unreadable.</b> The tell: it has a scroll bar, or somebody has printed it on A3. Completeness is not the goal, answering the question is.</span></div>
   <div class="lzrow"><span class="lzmark" style="color:var(--red)">3</span><span><b>It is accurate and useless.</b> The tell: it shows only the happy path. Every box correct, and it cannot answer the question anyone actually opens it to ask.</span></div>
   <div class="lzrow"><span class="lzmark" style="color:var(--red)">4</span><span><b>It is out of date and trusted.</b> The tell: no date on it. The most expensive failure on this list, because it is acted upon.</span></div>
   <div class="lzrow"><span class="lzmark" style="color:var(--red)">5</span><span><b>It is right and unreviewed.</b> The tell: one author, no comments, no history. It may well be correct. Nobody else has tested that, and the first test will be production.</span></div>
@@ -1079,17 +1079,17 @@ document.getElementById('sec-rules').innerHTML=`
 document.getElementById('sec-board').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Drawing under time pressure, with somebody watching</h2>
-  <div class="plain-line"><b>In plain English:</b> a system design interview is not a test of whether you can draw the right architecture. Nobody can, in forty minutes, with a two-sentence brief. It is a test of <b>whether you ask before you draw, whether you name your own trade-offs, and whether you can be wrong gracefully</b> &mdash; which happens to be exactly what the job requires.</div>
+  <div class="plain-line"><b>In plain English:</b> a system design interview is not a test of whether you can draw the right architecture. Nobody can, in forty minutes, with a two-sentence brief. It is a test of <b>whether you ask before you draw, whether you name your own trade-offs, and whether you can be wrong gracefully</b>, which happens to be exactly what the job requires.</div>
   <div class="plain-line">The commonest failure is starting to draw in the first minute. It looks decisive and it is the opposite: you have just committed to an architecture for a system whose requirements you do not know, and every question afterwards is you defending a guess.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The first ten minutes, in order</h2>
   <div class="lzrow"><span class="lzmark">1</span><span><b>Restate the problem in your own words.</b> Thirty seconds. It catches the misunderstanding immediately rather than in minute thirty, and it is the cheapest insurance available.</span></div>
-  <div class="lzrow"><span class="lzmark">2</span><span><b>Ask the scale question.</b> How many users, how much data, how much of it is reads. The answer changes the design more than any technology you will name, and asking is not a stalling tactic &mdash; not asking is the mistake.</span></div>
+  <div class="lzrow"><span class="lzmark">2</span><span><b>Ask the scale question.</b> How many users, how much data, how much of it is reads. The answer changes the design more than any technology you will name, and asking is not a stalling tactic, not asking is the mistake.</span></div>
   <div class="lzrow"><span class="lzmark">3</span><span><b>Ask what must not fail, and what may be slow.</b> Two sentences that eliminate half the design space. Most systems have one thing that must be correct and a great deal that can be eventually consistent.</span></div>
   <div class="lzrow"><span class="lzmark">4</span><span><b>Say what you are excluding, out loud.</b> &ldquo;I am not going to design the admin console.&rdquo; It shows you can scope, and it stops you being asked about it later.</span></div>
-  <div class="lzrow"><span class="lzmark">5</span><span><b>Draw the context diagram &mdash; one box, and who talks to it.</b> Two minutes. It anchors everything after it and it is almost never wrong.</span></div>
+  <div class="lzrow"><span class="lzmark">5</span><span><b>Draw the context diagram, one box, and who talks to it.</b> Two minutes. It anchors everything after it and it is almost never wrong.</span></div>
   <div class="lzrow"><span class="lzmark">6</span><span><b>Then the containers, and only then.</b> Now you are drawing an answer to a question rather than a system you have imagined.</span></div>
 </div>
 
@@ -1098,13 +1098,13 @@ document.getElementById('sec-board').innerHTML=`
   <table class="osi"><thead><tr><th>They are watching for</th><th>What it looks like when you have it</th><th>And when you do not</th></tr></thead><tbody>
   <tr><td><b>Do you ask before you build?</b></td><td>Three or four questions before the pen moves</td><td>Boxes on the board in minute one, then thirty minutes defending them</td></tr>
   <tr><td><b>Can you name a trade-off?</b></td><td>&ldquo;This is faster and it means we can lose the last few seconds of writes&rdquo;</td><td>Every choice presented as simply correct, with no cost attached</td></tr>
-  <tr><td><b>Do you know where it breaks?</b></td><td>You point at your own bottleneck before being asked</td><td>&ldquo;It scales horizontally&rdquo; &mdash; which is never true all the way through</td></tr>
-  <tr><td><b>Can you be wrong well?</b></td><td>&ldquo;Good point, that does not work &mdash; here is what I would change&rdquo;</td><td>Defending a broken idea past the moment it broke</td></tr>
+  <tr><td><b>Do you know where it breaks?</b></td><td>You point at your own bottleneck before being asked</td><td>&ldquo;It scales horizontally&rdquo;, which is never true all the way through</td></tr>
+  <tr><td><b>Can you be wrong well?</b></td><td>&ldquo;Good point, that does not work, here is what I would change&rdquo;</td><td>Defending a broken idea past the moment it broke</td></tr>
   <tr><td><b>Do you know what you do not know?</b></td><td>&ldquo;I have not run this at that scale; here is what I would measure first&rdquo;</td><td>Confident specifics about things nobody could know</td></tr>
   <tr><td><b>Would you be useful in a room?</b></td><td>You think out loud and let them steer</td><td>Silence, then a finished answer nobody could contribute to</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>The most useful sentence in a design interview</b> is &ldquo;<em>the thing I am least sure about here is…</em>&rdquo;. It is the same sentence that works in a real architecture review, for the same reason: it puts the conversation where the risk is, and it is the opposite of what the nervous version of you wants to do.</div>
-  <div class="plain-line"><b>And the same discipline as the rest of this lab applies to a whiteboard:</b> one level of zoom at a time, label the arrows, say what you are not covering, and name the failure behaviour before somebody asks. The reason it works in an interview is that it is what works on a real diagram &mdash; the interview is only noticing.</div>
+  <div class="plain-line"><b>And the same discipline as the rest of this lab applies to a whiteboard:</b> one level of zoom at a time, label the arrows, say what you are not covering, and name the failure behaviour before somebody asks. The reason it works in an interview is that it is what works on a real diagram. The interview is only noticing.</div>
 </div>`;
 /* ==== sections ==== */
 
@@ -1115,7 +1115,7 @@ document.getElementById('sec-board').innerHTML=`
   const C=[
     {k:'date',l:'it carries a date and an owner',w:16,miss:'<b>Fix this one first.</b> Undated is unknowable, and unknowable gets treated as fiction. It is the cheapest item on the list and the commonest reason a correct diagram is ignored.'},
     {k:'q',l:'a question at the top, not just a subject',w:14,miss:'Without a question you cannot decide what to leave out, so the page grows until nobody reads it. Everything else on this list gets easier once this exists.'},
-    {k:'live',l:'it lives next to the code and changes with it',w:15,miss:'It will be wrong within a year, and a wrong diagram is worse than none — it sends somebody confidently to a service that was decommissioned in March.'},
+    {k:'live',l:'it lives next to the code and changes with it',w:15,miss:'It will be wrong within a year, and a wrong diagram is worse than none. It sends somebody confidently to a service that was decommissioned in March.'},
     {k:'level',l:'one level of zoom on the page',w:11,miss:'A class name beside a load balancer means every reader is simultaneously overwhelmed and missing something. The fix is to split, never to redraw more neatly.'},
     {k:'legend',l:'a legend for lines, colours and shapes',w:9,miss:'There is no standard for what a dashed line means. Readers guess, most guess wrong, and none of them will mention it.'},
     {k:'sync',l:'solid and dashed distinguish sync from async',w:10,miss:'The highest-value distinction available and free to add. Without it the page cannot answer “what happens when this is slow?”, which is the question behind most incidents.'},
@@ -1142,12 +1142,12 @@ document.getElementById('sec-board').innerHTML=`
       (missing.length?'<div class="dim" style="font-size:11px;margin:18px 0 8px">WHAT IS MISSING, MOST EXPENSIVE FIRST</div>'+
         missing.map(c=>'<div class="lzhop" style="display:block;border-left-color:'+(c.w>=12?'var(--red)':c.w>=9?'var(--amber)':'var(--wire)')+';padding:9px 12px">'+
           '<b style="font-size:12.5px">'+c.l+'</b><small style="display:block;color:var(--muted);font-size:11.5px;margin-top:3px">'+c.miss+'</small></div>').join('')
-        :'<div class="ok" style="margin-top:18px"><b>Everything on the list.</b> Worth noticing how much of it is not the drawing — seven of the twelve are the small print, and every one takes under a minute.</div>');
+        :'<div class="ok" style="margin-top:18px"><b>Everything on the list.</b> Worth noticing how much of it is not the drawing, seven of the twelve are the small print, and every one takes under a minute.</div>');
     let html='';
-    if(pct<45) html='<div class="lzbad" style="margin-bottom:10px"><b>The diagram may be entirely accurate.</b> That is the point of this list — accuracy has never been the problem. Start with the three at the top: a date, a question and a home next to the code. They cost about ten minutes between them and they are worth more than any amount of redrawing.</div>';
-    else if(pct<80) html='<div class="lzwarn" style="margin-bottom:10px"><b>Usable, with the gaps that cost most still open.</b> Take the top two in the list — they are ordered by what they cost you, not by effort.</div>';
+    if(pct<45) html='<div class="lzbad" style="margin-bottom:10px"><b>The diagram may be entirely accurate.</b> That is the point of this list, accuracy has never been the problem. Start with the three at the top: a date, a question and a home next to the code. They cost about ten minutes between them and they are worth more than any amount of redrawing.</div>';
+    else if(pct<80) html='<div class="lzwarn" style="margin-bottom:10px"><b>Usable, with the gaps that cost most still open.</b> Take the top two in the list. They are ordered by what they cost you, not by effort.</div>';
     else html='<div class="ok" style="margin-bottom:10px"><b>This is a diagram somebody will actually open twice.</b> Worth re-scoring in six months; the one that decays first is almost always whether it still lives next to the code.</div>';
-    html+='<div class="simnote" style="margin-top:8px"><b>The weightings are the argument.</b> A date is worth more than a legend, and living next to the code is worth more than either — because a diagram that goes stale fails completely, while one with an ambiguous line only fails a little.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The weightings are the argument.</b> A date is worth more than a legend, and living next to the code is worth more than either, because a diagram that goes stale fails completely, while one with an ambiguous line only fails a little.</div>';
     note.innerHTML=html;
   }
   render();
@@ -1161,13 +1161,13 @@ document.getElementById('sec-board').innerHTML=`
   const M=[
     {k:'restate',n:'Restate the problem in your own words',min:0.5,pos:1,
      good:'Thirty seconds, and it catches the misunderstanding now rather than in minute thirty.'},
-    {k:'scale',n:'Ask about scale — users, data, read or write heavy',min:1.5,pos:2,
+    {k:'scale',n:'Ask about scale, users, data, read or write heavy',min:1.5,pos:2,
      good:'Changes the design more than any technology you will name. Asking is not stalling; not asking is the mistake.'},
     {k:'fail',n:'Ask what must not fail, and what may be slow',min:1.5,pos:3,
      good:'Two sentences that eliminate half the design space. Most systems have one thing that must be correct and a great deal that can be eventually consistent.'},
     {k:'scope',n:'Say out loud what you are not going to cover',min:0.5,pos:4,
      good:'Shows you can scope, and stops you being asked about the admin console in minute thirty-five.'},
-    {k:'ctx',n:'Draw the context diagram — one box and who talks to it',min:2,pos:5,
+    {k:'ctx',n:'Draw the context diagram, one box and who talks to it',min:2,pos:5,
      good:'Two minutes, anchors everything after it, and it is almost never wrong.'},
     {k:'cont',n:'Draw the containers',min:4,pos:6,
      good:'Now you are drawing an answer to a question rather than a system you imagined.'}
@@ -1195,7 +1195,7 @@ document.getElementById('sec-board').innerHTML=`
           (rows.every(r=>r.ok)?'var(--green)':'var(--amber)')+'">'+rows.filter(r=>r.ok).length+' of '+rows.length+'</b></div></div>':'');
     let html='';
     const drewFirst = order[0]==='ctx'||order[0]==='cont';
-    if(drewFirst) html+='<div class="lzbad" style="margin-bottom:10px"><b>You started drawing in minute one.</b> It looks decisive and it is the opposite — you have committed to an architecture for a system whose requirements you do not know, and every question from here is you defending a guess. This is the single commonest failure in a design interview.</div>';
+    if(drewFirst) html+='<div class="lzbad" style="margin-bottom:10px"><b>You started drawing in minute one.</b> It looks decisive and it is the opposite. You have committed to an architecture for a system whose requirements you do not know, and every question from here is you defending a guess. This is the single commonest failure in a design interview.</div>';
     if(order.includes('cont')&&!order.includes('ctx')) html+='<div class="lzwarn" style="margin-bottom:10px"><b>Containers before context.</b> Not fatal, and you have skipped the two-minute drawing that would have anchored the rest and is almost never wrong.</div>';
     if(order.length===M.length){
       const right=M.filter((m,i)=>order[m.pos-1]===m.k).length;
@@ -1203,7 +1203,7 @@ document.getElementById('sec-board').innerHTML=`
         ? '<div class="ok" style="margin-bottom:10px"><b>The recommended order, and about ten minutes used.</b> You have thirty left to draw an answer to a question, rather than forty to defend a guess.</div>'
         : '<div class="note" style="margin-bottom:10px"><b>'+right+' of six in the recommended position.</b> The order matters less than the principle: every question you ask before the pen moves removes design space, and every minute you draw before asking adds something to defend.</div>';
     }
-    html+='<div class="simnote" style="margin-top:8px"><b>What is being assessed is not the architecture.</b> Nobody can produce the right one in forty minutes from a two-sentence brief. They are watching whether you ask before you build, whether you name your own trade-offs, and whether you can be wrong gracefully — which is what the job actually needs.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>What is being assessed is not the architecture.</b> Nobody can produce the right one in forty minutes from a two-sentence brief. They are watching whether you ask before you build, whether you name your own trade-offs, and whether you can be wrong gracefully, which is what the job actually needs.</div>';
     note.innerHTML=html;
   }
   rst.onclick=()=>{order=[];render();};

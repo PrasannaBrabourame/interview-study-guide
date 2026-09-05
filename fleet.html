@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fleet lab — the orchestration layer above a single inference engine</title>
+<title>Fleet lab, the orchestration layer above a single inference engine</title>
 <link rel="stylesheet" href="assets/lab.css">
 <style>
 
@@ -70,10 +70,10 @@
       <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
     </nav>
     <div class="eyebrow">discovery · routing · state transfer · control loops</div>
-    <h1>Twenty engines, one endpoint <span class="thin">— the layer that decides which of them gets your request</span></h1>
+    <h1>Twenty engines, one endpoint: <span class="thin">the layer that decides which of them gets your request</span></h1>
     <p class="track" id="trackLine"></p>
     <p class="sub">The <a href="serving.html">serving lab</a> is about one engine replica deciding what to run this step. Everything changes at twenty replicas. Which worker gets this request? Does any of them already hold the first two thousand tokens of it? Is it cheaper to move that state across the network or recompute it? Do prefill and decode scale together, or separately? And when a worker dies mid-stream, what does the person watching the text actually see? None of that happens inside an engine, and all of it decides whether the fleet is affordable. Eight sections, each with something you can operate.</p>
-    <div class="note" style="margin-top:14px"><b>Where this sits.</b> Engines &mdash; vLLM, SGLang, TensorRT-LLM &mdash; schedule work <em>inside</em> one replica. This lab is the layer around them, the part usually called an inference gateway, router or orchestrator. The mechanisms are described generally; named systems appear where a concrete implementation makes the idea clearer.</div>
+    <div class="note" style="margin-top:14px"><b>Where this sits.</b> Engines (vLLM, SGLang, TensorRT-LLM) schedule work <em>inside</em> one replica. This lab is the layer around them, the part usually called an inference gateway, router or orchestrator. The mechanisms are described generally; named systems appear where a concrete implementation makes the idea clearer.</div>
   </header>
 
   <div class="tabs" role="tablist">
@@ -132,15 +132,15 @@ const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
 document.getElementById('sec-flstart').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Everything an engine knows stops at its own memory</h2>
-  <div class="plain-line"><b>In plain English:</b> an inference engine is very good at one thing &mdash; deciding, thousands of times a second, what to run next on <em>its</em> GPU with <em>its</em> memory. It has no idea another replica exists. It cannot know that the worker next to it already holds the first two thousand tokens of the request you just sent, and it has no way to ask.</div>
+  <div class="plain-line"><b>In plain English:</b> an inference engine is very good at one thing, deciding, thousands of times a second, what to run next on <em>its</em> GPU with <em>its</em> memory. It has no idea another replica exists. It cannot know that the worker next to it already holds the first two thousand tokens of the request you just sent, and it has no way to ask.</div>
   <div class="plain-line">So the moment you run more than one replica, a set of questions appears that no engine can answer, and something has to own them. That something is the subject of this lab.</div>
   <div id="flLayerDiag"></div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; add replicas and watch the questions appear</h2>
-  <div class="plain-line"><b>Try this:</b> start with one engine and add replicas one at a time. Each step introduces a decision nothing inside an engine can make &mdash; and a component that has to exist to make it.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>One shop with one till needs no queue policy. Twenty tills need someone deciding who goes where, and that person is not a cashier &mdash; it is a different job with a different view of the room.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>add a replica</b> repeatedly and read what each step forces into existence.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>replica</b> one running copy of the engine, with its own GPU and memory</span><span class="sp-w"><b>fleet</b> all the replicas serving one model, taken together</span><span class="sp-w"><b>frontend</b> the single address clients talk to</span><span class="sp-w"><b>router</b> the component choosing which replica handles a request</span><span class="sp-w"><b>discovery</b> how the router learns which replicas are alive — service or worker discovery</span></span></div></div>
+  <h2 class="sec">Try it: add replicas and watch the questions appear</h2>
+  <div class="plain-line"><b>Try this:</b> start with one engine and add replicas one at a time. Each step introduces a decision nothing inside an engine can make, and a component that has to exist to make it.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>One shop with one till needs no queue policy. Twenty tills need someone deciding who goes where, and that person is not a cashier. It is a different job with a different view of the room.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>add a replica</b> repeatedly and read what each step forces into existence.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>replica</b> one running copy of the engine, with its own GPU and memory</span><span class="sp-w"><b>fleet</b> all the replicas serving one model, taken together</span><span class="sp-w"><b>frontend</b> the single address clients talk to</span><span class="sp-w"><b>router</b> the component choosing which replica handles a request</span><span class="sp-w"><b>discovery</b> how the router learns which replicas are alive, service or worker discovery</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flScaleOut"></div></div>
     <div><div class="segmented" id="flScaleCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -154,7 +154,7 @@ document.getElementById('sec-flstart').innerHTML=`
   let b='';
   b+=box(190,14,200,30,'var(--blue)','var(--n-blue)'); b+=t(290,33,'one endpoint for clients',SANS);
   b+=box(112,62,356,34,'var(--violet)','var(--n-violet)');
-  b+=t(290,77,'router — discovery, routing, transfer, scaling',SANS);
+  b+=t(290,77,'router: discovery, routing, transfer, scaling',SANS);
   b+=tm(290,90,'this lab','var(--violet)');
   for(let i=0;i<4;i++){
     const x=44+i*136;
@@ -166,7 +166,7 @@ document.getElementById('sec-flstart').innerHTML=`
   b+='<line x1="290" y1="44" x2="290" y2="56" style="stroke:var(--wire)" marker-end="url(#ah)"/>';
   b+=tm(290,190,'each engine schedules perfectly, and none of them can see the other three','var(--muted)');
   h.innerHTML=D('0 0 580 200','A single endpoint above a router above four independent engines',b,
-    'The teal boxes are what the serving lab is about &mdash; one engine, scheduling its own work. The violet band is this lab: everything that has to exist because there is more than one of them, and because none of them can see the others.');
+    'The teal boxes are what the serving lab is about, one engine, scheduling its own work. The violet band is this lab: everything that has to exist because there is more than one of them, and because none of them can see the others.');
 })();
 
 /* --- SIM: the questions that appear as you add replicas --- */
@@ -179,16 +179,16 @@ document.getElementById('sec-flstart').innerHTML=`
     why:'One replica, one address. The engine schedules its own work and there is genuinely nothing above it to decide. Every deployment starts here and a surprising number never need to leave.'},
    {n:2,q:'Which replica gets this request?',
     comp:'a frontend and a router',
-    why:'The moment there are two, somebody must choose. Round-robin is the obvious answer and it is wrong more often than people expect &mdash; it ignores that requests are wildly different sizes and that replicas hold different cached state.'},
+    why:'The moment there are two, somebody must choose. Round-robin is the obvious answer and it is wrong more often than people expect. It ignores that requests are wildly different sizes and that replicas hold different cached state.'},
    {n:3,q:'Which replicas are actually alive right now?',
     comp:'service discovery',
     why:'Workers restart, get rescheduled, run out of memory and come back. A hard-coded list is wrong within a day. Replicas have to announce themselves and be noticed when they stop.'},
    {n:5,q:'Does any of them already hold this prompt&rsquo;s prefix?',
     comp:'a KV index, fed by events from the workers',
-    why:'<b>This is where fleet routing stops being load balancing.</b> A worker that already holds your first 2 000 tokens can skip that prefill entirely. Routing there is worth far more than routing to whoever is least busy &mdash; but the router has to know, which means workers must publish what they hold.'},
+    why:'<b>This is where fleet routing stops being load balancing.</b> A worker that already holds your first 2 000 tokens can skip that prefill entirely. Routing there is worth far more than routing to whoever is least busy, but the router has to know, which means workers must publish what they hold.'},
    {n:8,q:'Should this request follow the state, or should the state follow the request?',
     comp:'a KV transfer path between workers',
-    why:'Sometimes the right worker is busy. Then you either recompute the prefix somewhere else or move the cached state across the network &mdash; and which is cheaper depends on the interconnect and the prefix length, not on preference.'},
+    why:'Sometimes the right worker is busy. Then you either recompute the prefix somewhere else or move the cached state across the network, and which is cheaper depends on the interconnect and the prefix length, not on preference.'},
    {n:12,q:'Do prefill and decode need the same number of machines?',
     comp:'separate pools, sized independently',
     why:'They are different workloads with different bottlenecks. Once the fleet is large enough for the ratio to matter, running them together means over-provisioning one to satisfy the other.'},
@@ -220,9 +220,9 @@ document.getElementById('sec-flstart').innerHTML=`
       '<div class="'+(i===0?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+c.why+'</div>';
     note.innerHTML =
       i===0 ? '<div class="ok"><b>One replica is not a fleet, and does not need any of this.</b> Worth saying plainly, because a great deal of orchestration gets deployed in front of a single engine that would have been fine on its own.</div>'
-      : i>=S.length-1 ? '<div class="ok"><b>Count what is on that list.</b> A frontend, a router, discovery, a KV index, a transfer path, separate pools, a planner and a failure policy &mdash; and not one of them is a model or an engine. This is distributed systems work, and the model is the payload.</div>'+
+      : i>=S.length-1 ? '<div class="ok"><b>Count what is on that list.</b> A frontend, a router, discovery, a KV index, a transfer path, separate pools, a planner and a failure policy, and not one of them is a model or an engine. This is distributed systems work, and the model is the payload.</div>'+
         '<div class="simnote" style="margin-top:10px"><b>The order matters as much as the list.</b> Each of these is worth adding only once the question it answers has actually appeared. Deploying KV-aware routing across three replicas that share no prefixes is cost with no return.</div>'
-      : '<div class="simnote"><b>Notice that none of these is an optimisation.</b> Each one is a question that has no answer until you build the thing that answers it &mdash; and until then the fleet is making the decision by accident.</div>';
+      : '<div class="simnote"><b>Notice that none of these is an optimisation.</b> Each one is a question that has no answer until you build the thing that answers it, and until then the fleet is making the decision by accident.</div>';
   }
   render();
 })();
@@ -232,13 +232,13 @@ document.getElementById('sec-fldisc').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A list of workers is wrong the moment you write it down</h2>
   <div class="plain-line"><b>In plain English:</b> workers are not stable. They get rescheduled onto other machines, restart after an out-of-memory error, come up slowly while loading forty gigabytes of weights, and disappear when a node is drained. Any configuration file listing their addresses is a snapshot of a moment that has already passed.</div>
-  <div class="plain-line"><b>So workers announce themselves instead.</b> On start-up each one registers what it is &mdash; which model, which role, which endpoints it serves &mdash; in a shared registry, and refreshes that entry on a lease. Stop refreshing and the entry expires. The router watches the registry rather than a file, so the set of workers it will route to is whatever is currently alive.</div>
+  <div class="plain-line"><b>So workers announce themselves instead.</b> On start-up each one registers what it is (which model, which role, which endpoints it serves) in a shared registry, and refreshes that entry on a lease. Stop refreshing and the entry expires. The router watches the registry rather than a file, so the set of workers it will route to is whatever is currently alive.</div>
   <div class="plain-line"><b>The subtle part is <em>ready</em> versus <em>alive</em>.</b> A worker that has registered but is still loading weights will accept a request and sit on it. A worker that is alive but has a full KV cache should not be sent more work. Health is not one bit, and treating it as one is behind a lot of mysterious latency.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; how stale is your list of workers right now?</h2>
-  <div class="plain-line"><b>Try this:</b> workers come and go on their own. Set how often you check on them, then watch what fraction of requests get sent to a worker that is already gone. Checking constantly is not free either &mdash; watch the second number.</div>
+  <h2 class="sec">Try it: how stale is your list of workers right now?</h2>
+  <div class="plain-line"><b>Try this:</b> workers come and go on their own. Set how often you check on them, then watch what fraction of requests get sent to a worker that is already gone. Checking constantly is not free either, watch the second number.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A taxi rank board that lists which cars are free. It is right at the moment it is printed. Print it once an hour and you send people to cars that left forty minutes ago; print it every two seconds and you spend all day printing.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the check every <b>30s</b> and read the wasted requests, then drag down to <b>1s</b> and watch the health-check load.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>worker</b> one machine running one copy of the engine</span><span class="sp-w"><b>service discovery</b> the list of which workers exist right now</span><span class="sp-w"><b>health check</b> a small request asking a worker whether it is alive</span><span class="sp-w"><b>stale</b> correct when it was written, wrong now</span><span class="sp-w"><b>draining</b> refusing new work while finishing what is in flight</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flStaleOut"></div></div>
@@ -250,9 +250,9 @@ document.getElementById('sec-fldisc').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; take workers away and see what the router believes</h2>
-  <div class="plain-line"><b>Try this:</b> four workers and a router. Kill one, start one, let one hang mid-load, and watch the gap between what is true and what the router has noticed &mdash; because that gap is where the failed requests live.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A taxi rank with a board showing which cars are free. The board is updated by the drivers. A driver who breaks down without telling anyone stays on the board, and the next passenger is sent to an empty space.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>kill worker 2</b> and watch what the router does with the next few requests before the lease expires.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>registry</b> the shared list workers write themselves into</span><span class="sp-w"><b>lease</b> a registration that expires unless refreshed</span><span class="sp-w"><b>heartbeat</b> the refresh that keeps a lease alive</span><span class="sp-w"><b>ready</b> loaded, warm and able to serve — not merely running</span><span class="sp-w"><b>drain</b> stop sending new work but let current work finish</span></span></div></div>
+  <h2 class="sec">Try it: take workers away and see what the router believes</h2>
+  <div class="plain-line"><b>Try this:</b> four workers and a router. Kill one, start one, let one hang mid-load, and watch the gap between what is true and what the router has noticed, because that gap is where the failed requests live.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A taxi rank with a board showing which cars are free. The board is updated by the drivers. A driver who breaks down without telling anyone stays on the board, and the next passenger is sent to an empty space.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>kill worker 2</b> and watch what the router does with the next few requests before the lease expires.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>registry</b> the shared list workers write themselves into</span><span class="sp-w"><b>lease</b> a registration that expires unless refreshed</span><span class="sp-w"><b>heartbeat</b> the refresh that keeps a lease alive</span><span class="sp-w"><b>ready</b> loaded, warm and able to serve, not merely running</span><span class="sp-w"><b>drain</b> stop sending new work but let current work finish</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flDiscOut"></div></div>
     <div><div class="segmented" id="flDiscCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -275,9 +275,9 @@ document.getElementById('sec-fldisc').innerHTML=`
     const believed=W.filter(w=>tick-w.last<LEASE&&w.state!=='drain');
     const pick=believed[tick%Math.max(1,believed.length)];
     if(!pick) log.unshift({t:tick,r:'no worker available',ok:false});
-    else if(pick.state==='dead') log.unshift({t:tick,r:'sent to worker '+pick.id+' — timed out, worker is gone',ok:false});
-    else if(pick.state==='loading') log.unshift({t:tick,r:'sent to worker '+pick.id+' — queued behind a 40 GB weight load',ok:false});
-    else log.unshift({t:tick,r:'sent to worker '+pick.id+' — served',ok:true});
+    else if(pick.state==='dead') log.unshift({t:tick,r:'sent to worker '+pick.id+', timed out, worker is gone',ok:false});
+    else if(pick.state==='loading') log.unshift({t:tick,r:'sent to worker '+pick.id+', queued behind a 40 GB weight load',ok:false});
+    else log.unshift({t:tick,r:'sent to worker '+pick.id+', served',ok:true});
     log=log.slice(0,7);
   }
   function render(){
@@ -288,16 +288,16 @@ document.getElementById('sec-fldisc').innerHTML=`
       if(k==='t') step();
       else if(k==='k2'){ const w=W.find(x=>x.id===2); if(w){w.state='dead'; last='worker 2 stopped without telling anyone';} }
       else if(k==='n'){ W.push({id:Math.max(...W.map(x=>x.id))+1,state:'loading',last:tick,born:tick}); last='a new worker registered and began loading weights'; }
-      else if(k==='d3'){ const w=W.find(x=>x.id===3); if(w){w.state='drain'; last='worker 3 asked to drain — finish current work, take no more';} }
+      else if(k==='d3'){ const w=W.find(x=>x.id===3); if(w){w.state='drain'; last='worker 3 asked to drain, finish current work, take no more';} }
       else { W=[{id:1,state:'ready',last:0},{id:2,state:'ready',last:0},{id:3,state:'ready',last:0},{id:4,state:'ready',last:0}]; tick=0; log=[]; last=''; }
       render(); });
     const COL={ready:'var(--green)',loading:'var(--amber)',dead:'var(--red)',drain:'var(--wire)'};
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TICK '+tick+' &mdash; WHAT IS ACTUALLY TRUE</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">TICK '+tick+', WHAT IS ACTUALLY TRUE</div>'+
       W.map(w=>'<div style="display:flex;gap:9px;align-items:center;margin-bottom:5px">'+
         '<span style="width:11px;height:11px;border-radius:50%;background:'+COL[w.state]+'"></span>'+
         '<span style="font-family:var(--mono);font-size:11.5px;min-width:74px">worker '+w.id+'</span>'+
         '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">'+w.state+'</span></div>').join('')+
-      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE ROUTER BELIEVES &mdash; LEASE EXPIRES AFTER '+LEASE+' MISSED TICKS</div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 7px">WHAT THE ROUTER BELIEVES, LEASE EXPIRES AFTER '+LEASE+' MISSED TICKS</div>'+
       W.map(w=>{
         const age=tick-w.last, live=age<LEASE&&w.state!=='drain';
         const wrong=(live&&(w.state==='dead'||w.state==='loading'));
@@ -305,16 +305,16 @@ document.getElementById('sec-fldisc').innerHTML=`
         '<span style="width:11px;height:11px;border-radius:50%;background:'+(live?(wrong?'var(--red)':'var(--green)'):'var(--line2)')+'"></span>'+
         '<span style="font-family:var(--mono);font-size:11.5px;min-width:74px">worker '+w.id+'</span>'+
         '<span style="font-family:var(--mono);font-size:11px;color:'+(wrong?'var(--red)':'var(--muted)')+'">'+
-        (live?(wrong?'believed healthy — it is not':'routable'):'expired, removed')+'</span></div>';}).join('')+
+        (live?(wrong?'believed healthy. It is not':'routable'):'expired, removed')+'</span></div>';}).join('')+
       (log.length?'<div class="dim" style="font-size:11px;margin:14px 0 7px">REQUESTS</div>'+
         log.map(l=>'<div style="font-family:var(--mono);font-size:11px;padding:3px 0;color:'+(l.ok?'var(--muted)':'var(--red)')+'">t'+l.t+' &middot; '+l.r+'</div>').join(''):'')+
       (last?'<div class="note" style="margin-top:12px">'+last+'</div>':'');
     const stale=W.some(w=>tick-w.last<LEASE&&(w.state==='dead'||w.state==='loading'));
     note.innerHTML = stale
-      ? '<div class="lzbad"><b>The router is confidently wrong.</b> A worker that stopped without warning keeps its lease until it expires, and every request routed there in the meantime fails or hangs. That window is the lease interval, and shortening it costs registry traffic &mdash; which is the actual trade, rather than a bug to fix.</div>'+
+      ? '<div class="lzbad"><b>The router is confidently wrong.</b> A worker that stopped without warning keeps its lease until it expires, and every request routed there in the meantime fails or hangs. That window is the lease interval, and shortening it costs registry traffic, which is the actual trade, rather than a bug to fix.</div>'+
         '<div class="simnote" style="margin-top:10px"><b>This is why <em>ready</em> has to mean more than <em>registered</em>.</b> A worker loading weights is running, reachable and useless. If it advertises itself before it can serve, the router will hand it work that sits in a queue behind a forty-gigabyte read.</div>'
-      : '<div class="simnote"><b>Advance a few ticks and then kill a worker.</b> The interesting part is not that the router notices &mdash; it is how long it takes, and what happens to the requests sent during the gap.</div>'+
-        '<div class="note" style="margin-top:10px"><b>Draining is the graceful case, and it is a different state.</b> The worker keeps serving what it has and stops being offered anything new. Without it, a routine deployment kills conversations mid-sentence &mdash; which is a rollout problem rather than a failure.</div>';
+      : '<div class="simnote"><b>Advance a few ticks and then kill a worker.</b> The interesting part is not that the router notices. It is how long it takes, and what happens to the requests sent during the gap.</div>'+
+        '<div class="note" style="margin-top:10px"><b>Draining is the graceful case, and it is a different state.</b> The worker keeps serving what it has and stops being offered anything new. Without it, a routine deployment kills conversations mid-sentence, which is a rollout problem rather than a failure.</div>';
   }
   render();
 })();
@@ -337,7 +337,7 @@ document.getElementById('sec-fldisc').innerHTML=`
     const s=INT[+rng.value], c=CHURN[ci];
     val.textContent = s<60 ? s+'s' : '60s';
     churnCtl.innerHTML=CHURN.map((x,i)=>'<button class="seg'+(i===ci?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
-      +x.n+' &mdash; <span style="color:var(--dim)">'+x.lbl+'</span></button>').join('');
+      +x.n+', <span style="color:var(--dim)">'+x.lbl+'</span></button>').join('');
     churnCtl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{ci=+b.dataset.i;render();});
 
     /* A worker that dies is discovered after half a check interval on average.
@@ -360,27 +360,27 @@ document.getElementById('sec-fldisc').innerHTML=`
       + '<div style="margin-bottom:6px">'+Array.from({length:N},(_,i)=>cell(i<dead?'dead':i<dead+part?'part':'alive')).join('')+'</div>'
       + '<div class="k" style="font-size:10.5px;color:var(--dim);margin-bottom:12px">on average <b>'+deadListed.toFixed(2)
       + '</b> of the twenty are gone but still being routed to, at any instant'
-      + (part?' &mdash; the amber one is gone part of the time':'')+'</div>'
+      + (part?'. The amber one is gone part of the time':'')+'</div>'
       + '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:'+col+'">'
       + '<b>Requests sent to a worker that is not there</b>'
       + '<div style="margin-top:5px;font-size:12.5px"><span class="k" style="color:'+col+';font-size:15px">'
-      + wastedPct.toFixed(2)+'%</span> of traffic &mdash; about <b>'+wastedRps.toLocaleString('en-GB')
+      + wastedPct.toFixed(2)+'%</span> of traffic, about <b>'+wastedRps.toLocaleString('en-GB')
       + ' requests a second</b> at '+RPS.toLocaleString('en-GB')+' rps. Each one fails, retries, and pays the latency twice.</div></div>'
       + '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:9px;border-left-color:var(--violet)">'
       + '<b>What the checking itself costs</b>'
       + '<div style="margin-top:5px;font-size:12.5px"><span class="k">'+checkRate+'</span>'
       + ' across the fleet, forever, whether anything is wrong or not'
-      + (s<=2?' &mdash; and every one of them competes with real work on a busy GPU.':'.')+'</div></div>';
+      + (s<=2?', and every one of them competes with real work on a busy GPU.':'.')+'</div></div>';
     note.innerHTML =
       '<div class="'+(wastedPct>2?'lzbad':'ok')+'"><b>'+(s<60?s+' second':'60 second')+' checks, '+c.n+'.</b> '
       + (wastedPct>2
-        ? 'More than one request in fifty is being handed to a machine that no longer exists. Users see this as random, unreproducible failures &mdash; the worst kind to debug, because by the time you look, the worker is genuinely gone and the list is correct again.'
+        ? 'More than one request in fifty is being handed to a machine that no longer exists. Users see this as random, unreproducible failures, the worst kind to debug, because by the time you look, the worker is genuinely gone and the list is correct again.'
         : wastedPct>0.5
         ? 'Small but not invisible. This is the band where you see a thin, steady error rate that nobody can attribute to anything.'
         : 'Losses are in the noise. Check whether the health-check load above is a price you actually want to pay.')
       + '</div>'
-      + '<div class="simnote" style="margin-top:10px"><b>The move that beats tuning this dial.</b> Polling is guessing. A worker that is shutting down can <em>say so</em> &mdash; stop accepting new requests, finish what it is holding, then leave. That is draining, and it takes the interesting part of this number to zero without any polling at all. The dial still matters for workers that die without warning, which is exactly what pre-emptible machines do.</div>'
-      + '<div class="simnote" style="margin-top:10px"><b>Why this is worse for inference than for ordinary web services.</b> A dead web worker costs you one retried request. A dead inference worker also takes its KV cache with it, so the retry re-runs prefill from scratch on another machine &mdash; the user waits for the whole prompt to be processed a second time.</div>';
+      + '<div class="simnote" style="margin-top:10px"><b>The move that beats tuning this dial.</b> Polling is guessing. A worker that is shutting down can <em>say so</em>, stop accepting new requests, finish what it is holding, then leave. That is draining, and it takes the interesting part of this number to zero without any polling at all. The dial still matters for workers that die without warning, which is exactly what pre-emptible machines do.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Why this is worse for inference than for ordinary web services.</b> A dead web worker costs you one retried request. A dead inference worker also takes its KV cache with it, so the retry re-runs prefill from scratch on another machine. The user waits for the whole prompt to be processed a second time.</div>';
   }
   rng.addEventListener('input',render);
   render();
@@ -390,15 +390,15 @@ document.getElementById('sec-fldisc').innerHTML=`
 document.getElementById('sec-flroute').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Routing to whoever is least busy throws away the most valuable thing you have</h2>
-  <div class="plain-line"><b>In plain English:</b> from the serving lab, a request whose prefix is already cached skips that prefill entirely &mdash; often most of its time-to-first-token. But the cache lives inside one replica&rsquo;s GPU. Send the request to a different replica and the saving evaporates, and you pay the prefill again on a machine that had no reason to hold it.</div>
+  <div class="plain-line"><b>In plain English:</b> from the serving lab, a request whose prefix is already cached skips that prefill entirely, often most of its time-to-first-token. But the cache lives inside one replica&rsquo;s GPU. Send the request to a different replica and the saving evaporates, and you pay the prefill again on a machine that had no reason to hold it.</div>
   <div class="plain-line"><b>So the router needs to know who holds what.</b> Each worker hashes its cached blocks and publishes events as blocks are added and evicted; the router keeps an index from block hash to worker. A new request is hashed the same way, and the router can see that worker 3 already holds 14 of its 16 leading blocks.</div>
   <div class="plain-line"><b>Then it has to weigh two things that disagree.</b> The worker with the best prefix match may be the busiest. Routing purely on cache locality piles every request with a shared system prompt onto one machine while nineteen sit idle; routing purely on load throws the cache away. Every real router scores both and picks a balance, and where that balance sits is a decision with a number attached.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; move the dial between cache locality and load</h2>
-  <div class="plain-line"><b>Try this:</b> a stream of requests sharing prefixes to different degrees, and four workers holding different cached state. Move the weighting and watch cache hit rate and queueing pull against each other &mdash; then find the point where both are acceptable, which is not either end.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A hospital sending you to the doctor who already has your notes, or to whoever is free soonest. The one with your notes saves twenty minutes of history-taking, and if everybody insists on her, her waiting room is the bottleneck.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the dial to <b>pure cache locality</b> and look at the queue on the busiest worker.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>block hash</b> a fingerprint of a fixed chunk of tokens, used to match prefixes</span><span class="sp-w"><b>KV event</b> a worker announcing that it gained or lost a cached block</span><span class="sp-w"><b>overlap score</b> how many of a request&rsquo;s leading blocks a worker already holds</span><span class="sp-w"><b>hot spot</b> one worker attracting far more work than the others</span><span class="sp-w"><b>TTFT</b> time to first token — what the user feels as responsiveness</span></span></div></div>
+  <h2 class="sec">Try it: move the dial between cache locality and load</h2>
+  <div class="plain-line"><b>Try this:</b> a stream of requests sharing prefixes to different degrees, and four workers holding different cached state. Move the weighting and watch cache hit rate and queueing pull against each other, then find the point where both are acceptable, which is not either end.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A hospital sending you to the doctor who already has your notes, or to whoever is free soonest. The one with your notes saves twenty minutes of history-taking, and if everybody insists on her, her waiting room is the bottleneck.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the dial to <b>pure cache locality</b> and look at the queue on the busiest worker.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>block hash</b> a fingerprint of a fixed chunk of tokens, used to match prefixes</span><span class="sp-w"><b>KV event</b> a worker announcing that it gained or lost a cached block</span><span class="sp-w"><b>overlap score</b> how many of a request&rsquo;s leading blocks a worker already holds</span><span class="sp-w"><b>hot spot</b> one worker attracting far more work than the others</span><span class="sp-w"><b>TTFT</b> time to first token, what the user feels as responsiveness</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flRouteOut"></div></div>
     <div><div id="flRouteCtl"></div>
@@ -449,9 +449,9 @@ document.getElementById('sec-flroute').innerHTML=`
     const s=simulate();
     const hitRate=s.hits/REQS.length*100;
     const COL=['var(--blue)','var(--teal)','var(--violet)','var(--amber)'];
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">40 REQUESTS FROM 3 TENANTS &mdash; WHERE EACH ONE WENT</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">40 REQUESTS FROM 3 TENANTS, WHERE EACH ONE WENT</div>'+
       '<div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:12px">'+
-      s.served.map(x=>'<span title="worker '+(x.worker+1)+(x.hit?' — cache hit':' — cache miss')+
+      s.served.map(x=>'<span title="worker '+(x.worker+1)+(x.hit?', cache hit':', cache miss')+
         '" style="width:13px;height:17px;border-radius:2px;background:'+COL[x.worker]+';opacity:'+(x.hit?1:.32)+'"></span>').join('')+'</div>'+
       '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:14px">colour = worker · solid = prefix already cached there · faded = had to prefill</div>'+
       '<div class="dim" style="font-size:11px;margin-bottom:7px">LOAD PER WORKER</div>'+
@@ -469,8 +469,8 @@ document.getElementById('sec-flroute').innerHTML=`
     note.innerHTML =
       w>=0.9 ? '<div class="lzbad"><b>Every tenant pinned to one worker.</b> The cache hit rate is excellent and the busiest machine is carrying '+s.imbalance.toFixed(1)+'× the average while others idle. You optimised the metric and made the service slower.</div>'
       : w<=0.1 ? '<div class="lzbad"><b>Perfectly balanced, and the cache is worthless.</b> Requests land wherever there is room, so a shared system prompt gets re-prefilled on whichever machine happens to be free. You are paying full prefill on traffic that did not need any.</div>'
-      : '<div class="ok"><b>Both acceptable, which is the whole point.</b> Enough cache affinity to skip most prefills, enough load awareness that no worker becomes the queue. The middle is not a compromise here &mdash; it is strictly better than either end on the metric that matters, which is time to first token.</div>';
-    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>Watch the estimate as you sweep the dial.</b> It falls from both ends toward a minimum. That shape is why this is a weighting rather than a mode &mdash; and why a router with no load term and a router with no cache term are both misconfigured, not merely different.</div>'+
+      : '<div class="ok"><b>Both acceptable, which is the whole point.</b> Enough cache affinity to skip most prefills, enough load awareness that no worker becomes the queue. The middle is not a compromise here. It is strictly better than either end on the metric that matters, which is time to first token.</div>';
+    note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>Watch the estimate as you sweep the dial.</b> It falls from both ends toward a minimum. That shape is why this is a weighting rather than a mode, and why a router with no load term and a router with no cache term are both misconfigured, not merely different.</div>'+
       '<div class="note" style="margin-top:10px"><b>What makes it work at all is the events.</b> Workers publish block hashes as they cache and evict, so the router&rsquo;s index reflects reality within a round trip. Without that the router is guessing, and a stale index sends requests to a worker that evicted the prefix ten seconds ago.</div>';
   }
   render();
@@ -480,13 +480,13 @@ document.getElementById('sec-flroute').innerHTML=`
 document.getElementById('sec-flmove').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Move the state, or do the work again</h2>
-  <div class="plain-line"><b>In plain English:</b> the worker holding your prefix is overloaded. You have two options and no third. Send the request there anyway and wait, send it elsewhere and recompute the prefill from scratch &mdash; or <b>copy the cached state across the network</b> to the worker that has room.</div>
-  <div class="plain-line">Copying is not obviously silly. KV cache is just bytes, and modern interconnects move bytes very fast. But it is a real amount of data &mdash; hundreds of megabytes for a long prefix &mdash; and whether the copy beats recomputation depends entirely on what the two machines are connected by.</div>
+  <div class="plain-line"><b>In plain English:</b> the worker holding your prefix is overloaded. You have two options and no third. Send the request there anyway and wait, send it elsewhere and recompute the prefill from scratch, or <b>copy the cached state across the network</b> to the worker that has room.</div>
+  <div class="plain-line">Copying is not obviously silly. KV cache is just bytes, and modern interconnects move bytes very fast. But it is a real amount of data (hundreds of megabytes for a long prefix) and whether the copy beats recomputation depends entirely on what the two machines are connected by.</div>
   <div class="plain-line"><b>The comparison is arithmetic, not preference.</b> Recomputation costs prefill time, which scales with prefix length. Transfer costs bytes over bandwidth, which also scales with prefix length. Both are straight lines through the origin with different slopes, so one is always better and which one depends on the hardware. That is worth working out once rather than arguing about.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; find the crossover for your interconnect</h2>
+  <h2 class="sec">Try it: find the crossover for your interconnect</h2>
   <div class="plain-line"><b>Try this:</b> change the prefix length, the model shape and what the machines are wired together with. The bars are the two options; the note tells you which wins and by how much. The answer flips completely between a rack-internal link and ordinary datacentre Ethernet.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Posting a colleague your notes versus asking them to sit through the meeting again. If the post is fast enough the notes win; if you are sending them by mule, they should just attend.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the interconnect to <b>ordinary datacentre Ethernet</b> and see the recommendation invert.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>KV transfer</b> copying cached attention state from one worker to another</span><span class="sp-w"><b>RDMA</b> a network that writes straight into the other machine&rsquo;s memory</span><span class="sp-w"><b>NVLink</b> a very fast direct link between GPUs in one machine</span><span class="sp-w"><b>interconnect</b> whatever the two machines are wired together with</span><span class="sp-w"><b>recompute</b> discarding the state and doing the prefill again</span></span></div></div>
   <div class="sim-layout">
@@ -551,11 +551,11 @@ document.getElementById('sec-flmove').innerHTML=`
       '<b>'+(winner==='transfer'
         ? 'Move it. '+(recomp/xfer).toFixed(1)+'× faster than recomputing'
         : 'Recompute. Moving it would be '+(xfer/recomp).toFixed(1)+'× slower')+'.</b> '+LINKS[link].note+'</div>';
-    note.innerHTML='<div class="simnote"><b>Both options scale with prefix length, so the winner does not change as you move that slider</b> &mdash; the lines have different slopes and never cross. What flips the answer is the <em>link</em>, and secondarily the model shape. Try switching interconnect with everything else fixed.</div>'+
+    note.innerHTML='<div class="simnote"><b>Both options scale with prefix length, so the winner does not change as you move that slider</b>. The lines have different slopes and never cross. What flips the answer is the <em>link</em>, and secondarily the model shape. Try switching interconnect with everything else fixed.</div>'+
       (model==='mha'
         ? '<div class="lzwarn" style="margin-top:10px"><b>Notice what no grouped-query attention does here.</b> Four times the KV bytes per token, so four times the transfer, while recomputation is unchanged. The same architectural choice that shrinks the cache also makes moving it viable.</div>'
-        : '<div class="note" style="margin-top:10px"><b>Switch the model shape to the one without grouped-query attention.</b> Four times the bytes to move, identical recomputation cost &mdash; the decision flips on a property of the model rather than of the fleet.</div>')+
-      '<div class="note" style="margin-top:10px"><b>And there is a third option this ignores.</b> Wait for the worker that already holds it. That costs queueing rather than bandwidth or compute, and a good router weighs all three &mdash; which is why routing and transfer are the same decision seen from two sides.</div>';
+        : '<div class="note" style="margin-top:10px"><b>Switch the model shape to the one without grouped-query attention.</b> Four times the bytes to move, identical recomputation cost, the decision flips on a property of the model rather than of the fleet.</div>')+
+      '<div class="note" style="margin-top:10px"><b>And there is a third option this ignores.</b> Wait for the worker that already holds it. That costs queueing rather than bandwidth or compute, and a good router weighs all three, which is why routing and transfer are the same decision seen from two sides.</div>';
   }
   render();
 })();
@@ -565,14 +565,14 @@ document.getElementById('sec-fldisagg').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Two workloads, one ratio, and it is not one to one</h2>
   <div class="plain-line"><b>In plain English:</b> the serving lab established that prefill and decode want opposite things and interfere when they share a card. At fleet scale that becomes a sizing question: if you run them in separate pools, <b>how many of each?</b></div>
-  <div class="plain-line">The answer comes from your traffic, not from taste. A workload with long prompts and short answers spends most of its work in prefill and needs prefill capacity. A chat workload with short prompts and long answers is almost all decode. Get the ratio wrong and one pool queues while the other idles &mdash; and because they are separate pools, the idle one cannot help.</div>
+  <div class="plain-line">The answer comes from your traffic, not from taste. A workload with long prompts and short answers spends most of its work in prefill and needs prefill capacity. A chat workload with short prompts and long answers is almost all decode. Get the ratio wrong and one pool queues while the other idles, and because they are separate pools, the idle one cannot help.</div>
   <div class="plain-line"><b>That is the trade you are buying.</b> Aggregated, every machine can do any work and prefill interferes with decode. Disaggregated, the interference is gone and you have to predict the mix. The moment your traffic shape shifts, a fixed ratio is wrong in a way that a shared pool never is.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; size the two pools against a traffic shape</h2>
+  <h2 class="sec">Try it: size the two pools against a traffic shape</h2>
   <div class="plain-line"><b>Try this:</b> set what your traffic actually looks like, then split twelve machines between the two pools. Watch both queues. The correct split moves when the traffic does, which is the point.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A restaurant deciding how many chefs and how many waiters. Get it wrong either way and half the staff stand still while the other half drown, and a waiter cannot cook.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>choose <b>document analysis</b> and then <b>chat</b>, leaving the split alone. Watch which pool falls over.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>pool</b> a group of machines doing only one of the two phases</span><span class="sp-w"><b>input length</b> how many tokens arrive in the prompt</span><span class="sp-w"><b>output length</b> how many tokens get generated</span><span class="sp-w"><b>utilisation</b> the share of a pool&rsquo;s capacity actually in use</span><span class="sp-w"><b>aggregated</b> the alternative — every machine does both phases</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A restaurant deciding how many chefs and how many waiters. Get it wrong either way and half the staff stand still while the other half drown, and a waiter cannot cook.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>choose <b>document analysis</b> and then <b>chat</b>, leaving the split alone. Watch which pool falls over.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>pool</b> a group of machines doing only one of the two phases</span><span class="sp-w"><b>input length</b> how many tokens arrive in the prompt</span><span class="sp-w"><b>output length</b> how many tokens get generated</span><span class="sp-w"><b>utilisation</b> the share of a pool&rsquo;s capacity actually in use</span><span class="sp-w"><b>aggregated</b> the alternative, every machine does both phases</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flPoolOut"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:7px">WHAT YOUR TRAFFIC LOOKS LIKE</div>
@@ -588,10 +588,10 @@ document.getElementById('sec-fldisagg').innerHTML=`
         out=document.getElementById('flPoolOut'), note=document.getElementById('flPoolNote');
   if(!mix) return;
   const MIX={
-    chat:{n:'Chat — short prompts, long answers', isl:400, osl:600},
-    doc :{n:'Document analysis — long prompts, short answers', isl:12000, osl:180},
-    rag :{n:'Retrieval-augmented — big context, medium answers', isl:6000, osl:400},
-    agent:{n:'Agent loop — medium prompts, short bursts', isl:2500, osl:120}
+    chat:{n:'Chat, short prompts, long answers', isl:400, osl:600},
+    doc :{n:'Document analysis, long prompts, short answers', isl:12000, osl:180},
+    rag :{n:'Retrieval-augmented, big context, medium answers', isl:6000, osl:400},
+    agent:{n:'Agent loop, medium prompts, short bursts', isl:2500, osl:120}
   };
   const TOTAL=12;
   let cur='chat', p=4, agg=false;
@@ -624,22 +624,22 @@ document.getElementById('sec-fldisagg').innerHTML=`
       m.isl.toLocaleString()+' TOKENS IN, '+m.osl.toLocaleString()+' OUT &middot; '+rate+' REQUESTS/S &middot; '+TOTAL+' MACHINES</div>'+
       (agg
         ? bar('every machine, both phases',(pUse+dUse)/2,'var(--blue)')
-        : bar('prefill pool — '+p+' machines',pUse,'var(--blue)')+bar('decode pool — '+(TOTAL-p)+' machines',dUse,'var(--teal)'))+
+        : bar('prefill pool '+p+' machines',pUse,'var(--blue)')+bar('decode pool '+(TOTAL-p)+' machines',dUse,'var(--teal)'))+
       '<div style="margin-top:14px">'+
       [['time to first token',ttft.toFixed(0)+' ms'],
        ['time per output token',tpot.toFixed(1)+' ms'],
        ['work split in this traffic',(pw/(pw+dw)*100).toFixed(0)+'% prefill / '+(dw/(pw+dw)*100).toFixed(0)+'% decode'],
-       ['machines that split implies',agg?'—':Math.max(1,Math.round(TOTAL*pw/(pw+dw)))+' prefill / '+(TOTAL-Math.max(1,Math.round(TOTAL*pw/(pw+dw))))+' decode']]
+       ['machines that split implies',agg?'n/a':Math.max(1,Math.round(TOTAL*pw/(pw+dw)))+' prefill / '+(TOTAL-Math.max(1,Math.round(TOTAL*pw/(pw+dw))))+' decode']]
       .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+'</div>';
     const ideal=Math.max(1,Math.round(TOTAL*pw/(pw+dw)));
     note.innerHTML =
-      agg ? '<div class="lzwarn"><b>One pool, no ratio to get wrong &mdash; and prefill interferes with decode.</b> Every machine can take any work, so a traffic shift costs nothing. The price is paid on every long prompt, as a pause in somebody else&rsquo;s stream.</div>'+
-            '<div class="simnote" style="margin-top:10px">Switch back to two pools and set the split to what the last row suggests. Better on both numbers &mdash; as long as the traffic stays this shape.</div>'
+      agg ? '<div class="lzwarn"><b>One pool, no ratio to get wrong, and prefill interferes with decode.</b> Every machine can take any work, so a traffic shift costs nothing. The price is paid on every long prompt, as a pause in somebody else&rsquo;s stream.</div>'+
+            '<div class="simnote" style="margin-top:10px">Switch back to two pools and set the split to what the last row suggests. Better on both numbers, as long as the traffic stays this shape.</div>'
       : (pUse>0.95||dUse>0.95)
       ? '<div class="lzbad"><b>One pool is saturated while the other has room, and it cannot help.</b> That is the cost of separating them. The last row says this traffic wants '+ideal+' prefill machines; you have '+p+'.</div>'
       : Math.abs(p-ideal)<=1
-      ? '<div class="ok"><b>Sized to the traffic.</b> Both pools comfortable, no interference between phases, and each can be tuned for its own bottleneck &mdash; more compute for prefill, more memory bandwidth and capacity for decode.</div>'+
+      ? '<div class="ok"><b>Sized to the traffic.</b> Both pools comfortable, no interference between phases, and each can be tuned for its own bottleneck, more compute for prefill, more memory bandwidth and capacity for decode.</div>'+
         '<div class="simnote" style="margin-top:10px"><b>Now change the traffic shape without touching the split.</b> That is the risk you accepted: a fixed ratio is a bet on a mix, and the bet is re-run every time the product changes.</div>'
       : '<div class="lzwarn"><b>Workable but off.</b> This traffic wants about '+ideal+' prefill machines and you have '+p+'. Nothing is on fire; you are simply paying for capacity in the wrong pool.</div>';
   }
@@ -650,14 +650,14 @@ document.getElementById('sec-fldisagg').innerHTML=`
 document.getElementById('sec-flplan').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A control loop that reacts too fast is worse than none</h2>
-  <div class="plain-line"><b>In plain English:</b> something has to decide the fleet is too small and add to it. That is a feedback loop: measure a signal, compare it to a target, change capacity, wait, measure again. Every classic control problem applies, and inference has one property that makes it unusually easy to get wrong &mdash; <b>new capacity takes minutes to arrive</b>, because a worker has to be scheduled, pull an image and load tens of gigabytes of weights.</div>
-  <div class="plain-line">So the loop is acting on information that is already old, and its actions will not take effect for several minutes more. React quickly to a spike and you will still be adding machines long after the spike has passed &mdash; then remove them just as the next one arrives. That is oscillation, and it costs more than the over-provisioning it was meant to avoid.</div>
+  <div class="plain-line"><b>In plain English:</b> something has to decide the fleet is too small and add to it. That is a feedback loop: measure a signal, compare it to a target, change capacity, wait, measure again. Every classic control problem applies, and inference has one property that makes it unusually easy to get wrong, <b>new capacity takes minutes to arrive</b>, because a worker has to be scheduled, pull an image and load tens of gigabytes of weights.</div>
+  <div class="plain-line">So the loop is acting on information that is already old, and its actions will not take effect for several minutes more. React quickly to a spike and you will still be adding machines long after the spike has passed, then remove them just as the next one arrives. That is oscillation, and it costs more than the over-provisioning it was meant to avoid.</div>
   <div class="plain-line"><b>Which signal you scale on matters as much as how fast.</b> GPU utilisation is nearly useless here: a memory-bound decode loop shows high utilisation while doing very little useful work. Queue depth and time-to-first-token track the thing users actually feel.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; tune a loop against a spiky day</h2>
-  <div class="plain-line"><b>Try this:</b> a day of traffic with a lunchtime spike. Choose what to scale on, how hard to react, and how long to wait before acting again. Watch the fleet chase the load &mdash; or oscillate around it.</div>
+  <h2 class="sec">Try it: tune a loop against a spiky day</h2>
+  <div class="plain-line"><b>Try this:</b> a day of traffic with a lunchtime spike. Choose what to scale on, how hard to react, and how long to wait before acting again. Watch the fleet chase the load, or oscillate around it.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A shower with a long pipe. Turn the tap when the water is cold, wait, it is scalding, turn it back, wait, freezing. The delay is doing all the damage, not the tap.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set reaction to <b>aggressive</b> with no cooldown and watch the fleet size oscillate.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>control loop</b> measure, compare to a target, act, repeat</span><span class="sp-w"><b>lag</b> the delay between deciding to add capacity and it serving traffic</span><span class="sp-w"><b>cooldown</b> a minimum wait before acting again</span><span class="sp-w"><b>oscillation</b> repeatedly over-correcting in both directions</span><span class="sp-w"><b>headroom</b> spare capacity kept for the load that has not arrived yet</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flPlanOut"></div></div>
@@ -721,7 +721,7 @@ document.getElementById('sec-flplan').innerHTML=`
     for(let i=2;i<h.length;i++){ const a=h[i-1].n-h[i-2].n, b=h[i].n-h[i-1].n; if(a*b<0) flips++; }
     const breached=h.filter(x=>x.ttft>400).length;
     const machineTicks=h.reduce((a,x)=>a+x.n,0);
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">A DAY &mdash; DEMAND AGAINST FLEET SIZE</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">A DAY, DEMAND AGAINST FLEET SIZE</div>'+
       '<div style="position:relative;height:110px;display:flex;gap:2px;align-items:flex-end">'+
       h.map(x=>'<div style="flex:1;position:relative;height:100%">'+
         '<div style="position:absolute;bottom:0;width:100%;height:'+(x.n/maxN*100)+'%;background:var(--teal);opacity:.85;border-radius:2px 2px 0 0"></div>'+
@@ -735,7 +735,7 @@ document.getElementById('sec-flplan').innerHTML=`
       h.map(x=>'<div style="flex:1;height:'+Math.min(100,x.ttft/700*100)+'%;background:'+
         (x.ttft>400?'var(--red)':x.ttft>200?'var(--amber)':'var(--green)')+';border-radius:2px 2px 0 0"></div>').join('')+'</div>'+
       '<div style="margin-top:14px">'+
-      [['direction changes',flips+(flips>6?' — oscillating':'')],
+      [['direction changes',flips+(flips>6?', oscillating':'')],
        ['ticks over a 400 ms target',breached+' of '+h.length],
        ['machine-ticks bought',machineTicks],
        ['scaling lag',LAG+' ticks before a new worker serves']]
@@ -743,12 +743,12 @@ document.getElementById('sec-flplan').innerHTML=`
         '<span style="color:var(--muted)">'+k+'</span><span>'+v+'</span></div>').join('')+'</div>';
     note.innerHTML =
       flips>6 ? '<div class="lzbad"><b>Oscillating.</b> '+flips+' direction changes in a day. The loop is reacting to a signal that is already stale and acting with a lag of '+LAG+' ticks, so every correction lands after the thing it was correcting. Reduce the gain, add cooldown, or both.</div>'
-      : breached>6 ? '<div class="lzwarn"><b>Too slow to matter.</b> The fleet is stable and the latency target is missed for '+breached+' of '+h.length+' ticks. A loop this gentle is close to not having one &mdash; you are paying for the machinery and keeping the outages.</div>'
-      : '<div class="ok"><b>Stable and mostly inside the target.</b> Note it never tracks the demand line exactly, and should not try to &mdash; with a lag this long, the achievable goal is staying close enough that queueing does not explode.</div>';
+      : breached>6 ? '<div class="lzwarn"><b>Too slow to matter.</b> The fleet is stable and the latency target is missed for '+breached+' of '+h.length+' ticks. A loop this gentle is close to not having one. You are paying for the machinery and keeping the outages.</div>'
+      : '<div class="ok"><b>Stable and mostly inside the target.</b> Note it never tracks the demand line exactly, and should not try to, with a lag this long, the achievable goal is staying close enough that queueing does not explode.</div>';
     note.innerHTML+= signal==='gpu'
-      ? '<div class="lzbad" style="margin-top:10px"><b>And this is the wrong signal.</b> GPU utilisation reads high whenever a kernel is resident, which a memory-bound decode loop does while accomplishing very little. It is noisy, it saturates early, and it does not fall when the queue drains. Scale on queue depth or on first-token latency &mdash; things a user would recognise.</div>'
-      : '<div class="simnote" style="margin-top:10px"><b>Now try the same settings on GPU utilisation.</b> Same loop, same traffic, much worse behaviour &mdash; because the signal saturates and is noisy. Choosing what to measure matters more than tuning how hard to react to it.</div>';
-    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The lag is the thing you cannot tune away.</b> Loading weights takes minutes. That is why fleets keep headroom and pre-warm capacity ahead of known peaks rather than relying on the loop to catch them &mdash; the loop is for drift, not for spikes.</div>';
+      ? '<div class="lzbad" style="margin-top:10px"><b>And this is the wrong signal.</b> GPU utilisation reads high whenever a kernel is resident, which a memory-bound decode loop does while accomplishing very little. It is noisy, it saturates early, and it does not fall when the queue drains. Scale on queue depth or on first-token latency, things a user would recognise.</div>'
+      : '<div class="simnote" style="margin-top:10px"><b>Now try the same settings on GPU utilisation.</b> Same loop, same traffic, much worse behaviour, because the signal saturates and is noisy. Choosing what to measure matters more than tuning how hard to react to it.</div>';
+    note.innerHTML+='<div class="note" style="margin-top:10px"><b>The lag is the thing you cannot tune away.</b> Loading weights takes minutes. That is why fleets keep headroom and pre-warm capacity ahead of known peaks rather than relying on the loop to catch them. The loop is for drift, not for spikes.</div>';
   }
   render();
 })();
@@ -758,14 +758,14 @@ document.getElementById('sec-flfail').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The state was in that GPU, and that GPU is gone</h2>
   <div class="plain-line"><b>In plain English:</b> a stateless web service loses a worker and the load balancer sends the next request elsewhere. Nobody notices. Inference is not stateless: a request halfway through generating has a KV cache holding everything it has read and written, and that cache lives in one GPU&rsquo;s memory. When the worker dies, so does the conversation.</div>
-  <div class="plain-line"><b>So the interesting question is not whether you retry &mdash; it is what the user has already seen.</b> A request that had not started can be retried invisibly. A request that has streamed four hundred tokens cannot: retrying means either sending those tokens again, or continuing from a state nobody has. Neither is free, and choosing by accident is what produces the worst outcomes.</div>
-  <div class="plain-line"><b>And a partial answer is worse than no answer</b> in most products. A stream that stops mid-sentence looks like the model refused, or crashed, or lost its nerve &mdash; and the client cannot tell which. Saying so explicitly is nearly always better than trailing off.</div>
+  <div class="plain-line"><b>So the interesting question is not whether you retry. It is what the user has already seen.</b> A request that had not started can be retried invisibly. A request that has streamed four hundred tokens cannot: retrying means either sending those tokens again, or continuing from a state nobody has. Neither is free, and choosing by accident is what produces the worst outcomes.</div>
+  <div class="plain-line"><b>And a partial answer is worse than no answer</b> in most products. A stream that stops mid-sentence looks like the model refused, or crashed, or lost its nerve, and the client cannot tell which. Saying so explicitly is nearly always better than trailing off.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; kill a worker at different moments</h2>
+  <h2 class="sec">Try it: kill a worker at different moments</h2>
   <div class="plain-line"><b>Try this:</b> the same failure at four points in a request&rsquo;s life, under three policies. What the fleet can do about it changes completely depending on when it happens, and so does what the person on the other end sees.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A phone call dropping. Before it connects, redial and nobody knows. Halfway through a sentence, you can call back but you cannot un-say the half they heard.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>kill the worker <b>mid-stream</b> with <b>retry silently</b> selected, and read what the client actually receives.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>in-flight</b> a request that has started but not finished</span><span class="sp-w"><b>idempotent</b> safe to repeat — doing it twice is the same as once</span><span class="sp-w"><b>replay</b> re-sending tokens the client has already been shown</span><span class="sp-w"><b>fail fast</b> stop immediately and say so rather than trying to recover</span><span class="sp-w"><b>blast radius</b> how many requests one failure takes with it</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A phone call dropping. Before it connects, redial and nobody knows. Halfway through a sentence, you can call back but you cannot un-say the half they heard.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>kill the worker <b>mid-stream</b> with <b>retry silently</b> selected, and read what the client actually receives.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>in-flight</b> a request that has started but not finished</span><span class="sp-w"><b>idempotent</b> safe to repeat, doing it twice is the same as once</span><span class="sp-w"><b>replay</b> re-sending tokens the client has already been shown</span><span class="sp-w"><b>fail fast</b> stop immediately and say so rather than trying to recover</span><span class="sp-w"><b>blast radius</b> how many requests one failure takes with it</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flFailOut"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:7px">WHEN THE WORKER DIES</div>
@@ -811,14 +811,14 @@ document.getElementById('sec-flfail').innerHTML=`
     } else if(pol==='resume'){
       sees='The answer completes, with '+sent+' tokens re-sent that the client had already displayed.';
       verdict= sent>200
-        ? '<b>Workable, and expensive at this point.</b> Replaying '+sent+' tokens means re-running the prefill <em>and</em> regenerating that far before anything new appears — so recovery takes longer than the answer had taken so far, and sampling may not reproduce the same text.'
+        ? '<b>Workable, and expensive at this point.</b> Replaying '+sent+' tokens means re-running the prefill <em>and</em> regenerating that far before anything new appears, so recovery takes longer than the answer had taken so far, and sampling may not reproduce the same text.'
         : '<b>Usually the right answer this early.</b> A few tokens replayed is a barely visible stutter, and the client ends up with one coherent answer.';
       cls= sent>200?'lzwarn':'ok'; cost='a full re-run to the point of failure';
     } else {
       sees= sent>200
         ? '<b>An explicit error after '+sent+' tokens.</b> The client knows the answer is incomplete and can decide what to do.'
         : 'An explicit error after '+sent+' tokens, early enough to retry at the application layer.';
-      verdict='<b>Honest, and often correct for long streams.</b> It costs a visible failure and buys a client that knows the truth — which beats a truncated answer indistinguishable from the model deciding to stop. The decision belongs to whoever knows whether a partial answer is dangerous.';
+      verdict='<b>Honest, and often correct for long streams.</b> It costs a visible failure and buys a client that knows the truth, which beats a truncated answer indistinguishable from the model deciding to stop. The decision belongs to whoever knows whether a partial answer is dangerous.';
       cls= sent>200?'ok':'lzwarn'; cost='a visible error, and no wasted compute';
     }
     out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">THE REQUEST&rsquo;S LIFE</div>'+
@@ -838,7 +838,7 @@ document.getElementById('sec-flfail').innerHTML=`
       '<div class="'+cls+'" style="padding:11px 13px">'+sees+'</div>'+
       '<div style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--muted)">cost: '+cost+'</div>';
     note.innerHTML='<div class="'+cls+'">'+verdict+'</div>'+
-      '<div class="simnote" style="margin-top:10px"><b>The general rule that falls out of all twelve combinations:</b> recovery is cheap before the first token and expensive after it. That single boundary is worth designing around &mdash; retry aggressively while nothing has been sent, and be conservative and explicit once the stream has started.</div>'+
+      '<div class="simnote" style="margin-top:10px"><b>The general rule that falls out of all twelve combinations:</b> recovery is cheap before the first token and expensive after it. That single boundary is worth designing around, retry aggressively while nothing has been sent, and be conservative and explicit once the stream has started.</div>'+
       '<div class="note" style="margin-top:10px"><b>And this is the strongest argument for not routing away from a cached prefix casually.</b> Every request in flight on a worker dies with it, so a fleet that concentrates traffic for cache reasons also concentrates blast radius. That tension is real, and the answer is usually a cap on how much of the traffic any one worker may hold.</div>';
   }
   render();
@@ -854,9 +854,9 @@ document.getElementById('sec-flcap').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; size a fleet and see what you are buying</h2>
+  <h2 class="sec">Try it: size a fleet and see what you are buying</h2>
   <div class="plain-line"><b>Try this:</b> set your peak traffic, your latency promise and your headroom, and read out the fleet. Then check the last line, which is the one people forget until the incident review.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Booking a venue. You size for the busiest night, not the average one, and you leave room by the door — because the cost of being slightly too big is money and the cost of being too small is people outside in the rain.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set headroom to <b>none</b> and look at what a single machine failing does.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>peak</b> the busiest period you must serve, not the average</span><span class="sp-w"><b>headroom</b> spare capacity above peak, deliberately unused</span><span class="sp-w"><b>N+1</b> enough spare that losing one machine changes nothing</span><span class="sp-w"><b>goodput</b> requests per second that met their latency target</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Booking a venue. You size for the busiest night, not the average one, and you leave room by the door, because the cost of being slightly too big is money and the cost of being too small is people outside in the rain.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set headroom to <b>none</b> and look at what a single machine failing does.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>peak</b> the busiest period you must serve, not the average</span><span class="sp-w"><b>headroom</b> spare capacity above peak, deliberately unused</span><span class="sp-w"><b>N+1</b> enough spare that losing one machine changes nothing</span><span class="sp-w"><b>goodput</b> requests per second that met their latency target</span></span></div></div>
   <div class="sim-layout">
     <div><div id="flCapOut"></div></div>
     <div><div id="flCapCtl"></div>
@@ -907,12 +907,12 @@ document.getElementById('sec-flcap').innerHTML=`
       '<div class="'+(survives?'ok':'lzbad')+'" style="margin-top:14px;padding:11px 13px">'+
       (survives
         ? '<b>Survives losing one machine.</b> At '+(oneDown*100).toFixed(0)+'% the remaining fleet is still inside the ceiling the latency target sets, so a single failure is invisible to users rather than an incident.'
-        : '<b>One machine down breaks the target.</b> The rest would have to run at '+(oneDown*100).toFixed(0)+'%, past the '+(maxUtil*100).toFixed(0)+'% ceiling — so a routine failure, a rolling deploy, or one node draining becomes a latency incident.')+'</div>';
-    note.innerHTML='<div class="simnote"><b>Watch the ceiling move as you change the latency target.</b> A generous target lets you drive machines harder and buy fewer; a tight one caps utilisation whatever you do. Utilisation is not something you choose &mdash; it is something your latency promise chooses for you.</div>'+
+        : '<b>One machine down breaks the target.</b> The rest would have to run at '+(oneDown*100).toFixed(0)+'%, past the '+(maxUtil*100).toFixed(0)+'% ceiling, so a routine failure, a rolling deploy, or one node draining becomes a latency incident.')+'</div>';
+    note.innerHTML='<div class="simnote"><b>Watch the ceiling move as you change the latency target.</b> A generous target lets you drive machines harder and buy fewer; a tight one caps utilisation whatever you do. Utilisation is not something you choose. It is something your latency promise chooses for you.</div>'+
       (!survives
         ? '<div class="lzbad" style="margin-top:10px"><b>This is the line people forget.</b> Sizing for peak is sizing for the day nothing goes wrong. Machines fail, get drained for maintenance and get replaced during deploys, and every one of those is the same arithmetic as a failure. If the fleet cannot lose one, it will have an incident on a Tuesday for no reason anyone will remember.</div>'
         : '<div class="note" style="margin-top:10px">Try dropping headroom to none and watch the last row. That is the difference between a fleet and a fleet that survives an ordinary week.</div>')+
-      '<div class="note" style="margin-top:10px"><b>The number to distrust is capacity per machine.</b> It is the only input here that comes from measurement rather than from a decision, and a published benchmark figure will be optimistic against real traffic &mdash; different prompt lengths, cancellations, cache pressure and an unsaturated batch. Measure it on your own mix, or treat the whole calculation as a guess with confident arithmetic on top.</div>';
+      '<div class="note" style="margin-top:10px"><b>The number to distrust is capacity per machine.</b> It is the only input here that comes from measurement rather than from a decision, and a published benchmark figure will be optimistic against real traffic, different prompt lengths, cancellations, cache pressure and an unsaturated batch. Measure it on your own mix, or treat the whole calculation as a guess with confident arithmetic on top.</div>';
   }
   render();
 })();
@@ -920,7 +920,7 @@ document.getElementById('sec-flcap').innerHTML=`
 /* ================= 9 · EXAM ANGLE ================= */
 document.getElementById('sec-flexam').innerHTML=`
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <h2 class="sec">Try it: drill the scenarios instead of reading them</h2>
   <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios here.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Recognising an answer and producing one are different skills.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> before reading the list below.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
   <div id="drillHost"></div>
@@ -928,16 +928,16 @@ document.getElementById('sec-flexam').innerHTML=`
 
 <div class="card">
   <h2 class="sec">The scenarios</h2>
-  <div class="exam-line"><b>&ldquo;We added replicas and our cache hit rate collapsed.&rdquo;</b> &rarr; The cache lives inside a replica and the router does not know about it. Round-robin sends a request with a shared prefix to whichever machine is free, so the prefix is re-prefilled somewhere that never held it. Route on prefix locality as well as load &mdash; which needs workers publishing what they hold.</div>
+  <div class="exam-line"><b>&ldquo;We added replicas and our cache hit rate collapsed.&rdquo;</b> &rarr; The cache lives inside a replica and the router does not know about it. Round-robin sends a request with a shared prefix to whichever machine is free, so the prefix is re-prefilled somewhere that never held it. Route on prefix locality as well as load, which needs workers publishing what they hold.</div>
   <div class="exam-line"><b>&ldquo;We routed purely on cache locality and latency got worse.&rdquo;</b> &rarr; You created a hot spot. Every request sharing a system prompt now piles onto one worker while the others idle, so cache hits are excellent and the queue is the bottleneck. It is a weighting between locality and load, not a mode, and both ends are misconfigurations.</div>
   <div class="exam-line"><b>&ldquo;Should we move the KV cache to a free worker or recompute the prefix there?&rdquo;</b> &rarr; Arithmetic, not preference. Transfer costs bytes over the interconnect; recompute costs prefill time. On an intra-rack RDMA fabric moving usually wins; on ordinary datacentre Ethernet it usually loses. Work out the crossover for your hardware and your model shape once.</div>
   <div class="exam-line"><b>&ldquo;Requests keep going to a worker that died a few seconds ago.&rdquo;</b> &rarr; The lease has not expired. Discovery is eventually consistent, so there is always a window between a worker stopping and the router noticing. Shorten it and you pay registry traffic; that window is a trade rather than a bug.</div>
   <div class="exam-line"><b>&ldquo;New workers get traffic before they can serve it.&rdquo;</b> &rarr; Registered is not ready. A worker loading tens of gigabytes of weights is running and reachable and useless, so it must not advertise itself as routable until it can actually serve. Separate liveness from readiness.</div>
-  <div class="exam-line"><b>&ldquo;Our prefill pool is saturated while the decode pool sits idle.&rdquo;</b> &rarr; The split does not match the traffic. Long prompts and short answers need prefill capacity; chat needs decode. Compute the work split from your own input and output lengths and size to that &mdash; and remember a fixed ratio is a bet that the traffic shape holds.</div>
+  <div class="exam-line"><b>&ldquo;Our prefill pool is saturated while the decode pool sits idle.&rdquo;</b> &rarr; The split does not match the traffic. Long prompts and short answers need prefill capacity; chat needs decode. Compute the work split from your own input and output lengths and size to that, and remember a fixed ratio is a bet that the traffic shape holds.</div>
   <div class="exam-line"><b>&ldquo;Our autoscaler keeps adding and removing machines all day.&rdquo;</b> &rarr; Oscillation from reacting faster than the feedback arrives. New capacity takes minutes to load weights, so corrections land after the condition that caused them. Reduce the gain, add a cooldown, and scale on queue depth or first-token latency rather than GPU utilisation.</div>
   <div class="exam-line"><b>&ldquo;Why is GPU utilisation a bad autoscaling signal for inference?&rdquo;</b> &rarr; It reads high whenever a kernel is resident, and a memory-bound decode loop is resident almost all the time while accomplishing very little. It saturates early, it is noisy, and it does not fall when the queue drains. Scale on something a user would recognise.</div>
   <div class="exam-line"><b>&ldquo;A worker died mid-stream. Should we retry?&rdquo;</b> &rarr; Depends entirely on whether tokens have been sent. Before the first token, retry is invisible and you should. After four hundred tokens, a silent retry restarts the answer in front of the user and a replay costs a full re-run. Once the stream has started, an explicit error is usually the honest choice.</div>
-  <div class="exam-line"><b>&ldquo;One worker failing took out a disproportionate share of traffic.&rdquo;</b> &rarr; Cache-affinity routing concentrated it there. Optimising for prefix locality also concentrates blast radius, so a cap on the share of traffic any one worker may hold is the usual mitigation &mdash; and it costs some cache hit rate deliberately.</div>
+  <div class="exam-line"><b>&ldquo;One worker failing took out a disproportionate share of traffic.&rdquo;</b> &rarr; Cache-affinity routing concentrated it there. Optimising for prefix locality also concentrates blast radius, so a cap on the share of traffic any one worker may hold is the usual mitigation, and it costs some cache hit rate deliberately.</div>
   <div class="exam-line"><b>&ldquo;We sized the fleet for peak and had an incident during a routine deploy.&rdquo;</b> &rarr; No headroom. Sizing for peak is sizing for the day nothing goes wrong, and draining a node for a rolling deploy is arithmetically the same as losing one. Size so the fleet still meets the target with one machine gone.</div>
   <div class="exam-line"><b>&ldquo;Our capacity model said twelve machines and we needed twenty.&rdquo;</b> &rarr; The per-machine figure almost certainly came from a benchmark: fixed prompt lengths, a saturated batch, no cancellations and no cache pressure. Measure capacity on your own request mix, because that is the only input to the model that is measured rather than chosen.</div>
 </div>`;

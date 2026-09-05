@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GPU lab — how a graphics processor actually runs your model</title>
+<title>GPU lab, how a graphics processor actually runs your model</title>
 <link rel="stylesheet" href="assets/lab.css">
 <style>
 
@@ -70,7 +70,7 @@
       <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
     </nav>
     <div class="eyebrow">threads · memory · arithmetic intensity · kernels</div>
-    <h1>The machine underneath <span class="thin">— what a GPU is actually doing while your model runs</span></h1>
+    <h1>The machine underneath: <span class="thin">what a GPU is actually doing while your model runs</span></h1>
     <p class="track" id="trackLine"></p>
     <p class="sub">Almost everything else in this guide sits on top of this layer and never looks down at it. That is usually fine, right up until someone asks why inference gets cheaper per request when you batch it, why a model that &ldquo;fits in 40&nbsp;GB&rdquo; does not fit, or why the expensive card is idle 70% of the time. Those are all the same question, and it has one answer: a GPU is enormously fast at arithmetic and comparatively slow at fetching the numbers to do arithmetic on. Nine sections, plain English first, with the arithmetic worked on a named machine so you can check it.</p>
     <div class="note" style="margin-top:14px"><b>The reference machine.</b> Where a number is needed, this lab uses an <b>NVIDIA A100 80&nbsp;GB (SXM)</b>: 108 streaming multiprocessors, 2.0&nbsp;TB/s of memory bandwidth, 19.5&nbsp;TFLOP/s of ordinary FP32 arithmetic and 312&nbsp;TFLOP/s of FP16 tensor-core arithmetic. Different cards move the numbers; none of them change the shape of the argument. Where a figure is approximate or varies by generation, it says so.</div>
@@ -135,14 +135,14 @@ document.getElementById('sec-start').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Two machines built for opposite jobs</h2>
   <div class="plain-line"><b>In plain English:</b> a CPU is built to finish <em>one</em> thing as fast as possible. A GPU is built to finish <em>an enormous number</em> of things per second, and does not much care how long any individual one takes. Both are reasonable designs. They are just answers to different questions.</div>
-  <div class="plain-line">A modern CPU spends most of its silicon on <b>making one instruction stream fast</b> &mdash; branch prediction, out-of-order execution, deep caches, high clock speeds. That machinery is expensive and it exists to hide the fact that memory is slow. A GPU spends almost none of its silicon on that. It spends it on <b>arithmetic units</b>, and hides slow memory a completely different way: by having so much other work queued up that it can switch to some of it whenever one piece stalls.</div>
-  <div class="plain-line"><b>The consequence you will meet constantly:</b> a GPU has far more arithmetic capacity than it has ability to feed itself. On the reference A100 the ratio is stark &mdash; 312&nbsp;TFLOP/s of tensor arithmetic against 2.0&nbsp;TB/s of memory bandwidth. Do the division and you get roughly <b>150 arithmetic operations for every byte you fetch</b>. If your work does less arithmetic per byte than that, the arithmetic units sit idle waiting, and the expensive part of the card is doing nothing. Most of this lab is about that one number.</div>
+  <div class="plain-line">A modern CPU spends most of its silicon on <b>making one instruction stream fast</b>, branch prediction, out-of-order execution, deep caches, high clock speeds. That machinery is expensive and it exists to hide the fact that memory is slow. A GPU spends almost none of its silicon on that. It spends it on <b>arithmetic units</b>, and hides slow memory a completely different way: by having so much other work queued up that it can switch to some of it whenever one piece stalls.</div>
+  <div class="plain-line"><b>The consequence you will meet constantly:</b> a GPU has far more arithmetic capacity than it has ability to feed itself. On the reference A100 the ratio is stark, 312&nbsp;TFLOP/s of tensor arithmetic against 2.0&nbsp;TB/s of memory bandwidth. Do the division and you get roughly <b>150 arithmetic operations for every byte you fetch</b>. If your work does less arithmetic per byte than that, the arithmetic units sit idle waiting, and the expensive part of the card is doing nothing. Most of this lab is about that one number.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; give the same job to both machines</h2>
-  <div class="plain-line"><b>Try this:</b> four jobs. Send each to a CPU and to a GPU, and read which one finishes first &mdash; then read <em>why</em>. Two of these the GPU wins by a mile. One it loses badly. One is a trap.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>One very fast courier on a motorbike, versus a fleet of two thousand cyclists. For a single urgent envelope the motorbike wins every time. For delivering a leaflet to every house in the city it is not close.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run <b>sort a list, then use the result</b> — the job where more workers cannot help.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>latency</b> how long one job takes end to end</span><span class="sp-w"><b>throughput</b> how many jobs finish per second</span><span class="sp-w"><b>parallel</b> the pieces can be done at the same time without waiting on each other</span><span class="sp-w"><b>serial</b> each step needs the answer from the one before</span><span class="sp-w"><b>core</b> one unit that executes instructions</span></span></div></div>
+  <h2 class="sec">Try it: give the same job to both machines</h2>
+  <div class="plain-line"><b>Try this:</b> four jobs. Send each to a CPU and to a GPU, and read which one finishes first, then read <em>why</em>. Two of these the GPU wins by a mile. One it loses badly. One is a trap.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>One very fast courier on a motorbike, versus a fleet of two thousand cyclists. For a single urgent envelope the motorbike wins every time. For delivering a leaflet to every house in the city it is not close.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run <b>sort a list, then use the result</b>. The job where more workers cannot help.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>latency</b> how long one job takes end to end</span><span class="sp-w"><b>throughput</b> how many jobs finish per second</span><span class="sp-w"><b>parallel</b> the pieces can be done at the same time without waiting on each other</span><span class="sp-w"><b>serial</b> each step needs the answer from the one before</span><span class="sp-w"><b>core</b> one unit that executes instructions</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpCmpOut"></div></div>
     <div><div class="segmented" id="gpCmpPick" style="flex-direction:column;align-items:stretch"></div>
@@ -154,13 +154,13 @@ document.getElementById('sec-start').innerHTML=`
   <h2 class="sec">The vocabulary, once, so the rest of the lab reads easily</h2>
   <table class="osi"><thead><tr><th>Word</th><th>What it actually is</th><th>Rough scale on the A100</th></tr></thead><tbody>
   <tr><td><b>thread</b></td><td>One lane of work. Executes the same program as its neighbours, on its own data</td><td>You launch millions; they are almost free</td></tr>
-  <tr><td><b>warp</b></td><td>32 threads that move in lockstep. <b>The real unit of execution</b> &mdash; the hardware never schedules a single thread</td><td>Always 32 on NVIDIA hardware</td></tr>
+  <tr><td><b>warp</b></td><td>32 threads that move in lockstep. <b>The real unit of execution</b>, the hardware never schedules a single thread</td><td>Always 32 on NVIDIA hardware</td></tr>
   <tr><td><b>block</b></td><td>A group of threads you define, which can share fast memory and wait for each other</td><td>Up to 1024 threads; you pick, usually 128&ndash;512</td></tr>
   <tr><td><b>SM</b> (streaming multiprocessor)</td><td>One physical sub-processor. Runs many blocks at once and owns its own shared memory and registers</td><td>108 of them</td></tr>
-  <tr><td><b>kernel</b></td><td>The function you write that runs on the GPU. One launch, many threads</td><td>Launch overhead a few microseconds &mdash; which matters more than you would think</td></tr>
+  <tr><td><b>kernel</b></td><td>The function you write that runs on the GPU. One launch, many threads</td><td>Launch overhead a few microseconds, which matters more than you would think</td></tr>
   <tr><td><b>HBM</b> (high-bandwidth memory)</td><td>The card&rsquo;s main memory. Enormous bandwidth by CPU standards, and still the bottleneck</td><td>80&nbsp;GB at about 2.0&nbsp;TB/s</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The one to hold onto is <em>warp</em>.</b> Almost every surprising GPU behaviour in this lab &mdash; why an <span class="k">if</span> statement can halve your speed, why reading memory in the wrong order costs 8&times;, why 33 threads cost the same as 64 &mdash; falls out of the fact that the hardware moves 32 lanes at a time and cannot move fewer.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The one to hold onto is <em>warp</em>.</b> Almost every surprising GPU behaviour in this lab, why an <span class="k">if</span> statement can halve your speed, why reading memory in the wrong order costs 8&times;, why 33 threads cost the same as 64, falls out of the fact that the hardware moves 32 lanes at a time and cannot move fewer.</div>
 </div>`;
 
 /* --- SIM: CPU vs GPU on four jobs --- */
@@ -170,28 +170,28 @@ document.getElementById('sec-start').innerHTML=`
   const J=[
    {k:'add', n:'Add two lists of 100 million numbers',
     cpu:['~90 ms','8 cores, each doing 12.5M additions in sequence'],
-    gpu:['~0.6 ms','100M threads, one addition each — but see the note'],
+    gpu:['~0.6 ms','100M threads, one addition each, but see the note'],
     win:'gpu',
     why:'<b>Perfectly parallel.</b> No element needs any other element&rsquo;s answer, so the work divides without argument. This is the case GPUs were built for.',
-    twist:'<b>And it is still memory-bound.</b> Two numbers in, one out, one addition &mdash; that is 12 bytes moved per FLOP, nowhere near the ~150 the card wants. The GPU wins easily and is <em>still</em> using a fraction of its arithmetic. Remember this when you get to the roofline.'},
+    twist:'<b>And it is still memory-bound.</b> Two numbers in, one out, one addition. That is 12 bytes moved per FLOP, nowhere near the ~150 the card wants. The GPU wins easily and is <em>still</em> using a fraction of its arithmetic. Remember this when you get to the roofline.'},
    {k:'sort', n:'Sort a list, then use the result',
     cpu:['~1.2 s','A single strong core with good branch prediction and deep caches'],
     gpu:['~4 s','Parallel sorts exist, but each stage waits for the previous one'],
     win:'cpu',
-    why:'<b>Serial dependency.</b> Step two needs step one&rsquo;s answer. Two thousand slow cores cannot help you finish a chain of steps any faster than one fast one &mdash; they can only help if there are independent chains.',
+    why:'<b>Serial dependency.</b> Step two needs step one&rsquo;s answer. Two thousand slow cores cannot help you finish a chain of steps any faster than one fast one. They can only help if there are independent chains.',
     twist:'<b>This is the case people forget when they buy hardware.</b> The question is never &ldquo;is this big?&rdquo;, it is &ldquo;how many independent pieces does it split into?&rdquo;. A big serial job is a CPU job no matter how big it gets.'},
    {k:'matmul', n:'Multiply two 4096&times;4096 matrices',
     cpu:['~2.1 s','Well-optimised, using all cores and vector instructions'],
     gpu:['~0.9 ms','Tensor cores, and enough arithmetic per byte to keep them fed'],
     win:'gpu',
-    why:'<b>The ideal case.</b> Every output element is independent, <em>and</em> each input value gets reused thousands of times &mdash; so once a number is loaded it does an enormous amount of work. That is the ratio the card is built for.',
+    why:'<b>The ideal case.</b> Every output element is independent, <em>and</em> each input value gets reused thousands of times, so once a number is loaded it does an enormous amount of work. That is the ratio the card is built for.',
     twist:'<b>This is why matrix multiply is the unit of account in machine learning.</b> Not because it is mathematically special, but because it is the one common operation whose arithmetic-per-byte is high enough to actually use the hardware.'},
    {k:'branch', n:'For each of a million items, run one of eight different routines',
     cpu:['~40 ms','Branch prediction handles this well; each core follows its own path'],
     gpu:['~180 ms','Threads in the same warp taking different branches are serialised'],
     win:'cpu',
-    why:'<b>The trap.</b> It looks perfectly parallel &mdash; a million independent items. But a warp is 32 threads in lockstep, and if they need different code the hardware runs each path in turn with the other lanes switched off.',
-    twist:'<b>Worst case, eight routines means eight passes.</b> You get a fraction of the throughput and nothing about the code looks wrong. The fix is not &ldquo;remove the branch&rdquo;, it is <em>group the data so threads that travel together want the same branch</em> — sort by routine first, and the divergence disappears.'}
+    why:'<b>The trap.</b> It looks perfectly parallel, a million independent items. But a warp is 32 threads in lockstep, and if they need different code the hardware runs each path in turn with the other lanes switched off.',
+    twist:'<b>Worst case, eight routines means eight passes.</b> You get a fraction of the throughput and nothing about the code looks wrong. The fix is not &ldquo;remove the branch&rdquo;, it is <em>group the data so threads that travel together want the same branch</em>, sort by routine first, and the divergence disappears.'}
   ];
   let cur='add';
   function render(){
@@ -208,7 +208,7 @@ document.getElementById('sec-start').innerHTML=`
       '<div style="margin-top:14px">'+row('CPU',j.cpu[0],j.cpu[1],j.win==='cpu')+row('GPU',j.gpu[0],j.gpu[1],j.win==='gpu')+'</div>'+
       '<div class="'+(j.win==='gpu'?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+j.why+'</div>';
     note.innerHTML='<div class="simnote">'+j.twist+'</div>'+
-      '<div class="note" style="margin-top:10px"><b>Timings are illustrative</b> &mdash; they are the right order of magnitude for the reference machine and the right way round, which is the part that matters. Your numbers will differ with sizes, library versions and how well the code is written.</div>';
+      '<div class="note" style="margin-top:10px"><b>Timings are illustrative</b>. They are the right order of magnitude for the reference machine and the right way round, which is the part that matters. Your numbers will differ with sizes, library versions and how well the code is written.</div>';
   }
   render();
 })();
@@ -217,16 +217,16 @@ document.getElementById('sec-start').innerHTML=`
 document.getElementById('sec-gpexec').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The hardware moves 32 lanes at a time, and cannot move fewer</h2>
-  <div class="plain-line"><b>In plain English:</b> you write a program as though each thread runs on its own. It does not. The hardware bundles threads into groups of <b>32</b> called warps, and every thread in a warp executes the same instruction at the same moment. If your code asks two threads in one warp to do different things, the hardware does not run them side by side &mdash; it runs one group, switches off the other lanes, then runs the second group.</div>
+  <div class="plain-line"><b>In plain English:</b> you write a program as though each thread runs on its own. It does not. The hardware bundles threads into groups of <b>32</b> called warps, and every thread in a warp executes the same instruction at the same moment. If your code asks two threads in one warp to do different things, the hardware does not run them side by side. It runs one group, switches off the other lanes, then runs the second group.</div>
   <div class="plain-line">This is the single most useful fact about GPUs, because a surprising number of performance problems are it wearing a disguise. A branch that costs nothing on a CPU can halve your throughput here. Asking for 33 threads costs exactly what asking for 64 costs, because you cannot have one and a bit warps.</div>
   <div id="gpWarpDiag"></div>
-  <div class="plain-line" style="margin-top:12px"><b>Why build it this way?</b> Because fetching and decoding an instruction is expensive silicon, and sharing that cost across 32 lanes means 32&times; more of the chip can be arithmetic instead. The lockstep is not a limitation someone forgot to fix &mdash; it is the trade that makes the arithmetic capacity possible.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Why build it this way?</b> Because fetching and decoding an instruction is expensive silicon, and sharing that cost across 32 lanes means 32&times; more of the chip can be arithmetic instead. The lockstep is not a limitation someone forgot to fix. It is the trade that makes the arithmetic capacity possible.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; put an <span class="code">if</span> inside a warp</h2>
-  <div class="plain-line"><b>Try this:</b> the same branch, with the data arranged four different ways. Watch how many passes the hardware needs and how many lanes are switched off during each. The code is identical every time &mdash; only the arrangement of the data changes.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A rowing eight. They can go fast because everyone pulls together. Ask half of them to row and half to steer and you do not get both jobs at once &mdash; you get the boat doing one, then the other.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>alternating</b>, the arrangement that looks harmless and is the worst one here.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>warp</b> 32 threads the hardware moves in lockstep</span><span class="sp-w"><b>divergence</b> threads in one warp needing different code paths</span><span class="sp-w"><b>lane</b> one thread&rsquo;s slot within its warp</span><span class="sp-w"><b>predication</b> running an instruction with some lanes switched off</span><span class="sp-w"><b>pass</b> one trip through the branch with a subset of lanes active</span></span></div></div>
+  <h2 class="sec">Try it: put an <span class="code">if</span> inside a warp</h2>
+  <div class="plain-line"><b>Try this:</b> the same branch, with the data arranged four different ways. Watch how many passes the hardware needs and how many lanes are switched off during each. The code is identical every time, only the arrangement of the data changes.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A rowing eight. They can go fast because everyone pulls together. Ask half of them to row and half to steer and you do not get both jobs at once. You get the boat doing one, then the other.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>alternating</b>, the arrangement that looks harmless and is the worst one here.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>warp</b> 32 threads the hardware moves in lockstep</span><span class="sp-w"><b>divergence</b> threads in one warp needing different code paths</span><span class="sp-w"><b>lane</b> one thread&rsquo;s slot within its warp</span><span class="sp-w"><b>predication</b> running an instruction with some lanes switched off</span><span class="sp-w"><b>pass</b> one trip through the branch with a subset of lanes active</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpDivOut"></div></div>
     <div><div class="segmented" id="gpDivPick" style="flex-direction:column;align-items:stretch"></div>
@@ -235,8 +235,8 @@ document.getElementById('sec-gpexec').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; how much work can one SM hold at once</h2>
-  <div class="plain-line"><b>Try this:</b> an SM has a fixed budget of registers and shared memory, and every block you place on it takes a share. Move the sliders and watch how many blocks fit &mdash; because the number that fit is the number of warps available to hide memory latency, and hiding latency is the entire trick.</div>
+  <h2 class="sec">Try it: how much work can one SM hold at once</h2>
+  <div class="plain-line"><b>Try this:</b> an SM has a fixed budget of registers and shared memory, and every block you place on it takes a share. Move the sliders and watch how many blocks fit, because the number that fit is the number of warps available to hide memory latency, and hiding latency is the entire trick.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A kitchen with a fixed amount of bench space. Each chef needs a certain amount of it. Give every chef a huge workspace and only two fit; give them each a small one and you get twelve, and the kitchen never stands still waiting for one to finish.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>push <b>registers per thread</b> up to 64 and watch occupancy collapse.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>occupancy</b> how many warps are resident, as a share of the maximum</span><span class="sp-w"><b>register</b> the fastest storage there is, private to one thread</span><span class="sp-w"><b>shared memory</b> the fast scratch space a block’s threads share</span><span class="sp-w"><b>latency hiding</b> switching to other work while one warp waits for memory</span><span class="sp-w"><b>SM</b> one of the GPU&rsquo;s 108 sub-processors</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpOccOut"></div></div>
@@ -259,9 +259,9 @@ document.getElementById('sec-gpexec').innerHTML=`
       b+='<rect x="'+x+'" y="'+(y+7)+'" width="11" height="16" rx="2" style="fill:var(--n-blue);stroke:var(--blue);stroke-width:.7"/>';
     }
   }
-  b+=tm(300,208,'32 lanes per warp — the hardware issues one instruction to all of them at once','var(--muted)');
+  b+=tm(300,208,'32 lanes per warp: the hardware issues one instruction to all of them at once','var(--muted)');
   h.innerHTML=D('0 0 600 220','A block of 128 threads drawn as four rows of 32 lanes each',b,
-    'Each row is a warp. Every small box is one thread. The hardware fetches one instruction per row and applies it to all 32 lanes together &mdash; which is why a block of 128 threads costs four instruction issues rather than 128.');
+    'Each row is a warp. Every small box is one thread. The hardware fetches one instruction per row and applies it to all 32 lanes together, which is why a block of 128 threads costs four instruction issues rather than 128.');
 })();
 
 /* --- SIM: warp divergence --- */
@@ -272,9 +272,9 @@ document.getElementById('sec-gpexec').innerHTML=`
    none:{label:'All 32 take the same branch', fn:i=>0, paths:1,
      why:'No divergence at all. One pass, 32 lanes active, full throughput. This is what the hardware is built for and it is worth arranging your data to get it.'},
    half:{label:'First 16 one way, last 16 the other', fn:i=>i<16?0:1, paths:2,
-     why:'Two passes, 16 lanes active in each. You get half the throughput &mdash; but note it is exactly half, not worse, because there are only two paths.'},
-   alt:{label:'Alternating — even lanes one way, odd the other', fn:i=>i%2, paths:2,
-     why:'<b>Also two passes</b>, and also half throughput. The lesson is that <em>which</em> lanes diverge does not matter to the hardware &mdash; only how many distinct paths the warp has to walk. Alternating <em>looks</em> much worse than split-in-half and costs exactly the same.'},
+     why:'Two passes, 16 lanes active in each. You get half the throughput, but note it is exactly half, not worse, because there are only two paths.'},
+   alt:{label:'Alternating, even lanes one way, odd the other', fn:i=>i%2, paths:2,
+     why:'<b>Also two passes</b>, and also half throughput. The lesson is that <em>which</em> lanes diverge does not matter to the hardware, only how many distinct paths the warp has to walk. Alternating <em>looks</em> much worse than split-in-half and costs exactly the same.'},
    four:{label:'Four different routines, by lane mod 4', fn:i=>i%4, paths:4,
      why:'Four passes, 8 lanes active in each. A quarter of the throughput, from code that reads as a perfectly ordinary switch statement over independent items.'}
   };
@@ -295,7 +295,7 @@ document.getElementById('sec-gpexec').innerHTML=`
       }
       rows+='<div class="lzhop" style="display:block;padding:9px 12px;border-left-color:'+COL[pass]+'">'+
         '<div style="font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-bottom:5px">PASS '+(pass+1)+
-        ' &mdash; '+active+' of 32 lanes doing useful work</div><div style="line-height:1">'+lanes+'</div></div>';
+        ' '+active+' of 32 lanes doing useful work</div><div style="line-height:1">'+lanes+'</div></div>';
     }
     const eff=Math.round(100/p.paths);
     out.innerHTML='<div class="code"><pre><code>'+hl('if (route[i] == 0) { path_a(i); }\nelse                { path_b(i); }   # same code every time')+'</code></pre></div>'+
@@ -306,8 +306,8 @@ document.getElementById('sec-gpexec').innerHTML=`
         (p.paths===1?'var(--green)':p.paths===2?'var(--amber)':'var(--red)')+';color:'+
         (p.paths===1?'var(--green)':p.paths===2?'var(--amber)':'var(--red)')+'">'+c+'</span>').join('')+'</div>';
     note.innerHTML='<div class="'+(p.paths===1?'ok':p.paths===2?'lzwarn':'lzbad')+'">'+p.why+'</div>'+
-      '<div class="simnote" style="margin-top:10px"><b>The fix is almost never to delete the branch.</b> It is to <em>sort the work</em> so that threads travelling together want the same path &mdash; group by route, then launch. The branch is still there; it just stops diverging, because every warp now sees one answer.</div>'+
-      '<div class="note" style="margin-top:10px"><b>Divergence only counts inside a warp.</b> Two different warps taking two different paths costs nothing at all &mdash; they were never going to be issued together. This is why the granularity is worth remembering as 32 rather than as &ldquo;the whole GPU&rdquo;.</div>';
+      '<div class="simnote" style="margin-top:10px"><b>The fix is almost never to delete the branch.</b> It is to <em>sort the work</em> so that threads travelling together want the same path, group by route, then launch. The branch is still there; it just stops diverging, because every warp now sees one answer.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Divergence only counts inside a warp.</b> Two different warps taking two different paths costs nothing at all. They were never going to be issued together. This is why the granularity is worth remembering as 32 rather than as &ldquo;the whole GPU&rdquo;.</div>';
   }
   render();
 })();
@@ -349,7 +349,7 @@ document.getElementById('sec-gpexec').innerHTML=`
       '<div style="height:7px;background:var(--panel2);border-radius:99px;overflow:hidden"><i style="display:block;height:100%;width:'+
       Math.min(100,v/max*100)+'%;background:'+col+'"></i></div></div>';
     const col=c.occ>=.5?'var(--green)':c.occ>=.25?'var(--amber)':'var(--red)';
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE SM &mdash; WHAT FITS</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ONE SM, WHAT FITS</div>'+
       '<div class="lzhop" style="display:block;padding:12px 14px;border-left-color:'+col+'">'+
       '<div style="display:flex;justify-content:space-between;align-items:baseline"><b>Occupancy</b>'+
       '<span style="font-family:var(--mono);font-size:20px;color:'+col+'">'+Math.round(c.occ*100)+'%</span></div>'+
@@ -359,11 +359,11 @@ document.getElementById('sec-gpexec').innerHTML=`
       bar('blocks allowed by shared memory',c.bySmem>32?32:c.bySmem,32,'var(--violet)')+
       bar('blocks allowed by the warp limit',c.byWarp,32,'var(--teal)')+'</div>'+
       '<div class="'+(c.occ>=.5?'ok':'lzwarn')+'" style="margin-top:12px;padding:11px 13px">'+
-      (c.blocks===0?'<b>Nothing fits.</b> One block alone exceeds a per-SM budget &mdash; this configuration will not launch.'
+      (c.blocks===0?'<b>Nothing fits.</b> One block alone exceeds a per-SM budget. This configuration will not launch.'
        :'<b>The binding constraint is '+c.binding+'.</b> Everything else has room to spare, so that is the only number worth changing.')+'</div>';
     note.innerHTML='<div class="simnote"><b>Why occupancy matters at all:</b> when a warp asks memory for something it waits hundreds of cycles. The SM covers that by running a different warp meanwhile. Few resident warps means nothing to switch to, so the arithmetic units idle through every fetch.</div>'+
-      '<div class="note" style="margin-top:10px"><b>And why chasing 100% is a mistake.</b> Occupancy is a means, not a goal. A kernel using lots of registers per thread often does more work per byte fetched &mdash; and a fast kernel at 25% occupancy beats a slow one at 75%. Raise occupancy when profiling shows the SM stalling with nothing to run, not because the number looks low.</div>'+
-      '<div class="note" style="margin-top:10px"><b>Notice the register cliff.</b> Registers are allocated per thread, so the cost is multiplied by every thread in the block. Going from 32 to 40 registers can drop you a whole block, and the graph falls in steps rather than smoothly &mdash; which is why the fix is often to shave a couple of variables rather than to restructure anything.</div>';
+      '<div class="note" style="margin-top:10px"><b>And why chasing 100% is a mistake.</b> Occupancy is a means, not a goal. A kernel using lots of registers per thread often does more work per byte fetched, and a fast kernel at 25% occupancy beats a slow one at 75%. Raise occupancy when profiling shows the SM stalling with nothing to run, not because the number looks low.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Notice the register cliff.</b> Registers are allocated per thread, so the cost is multiplied by every thread in the block. Going from 32 to 40 registers can drop you a whole block, and the graph falls in steps rather than smoothly, which is why the fix is often to shave a couple of variables rather than to restructure anything.</div>';
   }
   render();
 })();
@@ -372,14 +372,14 @@ document.getElementById('sec-gpexec').innerHTML=`
 document.getElementById('sec-mem').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Five kinds of memory, each about ten times slower than the one above</h2>
-  <div class="plain-line"><b>In plain English:</b> a GPU does not have &ldquo;memory&rdquo;. It has a ladder of five different memories, and the difference between the top and the bottom is not a few percent &mdash; it is a factor of several hundred. Almost all GPU optimisation is the same move repeated: <b>get the data one rung higher and use it more times while it is there</b>.</div>
+  <div class="plain-line"><b>In plain English:</b> a GPU does not have &ldquo;memory&rdquo;. It has a ladder of five different memories, and the difference between the top and the bottom is not a few percent. It is a factor of several hundred. Almost all GPU optimisation is the same move repeated: <b>get the data one rung higher and use it more times while it is there</b>.</div>
   <div id="gpMemDiag"></div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; climb the ladder</h2>
-  <div class="plain-line"><b>Try this:</b> click a rung. Each one shows what it is, who can see it, how fast it is and what you would use it for &mdash; then, at the bottom, what happens to a single number that has to come all the way up from the bottom rung.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>What is in your hand, what is on your desk, what is on the shelf behind you, what is in the stockroom, and what is in a warehouse across town. Same object, wildly different cost to reach for.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>registers</b>, then <b>HBM</b>, and compare the two latency figures.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>latency</b> how long you wait for the value to arrive</span><span class="sp-w"><b>bandwidth</b> how many bytes per second can flow</span><span class="sp-w"><b>cycle</b> one tick of the clock — roughly a billionth of a second, a bit less</span><span class="sp-w"><b>scope</b> who can see this memory: one thread, one block, or everybody</span><span class="sp-w"><b>HBM</b> the card&rsquo;s main memory, physically stacked next to the chip</span></span></div></div>
+  <h2 class="sec">Try it: climb the ladder</h2>
+  <div class="plain-line"><b>Try this:</b> click a rung. Each one shows what it is, who can see it, how fast it is and what you would use it for, then, at the bottom, what happens to a single number that has to come all the way up from the bottom rung.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>What is in your hand, what is on your desk, what is on the shelf behind you, what is in the stockroom, and what is in a warehouse across town. Same object, wildly different cost to reach for.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>click <b>registers</b>, then <b>HBM</b>, and compare the two latency figures.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>latency</b> how long you wait for the value to arrive</span><span class="sp-w"><b>bandwidth</b> how many bytes per second can flow</span><span class="sp-w"><b>cycle</b> one tick of the clock, roughly a billionth of a second, a bit less</span><span class="sp-w"><b>scope</b> who can see this memory: one thread, one block, or everybody</span><span class="sp-w"><b>HBM</b> the card&rsquo;s main memory, physically stacked next to the chip</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpMemOut"></div></div>
     <div><div class="segmented" id="gpMemPick" style="flex-direction:column;align-items:stretch"></div>
@@ -406,7 +406,7 @@ document.getElementById('sec-mem').innerHTML=`
   b+='<line x1="16" y1="22" x2="16" y2="196" style="stroke:var(--wire);stroke-width:1.5" marker-end="url(#ah)"/>';
   b+=tm(34,212,'slower and larger','var(--dim)','start');
   h.innerHTML=D('0 0 600 224','Five memory levels drawn as widening bars, fastest at the top',b,
-    'Each bar is one rung; wider means bigger and slower, with the capacity in the right-hand column. The latency figures are approximate and vary by generation &mdash; the ratios between them are the part that holds. Note the last rung: leaving the card at all costs roughly twenty times what reaching its own memory does.');
+    'Each bar is one rung; wider means bigger and slower, with the capacity in the right-hand column. The latency figures are approximate and vary by generation. The ratios between them are the part that holds. Note the last rung: leaving the card at all costs roughly twenty times what reaching its own memory does.');
 })();
 
 /* --- SIM: the memory ladder --- */
@@ -416,14 +416,14 @@ document.getElementById('sec-mem').innerHTML=`
   const M=[
    {k:'reg',n:'Registers',lat:'~1 cycle',cap:'256 KB per SM (65 536 32-bit registers)',scope:'One thread. Nobody else can see it.',
     use:'Loop counters, accumulators, anything you touch repeatedly inside a thread.',
-    watch:'Use too many per thread and fewer blocks fit on the SM. Use far too many and the compiler spills them to HBM &mdash; a variable that looks local suddenly costs a main-memory trip.',col:'var(--green)'},
+    watch:'Use too many per thread and fewer blocks fit on the SM. Use far too many and the compiler spills them to HBM, a variable that looks local suddenly costs a main-memory trip.',col:'var(--green)'},
    {k:'smem',n:'Shared memory / L1',lat:'~30 cycles',cap:'164 KB per SM, split between the two',scope:'One block. All its threads can read and write it.',
     use:'The staging area for tiling: load a tile once from HBM, then let 256 threads read it many times.',
     watch:'It is the reason tiling works at all. It is also a per-SM budget, so asking for a lot of it directly reduces how many blocks fit.',col:'var(--teal)'},
    {k:'l2',n:'L2 cache',lat:'~200 cycles',cap:'40 MB, shared by the whole card',scope:'Every SM. Managed by the hardware, not by you.',
     use:'You do not allocate it. It catches reuse across blocks that you did not arrange deliberately.',
     watch:'Big enough to matter for medium working sets and easy to forget. Two kernels can be identical except one happens to fit in L2.',col:'var(--blue)'},
-   {k:'hbm',n:'HBM — the card&rsquo;s main memory',lat:'~450 cycles',cap:'80 GB at about 2.0 TB/s',scope:'Everything. This is where your weights and activations live.',
+   {k:'hbm',n:'HBM, the card&rsquo;s main memory',lat:'~450 cycles',cap:'80 GB at about 2.0 TB/s',scope:'Everything. This is where your weights and activations live.',
     use:'Where data starts and ends. Every kernel reads from here and writes back to here.',
     watch:'<b>This is the bottleneck for most real work.</b> 2 TB/s sounds enormous until you divide it by 312 TFLOP/s and find the card wants 150 operations per byte.',col:'var(--amber)'},
    {k:'host',n:'Host RAM, over PCIe',lat:'~10 000 cycles',cap:'System memory, roughly 64 GB/s',scope:'The CPU&rsquo;s memory. Reaching it means leaving the card.',
@@ -451,10 +451,10 @@ document.getElementById('sec-mem').innerHTML=`
         return '<div style="flex:1;text-align:center"><div style="height:'+hgt+'px;background:'+x.col+';opacity:'+(j===i?1:.35)+';border-radius:3px 3px 0 0"></div>'+
         '<div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px">'+(rel<1000?rel+'&times;':'10k&times;')+'</div></div>';
       }).join('')+'</div>'+
-      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:4px">log scale &mdash; a linear one would make the last bar the only visible thing</div>';
+      '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:4px">log scale. A linear one would make the last bar the only visible thing</div>';
     note.innerHTML='<div class="simnote"><b>The whole of GPU optimisation, in one sentence:</b> move data up a rung and use it more times while it is there. Tiling does it, fusion does it, FlashAttention does it, and the KV cache is the same instinct applied to a different problem.</div>'+
-      (cur==='hbm'?'<div class="lzwarn" style="margin-top:10px"><b>Worth pausing here.</b> Everything downstream in this lab &mdash; the roofline, coalescing, tiling, fusion &mdash; exists because of the gap between this rung and the arithmetic units. If you remember one rung, remember this one and the 150-operations-per-byte number attached to it.</div>':'')+
-      (cur==='host'?'<div class="lzbad" style="margin-top:10px"><b>This is the rung people fall off without noticing.</b> A tensor that is not where you think it is, a <span class="k">.cpu()</span> inside a loop, a data loader that is not pinned &mdash; each of these silently inserts the slowest rung into your hot path, and the code reads perfectly normally.</div>':'')+
+      (cur==='hbm'?'<div class="lzwarn" style="margin-top:10px"><b>Worth pausing here.</b> Everything downstream in this lab (the roofline, coalescing, tiling, fusion) exists because of the gap between this rung and the arithmetic units. If you remember one rung, remember this one and the 150-operations-per-byte number attached to it.</div>':'')+
+      (cur==='host'?'<div class="lzbad" style="margin-top:10px"><b>This is the rung people fall off without noticing.</b> A tensor that is not where you think it is, a <span class="k">.cpu()</span> inside a loop, a data loader that is not pinned, each of these silently inserts the slowest rung into your hot path, and the code reads perfectly normally.</div>':'')+
       '<div class="note" style="margin-top:10px"><b>The cycle counts are approximate</b> and differ across generations and access patterns; treat them as orders of magnitude. The ordering and the rough ratios are what stay true.</div>';
   }
   render();
@@ -464,16 +464,16 @@ document.getElementById('sec-mem').innerHTML=`
 document.getElementById('sec-roof').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">One number tells you which half of the machine you are wasting</h2>
-  <div class="plain-line"><b>In plain English:</b> every piece of work moves some bytes and does some arithmetic. Divide the second by the first and you get <b>arithmetic intensity</b> &mdash; operations per byte. The machine has its own number: the point where its arithmetic capacity and its memory bandwidth are exactly balanced. Compare the two and you know, before writing any code, whether you are limited by the maths or by the fetching.</div>
+  <div class="plain-line"><b>In plain English:</b> every piece of work moves some bytes and does some arithmetic. Divide the second by the first and you get <b>arithmetic intensity</b>, operations per byte. The machine has its own number: the point where its arithmetic capacity and its memory bandwidth are exactly balanced. Compare the two and you know, before writing any code, whether you are limited by the maths or by the fetching.</div>
   <div class="plain-line"><b>On the reference A100</b>, using tensor cores: 312&nbsp;TFLOP/s &divide; 2.0&nbsp;TB/s &asymp; <b>156 operations per byte</b>. Work with a lower intensity than that cannot use the arithmetic units fully no matter how good your code is, because the data cannot arrive fast enough. Work above it is limited by arithmetic and nothing else.</div>
-  <div class="plain-line"><b>Why this is the most useful idea in the lab:</b> it tells you which optimisations are pointless. If you are memory-bound, a faster maths routine changes nothing &mdash; and people spend weeks on that. The only things that help are moving fewer bytes or reusing each one more.</div>
-  <div class="code"><pre><code>${hl('attainable FLOP/s = min( peak FLOP/s ,  arithmetic intensity x memory bandwidth )\n\n# the ridge point — where the two terms are equal:\n#   ridge = peak FLOP/s / bandwidth = 312e12 / 2.0e12 = 156 FLOP per byte')}</code></pre></div>
+  <div class="plain-line"><b>Why this is the most useful idea in the lab:</b> it tells you which optimisations are pointless. If you are memory-bound, a faster maths routine changes nothing, and people spend weeks on that. The only things that help are moving fewer bytes or reusing each one more.</div>
+  <div class="code"><pre><code>${hl('attainable FLOP/s = min( peak FLOP/s ,  arithmetic intensity x memory bandwidth )\n\n# the ridge point: where the two terms are equal:\n#   ridge = peak FLOP/s / bandwidth = 312e12 / 2.0e12 = 156 FLOP per byte')}</code></pre></div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; the card is 8% busy and nobody knows why</h2>
-  <div class="plain-line"><b>Try this:</b> four symptoms you can read off a profiler. Tick the ones you are seeing and the diagnosis narrows. Three of these look identical from a dashboard &mdash; &ldquo;the GPU is idle&rdquo; &mdash; and have completely different fixes.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A chef standing still in a busy kitchen. They could be waiting for ingredients, waiting for a plate, doing a job so small it is not worth starting, or waiting for someone to tell them what the order is. Same photograph, four different problems, and only one of them is fixed by hiring a faster chef.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>high memory traffic</b> on its own, then add <b>low arithmetic per byte</b> and watch the diagnosis sharpen.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>occupancy</b> how much work an SM is holding at once</span><span class="sp-w"><b>SM</b> streaming multiprocessor &mdash; one of the GPU&rsquo;s independent engines</span><span class="sp-w"><b>kernel</b> one function launched onto the GPU</span><span class="sp-w"><b>launch overhead</b> the fixed cost of starting a kernel at all</span><span class="sp-w"><b>arithmetic intensity</b> operations done per byte fetched</span><span class="sp-w"><b>memory bound</b> waiting on memory rather than on arithmetic</span><span class="sp-w"><b>host</b> the CPU side, which decides what the GPU is asked to do</span></span></div></div>
+  <h2 class="sec">Try it: the card is 8% busy and nobody knows why</h2>
+  <div class="plain-line"><b>Try this:</b> four symptoms you can read off a profiler. Tick the ones you are seeing and the diagnosis narrows. Three of these look identical from a dashboard (&ldquo;the GPU is idle&rdquo;) and have completely different fixes.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A chef standing still in a busy kitchen. They could be waiting for ingredients, waiting for a plate, doing a job so small it is not worth starting, or waiting for someone to tell them what the order is. Same photograph, four different problems, and only one of them is fixed by hiring a faster chef.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>high memory traffic</b> on its own, then add <b>low arithmetic per byte</b> and watch the diagnosis sharpen.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>occupancy</b> how much work an SM is holding at once</span><span class="sp-w"><b>SM</b> streaming multiprocessor, one of the GPU&rsquo;s independent engines</span><span class="sp-w"><b>kernel</b> one function launched onto the GPU</span><span class="sp-w"><b>launch overhead</b> the fixed cost of starting a kernel at all</span><span class="sp-w"><b>arithmetic intensity</b> operations done per byte fetched</span><span class="sp-w"><b>memory bound</b> waiting on memory rather than on arithmetic</span><span class="sp-w"><b>host</b> the CPU side, which decides what the GPU is asked to do</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpIdleOut"></div></div>
     <div><div class="segmented" id="gpIdleCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -482,8 +482,8 @@ document.getElementById('sec-roof').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; put a real operation on the roofline</h2>
-  <div class="plain-line"><b>Try this:</b> six operations you actually run. Each one shows the bytes it moves, the arithmetic it does, and where that lands. Watch how far to the left almost everything sits &mdash; and then look at what happens when the batch size changes.</div>
+  <h2 class="sec">Try it: put a real operation on the roofline</h2>
+  <div class="plain-line"><b>Try this:</b> six operations you actually run. Each one shows the bytes it moves, the arithmetic it does, and where that lands. Watch how far to the left almost everything sits, and then look at what happens when the batch size changes.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A kitchen with one enormous oven and one small door. Whether you can cook faster depends entirely on whether you are oven-limited or door-limited, and no amount of extra oven helps if the ingredients cannot get in.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>adding two vectors</b>, the simplest possible operation, and look at how badly it uses the card.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>arithmetic intensity</b> operations performed per byte fetched</span><span class="sp-w"><b>FLOP</b> one floating-point operation, e.g. one multiply or one add</span><span class="sp-w"><b>memory-bound</b> waiting for data; the arithmetic units are idle</span><span class="sp-w"><b>compute-bound</b> the arithmetic units are the limit; memory is keeping up</span><span class="sp-w"><b>ridge point</b> the intensity at which the two are exactly balanced</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpRoofPlot"></div><div id="gpRoofOut" style="margin-top:12px"></div></div>
@@ -500,23 +500,23 @@ document.getElementById('sec-roof').innerHTML=`
   const PEAK=312e12, BW=2.0e12, RIDGE=PEAK/BW;      /* 156 FLOP/byte */
   const OPS=[
    {k:'add',n:'Add two vectors (FP16)',ai:0.25,
-    detail:'Reads two values, writes one &mdash; 6 bytes for a single addition.',
+    detail:'Reads two values, writes one, 6 bytes for a single addition.',
     fix:'Nothing will fix this operation on its own. The fix is to stop having it as its own operation: <b>fuse it</b> into whatever produced its input, so the values never go back to HBM at all.'},
    {k:'norm',n:'LayerNorm over a row',ai:0.5,
     detail:'Two passes over the row for mean and variance, then a scale. Almost all fetching.',
-    fix:'A classic fusion candidate &mdash; and the reason libraries ship fused LayerNorm kernels rather than composing it from primitives.'},
-   {k:'gemv',n:'Matrix &times; vector — decode, batch 1',ai:1.0,
+    fix:'A classic fusion candidate, and the reason libraries ship fused LayerNorm kernels rather than composing it from primitives.'},
+   {k:'gemv',n:'Matrix &times; vector, decode, batch 1',ai:1.0,
     detail:'Every weight is read once and used for exactly one multiply-add. No reuse whatsoever.',
     fix:'<b>This is why single-request LLM decoding is so wasteful.</b> You read the entire weight matrix to produce one token. The arithmetic units are idle for essentially the whole kernel.'},
-   {k:'gemv32',n:'Matrix &times; 32 vectors — decode, batch 32',ai:29,
+   {k:'gemv32',n:'Matrix &times; 32 vectors, decode, batch 32',ai:29,
     detail:'The same weights read once, now used for 32 columns of output.',
-    fix:'<b>Batching did not make the maths faster &mdash; it made the fetching count for more.</b> Each weight now does 32&times; the work per trip from HBM. This is the whole economic argument for continuous batching, and it is a roofline argument.'},
+    fix:'<b>Batching did not make the maths faster. It made the fetching count for more.</b> Each weight now does 32&times; the work per trip from HBM. This is the whole economic argument for continuous batching, and it is a roofline argument.'},
    {k:'gemm',n:'Matrix &times; matrix, 4096&sup3;',ai:170,
     detail:'Each input element participates in thousands of multiply-adds once tiled properly.',
     fix:'Above the ridge point. Here, and essentially only here, does a faster arithmetic unit actually buy you anything.'},
    {k:'attn',n:'Attention, unfused, long sequence',ai:2.5,
     detail:'Writes the whole score matrix to HBM, reads it back for the softmax, reads it again for the weighted sum.',
-    fix:'The intensity is low because of the round-trips, not because of the maths. Fuse the three steps and keep the tile in shared memory and the same arithmetic becomes compute-bound &mdash; which is exactly what FlashAttention does.'}
+    fix:'The intensity is low because of the round-trips, not because of the maths. Fuse the three steps and keep the tile in shared memory and the same arithmetic becomes compute-bound, which is exactly what FlashAttention does.'}
   ];
   let cur='add';
   function render(){
@@ -535,7 +535,7 @@ document.getElementById('sec-roof').innerHTML=`
     b+='<line x1="'+X(RIDGE)+'" y1="'+Y(PEAK)+'" x2="'+X(RIDGE)+'" y2="190" style="stroke:var(--violet);stroke-width:1;stroke-dasharray:4 3"/>';
     b+=tm(X(RIDGE),204,'ridge 156','var(--violet)');
     b+=tm(X(0.1),204,'0.1','var(--dim)')+tm(X(10),204,'10','var(--dim)')+tm(X(1000),204,'1000','var(--dim)');
-    b+=tm(300,218,'arithmetic intensity — FLOP per byte','var(--muted)');
+    b+=tm(300,218,'arithmetic intensity: FLOP per byte','var(--muted)');
     b+=tm(60,18,'attainable FLOP/s','var(--muted)','start');
     b+=tm(556,Y(PEAK)-8,'312 TFLOP/s peak','var(--blue)','end');
     /* the point */
@@ -556,7 +556,7 @@ document.getElementById('sec-roof').innerHTML=`
       (bound==='memory'
         ? '<div class="simnote" style="margin-top:10px"><b>What is worth doing when you are here:</b> move fewer bytes (a smaller dtype, quantisation), or get more work out of each byte (batching, tiling, fusion). What is <em>not</em> worth doing: anything that makes the arithmetic faster. The arithmetic is already waiting.</div>'
         : '<div class="simnote" style="margin-top:10px"><b>Here, and only here, the usual instincts apply.</b> Better arithmetic, tensor cores and lower precision all pay off, because the data is arriving fast enough to use them.</div>')+
-      '<div class="note" style="margin-top:10px"><b>Compare the two matrix-vector entries.</b> Same operation, same weights, same hardware &mdash; batch 1 sits at 1 FLOP/byte and batch 32 at 29. Nothing about the arithmetic changed. That gap is why serving engines go to such lengths to keep a batch full, and it is the clearest example of a roofline argument driving a real design.</div>';
+      '<div class="note" style="margin-top:10px"><b>Compare the two matrix-vector entries.</b> Same operation, same weights, same hardware, batch 1 sits at 1 FLOP/byte and batch 32 at 29. Nothing about the arithmetic changed. That gap is why serving engines go to such lengths to keep a batch full, and it is the clearest example of a roofline argument driving a real design.</div>';
   }
   render();
 })();
@@ -575,14 +575,14 @@ document.getElementById('sec-roof').innerHTML=`
   const CAUSES=[
     {k:'bound', n:'Memory bound', need:['mem','ai'], col:'var(--amber)',
      what:'The card is working. It is just spending its time fetching numbers rather than doing arithmetic on them, so the arithmetic units sit idle between loads.',
-     fix:'Fuse the chain so intermediates never leave the chip, or tile so each byte is reused. Adding a faster card barely helps &mdash; you are not short of arithmetic.',
+     fix:'Fuse the chain so intermediates never leave the chip, or tile so each byte is reused. Adding a faster card barely helps. You are not short of arithmetic.',
      tell:'Arithmetic intensity below the roofline ridge point. The number to look at is operations per byte, not utilisation.'},
     {k:'launch', n:'Launch-bound', need:['small','host'], col:'var(--red)',
      what:'Each kernel is so small that starting it costs more than running it. The GPU finishes instantly and waits for the next instruction.',
      fix:'CUDA graphs, or batch the work into fewer, larger kernels. This is the classic small-batch decode problem.',
      tell:'GPU busy time far below wall-clock time, and gaps between kernels on the timeline.'},
     {k:'starve', n:'Starved by the host', need:['host'], col:'var(--violet)',
-     what:'The CPU cannot prepare work fast enough &mdash; tokenising, copying, or Python itself is the bottleneck. The card is genuinely doing nothing.',
+     what:'The CPU cannot prepare work fast enough, tokenising, copying, or Python itself is the bottleneck. The card is genuinely doing nothing.',
      fix:'Move preparation off the critical path, overlap copies with compute, or do the work on more CPU threads.',
      tell:'The CPU is pinned while the GPU timeline has long empty stretches.'},
     {k:'occ', n:'Low occupancy', need:[], col:'var(--teal)',
@@ -622,7 +622,7 @@ document.getElementById('sec-roof').innerHTML=`
       ? '<div class="ok"><b>'+best.c.n+'.</b> '+best.c.what+'</div>'
         + '<div class="simnote" style="margin-top:10px"><b>Why this matters more than it sounds.</b> The instinct on a slow model is to buy a bigger card. Only one of these four causes gets better on a bigger card, and it is the one you are least likely to have.</div>'
         + (on.mem&&on.ai ? '<div class="simnote" style="margin-top:10px">You are on the sloped part of the roofline. The ceiling you are hitting is bandwidth, and the fix is to fetch less, not to compute faster.</div>' : '')
-      : '<div class="lzwarn"><b>These symptoms do not separate the causes yet.</b> Two or more fit equally well. Add or remove a symptom &mdash; in particular, whether the CPU is busy while the card waits, because that single observation splits the four in half.</div>';
+      : '<div class="lzwarn"><b>These symptoms do not separate the causes yet.</b> Two or more fit equally well. Add or remove a symptom, in particular, whether the CPU is busy while the card waits, because that single observation splits the four in half.</div>';
   }
   render();
 })();
@@ -631,14 +631,14 @@ document.getElementById('sec-roof').innerHTML=`
 document.getElementById('sec-coal').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Memory arrives in blocks whether you wanted the whole block or not</h2>
-  <div class="plain-line"><b>In plain English:</b> HBM cannot hand you four bytes. The smallest thing it will move is a <b>32-byte sector</b>, and a warp&rsquo;s request is served in units of those. So when 32 threads each ask for one 4-byte value, what matters is not how much data they want &mdash; it is how many separate sectors those 32 values are spread across.</div>
-  <div class="plain-line">If the values sit next to each other, the whole warp is served by <b>four sectors</b> and every byte fetched gets used. If they are scattered, the hardware fetches up to <b>32 sectors</b> to deliver the same 128 bytes of useful data &mdash; and throws most of it away. Identical arithmetic, identical amount of data wanted, up to 8&times; the memory traffic.</div>
-  <div class="plain-line"><b>The word for the good case is <em>coalesced</em>.</b> It is one of the highest-leverage things to get right, because it usually costs nothing &mdash; it is a choice about which thread reads which element, not about the algorithm.</div>
+  <div class="plain-line"><b>In plain English:</b> HBM cannot hand you four bytes. The smallest thing it will move is a <b>32-byte sector</b>, and a warp&rsquo;s request is served in units of those. So when 32 threads each ask for one 4-byte value, what matters is not how much data they want. It is how many separate sectors those 32 values are spread across.</div>
+  <div class="plain-line">If the values sit next to each other, the whole warp is served by <b>four sectors</b> and every byte fetched gets used. If they are scattered, the hardware fetches up to <b>32 sectors</b> to deliver the same 128 bytes of useful data, and throws most of it away. Identical arithmetic, identical amount of data wanted, up to 8&times; the memory traffic.</div>
+  <div class="plain-line"><b>The word for the good case is <em>coalesced</em>.</b> It is one of the highest-leverage things to get right, because it usually costs nothing. It is a choice about which thread reads which element, not about the algorithm.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; change who reads what</h2>
-  <div class="plain-line"><b>Try this:</b> the same 32 threads want 32 values, every time. Only the pattern changes. Watch the sector count and the wasted bytes &mdash; and note that the two-row stride case is not a made-up example, it is what you get by reading a matrix down a column.</div>
+  <h2 class="sec">Try it: change who reads what</h2>
+  <div class="plain-line"><b>Try this:</b> the same 32 threads want 32 values, every time. Only the pattern changes. Watch the sector count and the wasted bytes, and note that the two-row stride case is not a made-up example, it is what you get by reading a matrix down a column.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A delivery van that only carries full pallets. Thirty-two items on one pallet is one trip. The same thirty-two items on thirty-two different pallets is thirty-two trips, carrying almost entirely air.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>consecutive</b> with <b>stride 32</b> and read the wasted-bytes figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>coalesced</b> the warp&rsquo;s reads fall into as few blocks as possible</span><span class="sp-w"><b>sector</b> the 32-byte unit memory is actually moved in</span><span class="sp-w"><b>stride</b> the gap between the addresses successive threads read</span><span class="sp-w"><b>row-major</b> a matrix stored one whole row after another</span><span class="sp-w"><b>transaction</b> one trip to memory</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpCoalOut"></div></div>
@@ -653,18 +653,18 @@ document.getElementById('sec-coal').innerHTML=`
   if(!pick) return;
   const SECTOR=32, ELEM=4;                     /* bytes */
   const P={
-   seq :{label:'Consecutive — thread i reads element i', idx:i=>i,
+   seq :{label:'Consecutive, thread i reads element i', idx:i=>i,
      code:'val = data[base + tid];',
      why:'<b>The good case.</b> 32 threads, 128 contiguous bytes, four sectors. Every byte fetched is a byte used.'},
-   s2  :{label:'Stride 2 — every other element', idx:i=>i*2,
+   s2  :{label:'Stride 2, every other element', idx:i=>i*2,
      code:'val = data[base + tid * 2];',
-     why:'Half of every sector is wasted. The read still works and nothing in the code looks wrong &mdash; you have simply doubled your memory traffic.'},
-   s32 :{label:'Stride 32 — reading down a matrix column', idx:i=>i*32,
+     why:'Half of every sector is wasted. The read still works and nothing in the code looks wrong. You have simply doubled your memory traffic.'},
+   s32 :{label:'Stride 32, reading down a matrix column', idx:i=>i*32,
      code:'val = matrix[tid * ncols + col];   // row-major, walking a column',
      why:'<b>The classic mistake, and it looks completely reasonable.</b> In a row-major matrix, consecutive threads reading down a column land one whole row apart. Every thread pulls its own sector and uses 4 of its 32 bytes.'},
-   rand:{label:'Scattered — gather through an index list', idx:i=>[7,19,3,28,11,0,24,15,31,5,22,9,17,2,26,13,30,8,21,1,25,12,18,4,29,16,6,23,10,27,14,20][i]*16,
+   rand:{label:'Scattered, gather through an index list', idx:i=>[7,19,3,28,11,0,24,15,31,5,22,9,17,2,26,13,30,8,21,1,25,12,18,4,29,16,6,23,10,27,14,20][i]*16,
      code:'val = data[index[tid]];           // gather',
-     why:'Unavoidable in some algorithms &mdash; sparse work, embedding lookups, mixture-of-experts routing. Worth knowing the cost so you spend effort where it is forced rather than where it was an accident.'},
+     why:'Unavoidable in some algorithms, sparse work, embedding lookups, mixture-of-experts routing. Worth knowing the cost so you spend effort where it is forced rather than where it was an accident.'},
    bcast:{label:'All 32 read the same address', idx:i=>0,
      code:'val = data[0];                    // broadcast',
      why:'<b>Also fine.</b> The hardware recognises this and broadcasts one fetched value to every lane. Same address is cheap; <em>nearly</em> the same address is what costs you.'}
@@ -690,7 +690,7 @@ document.getElementById('sec-coal').innerHTML=`
     if(maxS>show) cells+='<span style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:4px">+'+(maxS-show)+' more</span>';
     const col=eff>90?'var(--green)':eff>40?'var(--amber)':'var(--red)';
     out.innerHTML='<div class="code"><pre><code>'+hl(p.code)+'</code></pre></div>'+
-      '<div class="dim" style="font-size:11px;margin:14px 0 6px">32 THREADS ASK FOR 32 VALUES &mdash; 128 BYTES OF USEFUL DATA</div>'+
+      '<div class="dim" style="font-size:11px;margin:14px 0 6px">32 THREADS ASK FOR 32 VALUES, 128 BYTES OF USEFUL DATA</div>'+
       '<div class="dim" style="font-size:11px;margin:12px 0 6px">SECTORS THE HARDWARE ACTUALLY FETCHES</div>'+
       '<div style="line-height:1">'+cells+'</div>'+
       '<div style="margin-top:14px">'+
@@ -704,7 +704,7 @@ document.getElementById('sec-coal').innerHTML=`
       (sectors.size>4?'<span style="font-family:var(--mono);font-size:11.5px;color:var(--red)">'+(sectors.size/4).toFixed(0)+'&times; the traffic of the good case</span>':'')+'</div>';
     note.innerHTML='<div class="'+(eff>90?'ok':eff>40?'lzwarn':'lzbad')+'">'+p.why+'</div>'+
       (cur==='s32'
-        ? '<div class="simnote" style="margin-top:10px"><b>The fix is usually free.</b> Either swap which index the thread varies over, or stage the tile through shared memory &mdash; read it coalesced once, then let threads pick out whatever they need from the fast copy. That second move is exactly tiling, which is the next section.</div>'
+        ? '<div class="simnote" style="margin-top:10px"><b>The fix is usually free.</b> Either swap which index the thread varies over, or stage the tile through shared memory, read it coalesced once, then let threads pick out whatever they need from the fast copy. That second move is exactly tiling, which is the next section.</div>'
         : '<div class="simnote" style="margin-top:10px"><b>Note what is <em>not</em> the variable here.</b> Every pattern asks for the same 128 bytes and does the same arithmetic. The only thing that changed is which thread wanted which element, and it moved memory traffic by up to eight times.</div>')+
       '<div class="note" style="margin-top:10px"><b>Sector size is a hardware fact, not a tunable.</b> It is 32 bytes on current NVIDIA parts, with a 128-byte cache line above it. You cannot ask for less, so the only lever you have is making sure the bytes that arrive alongside the one you wanted are ones you also wanted.</div>';
   }
@@ -715,13 +715,13 @@ document.getElementById('sec-coal').innerHTML=`
 document.getElementById('sec-tile').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">The same numbers, fetched once instead of a thousand times</h2>
-  <div class="plain-line"><b>In plain English:</b> matrix multiply has a lot of arithmetic in it, but written naively it also has an absurd amount of fetching. Every output element needs a whole row and a whole column, and the obvious implementation goes back to main memory for each one &mdash; so the same row gets read again for every output element along it.</div>
-  <div class="plain-line"><b>Tiling fixes it with one idea:</b> cut the matrices into small squares, load one square of each into shared memory, and let every thread in the block compute against the fast copy. A value fetched once from HBM now serves the whole tile instead of one thread. Nothing about the arithmetic changes &mdash; you do exactly the same multiplies and adds. Only the fetching changes, by a factor of the tile width.</div>
+  <div class="plain-line"><b>In plain English:</b> matrix multiply has a lot of arithmetic in it, but written naively it also has an absurd amount of fetching. Every output element needs a whole row and a whole column, and the obvious implementation goes back to main memory for each one, so the same row gets read again for every output element along it.</div>
+  <div class="plain-line"><b>Tiling fixes it with one idea:</b> cut the matrices into small squares, load one square of each into shared memory, and let every thread in the block compute against the fast copy. A value fetched once from HBM now serves the whole tile instead of one thread. Nothing about the arithmetic changes. You do exactly the same multiplies and adds. Only the fetching changes, by a factor of the tile width.</div>
   <div class="plain-line"><b>This is the roofline idea made concrete.</b> Naive matmul is memory-bound and hopeless; tiled matmul is compute-bound and reaches most of peak. Same maths, and the difference is entirely about how many times each byte crosses the slowest gap.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; count the trips to memory</h2>
+  <h2 class="sec">Try it: count the trips to memory</h2>
   <div class="plain-line"><b>Try this:</b> multiply two square matrices. Change the size and the tile width, and watch how many times each input value has to be read from HBM. The arithmetic count never moves.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Cooking from a recipe kept in another room. You can walk through for each ingredient as you need it, or carry the page in once and work from it. Same dish, wildly different number of trips.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>leave the size at 4096 and move the tile width from <b>1</b> (which is the naive version) up to <b>32</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tile</b> a small square of the matrix, small enough to hold in fast memory</span><span class="sp-w"><b>reuse</b> how many times each fetched value gets used before being discarded</span><span class="sp-w"><b>shared memory</b> the fast scratch space a block&rsquo;s threads share</span><span class="sp-w"><b>FLOP</b> one floating-point operation, e.g. one multiply or one add</span></span></div></div>
   <div class="sim-layout">
@@ -757,7 +757,7 @@ document.getElementById('sec-tile').innerHTML=`
   function render(){
     const ti=TILES.indexOf(T)<0?0:TILES.indexOf(T);
     ctl.innerHTML=slider('gpN','matrix size N (N&times;N)',Math.log2(N),9,13,1,N+' &times; '+N)+
-                  slider('gpTt','tile width',ti,0,TILES.length-1,1,T===1?'1 (naive — no tiling)':T+' &times; '+T);
+                  slider('gpTt','tile width',ti,0,TILES.length-1,1,T===1?'1 (naive, no tiling)':T+' &times; '+T);
     const n=document.getElementById('gpN'); if(n) n.oninput=()=>{N=Math.pow(2,+n.value); render();};
     const t2=document.getElementById('gpTt'); if(t2) t2.oninput=()=>{T=TILES[+t2.value]; render();};
     const c=calc();
@@ -765,7 +765,7 @@ document.getElementById('sec-tile').innerHTML=`
     const bound=c.ai<156?'memory':'compute';
     const col=bound==='compute'?'var(--green)':c.ai>20?'var(--amber)':'var(--red)';
     out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">MULTIPLYING TWO '+N+'&times;'+N+' FP16 MATRICES</div>'+
-      [['arithmetic to do',(c.flops/1e12).toFixed(1)+' TFLOP — fixed, never changes'],
+      [['arithmetic to do',(c.flops/1e12).toFixed(1)+' TFLOP, fixed, never changes'],
        ['each input value read',c.reuse===1?'N times (once per output along its row)':'N/'+T+' times'],
        ['bytes moved from HBM',fmtB(c.bytesMoved)],
        ['arithmetic intensity',c.ai.toFixed(1)+' FLOP/byte'],
@@ -786,10 +786,10 @@ document.getElementById('sec-tile').innerHTML=`
         ? '<div class="lzbad"><b>This is the naive version, and look at the traffic.</b> Every value of A is read once for every column of B. The arithmetic is unchanged and the card runs at a few percent of what it can do.</div>'
         : '<div class="ok"><b>Reuse of '+T+'&times;.</b> Each value loaded into shared memory is now used by '+T+' threads before being discarded, so the HBM traffic falls by the same factor. The multiplies and adds are identical.</div>')+
       (c.smem>48*1024
-        ? '<div class="lzwarn" style="margin-top:10px"><b>But this tile will not fit well.</b> '+(c.smem/1024).toFixed(0)+'&nbsp;KB of shared memory per block, against 164&nbsp;KB per SM, means barely any blocks fit and you lose the ability to hide latency. Bigger tiles are not monotonically better &mdash; there is a middle, and it is usually 32 or 64.</div>'
+        ? '<div class="lzwarn" style="margin-top:10px"><b>But this tile will not fit well.</b> '+(c.smem/1024).toFixed(0)+'&nbsp;KB of shared memory per block, against 164&nbsp;KB per SM, means barely any blocks fit and you lose the ability to hide latency. Bigger tiles are not monotonically better. There is a middle, and it is usually 32 or 64.</div>'
         : '')+
       '<div class="simnote" style="margin-top:10px"><b>The shape of the trade:</b> a wider tile means more reuse and less traffic, but also more shared memory per block and therefore fewer blocks resident. You are trading memory traffic against latency hiding, and the answer is in the middle rather than at either end.</div>'+
-      '<div class="note" style="margin-top:10px"><b>You will almost never write this yourself.</b> cuBLAS and CUTLASS have spent years on the tile shapes for each generation. It is worth understanding because it is the mechanism behind every &ldquo;fused&rdquo; kernel you will meet &mdash; and because when a matmul is unexpectedly slow, it is usually because the shapes stopped the library from tiling well.</div>';
+      '<div class="note" style="margin-top:10px"><b>You will almost never write this yourself.</b> cuBLAS and CUTLASS have spent years on the tile shapes for each generation. It is worth understanding because it is the mechanism behind every &ldquo;fused&rdquo; kernel you will meet, and because when a matmul is unexpectedly slow, it is usually because the shapes stopped the library from tiling well.</div>';
   }
   render();
 })();
@@ -798,15 +798,15 @@ document.getElementById('sec-tile').innerHTML=`
 document.getElementById('sec-tc').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A second set of arithmetic units that only do one thing</h2>
-  <div class="plain-line"><b>In plain English:</b> alongside the ordinary arithmetic units, the card has dedicated hardware that does nothing but multiply small matrices and add the result to an accumulator. It is enormously faster at that one job &mdash; on the reference machine, 312&nbsp;TFLOP/s against 19.5 &mdash; and completely useless for anything else.</div>
-  <div class="plain-line"><b>The catch is precision.</b> Tensor cores want their inputs in a smaller number format &mdash; 16 bits rather than 32, or fewer. They accumulate in higher precision, which is what keeps the result usable, but the inputs are rounded. For neural network training and inference this turns out to be fine; for numerical work where small differences matter it is not.</div>
-  <div class="plain-line"><b>Two consequences worth carrying:</b> first, a huge fraction of the &ldquo;this card is N&times; faster&rdquo; number in any datasheet is a tensor-core number, achievable only on matrix work at low precision. Second, if your shapes do not line up with what the tensor cores want &mdash; multiples of 8 or 16 depending on format &mdash; the library quietly falls back and you get the small number instead of the big one.</div>
+  <div class="plain-line"><b>In plain English:</b> alongside the ordinary arithmetic units, the card has dedicated hardware that does nothing but multiply small matrices and add the result to an accumulator. It is enormously faster at that one job (on the reference machine, 312&nbsp;TFLOP/s against 19.5) and completely useless for anything else.</div>
+  <div class="plain-line"><b>The catch is precision.</b> Tensor cores want their inputs in a smaller number format, 16 bits rather than 32, or fewer. They accumulate in higher precision, which is what keeps the result usable, but the inputs are rounded. For neural network training and inference this turns out to be fine; for numerical work where small differences matter it is not.</div>
+  <div class="plain-line"><b>Two consequences worth carrying:</b> first, a huge fraction of the &ldquo;this card is N&times; faster&rdquo; number in any datasheet is a tensor-core number, achievable only on matrix work at low precision. Second, if your shapes do not line up with what the tensor cores want (multiples of 8 or 16 depending on format) the library quietly falls back and you get the small number instead of the big one.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; pick a number format and see what it buys and costs</h2>
-  <div class="plain-line"><b>Try this:</b> the same matrix multiply in five formats. Watch throughput, memory, and what happens to the numbers themselves &mdash; the last column is the one people discover late.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Measuring timber to the nearest millimetre or the nearest centimetre. The coarser measurement is quicker and lighter to record, and for a garden fence it makes no difference at all. For a violin it does.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>FP32</b> and <b>FP16 with tensor cores</b> — then read the range warning on FP16.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>precision</b> how finely a number can be represented</span><span class="sp-w"><b>range</b> the largest and smallest magnitudes a format can hold at all</span><span class="sp-w"><b>accumulate</b> add up many products; done at higher precision than the inputs</span><span class="sp-w"><b>mixed precision</b> low-precision inputs, higher-precision running total</span><span class="sp-w"><b>overflow</b> a value too large for the format, which becomes infinity</span></span></div></div>
+  <h2 class="sec">Try it: pick a number format and see what it buys and costs</h2>
+  <div class="plain-line"><b>Try this:</b> the same matrix multiply in five formats. Watch throughput, memory, and what happens to the numbers themselves. The last column is the one people discover late.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Measuring timber to the nearest millimetre or the nearest centimetre. The coarser measurement is quicker and lighter to record, and for a garden fence it makes no difference at all. For a violin it does.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>compare <b>FP32</b> and <b>FP16 with tensor cores</b>, then read the range warning on FP16.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>precision</b> how finely a number can be represented</span><span class="sp-w"><b>range</b> the largest and smallest magnitudes a format can hold at all</span><span class="sp-w"><b>accumulate</b> add up many products; done at higher precision than the inputs</span><span class="sp-w"><b>mixed precision</b> low-precision inputs, higher-precision running total</span><span class="sp-w"><b>overflow</b> a value too large for the format, which becomes infinity</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpTcOut"></div></div>
     <div><div class="segmented" id="gpTcPick" style="flex-direction:column;align-items:stretch"></div>
@@ -821,17 +821,17 @@ document.getElementById('sec-tc').innerHTML=`
   const F=[
    {k:'fp32',n:'FP32',bits:32,tf:19.5,tc:false,mant:'24 bits of precision',range:'~1e±38',
     use:'The safe default. Optimisers, loss scaling, anything where you are not sure.',
-    risk:'None numerically &mdash; and it leaves 94% of the card&rsquo;s arithmetic capacity unused, because it cannot touch the tensor cores at all.',col:'var(--blue)'},
+    risk:'None numerically, and it leaves 94% of the card&rsquo;s arithmetic capacity unused, because it cannot touch the tensor cores at all.',col:'var(--blue)'},
    {k:'tf32',n:'TF32',bits:32,tf:156,tc:true,mant:'11 bits of precision, FP32 range',
-    range:'~1e±38 — same as FP32',
+    range:'~1e±38, same as FP32',
     use:'The quiet default on modern PyTorch for matmuls. Same range as FP32, less precision, 8&times; the throughput.',
-    risk:'Storage is still 32 bits, so it saves no memory at all &mdash; only time. Easy to assume it halved your footprint. It did not.',col:'var(--teal)'},
-   {k:'fp16',n:'FP16',bits:16,tf:312,tc:true,mant:'11 bits of precision',range:'~1e±5 — the narrow one',
+    risk:'Storage is still 32 bits, so it saves no memory at all, only time. Easy to assume it halved your footprint. It did not.',col:'var(--teal)'},
+   {k:'fp16',n:'FP16',bits:16,tf:312,tc:true,mant:'11 bits of precision',range:'~1e±5, the narrow one',
     use:'Inference, and training with loss scaling. Half the memory and 16&times; the arithmetic of FP32.',
-    risk:'<b>The range is the problem, not the precision.</b> Gradients smaller than about 6e-8 become zero, and values above 65 504 become infinity. This is why FP16 training needs loss scaling &mdash; multiply the loss up, do the backward pass, scale back down.',col:'var(--amber)'},
-   {k:'bf16',n:'BF16',bits:16,tf:312,tc:true,mant:'8 bits of precision',range:'~1e±38 — same as FP32',
+    risk:'<b>The range is the problem, not the precision.</b> Gradients smaller than about 6e-8 become zero, and values above 65 504 become infinity. This is why FP16 training needs loss scaling, multiply the loss up, do the backward pass, scale back down.',col:'var(--amber)'},
+   {k:'bf16',n:'BF16',bits:16,tf:312,tc:true,mant:'8 bits of precision',range:'~1e±38, same as FP32',
     use:'The format most large-model training has settled on. Same range as FP32, so no loss scaling needed.',
-    risk:'Less precision than FP16 &mdash; it traded mantissa bits for exponent bits. In practice that trade is the right way round for neural networks, which care about range far more than about the last digit.',col:'var(--green)'},
+    risk:'Less precision than FP16. It traded mantissa bits for exponent bits. In practice that trade is the right way round for neural networks, which care about range far more than about the last digit.',col:'var(--green)'},
    {k:'fp8',n:'FP8',bits:8,tf:624,tc:true,mant:'3 or 4 bits of precision',range:'narrow, and format-dependent',
     use:'Inference on Hopper and later, and increasingly training with careful scaling per tensor.',
     risk:'Needs scaling factors maintained per tensor to stay usable, and support is uneven across hardware and libraries. Real gains, real operational cost.',col:'var(--violet)'}
@@ -852,17 +852,17 @@ document.getElementById('sec-tc').innerHTML=`
         '<div style="font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:4px">'+x.n+'</div></div>';
       }).join('')+'</div>'+
       '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-bottom:12px">peak TFLOP/s on the reference machine</div>'+
-      [['throughput',f.tf+' TFLOP/s &mdash; '+(f.tf/base.tf).toFixed(1)+'&times; FP32'],
-       ['memory for the weights',(f.bits/8*4096*4096/1e6).toFixed(0)+' MB per matrix &mdash; '+(f.bits/32).toFixed(2)+'&times; FP32'],
+      [['throughput',f.tf+' TFLOP/s '+(f.tf/base.tf).toFixed(1)+'&times; FP32'],
+       ['memory for the weights',(f.bits/8*4096*4096/1e6).toFixed(0)+' MB per matrix '+(f.bits/32).toFixed(2)+'&times; FP32'],
        ['uses tensor cores',f.tc?'yes':'<b>no</b>'],
        ['precision',f.mant],['range',f.range]]
       .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+
       '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:12px;border-left-color:'+f.col+'"><b>What it is for</b><small>'+f.use+'</small></div>';
     note.innerHTML='<div class="'+(cur==='fp32'?'lzwarn':cur==='fp16'?'lzbad':'ok')+'">'+f.risk+'</div>'+
-      '<div class="simnote" style="margin-top:10px"><b>The comparison worth internalising is FP16 against BF16.</b> Same size, same speed, same tensor cores. FP16 spends its bits on precision and BF16 on range &mdash; and for neural networks range wins, which is why large-model training converged on BF16 and stopped needing loss scaling.</div>'+
-      '<div class="note" style="margin-top:10px"><b>Shapes decide whether you get any of this.</b> Tensor cores work on fixed tile sizes, so dimensions that are not multiples of 8 or 16 make the library pad or fall back &mdash; and a fallback quietly gives you the FP32 number. A hidden size of 4096 is a good number for reasons that have nothing to do with modelling.</div>'+
-      '<div class="note" style="margin-top:10px"><b>And accumulation is not done in the input format.</b> Tensor cores multiply in low precision and add into a higher-precision accumulator, usually FP32. That is the design that makes the whole trade viable &mdash; without it, summing thousands of low-precision products would drift badly.</div>';
+      '<div class="simnote" style="margin-top:10px"><b>The comparison worth internalising is FP16 against BF16.</b> Same size, same speed, same tensor cores. FP16 spends its bits on precision and BF16 on range, and for neural networks range wins, which is why large-model training converged on BF16 and stopped needing loss scaling.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Shapes decide whether you get any of this.</b> Tensor cores work on fixed tile sizes, so dimensions that are not multiples of 8 or 16 make the library pad or fall back, and a fallback quietly gives you the FP32 number. A hidden size of 4096 is a good number for reasons that have nothing to do with modelling.</div>'+
+      '<div class="note" style="margin-top:10px"><b>And accumulation is not done in the input format.</b> Tensor cores multiply in low precision and add into a higher-precision accumulator, usually FP32. That is the design that makes the whole trade viable, without it, summing thousands of low-precision products would drift badly.</div>';
   }
   render();
 })();
@@ -871,13 +871,13 @@ document.getElementById('sec-tc').innerHTML=`
 document.getElementById('sec-fuse').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Every separate operation is a round trip to slow memory</h2>
-  <div class="plain-line"><b>In plain English:</b> when you write four operations in a row, you usually get four kernels. Each one reads its input from HBM, does a small amount of work, and writes its output back to HBM &mdash; where the next one immediately reads it again. For cheap operations the reading and writing <em>is</em> the cost; the arithmetic is a rounding error.</div>
+  <div class="plain-line"><b>In plain English:</b> when you write four operations in a row, you usually get four kernels. Each one reads its input from HBM, does a small amount of work, and writes its output back to HBM, where the next one immediately reads it again. For cheap operations the reading and writing <em>is</em> the cost; the arithmetic is a rounding error.</div>
   <div class="plain-line"><b>Fusion means doing them in one kernel</b>, keeping the intermediate values in registers or shared memory and never sending them back down the ladder. The arithmetic is identical. You have simply stopped paying four times for something you can pay for once.</div>
-  <div class="plain-line">There is a second cost people forget: each kernel launch has fixed overhead of a few microseconds. When a model is a long chain of small operations, launch overhead alone can dominate &mdash; and it is why <span class="k">torch.compile</span> and CUDA graphs exist.</div>
+  <div class="plain-line">There is a second cost people forget: each kernel launch has fixed overhead of a few microseconds. When a model is a long chain of small operations, launch overhead alone can dominate, and it is why <span class="k">torch.compile</span> and CUDA graphs exist.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; fuse a chain and watch the traffic collapse</h2>
+  <h2 class="sec">Try it: fuse a chain and watch the traffic collapse</h2>
   <div class="plain-line"><b>Try this:</b> a small chain of operations of the kind that appears everywhere in a transformer. Fuse them one at a time and watch the bytes moved, the kernel launches and the time.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Making a sandwich by fetching the bread, putting it back, fetching the butter, putting it back, fetching the filling. Or getting everything out once and assembling it on the counter.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>start with <b>nothing fused</b> and fuse one step at a time, watching the HBM figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>kernel</b> one function launched onto the GPU</span><span class="sp-w"><b>fusion</b> doing several operations inside one kernel</span><span class="sp-w"><b>intermediate</b> a value produced by one step purely to feed the next</span><span class="sp-w"><b>launch overhead</b> the fixed cost of starting any kernel at all</span><span class="sp-w"><b>elementwise</b> an operation applied to each value independently</span></span></div></div>
   <div class="sim-layout">
@@ -888,9 +888,9 @@ document.getElementById('sec-fuse').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; the attention matrix that is never written down</h2>
-  <div class="plain-line"><b>Try this:</b> attention computed the obvious way builds an N&times;N score matrix in memory. Move the sequence length and watch that number grow quadratically &mdash; then switch to the tiled version and watch it stop existing.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Adding up a long column of figures. You can copy every subtotal onto a fresh sheet as you go, or keep a running total in your head and never write the intermediate steps at all.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the sequence length to <b>8192</b> with the standard version, and read the memory figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sequence length</b> how many tokens are being attended over</span><span class="sp-w"><b>score matrix</b> every token&rsquo;s relevance to every other token — N&times;N of them</span><span class="sp-w"><b>softmax</b> turns raw scores into probabilities that add to one</span><span class="sp-w"><b>online softmax</b> computing that running total without seeing all the scores at once</span><span class="sp-w"><b>quadratic</b> doubling the input makes the work four times bigger</span></span></div></div>
+  <h2 class="sec">Try it: the attention matrix that is never written down</h2>
+  <div class="plain-line"><b>Try this:</b> attention computed the obvious way builds an N&times;N score matrix in memory. Move the sequence length and watch that number grow quadratically, then switch to the tiled version and watch it stop existing.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Adding up a long column of figures. You can copy every subtotal onto a fresh sheet as you go, or keep a running total in your head and never write the intermediate steps at all.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the sequence length to <b>8192</b> with the standard version, and read the memory figure.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sequence length</b> how many tokens are being attended over</span><span class="sp-w"><b>score matrix</b> every token&rsquo;s relevance to every other token, N&times;N of them</span><span class="sp-w"><b>softmax</b> turns raw scores into probabilities that add to one</span><span class="sp-w"><b>online softmax</b> computing that running total without seeing all the scores at once</span><span class="sp-w"><b>quadratic</b> doubling the input makes the work four times bigger</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpFlashOut"></div></div>
     <div><div class="segmented" id="gpFlashCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -902,7 +902,7 @@ document.getElementById('sec-fuse').innerHTML=`
 (function(){
   const pick=document.getElementById('gpFusePick'), out=document.getElementById('gpFuseOut'), note=document.getElementById('gpFuseNote');
   if(!pick) return;
-  const STEPS=[['matmul','the projection — this one is real work'],
+  const STEPS=[['matmul','the projection. This one is real work'],
                ['add bias','one add per element'],
                ['GeLU','an activation, elementwise'],
                ['dropout','a mask, elementwise'],
@@ -912,7 +912,7 @@ document.getElementById('sec-fuse').innerHTML=`
   const LAUNCH=4e-6, BW=2.0e12;
   function render(){
     pick.innerHTML=[1,2,3,4,5].map(n=>'<button class="seg'+(fused===n?' on':'')+'" data-n="'+n+'" style="text-align:left;font-size:12px">'+
-      (n===1?'Nothing fused — 5 separate kernels':n===5?'All five in one kernel':'First '+n+' fused, rest separate')+'</button>').join('');
+      (n===1?'Nothing fused, 5 separate kernels':n===5?'All five in one kernel':'First '+n+' fused, rest separate')+'</button>').join('');
     pick.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{fused=+b.dataset.n;render();});
     const kernels=1+(5-fused);
     /* each kernel reads its input and writes its output; fusing removes the intermediates */
@@ -941,12 +941,12 @@ document.getElementById('sec-fuse').innerHTML=`
       (fused===5?'fully fused':(fused-1)+' intermediate'+(fused===2?'':'s')+' eliminated')+'</span></div>';
     note.innerHTML=
       (fused===1
-        ? '<div class="lzbad"><b>Five kernels, ten trips through HBM.</b> Four of those five operations do a single arithmetic operation per element &mdash; they exist almost entirely as memory traffic.</div>'
+        ? '<div class="lzbad"><b>Five kernels, ten trips through HBM.</b> Four of those five operations do a single arithmetic operation per element. They exist almost entirely as memory traffic.</div>'
         : fused===5
         ? '<div class="ok"><b>One kernel, one trip in and one out.</b> The four cheap operations now happen on values sitting in registers, and the arithmetic is exactly what it always was.</div>'
         : '<div class="lzwarn"><b>Partly fused.</b> Each fusion removes one write and one read of the full activation tensor.</div>')+
-      '<div class="simnote" style="margin-top:10px"><b>Notice which operation is not the problem.</b> The matmul is the only one doing real arithmetic, and it is the only one that would have been worth its own kernel. The other four are pure traffic &mdash; which is why every serious framework ships fused versions of exactly these chains.</div>'+
-      '<div class="note" style="margin-top:10px"><b>Launch overhead only shows up when the work is small.</b> At this size it is a few percent. Take the same model down to batch 1 with short sequences and the arithmetic shrinks while the launch cost does not &mdash; which is when it starts to dominate, and when CUDA graphs start to matter.</div>';
+      '<div class="simnote" style="margin-top:10px"><b>Notice which operation is not the problem.</b> The matmul is the only one doing real arithmetic, and it is the only one that would have been worth its own kernel. The other four are pure traffic, which is why every serious framework ships fused versions of exactly these chains.</div>'+
+      '<div class="note" style="margin-top:10px"><b>Launch overhead only shows up when the work is small.</b> At this size it is a few percent. Take the same model down to batch 1 with short sequences and the arithmetic shrinks while the launch cost does not, which is when it starts to dominate, and when CUDA graphs start to matter.</div>';
   }
   render();
 })();
@@ -963,7 +963,7 @@ document.getElementById('sec-fuse').innerHTML=`
     ctl.innerHTML='<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">'+
       '<span style="color:var(--muted)">sequence length</span><span>'+N.toLocaleString()+' tokens</span></div>'+
       '<input type="range" id="gpFN" min="0" max="'+(SEQ.length-1)+'" step="1" value="'+si+'" style="width:100%"></div>'+
-      [[false,'Standard — write the score matrix to HBM'],[true,'Tiled &amp; fused — never write it at all']]
+      [[false,'Standard, write the score matrix to HBM'],[true,'Tiled &amp; fused, never write it at all']]
       .map(([v,n])=>'<button class="seg'+(tiled===v?' on':'')+'" data-v="'+v+'" style="text-align:left;font-size:12px">'+n+'</button>').join('');
     const e=document.getElementById('gpFN'); if(e) e.oninput=()=>{N=SEQ[+e.value];render();};
     ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{tiled=b.dataset.v==='true';render();});
@@ -980,13 +980,13 @@ document.getElementById('sec-fuse').innerHTML=`
       '<span style="font-family:var(--mono);font-size:17px;color:'+col+'">'+(tiled?'never exists':(scores/1e9).toFixed(1)+' GB')+'</span></div>'+
       '<small>'+(tiled
         ? 'Computed a tile at a time in shared memory, consumed immediately, and discarded. Only a running maximum and a running sum survive between tiles.'
-        : heads+' heads &times; '+N.toLocaleString()+'&sup2; scores &times; 2 bytes &mdash; written to HBM, read back for the softmax, read again for the weighted sum.')+'</small></div>'+
+        : heads+' heads &times; '+N.toLocaleString()+'&sup2; scores &times; 2 bytes, written to HBM, read back for the softmax, read again for the weighted sum.')+'</small></div>'+
       '<div style="margin-top:14px">'+
-      [['arithmetic',(flops/1e12).toFixed(1)+' TFLOP — identical either way'],
+      [['arithmetic',(flops/1e12).toFixed(1)+' TFLOP, identical either way'],
        ['bytes moved',(bytes/1e9).toFixed(2)+' GB'],
        ['arithmetic intensity',ai.toFixed(1)+' FLOP/byte'],
        ['time in memory',(t*1000).toFixed(1)+' ms'],
-       ['fits in 80 GB?',(tiled||scores<70e9)?'yes':'<b style="color:var(--red)">no — out of memory</b>']]
+       ['fits in 80 GB?',(tiled||scores<70e9)?'yes':'<b style="color:var(--red)">no, out of memory</b>']]
       .map(([k,v])=>'<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line)">'+
         '<span style="color:var(--muted)">'+k+'</span><span style="text-align:right">'+v+'</span></div>').join('')+'</div>'+
       '<div style="margin-top:12px;display:flex;gap:5px;align-items:flex-end;height:60px">'+
@@ -998,11 +998,11 @@ document.getElementById('sec-fuse').innerHTML=`
       }).join('')+'</div>'+
       '<div style="font-family:var(--mono);font-size:9.5px;color:var(--dim);text-align:center;margin-top:3px">score-matrix memory as the sequence grows</div>';
     note.innerHTML = tiled
-      ? '<div class="ok"><b>The memory stopped being quadratic.</b> Not because the arithmetic changed &mdash; it is exactly the same number of multiplies &mdash; but because the intermediate result is consumed where it is produced and never travels.</div>'+
+      ? '<div class="ok"><b>The memory stopped being quadratic.</b> Not because the arithmetic changed (it is exactly the same number of multiplies) but because the intermediate result is consumed where it is produced and never travels.</div>'+
         '<div class="simnote" style="margin-top:10px"><b>The trick that makes it possible is the online softmax.</b> A softmax normally needs every score before it can normalise any of them, which is precisely why the matrix had to exist. Keeping a running maximum and a running sum, and rescaling the partial result as each new tile arrives, gives the same answer without ever holding the whole row.</div>'+
         '<div class="note" style="margin-top:10px"><b>This is the same instinct as tiling and fusion, applied to attention.</b> Three sections of this lab are one idea: produce the value where you need it, use it, and do not send it down the ladder.</div>'
-      : '<div class="'+(scores>70e9?'lzbad':'lzwarn')+'"><b>The score matrix dominates everything.</b> It is written once, read twice, and grows with the square of the sequence &mdash; so doubling the context quadruples both the memory and the traffic.</div>'+
-        '<div class="simnote" style="margin-top:10px">Push the slider to 16k or 32k. The arithmetic is large but survivable; it is the <em>intermediate</em> that makes long context impossible, and it is an intermediate nobody actually wanted &mdash; it exists only to be consumed by the next step.</div>';
+      : '<div class="'+(scores>70e9?'lzbad':'lzwarn')+'"><b>The score matrix dominates everything.</b> It is written once, read twice, and grows with the square of the sequence, so doubling the context quadruples both the memory and the traffic.</div>'+
+        '<div class="simnote" style="margin-top:10px">Push the slider to 16k or 32k. The arithmetic is large but survivable; it is the <em>intermediate</em> that makes long context impossible, and it is an intermediate nobody actually wanted. It exists only to be consumed by the next step.</div>';
   }
   render();
 })();
@@ -1011,14 +1011,14 @@ document.getElementById('sec-fuse').innerHTML=`
 document.getElementById('sec-triton').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Three ways to get a kernel, and what each one costs you</h2>
-  <div class="plain-line"><b>In plain English:</b> everything in this lab so far &mdash; tiling, coalescing, fusion &mdash; is real work that someone has to do. The question is who. You can write CUDA by hand and control every detail; you can write Triton and reason in tiles while the compiler handles threads; or you can write ordinary PyTorch and let <span class="k">torch.compile</span> find the fusions for you.</div>
-  <div class="plain-line">Most teams should be at the third level almost all of the time, drop to the second for the handful of kernels that actually matter, and reach the first roughly never. The useful skill is knowing which level a problem belongs at &mdash; and recognising when the automatic one has quietly given up.</div>
+  <div class="plain-line"><b>In plain English:</b> everything in this lab so far (tiling, coalescing, fusion) is real work that someone has to do. The question is who. You can write CUDA by hand and control every detail; you can write Triton and reason in tiles while the compiler handles threads; or you can write ordinary PyTorch and let <span class="k">torch.compile</span> find the fusions for you.</div>
+  <div class="plain-line">Most teams should be at the third level almost all of the time, drop to the second for the handful of kernels that actually matter, and reach the first roughly never. The useful skill is knowing which level a problem belongs at, and recognising when the automatic one has quietly given up.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; the same kernel at three levels</h2>
+  <h2 class="sec">Try it: the same kernel at three levels</h2>
   <div class="plain-line"><b>Try this:</b> one operation, written three ways. Compare what you write, what you control, and what you are trusting somebody else to get right.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Building a wall brick by brick, ordering prefabricated panels, or buying the shed ready-made. Each is correct for a different job, and the expensive mistake is laying bricks for something you could have bought.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>raw CUDA</b> first, then <b>Triton</b> — and notice what disappears.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>kernel</b> one function launched onto the GPU</span><span class="sp-w"><b>Triton</b> a language where you write per-tile, not per-thread</span><span class="sp-w"><b>torch.compile</b> a compiler that fuses ordinary PyTorch automatically</span><span class="sp-w"><b>autotuning</b> trying several configurations and keeping the fastest</span><span class="sp-w"><b>graph break</b> a point where the compiler gives up and falls back</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Building a wall brick by brick, ordering prefabricated panels, or buying the shed ready-made. Each is correct for a different job, and the expensive mistake is laying bricks for something you could have bought.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>raw CUDA</b> first, then <b>Triton</b>, and notice what disappears.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>kernel</b> one function launched onto the GPU</span><span class="sp-w"><b>Triton</b> a language where you write per-tile, not per-thread</span><span class="sp-w"><b>torch.compile</b> a compiler that fuses ordinary PyTorch automatically</span><span class="sp-w"><b>autotuning</b> trying several configurations and keeping the fastest</span><span class="sp-w"><b>graph break</b> a point where the compiler gives up and falls back</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpLvlOut"></div></div>
     <div><div class="segmented" id="gpLvlPick" style="flex-direction:column;align-items:stretch"></div>
@@ -1027,9 +1027,9 @@ document.getElementById('sec-triton').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Try it &mdash; find the graph break</h2>
-  <div class="plain-line"><b>Try this:</b> <span class="k">torch.compile</span> fuses whatever it can see as one graph. Certain things make it stop, split the region, and fall back to running eagerly &mdash; usually without an error. Pick a line and see whether it survives.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A conveyor belt that runs beautifully until someone needs to lift an item off, inspect it by hand, and put it back. The belt has to stop for that, and it is not obvious from the end of the line that it ever did.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try <b>print the tensor&rsquo;s mean</b> — a debugging line somebody left in.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>graph</b> the sequence of operations the compiler can see all at once</span><span class="sp-w"><b>graph break</b> a point where it must stop, run normally, and start again</span><span class="sp-w"><b>eager</b> ordinary PyTorch — each operation runs as it is reached</span><span class="sp-w"><b>recompile</b> building a new version because something changed shape or type</span><span class="sp-w"><b>guard</b> a check that decides whether the compiled version is still valid</span></span></div></div>
+  <h2 class="sec">Try it: find the graph break</h2>
+  <div class="plain-line"><b>Try this:</b> <span class="k">torch.compile</span> fuses whatever it can see as one graph. Certain things make it stop, split the region, and fall back to running eagerly, usually without an error. Pick a line and see whether it survives.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A conveyor belt that runs beautifully until someone needs to lift an item off, inspect it by hand, and put it back. The belt has to stop for that, and it is not obvious from the end of the line that it ever did.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>try <b>print the tensor&rsquo;s mean</b>. A debugging line somebody left in.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>graph</b> the sequence of operations the compiler can see all at once</span><span class="sp-w"><b>graph break</b> a point where it must stop, run normally, and start again</span><span class="sp-w"><b>eager</b> ordinary PyTorch, each operation runs as it is reached</span><span class="sp-w"><b>recompile</b> building a new version because something changed shape or type</span><span class="sp-w"><b>guard</b> a check that decides whether the compiled version is still valid</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gpBrkOut"></div></div>
     <div><div class="segmented" id="gpBrkPick" style="flex-direction:column;align-items:stretch"></div>
@@ -1045,14 +1045,14 @@ document.getElementById('sec-triton').innerHTML=`
    {k:'cuda',n:'Raw CUDA C++',lines:'~60 lines',
     code:'__global__ void add_bias_gelu(half* x, const half* b, int n, int cols) {\n  int i = blockIdx.x * blockDim.x + threadIdx.x;   # you compute the index\n  if (i >= n) return;                              # you handle the tail\n  float v = __half2float(x[i]) + __half2float(b[i % cols]);\n  v = 0.5f * v * (1.0f + tanhf(0.7978845608f * (v + 0.044715f * v*v*v)));\n  x[i] = __float2half(v);                          # you manage precision\n}',
     yours:['thread indexing and bounds','block and grid sizes','shared-memory layout','precision conversions','a separate launch configuration'],
-    theirs:['nothing — it is all yours'],
+    theirs:['nothing. It is all yours'],
     when:'Almost never. Reach for it when you need an instruction the higher levels cannot express, or you are writing the library everyone else uses.',
     col:'var(--red)'},
    {k:'triton',n:'Triton',lines:'~15 lines',
     code:'@triton.jit\ndef add_bias_gelu(x_ptr, b_ptr, n, BLOCK: tl.constexpr):\n    pid  = tl.program_id(0)                          # one program per tile\n    offs = pid * BLOCK + tl.arange(0, BLOCK)\n    mask = offs < n                                  # masking, not branching\n    x = tl.load(x_ptr + offs, mask=mask)\n    b = tl.load(b_ptr + offs, mask=mask)\n    v = x + b\n    v = 0.5 * v * (1 + tl.math.tanh(0.7978846 * (v + 0.044715 * v * v * v)))\n    tl.store(x_ptr + offs, v, mask=mask)',
     yours:['the tile size','which tiles exist','what each tile loads and stores'],
     theirs:['thread assignment within the tile','coalescing','shared-memory staging','vectorisation','autotuning over configurations'],
-    when:'When a fused kernel you need does not exist and the automatic compiler will not produce it &mdash; custom attention variants, unusual quantisation, novel operators.',
+    when:'When a fused kernel you need does not exist and the automatic compiler will not produce it, custom attention variants, unusual quantisation, novel operators.',
     col:'var(--amber)'},
    {k:'compile',n:'torch.compile',lines:'1 line',
     code:'model = torch.compile(model)\n\n# ...and then just write ordinary PyTorch:\nx = x + bias\nx = torch.nn.functional.gelu(x)',
@@ -1074,7 +1074,7 @@ document.getElementById('sec-triton').innerHTML=`
       list('WHAT SOMEONE ELSE DECIDES',l.theirs,'var(--muted)')+
       '<div class="lzhop" style="display:block;padding:11px 13px;margin-top:14px;border-left-color:'+l.col+'"><b>When to be here</b><small>'+l.when+'</small></div>';
     note.innerHTML =
-      cur==='cuda' ? '<div class="lzwarn"><b>Look at how much of that is bookkeeping.</b> Index arithmetic, a bounds check, manual half-to-float conversion &mdash; none of it is the operation you wanted. Every line is somewhere to make a mistake that produces wrong numbers rather than an error.</div>'
+      cur==='cuda' ? '<div class="lzwarn"><b>Look at how much of that is bookkeeping.</b> Index arithmetic, a bounds check, manual half-to-float conversion, none of it is the operation you wanted. Every line is somewhere to make a mistake that produces wrong numbers rather than an error.</div>'
       : cur==='triton' ? '<div class="ok"><b>The shift is that you stopped thinking about threads.</b> You describe what one <em>tile</em> does; the compiler assigns lanes, coalesces the loads and can autotune the tile size. That is the right altitude for most people who need a custom kernel at all.</div>'
       : '<div class="ok"><b>One line, and the compiler generates Triton for you.</b> For the overwhelming majority of work this is both the fastest thing to write and faster at runtime than anything you would have hand-written under time pressure.</div>';
     note.innerHTML+='<div class="simnote" style="margin-top:10px"><b>The honest ordering:</b> start at the top, profile, and only descend for the one or two kernels that a profile says are worth it. Descending on instinct is how teams end up maintaining hand-written CUDA that a compiler now beats.</div>';
@@ -1092,15 +1092,15 @@ document.getElementById('sec-triton').innerHTML=`
     fix:''},
    {k:'print',n:'Print the tensor&rsquo;s mean',code:'x = self.proj(x)\nprint(x.mean().item())          # debugging line, left in\nx = torch.nn.functional.gelu(x)',
     breaks:true,why:'<b><span class="k">.item()</span> forces the value back to Python.</b> The compiler cannot continue without knowing it, so it stops, syncs the GPU, runs eagerly, and starts a new graph afterwards.',
-    fix:'Remove it, or guard it behind a flag that is off in production. This is the single most common cause &mdash; a debugging line nobody removed.'},
+    fix:'Remove it, or guard it behind a flag that is off in production. This is the single most common cause, a debugging line nobody removed.'},
    {k:'shape',n:'Branch on a tensor&rsquo;s contents',code:'if x.max() > threshold:        # depends on the data\n    x = x.clamp(max=threshold)',
-    breaks:true,why:'The branch depends on values only known at run time, so there is no single graph to compile &mdash; there are two, chosen by data.',
+    breaks:true,why:'The branch depends on values only known at run time, so there is no single graph to compile. There are two, chosen by data.',
     fix:'Express it as arithmetic instead: <span class="k">x = x.clamp(max=threshold)</span> unconditionally. Same result, no control flow, no break.'},
    {k:'numpy',n:'Step out to NumPy',code:'arr = x.cpu().numpy()\narr = some_scipy_thing(arr)\nx = torch.from_numpy(arr).cuda()',
-    breaks:true,why:'Leaves the GPU entirely. Two graph breaks and two round trips over PCIe &mdash; the slowest rung of the memory ladder, in the middle of your hot path.',
+    breaks:true,why:'Leaves the GPU entirely. Two graph breaks and two round trips over PCIe, the slowest rung of the memory ladder, in the middle of your hot path.',
     fix:'Find or write the operation in torch. If it genuinely must be host-side, move it out of the per-step path altogether.'},
    {k:'dyn',n:'Sequence length changes every batch',code:'# same code, but x.shape[1] is 512, then 384, then 601 ...',
-    breaks:false,why:'<b>Not a break &mdash; a recompile</b>, which is a different problem with similar symptoms. Each new shape can trigger compilation, so the first few hundred steps are slow and it never quite settles.',
+    breaks:false,why:'<b>Not a break, a recompile</b>, which is a different problem with similar symptoms. Each new shape can trigger compilation, so the first few hundred steps are slow and it never quite settles.',
     fix:'Pad to buckets so only a handful of shapes are ever seen, or mark the dimension dynamic so one compiled version covers the range.'}
   ];
   let cur='ok';
@@ -1123,7 +1123,7 @@ document.getElementById('sec-triton').innerHTML=`
         : '<div style="display:flex;gap:6px;align-items:center"><span style="font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:7px;border:1px solid var(--green);color:var(--green)">one graph, one fused kernel</span></div>')+
       '<div class="'+(bad?'lzbad':cur==='dyn'?'lzwarn':'ok')+'" style="margin-top:14px;padding:11px 13px">'+c.why+'</div>'+
       (c.fix?'<div class="lzhop" style="display:block;padding:11px 13px;margin-top:10px;border-left-color:var(--green)"><b>The fix</b><small>'+c.fix+'</small></div>':'');
-    note.innerHTML='<div class="simnote"><b>The reason this matters more than it sounds:</b> a graph break is not an error. Nothing fails, nothing is logged by default, and the code produces exactly the right answer &mdash; just without most of the speedup you thought you were getting. It is the classic case of a performance bug that testing cannot catch.</div>'+
+    note.innerHTML='<div class="simnote"><b>The reason this matters more than it sounds:</b> a graph break is not an error. Nothing fails, nothing is logged by default, and the code produces exactly the right answer, just without most of the speedup you thought you were getting. It is the classic case of a performance bug that testing cannot catch.</div>'+
       '<div class="note" style="margin-top:10px"><b>How you would actually find it:</b> run with <span class="k">TORCH_LOGS=graph_breaks</span> (or the equivalent explain tooling for your version) and it will tell you where and why. Worth doing once after any change to a compiled model, not just when something feels slow.</div>';
   }
   render();
@@ -1132,24 +1132,24 @@ document.getElementById('sec-triton').innerHTML=`
 /* ================= 10 · EXAM ANGLE ================= */
 document.getElementById('sec-gpexam').innerHTML=`
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
+  <h2 class="sec">Try it: drill the scenarios instead of reading them</h2>
   <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none is obviously wrong.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading feels like learning and mostly is not &mdash; recognising an answer and producing one are different skills.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> before reading the list below.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading feels like learning and mostly is not, recognising an answer and producing one are different skills.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> before reading the list below.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
   <div id="drillHost"></div>
 </div>
 
 <div class="card">
   <h2 class="sec">The scenarios</h2>
-  <div class="exam-line"><b>&ldquo;Our inference is slow and the GPU shows 100% utilisation. Where do we look?&rdquo;</b> &rarr; Not at the arithmetic. &ldquo;Utilisation&rdquo; on a GPU means <em>a kernel was resident</em>, not that the arithmetic units were busy &mdash; a fully memory-bound kernel reports 100% while the maths sits idle. Measure arithmetic intensity and achieved bandwidth instead.</div>
-  <div class="exam-line"><b>&ldquo;Why does batching make LLM decoding cheaper per request when the model is the same size?&rdquo;</b> &rarr; Because decoding at batch 1 reads every weight to produce one token &mdash; roughly one operation per byte, far below the ridge point. Batching reuses each fetched weight across every sequence in the batch, so arithmetic intensity rises with batch size while memory traffic stays flat.</div>
+  <div class="exam-line"><b>&ldquo;Our inference is slow and the GPU shows 100% utilisation. Where do we look?&rdquo;</b> &rarr; Not at the arithmetic. &ldquo;Utilisation&rdquo; on a GPU means <em>a kernel was resident</em>, not that the arithmetic units were busy, a fully memory-bound kernel reports 100% while the maths sits idle. Measure arithmetic intensity and achieved bandwidth instead.</div>
+  <div class="exam-line"><b>&ldquo;Why does batching make LLM decoding cheaper per request when the model is the same size?&rdquo;</b> &rarr; Because decoding at batch 1 reads every weight to produce one token, roughly one operation per byte, far below the ridge point. Batching reuses each fetched weight across every sequence in the batch, so arithmetic intensity rises with batch size while memory traffic stays flat.</div>
   <div class="exam-line"><b>&ldquo;A kernel got 8&times; slower after we changed which index the thread varies over.&rdquo;</b> &rarr; Uncoalesced access. Consecutive threads now land far apart, so each warp needs many memory transactions instead of four, and most of every fetched sector is discarded. Stage the tile through shared memory, or swap the loop order back.</div>
   <div class="exam-line"><b>&ldquo;We halved precision to FP16 and training diverged.&rdquo;</b> &rarr; Range, not precision. FP16 has about five decades of exponent, so small gradients underflow to zero and large values overflow to infinity. Either apply loss scaling, or move to BF16, which keeps FP32&rsquo;s range and spends the bits saved on exponent rather than mantissa.</div>
   <div class="exam-line"><b>&ldquo;We raised occupancy from 30% to 90% and nothing got faster.&rdquo;</b> &rarr; Occupancy is a means of hiding memory latency, not a goal. If the kernel was already limited by bandwidth or by arithmetic, more resident warps give the scheduler more to choose from and nothing to gain. Raise it when the SM is stalling with nothing to run.</div>
   <div class="exam-line"><b>&ldquo;Long-context attention runs out of memory well before the weights do.&rdquo;</b> &rarr; The N&times;N score matrix, which is an intermediate nobody wanted. It grows quadratically with sequence length and is written to HBM only to be read straight back. A tiled, fused attention with an online softmax removes it entirely without changing the arithmetic.</div>
   <div class="exam-line"><b>&ldquo;Our model is a long chain of small elementwise operations and the GPU looks idle.&rdquo;</b> &rarr; Launch overhead and round trips. Each operation costs a few microseconds to launch and a full read and write of the tensor for one arithmetic operation per element. Fuse the chain, and use CUDA graphs if launches still dominate.</div>
   <div class="exam-line"><b>&ldquo;A colleague wants to hand-write CUDA to speed up our training loop.&rdquo;</b> &rarr; Ask for the profile first. Almost always the answer is <span class="code">torch.compile</span>, then Triton for the one kernel that a profile shows matters. Hand-written CUDA is a maintenance liability that a compiler now frequently beats, and it should be the last resort rather than the first.</div>
-  <div class="exam-line"><b>&ldquo;We compiled the model and got a 5% speedup instead of the 40% we expected.&rdquo;</b> &rarr; Graph breaks. Something in the forward pass forces a return to Python &mdash; typically a leftover <span class="code">.item()</span>, a print, or a branch on tensor contents. It never errors and the results are correct, so only the logs will tell you.</div>
-  <div class="exam-line"><b>&ldquo;An <span class="code">if</span> statement in our kernel halved throughput. Should we remove the branch?&rdquo;</b> &rarr; Usually not &mdash; reorder the data instead. The cost is warp divergence: 32 threads in lockstep must walk each path in turn. Sort or group the work so the threads in a warp want the same branch, and the branch stops costing anything.</div>
+  <div class="exam-line"><b>&ldquo;We compiled the model and got a 5% speedup instead of the 40% we expected.&rdquo;</b> &rarr; Graph breaks. Something in the forward pass forces a return to Python, typically a leftover <span class="code">.item()</span>, a print, or a branch on tensor contents. It never errors and the results are correct, so only the logs will tell you.</div>
+  <div class="exam-line"><b>&ldquo;An <span class="code">if</span> statement in our kernel halved throughput. Should we remove the branch?&rdquo;</b> &rarr; Usually not, reorder the data instead. The cost is warp divergence: 32 threads in lockstep must walk each path in turn. Sort or group the work so the threads in a warp want the same branch, and the branch stops costing anything.</div>
   <div class="exam-line"><b>&ldquo;The datasheet says 312 TFLOP/s but we measure 15.&rdquo;</b> &rarr; That figure is tensor cores at low precision on matrix work. In FP32 without tensor cores the peak is 19.5, and if the operation is memory-bound the achievable number is lower still. Compare against the roofline for your actual precision and intensity, not against the headline.</div>
   <div class="exam-line"><b>&ldquo;Our matmul is slower than expected and the shapes are 4095 &times; 4095.&rdquo;</b> &rarr; Alignment. Tensor cores work on fixed tiles, so dimensions that are not multiples of 8 or 16 force padding or a fallback to slower paths. Rounding a hidden dimension up to a multiple of 64 or 128 often costs a little memory and buys a large speedup.</div>
 </div>`;

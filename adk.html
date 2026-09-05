@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADK lab — build, orchestrate, ground and deploy agents</title>
+<title>ADK lab, build, orchestrate, ground and deploy agents</title>
 <link rel="stylesheet" href="assets/lab.css">
 <style>
 
@@ -62,9 +62,9 @@
       <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
     </nav>
     <div class="eyebrow">agent development kit · build to deploy</div>
-    <h1>Building an agent that behaves <span class="thin">— the Agent Development Kit, end to end</span></h1>
+    <h1>Building an agent that behaves: <span class="thin">the Agent Development Kit, end to end</span></h1>
     <p class="track" id="trackLine"></p>
-    <p class="sub">ADK is the code-first way to build an agent: you write Python, it handles the orchestration. Most of what goes wrong is invisible in the code — a docstring that decides whether a tool is ever chosen, a state key renamed in one place that silently breaks three others, a callback that short-circuits everything downstream, model-written code running where it can do damage. Ten sections, each with the plain-English version first, and simulations for the parts that only make sense once you have seen them fail.</p>
+    <p class="sub">ADK is the code-first way to build an agent: you write Python, it handles the orchestration. Most of what goes wrong is invisible in the code, a docstring that decides whether a tool is ever chosen, a state key renamed in one place that silently breaks three others, a callback that short-circuits everything downstream, model-written code running where it can do damage. Ten sections, each with the plain-English version first, and simulations for the parts that only make sense once you have seen them fail.</p>
   </header>
 
   <div class="tabs" role="tablist">
@@ -83,9 +83,9 @@
   <section class="pane on" id="pane-start">
     <div id="sec-start"></div>
     <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; does this actually need an agent?</h2>
+  <h2 class="sec">Try it: does this actually need an agent?</h2>
   <div class="plain-line"><b>Try this:</b> eight jobs somebody might ask you to build. Decide which need an agent and which are a single model call wearing a costume. Getting this wrong in either direction is expensive.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding whether a job needs a project manager. Booking one meeting does not. Coordinating four teams across three months does — and treating the first like the second is how simple things get slow.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>judge <b>translate a paragraph</b> first, then <b>issue a refund</b>. The difference between them is the whole test.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>agent</b> something that takes several steps and decides what to do next</span><span class="sp-w"><b>prompt</b> one question in, one answer out</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding whether a job needs a project manager. Booking one meeting does not. Coordinating four teams across three months does, and treating the first like the second is how simple things get slow.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>judge <b>translate a paragraph</b> first, then <b>issue a refund</b>. The difference between them is the whole test.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>agent</b> something that takes several steps and decides what to do next</span><span class="sp-w"><b>prompt</b> one question in, one answer out</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="adkNeedOut"></div></div>
     <div><div id="adkNeedNote" class="cidr-out"></div></div>
@@ -96,9 +96,9 @@
   <section class="pane" id="pane-agent">
     <div id="sec-agent"></div>
     <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; fill in the form and watch what breaks</h2>
-  <div class="plain-line"><b>Try this:</b> the six fields, and one combination the framework refuses outright. Two of these fields sound alike and are read by different audiences &mdash; get them the wrong way round and the agent works perfectly and is never used.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Filling in a job advert. Two of the boxes look almost the same — what the job involves, and what the role is called on the intranet. One is read by the person doing the job; the other decides whether anyone applies.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>untick <b>a specific description</b> and read why nothing appears to break.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>instruction</b> the rules this agent follows, read by its own model every turn</span><span class="sp-w"><b>description</b> one line saying what it is good for, read by whatever routes work to it</span><span class="sp-w"><b>output_schema</b> forcing the answer into one exact JSON shape</span><span class="sp-w"><b>output_key</b> the name its answer is saved under for the next agent</span></span></div></div>
+  <h2 class="sec">Try it: fill in the form and watch what breaks</h2>
+  <div class="plain-line"><b>Try this:</b> the six fields, and one combination the framework refuses outright. Two of these fields sound alike and are read by different audiences, get them the wrong way round and the agent works perfectly and is never used.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Filling in a job advert. Two of the boxes look almost the same, what the job involves, and what the role is called on the intranet. One is read by the person doing the job; the other decides whether anyone applies.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>untick <b>a specific description</b> and read why nothing appears to break.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>instruction</b> the rules this agent follows, read by its own model every turn</span><span class="sp-w"><b>description</b> one line saying what it is good for, read by whatever routes work to it</span><span class="sp-w"><b>output_schema</b> forcing the answer into one exact JSON shape</span><span class="sp-w"><b>output_key</b> the name its answer is saved under for the next agent</span></span></div></div>
   <div class="sim-layout">
     <div><div id="adkFormOut"></div></div>
     <div><div class="toggles" id="adkFormCtl"></div>
@@ -168,17 +168,17 @@ document.getElementById('sec-start').innerHTML=`
   <h2 class="sec">An agent is four things, and only one of them is clever</h2>
   <div class="plain-line"><b>In plain English:</b> think of hiring someone. You write a <b>job description</b> so they know what they are for. They bring a <b>brain</b>. You give them <b>logins</b> to the systems they need. And there is an <b>office</b> around them that hands them work, keeps their notes, and files what they produce. ADK is that office. You supply the job description and the logins; ADK runs everything else.</div>
   ${D('0 0 660 250','The four parts of an ADK agent: the agent definition, the model, the tools, and the runner that executes the loop.',
-   `${box(14,26,300,84,'var(--violet)')}${t(164,50,'Agent — the job description',SANS)}${tm(164,68,'name · instruction · description','var(--dim)')}${tm(164,84,'what it is for, and how it should behave','var(--dim)')}${tm(164,100,'you write this','var(--violet)')}
-    ${box(346,26,300,84,'var(--teal)')}${t(496,50,'Model — the reasoning',SANS)}${tm(496,68,'Gemini, or another model','var(--dim)')}${tm(496,84,'decides what to say and which tool to call','var(--dim)')}${tm(496,100,'you pick this','var(--teal)')}
-    ${box(14,126,300,84,'var(--amber)')}${t(164,150,'Tools — the hands',SANS)}${tm(164,168,'plain Python functions','var(--dim)')}${tm(164,184,'the only way it touches the real world','var(--dim)')}${tm(164,200,'you write these','var(--amber)')}
-    ${box(346,126,300,84,'var(--wire)')}${t(496,150,'Runner — the office',SANS)}${tm(496,168,'runs the loop, holds the session','var(--dim)')}${tm(496,184,'stores state, streams events, files artifacts','var(--dim)')}${tm(496,200,'ADK gives you this','var(--green)')}
-    ${tm(330,232,'you own three of the four — the loop is not yours to write','var(--dim)')}`,
+   `${box(14,26,300,84,'var(--violet)')}${t(164,50,'Agent: the job description',SANS)}${tm(164,68,'name · instruction · description','var(--dim)')}${tm(164,84,'what it is for, and how it should behave','var(--dim)')}${tm(164,100,'you write this','var(--violet)')}
+    ${box(346,26,300,84,'var(--teal)')}${t(496,50,'Model: the reasoning',SANS)}${tm(496,68,'Gemini, or another model','var(--dim)')}${tm(496,84,'decides what to say and which tool to call','var(--dim)')}${tm(496,100,'you pick this','var(--teal)')}
+    ${box(14,126,300,84,'var(--amber)')}${t(164,150,'Tools: the hands',SANS)}${tm(164,168,'plain Python functions','var(--dim)')}${tm(164,184,'the only way it touches the real world','var(--dim)')}${tm(164,200,'you write these','var(--amber)')}
+    ${box(346,126,300,84,'var(--wire)')}${t(496,150,'Runner: the office',SANS)}${tm(496,168,'runs the loop, holds the session','var(--dim)')}${tm(496,184,'stores state, streams events, files artifacts','var(--dim)')}${tm(496,200,'ADK gives you this','var(--green)')}
+    ${tm(330,232,'you own three of the four: the loop is not yours to write','var(--dim)')}`,
    'The runner is the piece people forget exists. It is what turns a definition into something running: it keeps the conversation, persists state between turns, and emits every step as an event you can watch.')}
   <div class="plain-line"><b>Why it matters:</b> almost every ADK bug lands in one of these four boxes, and knowing which box saves you an hour. Agent ignores your rule → instruction. Picks the wrong tool → the tool&rsquo;s docstring. Forgets what happened → state and the runner. Says something confidently wrong → the model, or missing grounding.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">When ADK is the right tool — and when it is overkill</h2>
+  <h2 class="sec">When ADK is the right tool: and when it is overkill</h2>
   <div class="vs2"><div class="col"><b>REACH FOR ADK WHEN</b>The job takes several steps that depend on each other. Something must be <em>done</em>, not just described. Different specialists handle different parts. You need an audit trail of what happened and why. The work touches real systems through real credentials.</div>
   <div class="col"><b>DON'T WHEN</b>One prompt in, one answer out. There is no tool to call and no state to keep. A single model call already does it. Adding an agent here buys you latency, cost and a new class of failure for nothing.</div></div>
   <div class="plain-line" style="margin-top:12px"><b>The honest test:</b> if you can draw the whole thing as one arrow, you do not need an agent. If your drawing has a decision diamond, a retry, or two boxes that hand work to each other, you do.</div>
@@ -193,7 +193,7 @@ document.getElementById('sec-start').innerHTML=`
   <tr><td><b>Callbacks &amp; plugins</b></td><td>Six interception points around the loop</td><td>Return a value from a <span class="code">before_</span> callback and you have silently cancelled the thing it wrapped</td></tr>
   <tr><td><b>Orchestration</b></td><td>Sequential, parallel, loop, graph, delegation</td><td>Parallel agents writing the same state key overwrite each other; only one survives</td></tr>
   <tr><td><b>Grounding</b></td><td>Search, private data, and MCP servers</td><td>An agent using MCP must be built <b>synchronously</b> in <span class="code">agent.py</span> or deployment fails</td></tr>
-  <tr><td><b>Code execution</b></td><td>Running model-written code safely</td><td>Code the model wrote must never run where the agent runs. Trusted runtime, isolated sandbox — two places, on purpose</td></tr>
+  <tr><td><b>Code execution</b></td><td>Running model-written code safely</td><td>Code the model wrote must never run where the agent runs. Trusted runtime, isolated sandbox, two places, on purpose</td></tr>
   <tr><td><b>Skills</b></td><td>Packaged expertise the agent loads on demand</td><td>The folder name must match the name inside the file, or the skill silently does not load</td></tr>
   <tr><td><b>Deploy</b></td><td>Agent Runtime, and publishing to Gemini Enterprise</td><td>Your agent&rsquo;s <b>description</b> becomes the routing signal. A weak one means users are never sent to it</td></tr>
   </tbody></table>
@@ -203,11 +203,11 @@ document.getElementById('sec-start').innerHTML=`
 document.getElementById('sec-agent').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Six fields, and two of them are read by different audiences</h2>
-  <div class="plain-line"><b>In plain English:</b> defining an agent is filling in a form. The surprise is that <b>two fields sound like the same thing but are read by different readers</b>. <span class="code">instruction</span> is read by <em>this agent&rsquo;s model</em> — it is the job description. <span class="code">description</span> is read by <em>other agents and by Gemini Enterprise</em> — it is the entry in the staff directory that decides whether work gets routed here at all.</div>
+  <div class="plain-line"><b>In plain English:</b> defining an agent is filling in a form. The surprise is that <b>two fields sound like the same thing but are read by different readers</b>. <span class="code">instruction</span> is read by <em>this agent&rsquo;s model</em>. It is the job description. <span class="code">description</span> is read by <em>other agents and by Gemini Enterprise</em>. It is the entry in the staff directory that decides whether work gets routed here at all.</div>
   <table class="osi"><thead><tr><th>Field</th><th>Plain meaning</th><th>Who reads it</th><th>Get it wrong and…</th></tr></thead><tbody>
   <tr><td><span class="code">name</span></td><td>The agent&rsquo;s identifier</td><td>ADK, and other agents delegating to it</td><td>Delegation by name fails; traces are unreadable</td></tr>
   <tr><td><span class="code">model</span></td><td>Which model does the thinking</td><td>The runtime</td><td>Wrong cost/latency profile; a cheap model on a hard task loops</td></tr>
-  <tr><td><span class="code">instruction</span></td><td>The job description and rules of behaviour</td><td><b>This agent&rsquo;s model, every turn</b></td><td>It ignores your rules — because they were never in front of it</td></tr>
+  <tr><td><span class="code">instruction</span></td><td>The job description and rules of behaviour</td><td><b>This agent&rsquo;s model, every turn</b></td><td>It ignores your rules, because they were never in front of it</td></tr>
   <tr><td><span class="code">description</span></td><td>A one-line summary of what it is good for</td><td><b>Other agents, and Gemini Enterprise routing</b></td><td>Nobody routes work to it. The agent is fine and unused</td></tr>
   <tr><td><span class="code">tools</span></td><td>The list of things it may do</td><td>The model, when choosing an action</td><td>It cannot act, or it can act too widely</td></tr>
   <tr><td><span class="code">output_key</span></td><td>Save this agent&rsquo;s final reply into state under this name</td><td>The next agent in the pipeline</td><td>The next agent has nothing to read</td></tr>
@@ -216,7 +216,7 @@ document.getElementById('sec-agent').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">From nothing to a running agent — four commands</h2>
+  <h2 class="sec">From nothing to a running agent: four commands</h2>
   ${D('0 0 660 200','The ADK command line: create scaffolds a project, run gives a terminal chat, web gives a debug UI, api_server exposes HTTP.',
    `${box(14,24,150,60,'var(--violet)')}${t(89,46,'adk create',MONO)}${tm(89,64,'scaffolds the folder','var(--dim)')}${tm(89,78,'agent.py · .env','var(--dim)')}
     ${box(180,24,150,60,'var(--teal)')}${t(255,46,'adk run',MONO)}${tm(255,64,'chat in the terminal','var(--dim)')}${tm(255,78,'fastest sanity check','var(--dim)')}
@@ -228,21 +228,21 @@ document.getElementById('sec-agent').innerHTML=`
     ${box(14,104,632,76,'var(--red)')}
     ${t(330,128,'The discovery rule that catches everyone',SANS)}
     ${tm(330,148,'ADK looks inside agent.py for a variable literally named root_agent','var(--dim)')}
-    ${tm(330,164,'call it my_agent and every command reports no agent found — the code is fine, the name is not','var(--red)')}`,
+    ${tm(330,164,'call it my_agent and every command reports no agent found: the code is fine, the name is not','var(--red)')}`,
    'adk web is where you should live while developing: it shows the event stream, every tool call with its arguments, and the session state after each turn.')}
 </div>
 
 <div class="card">
   <h2 class="sec">The instruction is a contract, not a hint</h2>
-  <div class="plain-line"><b>In plain English:</b> a model does what is in front of it. Anything you assumed &mdash; tone, refusals, when to hand off, what never to say &mdash; only exists if you wrote it down. &ldquo;Be helpful&rdquo; is not an instruction; it is a wish.</div>
-  <div class="vs2"><div class="col"><b>VAGUE — behaves differently every run</b><pre class="code" style="white-space:pre-wrap;margin-top:6px">You are a helpful assistant that answers questions about orders.</pre><br><br>No boundary, no failure behaviour, no handoff rule. It will invent an order status rather than admit it cannot find one.</div>
-  <div class="col"><b>SPECIFIC — behaves the same way twice</b><pre class="code" style="white-space:pre-wrap;margin-top:6px">You look up order status. Always call get_order before answering. If the ID is not found, say so and ask for a corrected ID — never guess. For refunds, transfer to refund_agent. Never quote a delivery date the tool did not return.</pre><br><br>Every sentence removes a failure mode you would otherwise debug.</div></div>
+  <div class="plain-line"><b>In plain English:</b> a model does what is in front of it. Anything you assumed (tone, refusals, when to hand off, what never to say) only exists if you wrote it down. &ldquo;Be helpful&rdquo; is not an instruction; it is a wish.</div>
+  <div class="vs2"><div class="col"><b>VAGUE, behaves differently every run</b><pre class="code" style="white-space:pre-wrap;margin-top:6px">You are a helpful assistant that answers questions about orders.</pre><br><br>No boundary, no failure behaviour, no handoff rule. It will invent an order status rather than admit it cannot find one.</div>
+  <div class="col"><b>SPECIFIC, behaves the same way twice</b><pre class="code" style="white-space:pre-wrap;margin-top:6px">You look up order status. Always call get_order before answering. If the ID is not found, say so and ask for a corrected ID, never guess. For refunds, transfer to refund_agent. Never quote a delivery date the tool did not return.</pre><br><br>Every sentence removes a failure mode you would otherwise debug.</div></div>
 </div>`;
 /* ================= 3 · TOOLS ================= */
 document.getElementById('sec-tools').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A tool is a normal Python function. The model only ever sees the label.</h2>
-  <div class="plain-line"><b>In plain English:</b> imagine a wall of unlabelled switches. The model cannot open the wall, read the wiring, or try one to see what happens. All it gets is the <b>label you stuck on the front</b>. ADK writes that label automatically from three parts of your function &mdash; and if the label is vague, the switch never gets flipped.</div>
+  <div class="plain-line"><b>In plain English:</b> imagine a wall of unlabelled switches. The model cannot open the wall, read the wiring, or try one to see what happens. All it gets is the <b>label you stuck on the front</b>. ADK writes that label automatically from three parts of your function, and if the label is vague, the switch never gets flipped.</div>
   ${D('0 0 660 236','How ADK turns a Python function into a tool schema: the name becomes the tool name, the docstring becomes the description, and type hints become the parameter types.',
    `${box(14,24,290,150,'var(--wire)')}${t(159,46,'Your Python function',SANS)}
     ${tm(159,70,'def get_weather(city: str) -> dict:','var(--violet)')}
@@ -259,14 +259,14 @@ document.getElementById('sec-tools').innerHTML=`
     <path d="M306 98 H354" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
     ${tm(330,110,'ADK builds this','var(--dim)')}
     ${box(14,190,632,36,'var(--amber)')}
-    ${tm(330,213,'the docstring is not documentation for humans — it is the specification the model reasons over','var(--amber)')}`,
+    ${tm(330,213,'the docstring is not documentation for humans: it is the specification the model reasons over','var(--amber)')}`,
    'Everything the model knows about your tool comes from this generated schema. It cannot read the body. A function called process_data with no docstring is, to the model, an unlabelled switch.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — write the label, watch the model decide</h2>
+  <h2 class="sec">Try it: write the label, watch the model decide</h2>
   <div class="plain-line"><b>Try this:</b> the same working function, described three different ways. The code is identical every time. Flip the switches and watch whether the model chooses it, chooses the wrong tool, or gives up and answers from memory.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A wall of unlabelled light switches. The wiring behind each one is perfect. Nobody can use them, because the only thing you can see is the label on the front.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the docstring to <b>none at all</b> and read the score, then set it to the full version and read it again.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>function</b> a piece of code that does one job</span><span class="sp-w"><b>docstring</b> the note written just under the code saying what it is for</span><span class="sp-w"><b>type hints</b> saying whether something is a word or a number</span><span class="sp-w"><b>schema</b> the label the model is handed — built automatically from those three things</span><span class="sp-w"><b>ADK</b> the Agent Development Kit &mdash; the framework the agent is built with</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A wall of unlabelled light switches. The wiring behind each one is perfect. Nobody can use them, because the only thing you can see is the label on the front.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>set the docstring to <b>none at all</b> and read the score, then set it to the full version and read it again.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>function</b> a piece of code that does one job</span><span class="sp-w"><b>docstring</b> the note written just under the code saying what it is for</span><span class="sp-w"><b>type hints</b> saying whether something is a word or a number</span><span class="sp-w"><b>schema</b> the label the model is handed, built automatically from those three things</span><span class="sp-w"><b>ADK</b> the Agent Development Kit. The framework the agent is built with</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="toolSchema"></div></div>
     <div>
@@ -277,21 +277,21 @@ document.getElementById('sec-tools').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">ToolContext — the four extra powers a tool can ask for</h2>
-  <div class="plain-line"><b>In plain English:</b> a plain tool takes inputs and returns an answer, and that is all it can do. Add <span class="code">tool_context: ToolContext</span> as a parameter and the tool suddenly has hands: it can remember things, redirect the conversation, save files, and hold credentials. ADK fills that parameter in for you &mdash; and hides it from the model, so it never appears as something the model must supply.</div>
+  <h2 class="sec">ToolContext: the four extra powers a tool can ask for</h2>
+  <div class="plain-line"><b>In plain English:</b> a plain tool takes inputs and returns an answer, and that is all it can do. Add <span class="code">tool_context: ToolContext</span> as a parameter and the tool suddenly has hands: it can remember things, redirect the conversation, save files, and hold credentials. ADK fills that parameter in for you, and hides it from the model, so it never appears as something the model must supply.</div>
   <table class="osi"><thead><tr><th>Power</th><th>What it does</th><th>Plain example</th></tr></thead><tbody>
   <tr><td><b>State</b><br><span class="code">tool_context.state[…]</span></td><td>Read and write the shared notebook that survives across turns and agents</td><td>Save the customer ID once at the start so no later step has to ask for it again</td></tr>
   <tr><td><b>Actions</b><br><span class="code">tool_context.actions</span></td><td>Change the flow itself: <span class="code">transfer_to_agent</span> hands over to a specialist, <span class="code">escalate</span> breaks out of a loop, <span class="code">skip_summarization</span> returns the raw result untouched</td><td>A validator tool decides the answer is good enough and ends the review loop</td></tr>
-  <tr><td><b>Artifacts</b><br><span class="code">save_artifact / load_artifact</span></td><td>Store and retrieve real files &mdash; images, PDFs, CSVs &mdash; outside the conversation</td><td>A chart the agent generated, handed back as a downloadable file rather than pasted as text</td></tr>
+  <tr><td><b>Artifacts</b><br><span class="code">save_artifact / load_artifact</span></td><td>Store and retrieve real files (images, PDFs, CSVs) outside the conversation</td><td>A chart the agent generated, handed back as a downloadable file rather than pasted as text</td></tr>
   <tr><td><b>Auth</b></td><td>Request and carry credentials for tools that need them</td><td>Calling an internal API on behalf of the signed-in user, without the key ever entering the prompt</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The one about <span class="code">skip_summarization</span>:</b> by default the model rewrites every tool result into prose. When your tool already returns exactly the JSON the caller needs, that rewrite is where precision goes to die &mdash; numbers get rounded, fields get dropped. Setting it tells ADK to pass the result straight through.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The one about <span class="code">skip_summarization</span>:</b> by default the model rewrites every tool result into prose. When your tool already returns exactly the JSON the caller needs, that rewrite is where precision goes to die, numbers get rounded, fields get dropped. Setting it tells ADK to pass the result straight through.</div>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; give the tool hands, one power at a time</h2>
-  <div class="plain-line"><b>Try this:</b> six jobs somebody will ask a tool to do. A plain function can do none of them. Switch on one power at a time and watch which jobs become possible &mdash; and notice that two of them still need a second power on top.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A contractor who can only work with what you hand them at the door. Give them a key and they can come back tomorrow; give them a filing cabinet and they can leave you something; give them your account and they can order parts. Each one is a separate decision, and each one is a separate risk.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch on <b>state</b> alone and read which two jobs light up, then add <b>actions</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>ADK</b> the Agent Development Kit &mdash; the framework the agent is built with</span><span class="sp-w"><b>ToolContext</b> an extra parameter ADK fills in, which the model never sees</span><span class="sp-w"><b>state</b> a shared notebook that survives across turns</span><span class="sp-w"><b>artifact</b> a real file the agent saved or loaded</span><span class="sp-w"><b>escalate</b> break out of a loop and hand the decision upward</span><span class="sp-w"><b>credential</b> the secret that proves the agent may act as someone</span></span></div></div>
+  <h2 class="sec">Try it: give the tool hands, one power at a time</h2>
+  <div class="plain-line"><b>Try this:</b> six jobs somebody will ask a tool to do. A plain function can do none of them. Switch on one power at a time and watch which jobs become possible, and notice that two of them still need a second power on top.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A contractor who can only work with what you hand them at the door. Give them a key and they can come back tomorrow; give them a filing cabinet and they can leave you something; give them your account and they can order parts. Each one is a separate decision, and each one is a separate risk.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch on <b>state</b> alone and read which two jobs light up, then add <b>actions</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>ADK</b> the Agent Development Kit. The framework the agent is built with</span><span class="sp-w"><b>ToolContext</b> an extra parameter ADK fills in, which the model never sees</span><span class="sp-w"><b>state</b> a shared notebook that survives across turns</span><span class="sp-w"><b>artifact</b> a real file the agent saved or loaded</span><span class="sp-w"><b>escalate</b> break out of a loop and hand the decision upward</span><span class="sp-w"><b>credential</b> the secret that proves the agent may act as someone</span></span></div></div>
   <div class="sim-layout">
     <div><div id="adkCtxOut"></div></div>
     <div><div class="segmented" id="adkCtxCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -302,12 +302,12 @@ document.getElementById('sec-tools').innerHTML=`
 <div class="card">
   <h2 class="sec">Four kinds of tool, and when to reach for each</h2>
   <table class="osi"><thead><tr><th>Kind</th><th>What it is</th><th>Reach for it when</th></tr></thead><tbody>
-  <tr><td><b>Function tools</b></td><td>Your own Python functions</td><td>The logic is yours &mdash; your database, your business rules, your API</td></tr>
+  <tr><td><b>Function tools</b></td><td>Your own Python functions</td><td>The logic is yours, your database, your business rules, your API</td></tr>
   <tr><td><b>Built-in tools</b></td><td>Ship with ADK: <span class="code">google_search</span>, code execution, Vertex AI Search</td><td>You want public web grounding or a code sandbox and would rather not build it</td></tr>
   <tr><td><b>MCP / third-party</b></td><td>Tools exposed by an external server over the Model Context Protocol</td><td>Another team already runs the capability. You connect rather than reimplement</td></tr>
-  <tr><td><b>Agents as tools</b></td><td>A whole agent, wrapped so another agent can call it</td><td>The sub-job needs its own reasoning, not just a function call &mdash; and you want the caller to stay in charge</td></tr>
+  <tr><td><b>Agents as tools</b></td><td>A whole agent, wrapped so another agent can call it</td><td>The sub-job needs its own reasoning, not just a function call, and you want the caller to stay in charge</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>Return a status, always.</b> A tool that returns <span class="code">{"status": "error", "message": "no such order"}</span> lets the model recover and ask a better question. A tool that raises, or returns <span class="code">None</span>, gives the model nothing to reason about &mdash; and a confident guess is what usually comes back instead.</div>
+  <div class="plain-line" style="margin-top:12px"><b>Return a status, always.</b> A tool that returns <span class="code">{"status": "error", "message": "no such order"}</span> lets the model recover and ask a better question. A tool that raises, or returns <span class="code">None</span>, gives the model nothing to reason about, and a confident guess is what usually comes back instead.</div>
 </div>`;
 
 /* --- SIM: tool schema quality --- */
@@ -342,7 +342,7 @@ document.getElementById('sec-tools').innerHTML=`
                                    : 'return "shipped, 2 days"';
     const code='def '+fn+'('+args+')'+ret+':\n'+(DOCS[st.doc]?'    '+DOCS[st.doc].replace(/\\n/g,'\n')+'\n':'')+'    '+body;
 
-    const desc = st.doc==='none' ? '(empty — ADK has nothing to put here)'
+    const desc = st.doc==='none' ? '(empty, ADK has nothing to put here)'
                : st.doc==='thin' ? 'Processes the data.'
                : 'Look up the current status of a customer order.';
     const params = st.ty==='full'
@@ -357,7 +357,7 @@ document.getElementById('sec-tools').innerHTML=`
 
     /* score */
     let score=0, notes=[];
-    if(st.nm==='clear'){score+=25;} else {notes.push(['bad','The name says nothing. <b>process_data</b> could be anything — the model has no reason to prefer it over another tool.']);}
+    if(st.nm==='clear'){score+=25;} else {notes.push(['bad','The name says nothing. <b>process_data</b> could be anything. The model has no reason to prefer it over another tool.']);}
     if(st.doc==='full'){score+=40;}
     else if(st.doc==='thin'){score+=12;notes.push(['bad','&ldquo;Processes the data&rdquo; does not say <em>which</em> data or <em>what for</em>. The model must gamble on whether this is the right tool.']);}
     else {notes.push(['bad','No docstring at all. This is the big one: the description field is empty, so the tool is effectively unlabelled.']);}
@@ -368,14 +368,14 @@ document.getElementById('sec-tools').innerHTML=`
     if(st.ret==='status') notes.push(['ok','A status key gives the model a recovery path: it can say &ldquo;I could not find that order&rdquo; instead of inventing one.']);
 
     const verdict = score>=90 ? ['ok','Chosen, correctly, first time']
-                  : score>=55 ? ['warn','Chosen about half the time — and confused with neighbouring tools']
+                  : score>=55 ? ['warn','Chosen about half the time, and confused with neighbouring tools']
                   : ['bad','Rarely chosen. The model answers from memory instead, and sounds certain'];
     vd.innerHTML =
       '<div class="bar" style="margin-bottom:10px"><i style="width:'+score+'%;background:'+
         (score>=90?'var(--green)':score>=55?'var(--amber)':'var(--red)')+'"></i></div>'+
-      '<div class="'+(verdict[0]==='ok'?'ok':verdict[0]==='warn'?'note':'err')+'" style="margin-bottom:10px"><b>Label quality '+score+'/100 — </b>'+verdict[1]+'</div>'+
+      '<div class="'+(verdict[0]==='ok'?'ok':verdict[0]==='warn'?'note':'err')+'" style="margin-bottom:10px"><b>Label quality '+score+'/100, </b>'+verdict[1]+'</div>'+
       notes.map(([k,txt])=>'<div class="'+(k==='ok'?'ok':'err')+'" style="margin-bottom:6px">'+txt+'</div>').join('')+
-      '<div class="simnote" style="margin-top:10px">The Python body never changed. Every difference above came from the label — which is why a docstring is the highest-leverage thing you will write all day.</div>';
+      '<div class="simnote" style="margin-top:10px">The Python body never changed. Every difference above came from the label, which is why a docstring is the highest-leverage thing you will write all day.</div>';
   }
   render();
 })();
@@ -412,7 +412,7 @@ document.getElementById('sec-tools').innerHTML=`
     const nOn=P.filter(p=>on[p.k]).length;
     const done=JOBS.filter(j=>j.need.every(k=>on[k])).length;
     out.innerHTML =
-      '<div class="simnote" style="margin-bottom:9px">Six jobs. A plain function &mdash; no ToolContext at all &mdash; can do <b>none</b> of them.</div>'
+      '<div class="simnote" style="margin-bottom:9px">Six jobs. A plain function (no ToolContext at all) can do <b>none</b> of them.</div>'
       + JOBS.map(j=>{
           const ok=j.need.every(k=>on[k]);
           const missing=j.need.filter(k=>!on[k]).map(k=>P.find(p=>p.k===k).n);
@@ -431,7 +431,7 @@ document.getElementById('sec-tools').innerHTML=`
       (nOn===0
         ? '<div class="lzbad"><b>Nothing works yet.</b> A tool with no ToolContext is a calculator: inputs in, answer out, no memory of the last call and no way to affect what happens next. That is genuinely the right shape for most tools, and it is why the powers are opt-in.</div>'
         : '<div class="ok"><b>Each power is a separate parameter and a separate risk.</b> You are not switching on features, you are widening what a bug in this tool can reach.</div>')
-      + '<div class="simnote" style="margin-top:10px"><b>The bit that surprises people.</b> ADK fills <span class="k">tool_context</span> in itself and hides it from the model, so it never appears in the tool schema. The model cannot pass it, cannot see it, and cannot be talked into changing it &mdash; which is exactly why it is safe to give a tool state and actions but not safe to take them as ordinary arguments.</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>The bit that surprises people.</b> ADK fills <span class="k">tool_context</span> in itself and hides it from the model, so it never appears in the tool schema. The model cannot pass it, cannot see it, and cannot be talked into changing it, which is exactly why it is safe to give a tool state and actions but not safe to take them as ordinary arguments.</div>'
       + '<div class="simnote" style="margin-top:10px"><b>Two of these jobs need two powers.</b> That is the honest shape of real work: files without state give you bytes nobody can name, and credentials without state make the user log in again on every turn.</div>';
   }
   render();
@@ -441,21 +441,21 @@ document.getElementById('sec-tools').innerHTML=`
 document.getElementById('sec-state').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">One shared notebook, four drawers</h2>
-  <div class="plain-line"><b>In plain English:</b> a <b>session</b> is one conversation. Attached to it is <b>state</b> &mdash; a notebook every agent and tool in that conversation can read and write. The whole design rests on one decision per note: <b>how long should this survive, and who should be able to read it?</b> ADK answers that with a prefix on the key name. No prefix, <span class="code">user:</span>, <span class="code">app:</span>, <span class="code">temp:</span>. Four characters that decide whether your data leaks, vanishes, or lands exactly where you meant.</div>
+  <div class="plain-line"><b>In plain English:</b> a <b>session</b> is one conversation. Attached to it is <b>state</b>, a notebook every agent and tool in that conversation can read and write. The whole design rests on one decision per note: <b>how long should this survive, and who should be able to read it?</b> ADK answers that with a prefix on the key name. No prefix, <span class="code">user:</span>, <span class="code">app:</span>, <span class="code">temp:</span>. Four characters that decide whether your data leaks, vanishes, or lands exactly where you meant.</div>
   ${D('0 0 660 268','The four state scopes in ADK: session, user, app and temp, drawn as nested boundaries from widest to narrowest.',
-   `${box(14,22,632,180,'var(--wire)')}${tm(330,42,'app:  —  every user, every conversation  ·  shared reference data','var(--teal)')}
-    ${box(40,58,580,132,'var(--violet)')}${tm(330,78,'user:  —  one person, all of their conversations  ·  preferences, profile','var(--violet)')}
-    ${box(68,94,524,84,'var(--amber)')}${tm(330,114,'no prefix  —  this conversation only  ·  the working draft','var(--amber)')}
-    ${box(96,130,468,36,'var(--red)')}${tm(330,152,'temp:  —  this single turn, never written to disk','var(--red)')}
-    ${tm(330,222,'widest at the top, narrowest at the bottom — pick the smallest drawer that still works','var(--dim)')}
+   `${box(14,22,632,180,'var(--wire)')}${tm(330,42,'app:: every user, every conversation  ·  shared reference data','var(--teal)')}
+    ${box(40,58,580,132,'var(--violet)')}${tm(330,78,'user:: one person, all of their conversations  ·  preferences, profile','var(--violet)')}
+    ${box(68,94,524,84,'var(--amber)')}${tm(330,114,'no prefix: this conversation only  ·  the working draft','var(--amber)')}
+    ${box(96,130,468,36,'var(--red)')}${tm(330,152,'temp:: this single turn, never written to disk','var(--red)')}
+    ${tm(330,222,'widest at the top, narrowest at the bottom: pick the smallest drawer that still works','var(--dim)')}
     ${tm(330,244,'temp: is the only one that is guaranteed to be gone afterwards','var(--dim)')}`,
    'The nesting is the mental model: anything in an outer drawer is visible to everything inside it. That is exactly why putting one user’s data in the app: drawer shows it to everyone.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — file each note in the right drawer</h2>
-  <div class="plain-line"><b>Try this:</b> four real things an agent needs to remember. Choose a drawer for each. The consequence of the wrong choice is spelled out &mdash; some are merely wasteful, one is a data breach.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding where to file a note. In your own diary, on the family calendar, or on the noticeboard at work. Putting someone’s home address on the noticeboard is not a filing error — it is an incident.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>file <b>the person’s preferred language</b> in the <b>app:</b> drawer and read what happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>state</b> the shared notebook the agent writes things into</span><span class="sp-w"><b>session</b> one conversation, from start to finish</span><span class="sp-w"><b>prefix</b> the few characters on the front of a name that decide who can read it</span><span class="sp-w"><b>temp:</b> scratch paper — guaranteed to be thrown away</span></span></div></div>
+  <h2 class="sec">Try it: file each note in the right drawer</h2>
+  <div class="plain-line"><b>Try this:</b> four real things an agent needs to remember. Choose a drawer for each. The consequence of the wrong choice is spelled out. Some are merely wasteful, one is a data breach.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Deciding where to file a note. In your own diary, on the family calendar, or on the noticeboard at work. Putting someone’s home address on the noticeboard is not a filing error. It is an incident.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>file <b>the person’s preferred language</b> in the <b>app:</b> drawer and read what happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>state</b> the shared notebook the agent writes things into</span><span class="sp-w"><b>session</b> one conversation, from start to finish</span><span class="sp-w"><b>prefix</b> the few characters on the front of a name that decide who can read it</span><span class="sp-w"><b>temp:</b> scratch paper, guaranteed to be thrown away</span></span></div></div>
   <div class="sim-layout">
     <div><div id="scopeItems"></div></div>
     <div><div id="scopeOut" class="cidr-out"></div></div>
@@ -464,14 +464,14 @@ document.getElementById('sec-state').innerHTML=`
 
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">There is a right way and a wrong way to write to it</h2>
-  <div class="plain-line"><b>In plain English:</b> every change to state is supposed to travel as an <b>event</b> &mdash; that is what makes it persisted, replayable and visible in a trace. Reach into the session object and set a value directly and you have gone around the postal system: the value exists in memory right now, and is gone the moment the process restarts, with nothing in the audit trail to explain it.</div>
-  <div class="vs2"><div class="col"><b>SAFE — goes through the event system</b><span class="code">output_key="draft"</span> on the agent &mdash; ADK saves the final reply for you<br><br><span class="code">tool_context.state["customer_id"] = cid</span> inside a tool<br><br><span class="code">callback_context.state[…]</span> inside a callback<br><br>All three are tracked, persisted and appear in the trace.</div>
-  <div class="col"><b>UNSAFE — bypasses it entirely</b><span class="code">session.state["customer_id"] = cid</span><br><br>It appears to work. It survives the next line of code and not much else: not persisted, not tracked, invisible to the trace. The bug shows up as &ldquo;it forgot&rdquo; on a different machine, days later.</div></div>
+  <div class="plain-line"><b>In plain English:</b> every change to state is supposed to travel as an <b>event</b>. That is what makes it persisted, replayable and visible in a trace. Reach into the session object and set a value directly and you have gone around the postal system: the value exists in memory right now, and is gone the moment the process restarts, with nothing in the audit trail to explain it.</div>
+  <div class="vs2"><div class="col"><b>SAFE, goes through the event system</b><span class="code">output_key="draft"</span> on the agent, ADK saves the final reply for you<br><br><span class="code">tool_context.state["customer_id"] = cid</span> inside a tool<br><br><span class="code">callback_context.state[…]</span> inside a callback<br><br>All three are tracked, persisted and appear in the trace.</div>
+  <div class="col"><b>UNSAFE, bypasses it entirely</b><span class="code">session.state["customer_id"] = cid</span><br><br>It appears to work. It survives the next line of code and not much else: not persisted, not tracked, invisible to the trace. The bug shows up as &ldquo;it forgot&rdquo; on a different machine, days later.</div></div>
 </div>
 
 <div class="card">
   <h2 class="sec">State is a contract between agents, and nothing enforces it</h2>
-  <div class="plain-line"><b>In plain English:</b> when agent A writes <span class="code">research_summary</span> and agent B reads <span class="code">research_summary</span>, that shared string <em>is</em> the interface between them. There is no compiler to check it. Rename it in A and B does not crash &mdash; it reads nothing, and the model politely writes something plausible from thin air.</div>
+  <div class="plain-line"><b>In plain English:</b> when agent A writes <span class="code">research_summary</span> and agent B reads <span class="code">research_summary</span>, that shared string <em>is</em> the interface between them. There is no compiler to check it. Rename it in A and B does not crash. It reads nothing, and the model politely writes something plausible from thin air.</div>
   <div class="plain-line"><b>How to survive it:</b> write the key names down in one place before you build. Treat a key rename like an API change, because it is one. And when you are debugging &ldquo;the second agent ignored the first&rdquo;, check the key spelling before you touch a single prompt.</div>
 </div>`;
 
@@ -487,7 +487,7 @@ document.getElementById('sec-state').innerHTML=`
           app:'<b>This is the breach.</b> One person’s preference is now every person’s preference. Swap “language” for “home address” and you can see the shape of the incident report.',
           temp:'Gone before the turn even ends. The next tool call cannot see it.'}},
     {id:'draft',label:'The half-finished document being edited',hint:'the writer agent produces it, the reviewer agent reads it',right:'none',
-     why:{none:'Correct. It belongs to this conversation and dies with it — which is exactly right for a working draft.',
+     why:{none:'Correct. It belongs to this conversation and dies with it, which is exactly right for a working draft.',
           user:'It leaks into their next, unrelated conversation. They ask about something else and the agent is still holding last week’s draft.',
           app:'Everyone in the company is now editing the same document. Two users at once and one of them loses their work.',
           temp:'The reviewer agent runs in a later step and finds nothing. Classic “the second agent ignored the first”.'}},
@@ -523,7 +523,7 @@ document.getElementById('sec-state').innerHTML=`
     }).join('') +
     '<div class="simnote" style="margin-top:10px"><b>'+right+' of '+done.length+' filed correctly.</b> '+
     (right===ITEMS.length
-      ? 'All four right. The rule underneath: pick the narrowest drawer the data can live in and still be useful — the wide ones are where privacy incidents come from.'
+      ? 'All four right. The rule underneath: pick the narrowest drawer the data can live in and still be useful. The wide ones are where privacy incidents come from.'
       : 'The rule underneath: pick the narrowest drawer the data can live in and still be useful.')+'</div>';
   }
   render();
@@ -532,29 +532,29 @@ document.getElementById('sec-state').innerHTML=`
 document.getElementById('sec-hooks').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Six places to stand in the corridor</h2>
-  <div class="plain-line"><b>In plain English:</b> a request walks down a corridor &mdash; into the agent, out to the model, back, out to a tool, back, out of the agent. <b>Callbacks</b> let you stand at any of those six doorways and inspect what is passing. Say nothing and it walks on. <b>Say something and it turns around</b> &mdash; whatever you return replaces the thing you were standing in front of, and that thing never runs.</div>
+  <div class="plain-line"><b>In plain English:</b> a request walks down a corridor, into the agent, out to the model, back, out to a tool, back, out of the agent. <b>Callbacks</b> let you stand at any of those six doorways and inspect what is passing. Say nothing and it walks on. <b>Say something and it turns around</b>, whatever you return replaces the thing you were standing in front of, and that thing never runs.</div>
   ${D('0 0 680 260','The six ADK callback checkpoints arranged around the agent, model and tool calls.',
    `${box(20,26,640,58,'var(--violet)')}${tm(340,48,'before_agent_callback   →   the whole invocation is about to start','var(--violet)')}${tm(340,68,'return something here and the agent never runs at all','var(--dim)')}
     ${box(50,100,290,54,'var(--teal)')}${tm(195,122,'before_model_callback','var(--teal)')}${tm(195,140,'last look at the prompt','var(--dim)')}
     ${box(360,100,290,54,'var(--teal)')}${tm(505,122,'after_model_callback','var(--teal)')}${tm(505,140,'first look at the reply','var(--dim)')}
     ${box(50,168,290,54,'var(--amber)')}${tm(195,190,'before_tool_callback','var(--amber)')}${tm(195,208,'inspect and rewrite arguments','var(--dim)')}
     ${box(360,168,290,54,'var(--amber)')}${tm(505,190,'after_tool_callback','var(--amber)')}${tm(505,208,'inspect and rewrite the result','var(--dim)')}
-    ${tm(340,242,'after_agent_callback closes the corridor — the last chance to change what the caller sees','var(--dim)')}`,
+    ${tm(340,242,'after_agent_callback closes the corridor: the last chance to change what the caller sees','var(--dim)')}`,
    'They come in before/after pairs around the three things that actually happen: the agent runs, the model is called, a tool is called.')}
   <table class="osi"><thead><tr><th>Checkpoint</th><th>What you would really use it for</th></tr></thead><tbody>
-  <tr><td><span class="code">before_agent</span></td><td>Refuse the request outright &mdash; out of hours, over quota, wrong tenant &mdash; without spending a single token</td></tr>
+  <tr><td><span class="code">before_agent</span></td><td>Refuse the request outright (out of hours, over quota, wrong tenant) without spending a single token</td></tr>
   <tr><td><span class="code">before_model</span></td><td>Strip card numbers out of the prompt, or return a cached answer for a question you have already paid to answer</td></tr>
   <tr><td><span class="code">after_model</span></td><td>Redact anything that slipped through, and record what the reply actually cost</td></tr>
-  <tr><td><span class="code">before_tool</span></td><td>Validate arguments and block the dangerous ones &mdash; a refund of &pound;40,000, a delete with no filter</td></tr>
+  <tr><td><span class="code">before_tool</span></td><td>Validate arguments and block the dangerous ones, a refund of &pound;40,000, a delete with no filter</td></tr>
   <tr><td><span class="code">after_tool</span></td><td>Trim a huge result before it goes back into the context window, or mask fields the user must not see</td></tr>
   <tr><td><span class="code">after_agent</span></td><td>Append a disclaimer, emit the audit record, close the trace</td></tr>
   </tbody></table>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — stand in the corridor and see what stops</h2>
-  <div class="plain-line"><b>Try this:</b> install hooks and watch one request try to get through. A hook that returns nothing is a silent observer. A hook that returns a value is a barrier &mdash; and everything downstream of it simply does not happen.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Standing in a corridor as someone walks past. Say nothing and they carry on. Hand them something and they turn round — and everyone further down the corridor never sees them at all.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>before_agent: quota check</b> and notice how many of the later stages simply never run.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>callback</b> code of yours that runs at a fixed point in the process</span><span class="sp-w"><b>short-circuit</b> returning something, which cancels the step you were watching</span><span class="sp-w"><b>plugin</b> the same idea, but applied to every agent instead of one</span><span class="sp-w"><b>None</b> returning nothing, which means “carry on as normal”</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
+  <h2 class="sec">Try it: stand in the corridor and see what stops</h2>
+  <div class="plain-line"><b>Try this:</b> install hooks and watch one request try to get through. A hook that returns nothing is a silent observer. A hook that returns a value is a barrier, and everything downstream of it simply does not happen.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Standing in a corridor as someone walks past. Say nothing and they carry on. Hand them something and they turn round, and everyone further down the corridor never sees them at all.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>before_agent: quota check</b> and notice how many of the later stages simply never run.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>callback</b> code of yours that runs at a fixed point in the process</span><span class="sp-w"><b>short-circuit</b> returning something, which cancels the step you were watching</span><span class="sp-w"><b>plugin</b> the same idea, but applied to every agent instead of one</span><span class="sp-w"><b>None</b> returning nothing, which means “carry on as normal”</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="hookFlow"></div></div>
     <div><div class="toggles" id="hookCtl"></div>
@@ -564,11 +564,11 @@ document.getElementById('sec-hooks').innerHTML=`
 
 <div class="card">
   <h2 class="sec">Plugins: the same hooks, but for the whole application</h2>
-  <div class="plain-line"><b>In plain English:</b> a callback is attached to <em>one agent</em>. A <b>plugin</b> is attached to the <em>runner</em>, so it applies to every agent it runs. If you have twelve agents and one logging rule, you do not write it twelve times &mdash; you write a plugin.</div>
-  <div class="vs2"><div class="col"><b>CALLBACK</b>Attached per agent. Fresh context each invocation. Use it when the behaviour is specific to that agent — validating the arguments of <em>its</em> tools, enforcing <em>its</em> output format.</div>
+  <div class="plain-line"><b>In plain English:</b> a callback is attached to <em>one agent</em>. A <b>plugin</b> is attached to the <em>runner</em>, so it applies to every agent it runs. If you have twelve agents and one logging rule, you do not write it twelve times. You write a plugin.</div>
+  <div class="vs2"><div class="col"><b>CALLBACK</b>Attached per agent. Fresh context each invocation. Use it when the behaviour is specific to that agent, validating the arguments of <em>its</em> tools, enforcing <em>its</em> output format.</div>
   <div class="col"><b>PLUGIN</b>Attached to the runner, applies to every agent. <b>Runs before agent-level callbacks.</b> Created once and shared across all invocations. Use it for cross-cutting concerns: logging, metrics, global guardrails, cost tracking.</div></div>
-  <div class="plain-line" style="margin-top:12px"><b>The trap in that last sentence:</b> a plugin is <b>initialised once and shared by every request that follows</b>. Store per-request data on <span class="code">self</span> and you have built a bug that only appears under concurrency &mdash; user B seeing a fragment of user A&rsquo;s request. Per-request data belongs in state; plugins should hold configuration and nothing else.</div>
-  <div class="plain-line"><b>And the ordering matters:</b> plugins run first. A global guardrail plugin therefore gets to say no before any agent-specific callback has a chance to say yes &mdash; which is the right way round, and worth knowing when a block appears in your trace with no agent callback in sight.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The trap in that last sentence:</b> a plugin is <b>initialised once and shared by every request that follows</b>. Store per-request data on <span class="code">self</span> and you have built a bug that only appears under concurrency, user B seeing a fragment of user A&rsquo;s request. Per-request data belongs in state; plugins should hold configuration and nothing else.</div>
+  <div class="plain-line"><b>And the ordering matters:</b> plugins run first. A global guardrail plugin therefore gets to say no before any agent-specific callback has a chance to say yes, which is the right way round, and worth knowing when a block appears in your trace with no agent callback in sight.</div>
 </div>`;
 
 /* --- SIM: interception chain --- */
@@ -577,11 +577,11 @@ document.getElementById('sec-hooks').innerHTML=`
   if(!ctl) return;
   const HOOKS=[
     {k:'plug', at:0, label:'Plugin: global audit log', ret:false, note:'Writes a line and returns nothing. Every request passes through it, and none are stopped by it.'},
-    {k:'quota',at:0, label:'before_agent: quota check', ret:true,  blocked:'Daily limit reached. Try again tomorrow.', note:'Returns a response, so the agent never starts. Nothing after this point runs — no model call, no token spend.'},
+    {k:'quota',at:0, label:'before_agent: quota check', ret:true,  blocked:'Daily limit reached. Try again tomorrow.', note:'Returns a response, so the agent never starts. Nothing after this point runs, no model call, no token spend.'},
     {k:'pii',  at:1, label:'before_model: card-number guard', ret:true, blocked:'I cannot process card details in chat.', note:'The prompt contained a card number, so the guard answered instead of the model. Cheapest possible block: nothing was ever sent.'},
-    {k:'cache',at:1, label:'before_model: cache hit', ret:true, blocked:'(cached answer returned)', note:'The identical question was answered an hour ago. Returning the cached reply skips the model entirely — same output, no cost, no latency.'},
+    {k:'cache',at:1, label:'before_model: cache hit', ret:true, blocked:'(cached answer returned)', note:'The identical question was answered an hour ago. Returning the cached reply skips the model entirely, same output, no cost, no latency.'},
     {k:'redact',at:2,at2:true, label:'after_model: redact emails', ret:'edit', note:'Returns an edited reply, so the caller sees the redacted version rather than the original. The model still ran and was still billed.'},
-    {k:'argval',at:3, label:'before_tool: block risky arguments', ret:true, blocked:'Refund over the approval limit — escalated to a human.', note:'The arguments were inspected before the tool ran. The refund never happened, and the model is told why so it can explain itself.'},
+    {k:'argval',at:3, label:'before_tool: block risky arguments', ret:true, blocked:'Refund over the approval limit, escalated to a human.', note:'The arguments were inspected before the tool ran. The refund never happened, and the model is told why so it can explain itself.'},
     {k:'trim', at:4,at2:true, label:'after_tool: trim a huge result', ret:'edit', note:'The tool returned 40,000 rows. Trimming before it re-enters the context is often the difference between a working agent and one that runs out of window.'}
   ];
   const on={plug:true};
@@ -628,7 +628,7 @@ document.getElementById('sec-hooks').innerHTML=`
       html='<div class="ok" style="margin-bottom:10px"><b>The request completed normally.</b> Every installed hook observed and stepped aside.</div>';
     }
     if(edits.length) html+=edits.map(e=>'<div class="note" style="margin-top:8px"><b>'+e.label+' rewrote what passed through.</b><br>'+e.note+'</div>').join('');
-    html+='<div class="simnote" style="margin-top:10px"><b>The one rule to carry away:</b> in a <span class="code">before_</span> callback, returning <span class="code">None</span> means &ldquo;carry on&rdquo; and returning anything else means &ldquo;stop, use this instead&rdquo;. An accidental <span class="code">return</span> at the end of a logging callback silently cancels your model call — and looks like the model went quiet.</div>';
+    html+='<div class="simnote" style="margin-top:10px"><b>The one rule to carry away:</b> in a <span class="code">before_</span> callback, returning <span class="code">None</span> means &ldquo;carry on&rdquo; and returning anything else means &ldquo;stop, use this instead&rdquo;. An accidental <span class="code">return</span> at the end of a logging callback silently cancels your model call, and looks like the model went quiet.</div>';
     out.innerHTML=html;
   }
   render();
@@ -637,7 +637,7 @@ document.getElementById('sec-hooks').innerHTML=`
 document.getElementById('sec-orch').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Three shapes that need no model to decide</h2>
-  <div class="plain-line"><b>In plain English:</b> once you have several agents, something has to decide who goes when. You can let a model work it out every single time &mdash; which costs tokens, takes latency and occasionally invents a new plan &mdash; or you can just <b>write down the order</b>. ADK gives you three ready-made shapes that contain no model at all: one after another, all at once, and again until it is good enough.</div>
+  <div class="plain-line"><b>In plain English:</b> once you have several agents, something has to decide who goes when. You can let a model work it out every single time (which costs tokens, takes latency and occasionally invents a new plan) or you can just <b>write down the order</b>. ADK gives you three ready-made shapes that contain no model at all: one after another, all at once, and again until it is good enough.</div>
   ${D('0 0 680 250','The three template workflow agents: sequential, parallel and loop.',
    `${t(114,26,'SequentialAgent',SANS)}
     ${box(24,40,180,30,'var(--violet)')}${tm(114,60,'research','var(--violet)')}
@@ -656,14 +656,14 @@ document.getElementById('sec-orch').innerHTML=`
     ${box(476,96,180,44,'var(--amber)')}${tm(566,122,'critique it','var(--amber)')}
     <path d="M476 118 H462 V62 H474" style="stroke:var(--amber);fill:none" stroke-width="1.5" marker-end="url(#ah)"/>
     ${tm(566,172,'until exit_loop() is called','var(--dim)')}${tm(566,188,'or max_iterations is hit','var(--dim)')}
-    ${box(24,206,632,32,'var(--wire)')}${tm(340,226,'all three are deterministic — the order is code, not a model’s opinion, so it is the same every run','var(--dim)')}`,
+    ${box(24,206,632,32,'var(--wire)')}${tm(340,226,'all three are deterministic: the order is code, not a model’s opinion, so it is the same every run','var(--dim)')}`,
    'Use these wherever the order is genuinely fixed. Save model-driven routing for the places where the next step really does depend on what was found.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — arrange three agents and watch the clock</h2>
-  <div class="plain-line"><b>Try this:</b> the same three sub-agents, arranged three ways. Watch the elapsed time, the token bill, and &mdash; in the parallel case &mdash; what happens when two of them write to the same place in the notebook.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Three people making a cup of tea, a sandwich and a phone call. Doing them one after another takes as long as all three added up. Doing them at once takes as long as the slowest one.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch to <b>ParallelAgent</b>, then tick the box about all three writing to the same place.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sub-agent</b> one of several agents working on part of the job</span><span class="sp-w"><b>sequential</b> one after another, each waiting for the last</span><span class="sp-w"><b>parallel</b> all at once, because none of them needs the others</span><span class="sp-w"><b>output_key</b> the name each one saves its answer under — share it and they overwrite each other</span></span></div></div>
+  <h2 class="sec">Try it: arrange three agents and watch the clock</h2>
+  <div class="plain-line"><b>Try this:</b> the same three sub-agents, arranged three ways. Watch the elapsed time, the token bill, and (in the parallel case) what happens when two of them write to the same place in the notebook.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Three people making a cup of tea, a sandwich and a phone call. Doing them one after another takes as long as all three added up. Doing them at once takes as long as the slowest one.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>switch to <b>ParallelAgent</b>, then tick the box about all three writing to the same place.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sub-agent</b> one of several agents working on part of the job</span><span class="sp-w"><b>sequential</b> one after another, each waiting for the last</span><span class="sp-w"><b>parallel</b> all at once, because none of them needs the others</span><span class="sp-w"><b>output_key</b> the name each one saves its answer under, share it and they overwrite each other</span></span></div></div>
   <div class="sim-layout">
     <div><div id="orchTime"></div></div>
     <div><div class="segmented" id="orchPick" style="flex-direction:column;align-items:stretch"></div>
@@ -674,7 +674,7 @@ document.getElementById('sec-orch').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">When the shape is not a line — the ADK 2.0 graph</h2>
+  <h2 class="sec">When the shape is not a line: the ADK 2.0 graph</h2>
   <div class="plain-line"><b>In plain English:</b> real processes branch. &ldquo;If it is under &pound;100 approve it, otherwise get a human, and if the human is out of office ping their manager.&rdquo; You cannot draw that as a straight line. ADK 2.0 lets you define the workflow as a <b>graph</b>: nodes are agents, edges are the routes between them, and an agent ends its turn by emitting an <span class="code">Event(route=…)</span> that names which edge to take.</div>
   ${D('0 0 660 250','An ADK 2.0 graph workflow with a routing decision, a fan-out to two parallel branches, and a join node that waits for both.',
    `${box(250,20,160,40,'var(--violet)')}${tm(330,44,'triage','var(--violet)')}
@@ -688,25 +688,25 @@ document.getElementById('sec-orch').innerHTML=`
     ${box(495,152,105,34,'var(--amber)')}${tm(547,174,'pricing','var(--amber)')}
     <path d="M470 142 L440 150" style="stroke:var(--wire)" stroke-width="1.2" marker-end="url(#ah)"/>
     <path d="M512 142 L540 150" style="stroke:var(--wire)" stroke-width="1.2" marker-end="url(#ah)"/>
-    ${box(200,200,300,38,'var(--green)')}${tm(350,224,'JoinNode — waits for every branch, then merges','var(--green)')}
+    ${box(200,200,300,38,'var(--green)')}${tm(350,224,'JoinNode: waits for every branch, then merges','var(--green)')}
     <path d="M170 142 V219 H196" style="stroke:var(--wire);fill:none" stroke-width="1.2" marker-end="url(#ah)"/>
     <path d="M547 188 V219 H504" style="stroke:var(--wire);fill:none" stroke-width="1.2" marker-end="url(#ah)"/>`,
-   'Without a JoinNode a fan-out has no defined meeting point — the workflow continues as soon as any branch finishes, and the other branch’s work is quietly lost.')}
+   'Without a JoinNode a fan-out has no defined meeting point, the workflow continues as soon as any branch finishes, and the other branch’s work is quietly lost.')}
   <div class="plain-line"><b>Why a graph beats a very clever prompt:</b> the routing is now <em>in the code</em>, so it is testable, reviewable and identical on every run. A prompt that says &ldquo;decide whether this is simple or complex&rdquo; is a routing decision you cannot unit-test and cannot show an auditor.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">Delegation — handing work to a specialist, three ways</h2>
+  <h2 class="sec">Delegation: handing work to a specialist, three ways</h2>
   <div class="plain-line"><b>In plain English:</b> sometimes an agent should stop trying and pass the job to someone better suited. How completely it hands over is the choice: does the specialist take over the conversation, do one job and report back, or answer exactly once?</div>
   <table class="osi"><thead><tr><th>Mode</th><th>What happens</th><th>Use it when</th></tr></thead><tbody>
-  <tr><td><span class="code">chat</span></td><td>The specialist <b>takes over the conversation</b> and keeps talking to the user directly</td><td>Handing a customer from the front desk to the billing team — the user should now be talking to billing</td></tr>
-  <tr><td><span class="code">task</span></td><td>The specialist does a piece of work and <b>returns the result</b>. The original agent stays in charge</td><td>&ldquo;Go and check inventory, tell me what you find&rdquo; — the caller still owns the conversation</td></tr>
+  <tr><td><span class="code">chat</span></td><td>The specialist <b>takes over the conversation</b> and keeps talking to the user directly</td><td>Handing a customer from the front desk to the billing team. The user should now be talking to billing</td></tr>
+  <tr><td><span class="code">task</span></td><td>The specialist does a piece of work and <b>returns the result</b>. The original agent stays in charge</td><td>&ldquo;Go and check inventory, tell me what you find&rdquo;, the caller still owns the conversation</td></tr>
   <tr><td><span class="code">single_turn</span></td><td>Exactly one response, then control returns. No follow-up, no back and forth</td><td>A one-shot lookup or classification where a conversation would be overkill</td></tr>
   </tbody></table>
   <div class="plain-line" style="margin-top:12px"><b>Three constraints that shape the design:</b></div>
-  <div class="plain-line"><b>1. Only leaf nodes can delegate.</b> An agent that is itself part of a workflow cannot hand off &mdash; otherwise two things would be steering the same flow, and neither would win predictably.</div>
+  <div class="plain-line"><b>1. Only leaf nodes can delegate.</b> An agent that is itself part of a workflow cannot hand off, otherwise two things would be steering the same flow, and neither would win predictably.</div>
   <div class="plain-line"><b>2. Every delegation creates its own branch in the trace.</b> You can see afterwards exactly who was asked to do what, and what came back. This is the audit trail an incident review actually needs.</div>
-  <div class="plain-line"><b>3. Context isolation runs both ways.</b> The specialist does not see the caller&rsquo;s whole history, and the caller does not inherit the specialist&rsquo;s working notes. That keeps prompts small and stops one agent&rsquo;s confusion becoming everyone&rsquo;s &mdash; but it also means <b>anything the specialist genuinely needs must be passed explicitly, or written to shared state</b>. &ldquo;It worked when I tested it inline&rdquo; usually means you were relying on context that delegation removes.</div>
+  <div class="plain-line"><b>3. Context isolation runs both ways.</b> The specialist does not see the caller&rsquo;s whole history, and the caller does not inherit the specialist&rsquo;s working notes. That keeps prompts small and stops one agent&rsquo;s confusion becoming everyone&rsquo;s, but it also means <b>anything the specialist genuinely needs must be passed explicitly, or written to shared state</b>. &ldquo;It worked when I tested it inline&rdquo; usually means you were relying on context that delegation removes.</div>
 </div>`;
 
 /* --- SIM: orchestration bench --- */
@@ -715,7 +715,7 @@ document.getElementById('sec-orch').innerHTML=`
         out=document.getElementById('orchOut'), clash=document.getElementById('orchClash');
   if(!pick) return;
   const AG=[{n:'fetch_news',s:3.0},{n:'fetch_stocks',s:1.2},{n:'fetch_weather',s:0.8}];
-  const MODES=[['seq','SequentialAgent — one after another'],['par','ParallelAgent — all at once'],['loop','LoopAgent — repeat until good enough']];
+  const MODES=[['seq','SequentialAgent, one after another'],['par','ParallelAgent, all at once'],['loop','LoopAgent, repeat until good enough']];
   let mode='seq';
   function render(){
     pick.innerHTML=MODES.map(([v,l])=>'<button class="seg'+(mode===v?' on':'')+'" data-v="'+v+'" style="text-align:left">'+l+'</button>').join('');
@@ -727,7 +727,7 @@ document.getElementById('sec-orch').innerHTML=`
     else { for(let i=0;i<3;i++){ bars.push(['draft · round '+(i+1),i*2.4,1.4,'var(--amber)']);
                                 bars.push(['critique · round '+(i+1),i*2.4+1.4,1.0,'var(--dim)']); } total=7.2; }
     const scale=680/Math.max(total,1);
-    tl.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">EXECUTION TIMELINE — seconds</div>'+
+    tl.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">EXECUTION TIMELINE, seconds</div>'+
       bars.map(([n,st,d,c])=>
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
         '<span style="width:130px;font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:right">'+n+'</span>'+
@@ -738,15 +738,15 @@ document.getElementById('sec-orch').innerHTML=`
 
     const notes={
       seq:['ok','<b>5.0s, and every step could read the one before it.</b> This is the right shape when the writer genuinely needs the researcher’s output. You are paying three seconds of latency for a guarantee.'],
-      par:['ok','<b>3.0s — the slowest agent sets the clock.</b> Because none of them needs another’s answer, waiting is pure waste. The saving grows with the number of branches.'],
-      loop:['note','<b>7.2s for three rounds, and it could have been fewer.</b> The loop stops early the moment the critique agent calls <span class="code">exit_loop()</span>. <span class="code">max_iterations</span> is the safety net, not the plan — without it a critic that is never satisfied will run until your budget notices.']
+      par:['ok','<b>3.0s, the slowest agent sets the clock.</b> Because none of them needs another’s answer, waiting is pure waste. The saving grows with the number of branches.'],
+      loop:['note','<b>7.2s for three rounds, and it could have been fewer.</b> The loop stops early the moment the critique agent calls <span class="code">exit_loop()</span>. <span class="code">max_iterations</span> is the safety net, not the plan, without it a critic that is never satisfied will run until your budget notices.']
     }[mode];
     let html='<div class="'+(notes[0]==='ok'?'ok':'note')+'" style="margin-bottom:10px">'+notes[1]+'</div>';
     if(mode==='par'&&collide){
-      html+='<div class="err" style="margin-bottom:10px"><b>State collision.</b> All three finished at roughly the same moment and all three wrote to <span class="code">result</span>. Two of those writes are gone. Downstream you will find one report where you expected three — and which one survived changes between runs, because it depends on who finished last.</div>'+
-            '<div class="ok" style="margin-bottom:10px"><b>The fix is boring and total:</b> give each parallel agent its own <span class="code">output_key</span> — <span class="code">news_result</span>, <span class="code">stocks_result</span>, <span class="code">weather_result</span> — and add a merge step afterwards that reads all three.</div>';
+      html+='<div class="err" style="margin-bottom:10px"><b>State collision.</b> All three finished at roughly the same moment and all three wrote to <span class="code">result</span>. Two of those writes are gone. Downstream you will find one report where you expected three, and which one survived changes between runs, because it depends on who finished last.</div>'+
+            '<div class="ok" style="margin-bottom:10px"><b>The fix is boring and total:</b> give each parallel agent its own <span class="code">output_key</span>, <span class="code">news_result</span>, <span class="code">stocks_result</span>, <span class="code">weather_result</span>, and add a merge step afterwards that reads all three.</div>';
     } else if(mode!=='par'&&collide){
-      html+='<div class="note" style="margin-bottom:10px"><b>Sharing a key is survivable here</b> because only one agent writes at a time — each simply overwrites the last. It is still a bad idea: you have thrown away the intermediate results you would want when debugging.</div>';
+      html+='<div class="note" style="margin-bottom:10px"><b>Sharing a key is survivable here</b> because only one agent writes at a time, each simply overwrites the last. It is still a bad idea: you have thrown away the intermediate results you would want when debugging.</div>';
     }
     html+='<div class="simnote" style="margin-top:8px"><b>How to choose, in one line:</b> if step two needs step one’s answer, go sequential; if it does not, go parallel; if quality is the exit condition rather than a step count, loop.</div>';
     out.innerHTML=html;
@@ -757,7 +757,7 @@ document.getElementById('sec-orch').innerHTML=`
 document.getElementById('sec-ground').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A model with no sources is a very fluent guess</h2>
-  <div class="plain-line"><b>In plain English:</b> ask a model something it was never told and it will not say &ldquo;I do not know&rdquo;. It will produce the most plausible-sounding sentence, in the same confident voice it uses for things it does know. <b>Grounding</b> is attaching the answer to something real &mdash; the live web, your documents, your database &mdash; so there is a fact underneath the fluency.</div>
+  <div class="plain-line"><b>In plain English:</b> ask a model something it was never told and it will not say &ldquo;I do not know&rdquo;. It will produce the most plausible-sounding sentence, in the same confident voice it uses for things it does know. <b>Grounding</b> is attaching the answer to something real (the live web, your documents, your database) so there is a fact underneath the fluency.</div>
   ${D('0 0 660 226','Three grounding sources: public web search, private document search, and structured data through a tool.',
    `${box(14,26,200,86,'var(--teal)')}${t(114,50,'The public web',SANS)}${tm(114,70,'google_search','var(--teal)')}${tm(114,88,'current, public, unowned','var(--dim)')}${tm(114,104,'today’s exchange rate','var(--dim)')}
     ${box(230,26,200,86,'var(--violet)')}${t(330,50,'Your documents',SANS)}${tm(330,70,'VertexAiSearchTool','var(--violet)')}${tm(330,88,'private, unstructured','var(--dim)')}${tm(330,104,'the internal HR policy','var(--dim)')}
@@ -766,12 +766,12 @@ document.getElementById('sec-ground').innerHTML=`
     ${t(330,158,'They fail in different ways, and only one of them fails loudly',SANS)}
     ${tm(330,178,'structured  →  the model invents a column that does not exist  →  the query errors, you see it','var(--amber)')}
     ${tm(330,196,'unstructured  →  retrieval returns a nearby document  →  the answer reads perfectly and is wrong','var(--red)')}`,
-   'Grounding does not remove hallucination. It changes where hallucination can hide — which is why the unstructured case needs evaluation rather than a smoke test.')}
+   'Grounding does not remove hallucination. It changes where hallucination can hide, which is why the unstructured case needs evaluation rather than a smoke test.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — send four questions to the wrong place on purpose</h2>
-  <div class="plain-line"><b>Try this:</b> pick a source for each question and read what actually comes back. One of the wrong answers is obviously wrong. One is the dangerous kind &mdash; well written, well structured, and untrue.</div>
+  <h2 class="sec">Try it: send four questions to the wrong place on purpose</h2>
+  <div class="plain-line"><b>Try this:</b> pick a source for each question and read what actually comes back. One of the wrong answers is obviously wrong. One is the dangerous kind, well written, well structured, and untrue.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Asking four people a question: someone with a good memory, someone with today’s newspaper, someone with your company’s filing cabinet, and someone who can look it up in the live system. Three of them will answer anyway.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send <b>“Where is order A-4417?”</b> to <b>no grounding</b> and read the answer it invents.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>grounding</b> tying the answer to a real source instead of the model’s memory</span><span class="sp-w"><b>retrieval</b> fetching the documents that might contain the answer</span><span class="sp-w"><b>structured data</b> rows and columns, where there is one right answer</span><span class="sp-w"><b>unstructured data</b> documents and prose, where the wrong one can look right</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="gndQ"></div></div>
@@ -784,17 +784,17 @@ document.getElementById('sec-ground').innerHTML=`
   <table class="osi"><thead><tr><th></th><th><span class="code">google_search</span></th><th><span class="code">VertexAiSearchTool</span></th></tr></thead><tbody>
   <tr><td><b>Searches</b></td><td>The public web</td><td>A datastore you built from your own documents</td></tr>
   <tr><td><b>Setup</b></td><td>Add the tool. That is all</td><td>Build the datastore first, then pass its full resource ID to the tool</td></tr>
-  <tr><td><b>Requires</b></td><td>Nothing special</td><td><span class="code">GOOGLE_GENAI_USE_VERTEXAI=TRUE</span> — it is a Vertex AI service, so the API-key path cannot reach it</td></tr>
+  <tr><td><b>Requires</b></td><td>Nothing special</td><td><span class="code">GOOGLE_GENAI_USE_VERTEXAI=TRUE</span>. It is a Vertex AI service, so the API-key path cannot reach it</td></tr>
   <tr><td><b>Fails as</b></td><td>Stale or irrelevant results you can see</td><td>Confidently answering from a document that was <em>nearly</em> the right one</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The failure worth rehearsing:</b> a question about parental leave retrieves the section on <em>unpaid</em> leave, because the two documents look almost identical to a similarity search. The agent then answers accurately &mdash; about the wrong policy. Nothing errors. Nothing is logged as a problem. Someone acts on it.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The failure worth rehearsing:</b> a question about parental leave retrieves the section on <em>unpaid</em> leave, because the two documents look almost identical to a similarity search. The agent then answers accurately, about the wrong policy. Nothing errors. Nothing is logged as a problem. Someone acts on it.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">MCP — using tools somebody else already runs</h2>
+  <h2 class="sec">MCP: using tools somebody else already runs</h2>
   <div class="plain-line"><b>In plain English:</b> the Model Context Protocol is a standard socket. If another team runs a server that speaks it, your agent can plug in and use their tools without you reimplementing anything. Two ways to plug in: <span class="code">StdioConnectionParams</span> starts the server as a local subprocess on your machine, and <span class="code">StreamableHTTPConnectionParams</span> talks to one running somewhere else over HTTP.</div>
-  <div class="plain-line"><b>Filter down to what you need.</b> An MCP server might expose forty tools. <span class="code">tool_filter</span> lets you accept three. This is least privilege in its most literal form: a tool the agent cannot see is a tool the agent cannot be talked into calling. It also keeps the tool list short enough for the model to choose well &mdash; forty near-identical labels is how wrong-tool selection starts.</div>
-  <div class="plain-line"><b>The deployment trap:</b> an agent using <span class="code">McpToolset</span> must be <b>defined synchronously in <span class="code">agent.py</span></b>. Build it inside an async factory function &mdash; which feels natural, because connecting to a server is I/O &mdash; and it will run perfectly on your laptop and <b>fail at deployment</b>, because the deployment step imports the module and looks for a ready agent object, not a coroutine that promises one.</div>
+  <div class="plain-line"><b>Filter down to what you need.</b> An MCP server might expose forty tools. <span class="code">tool_filter</span> lets you accept three. This is least privilege in its most literal form: a tool the agent cannot see is a tool the agent cannot be talked into calling. It also keeps the tool list short enough for the model to choose well, forty near-identical labels is how wrong-tool selection starts.</div>
+  <div class="plain-line"><b>The deployment trap:</b> an agent using <span class="code">McpToolset</span> must be <b>defined synchronously in <span class="code">agent.py</span></b>. Build it inside an async factory function (which feels natural, because connecting to a server is I/O) and it will run perfectly on your laptop and <b>fail at deployment</b>, because the deployment step imports the module and looks for a ready agent object, not a coroutine that promises one.</div>
 </div>`;
 
 /* --- SIM: grounding router --- */
@@ -806,11 +806,11 @@ document.getElementById('sec-ground').innerHTML=`
     {id:'fx',q:'What is the euro to sterling rate right now?',right:'web',
      a:{mem:['bad','&ldquo;Around 0.86.&rdquo; Delivered with no hedging at all. It is a number from training data, so it was true on some day you cannot identify.'],
         web:['ok','&ldquo;0.8412 as of 14:20 today, per the ECB reference rate.&rdquo; Live, public, and cited.'],
-        docs:['bad','Nothing in your document store contains an exchange rate. Retrieval returns the nearest thing it can find — probably an expenses policy — and the model tries to be helpful with it.'],
+        docs:['bad','Nothing in your document store contains an exchange rate. Retrieval returns the nearest thing it can find (probably an expenses policy) and the model tries to be helpful with it.'],
         tool:['bad','Your database does not hold FX rates. The model invents a column, the query errors, and the agent has to apologise. Loud, at least.']}},
     {id:'hr',q:'How many days of parental leave do I get?',right:'docs',
      a:{mem:['bad','It answers with the statutory minimum for some country. Plausible, specific, and not your company’s policy.'],
-        web:['bad','It finds a national government page and quotes that. Correct for the country, wrong for the employer — and the user has no way to tell which they were given.'],
+        web:['bad','It finds a national government page and quotes that. Correct for the country, wrong for the employer, and the user has no way to tell which they were given.'],
         docs:['ok','It retrieves the HR handbook section and quotes it with a link. <b>But check the retrieval:</b> this is exactly where “parental leave” and “unpaid leave” get confused, and the wrong answer looks identical to the right one.'],
         tool:['bad','A policy is prose, not rows. There is no table to query.']}},
     {id:'ord',q:'Where is order A-4417?',right:'tool',
@@ -821,7 +821,7 @@ document.getElementById('sec-ground').innerHTML=`
     {id:'why',q:'Why did our umbrella sales fall last quarter?',right:'tool',
      a:{mem:['bad','A confident essay about seasonality and consumer trends, generated with no knowledge of your business whatsoever.'],
         web:['bad','General retail commentary. Interesting, unrelated to your numbers.'],
-        docs:['bad','It may find last year’s strategy deck and answer from that — a document about a different quarter, presented as an analysis of this one.'],
+        docs:['bad','It may find last year’s strategy deck and answer from that, a document about a different quarter, presented as an analysis of this one.'],
         tool:['ok','Query the sales table, then the inventory table. The point of this one: an analysis question still resolves to structured data, and needs several tool calls rather than one clever prompt.']}}
   ];
   const pick={};
@@ -839,7 +839,7 @@ document.getElementById('sec-ground').innerHTML=`
       return '<div class="'+(k==='ok'?'ok':'err')+'" style="margin-bottom:9px"><b>'+q.q+'</b><br>'+
         '<span class="dim" style="font-size:11px">via '+SRC.find(s=>s[0]===pick[q.id])[1]+'</span><br>'+txt+'</div>';
     }).join('')+
-    '<div class="simnote" style="margin-top:10px"><b>The pattern across all four:</b> ungrounded answers are never blank — they are fluent. That is what makes them dangerous, and why &ldquo;it gave a sensible answer&rdquo; is not evidence that grounding is working.</div>';
+    '<div class="simnote" style="margin-top:10px"><b>The pattern across all four:</b> ungrounded answers are never blank. They are fluent. That is what makes them dangerous, and why &ldquo;it gave a sensible answer&rdquo; is not evidence that grounding is working.</div>';
   }
   render();
 })();
@@ -849,13 +849,13 @@ document.getElementById('sec-exec').innerHTML=`
   <h2 class="sec">Two rooms, on purpose</h2>
   <div class="plain-line"><b>In plain English:</b> the moment an agent can <em>write</em> code, someone has to decide where that code runs. Your agent process holds credentials, network access and other customers&rsquo; sessions. Model-written code must never be executed there. So there are two rooms: the <b>Agent Runtime</b>, which is trusted and runs the code <em>you</em> wrote, and the <b>Agent Sandbox</b>, which is isolated and runs code <em>the model</em> wrote.</div>
   ${D('0 0 660 258','The trust boundary between the Agent Runtime, which runs code you wrote, and the Agent Sandbox, which runs code the model wrote.',
-   `${box(14,26,300,150,'var(--teal)')}${t(164,50,'Agent Runtime — trusted',SANS)}
+   `${box(14,26,300,150,'var(--teal)')}${t(164,50,'Agent Runtime: trusted',SANS)}
     ${tm(164,74,'your code, reviewed by you','var(--dim)')}
     ${tm(164,92,'holds credentials and network','var(--dim)')}
     ${tm(164,110,'orchestrates the whole thing','var(--dim)')}
     ${tm(164,136,'this is where the agent lives','var(--teal)')}
     ${tm(164,158,'never run generated code here','var(--red)')}
-    ${box(346,26,300,150,'var(--amber)')}${t(496,50,'Agent Sandbox — isolated',SANS)}
+    ${box(346,26,300,150,'var(--amber)')}${t(496,50,'Agent Sandbox: isolated',SANS)}
     ${tm(496,74,'code the model just invented','var(--dim)')}
     ${tm(496,92,'no credentials, no network','var(--dim)')}
     ${tm(496,110,'its own machine, its own filesystem','var(--dim)')}
@@ -868,15 +868,15 @@ document.getElementById('sec-exec').innerHTML=`
     ${tm(330,234,'blast radius is one sandbox  ·  one tenant per sandbox  ·  the same environment every run','var(--dim)')}`,
    'This split is the entire security argument. If a prompt injection convinces the model to write something malicious, the code runs somewhere that has nothing worth stealing and nowhere to send it.')}
   <table class="osi" style="margin-top:14px"><thead><tr><th>Property</th><th>What it means in practice</th></tr></thead><tbody>
-  <tr><td><b>Containment</b></td><td>Generated code cannot reach your agent, your credentials or the internet. The worst thing it can do is break the sandbox &mdash; and you throw that away anyway</td></tr>
+  <tr><td><b>Containment</b></td><td>Generated code cannot reach your agent, your credentials or the internet. The worst thing it can do is break the sandbox, and you throw that away anyway</td></tr>
   <tr><td><b>Tenant isolation</b></td><td>Each user or session gets its own sandbox. One customer&rsquo;s data cannot end up in another&rsquo;s analysis, because they were never in the same machine</td></tr>
-  <tr><td><b>Predictability</b></td><td>A fixed environment with a fixed package set. The same code produces the same result today and next quarter &mdash; which is what makes an audit meaningful</td></tr>
+  <tr><td><b>Predictability</b></td><td>A fixed environment with a fixed package set. The same code produces the same result today and next quarter, which is what makes an audit meaningful</td></tr>
   </tbody></table>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — run cells in a sandbox and find its edges</h2>
-  <div class="plain-line"><b>Try this:</b> run the cells in any order. The sandbox behaves like a notebook &mdash; variables from one call are still there in the next. Two of these cells will not work, and <em>why</em> they do not work is the whole point of the design.</div>
+  <h2 class="sec">Try it: run cells in a sandbox and find its edges</h2>
+  <div class="plain-line"><b>Try this:</b> run the cells in any order. The sandbox behaves like a notebook, variables from one call are still there in the next. Two of these cells will not work, and <em>why</em> they do not work is the whole point of the design.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A locked workshop with good tools and no windows or doors to the outside. You can build anything in there. You cannot fetch anything from outside, and if you wreck the place they hand you another one.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>run <b>use a variable from the last cell</b> before running the load cell, and read why it failed.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>sandbox</b> an isolated machine that runs code the model wrote</span><span class="sp-w"><b>stateful</b> it remembers what happened in the previous instruction</span><span class="sp-w"><b>TTL</b> how long it lives before being cleaned up automatically</span><span class="sp-w"><b>blast radius</b> the most damage something can do if it goes wrong</span></span></div></div>
   <div class="sim-layout">
     <div><div id="sbxOut"></div></div>
@@ -887,10 +887,10 @@ document.getElementById('sec-exec').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Lifecycle — cheap to make, and it does not tidy itself up</h2>
+  <h2 class="sec">Lifecycle: cheap to make, and it does not tidy itself up</h2>
   <table class="osi"><thead><tr><th>Stage</th><th>What happens</th><th>Worth knowing</th></tr></thead><tbody>
   <tr><td><b>Create</b></td><td>A sandbox starts in <b>under a second</b></td><td>Cheap enough to create one per session rather than sharing one. Sharing is where isolation quietly disappears</td></tr>
-  <tr><td><b>Live</b></td><td>A time-to-live of up to <b>14 days</b>, and <b>every <span class="code">execute_code</span> call resets the clock</b></td><td>An agent used daily keeps its sandbox alive indefinitely. The TTL will not clean up after an active user &mdash; only after an abandoned one</td></tr>
+  <tr><td><b>Live</b></td><td>A time-to-live of up to <b>14 days</b>, and <b>every <span class="code">execute_code</span> call resets the clock</b></td><td>An agent used daily keeps its sandbox alive indefinitely. The TTL will not clean up after an active user, only after an abandoned one</td></tr>
   <tr><td><b>Sizing</b></td><td>2 vCPU and 1.5 GB by default; <span class="code">MACHINE_CONFIG_VCPU4_RAM4GIB</span> for heavier work</td><td>The default is fine for analysis on modest data. A large dataframe will exhaust it, and the failure looks like the code being wrong</td></tr>
   <tr><td><b>Delete</b></td><td>Delete explicitly. <span class="code">force=True</span> removes it along with everything inside</td><td>Wrap the work in <span class="code">try / finally</span> so a crash still cleans up. Orphaned sandboxes are billed and invisible</td></tr>
   </tbody></table>
@@ -898,10 +898,10 @@ document.getElementById('sec-exec').innerHTML=`
 </div>
 
 <div class="card">
-  <h2 class="sec">Two executors — pick the one that matches how much control you need</h2>
+  <h2 class="sec">Two executors: pick the one that matches how much control you need</h2>
   <div class="vs2"><div class="col"><b>AgentEngineSandboxCodeExecutor</b>Runs in the managed Agent Sandbox. <b>Stateful</b> across calls, so a multi-step analysis can build on itself. You control the machine size and the lifecycle, and you get the isolation guarantees above.<br><br><b>Choose it</b> for enterprise work: real data, multiple steps, an audit trail, a compliance question waiting.</div>
-  <div class="col"><b>BuiltInCodeExecutor</b>Uses the model provider&rsquo;s own execution. Nothing to set up, nothing to clean up, and far less to configure.<br><br><b>Choose it</b> for a quick calculation or a prototype — where you do not need statefulness, sizing, or the ability to prove where the code ran.</div></div>
-  <div class="plain-line" style="margin-top:12px"><b>And the wiring around it:</b> the <span class="code">Runner</span> holds three services &mdash; a <b>session service</b> for the conversation, an <b>artifact service</b> for files the code produced, and a <b>memory service</b> for what should outlast the session. In development the memory service is <span class="code">InMemoryMemoryService</span>, which is exactly what it sounds like: everything vanishes on restart. The single-line production swap is <span class="code">VertexAiMemoryBankService</span> &mdash; and forgetting to make it is the classic &ldquo;it remembered perfectly in testing&rdquo; bug.</div>
+  <div class="col"><b>BuiltInCodeExecutor</b>Uses the model provider&rsquo;s own execution. Nothing to set up, nothing to clean up, and far less to configure.<br><br><b>Choose it</b> for a quick calculation or a prototype, where you do not need statefulness, sizing, or the ability to prove where the code ran.</div></div>
+  <div class="plain-line" style="margin-top:12px"><b>And the wiring around it:</b> the <span class="code">Runner</span> holds three services, a <b>session service</b> for the conversation, an <b>artifact service</b> for files the code produced, and a <b>memory service</b> for what should outlast the session. In development the memory service is <span class="code">InMemoryMemoryService</span>, which is exactly what it sounds like: everything vanishes on restart. The single-line production swap is <span class="code">VertexAiMemoryBankService</span>, and forgetting to make it is the classic &ldquo;it remembered perfectly in testing&rdquo; bug.</div>
 </div>`;
 
 /* --- SIM: sandbox bench --- */
@@ -919,14 +919,14 @@ document.getElementById('sec-exec').innerHTML=`
      failnote:'Run the load cell first. State persists between calls, but it has to be created by one of them.'},
     {k:'net',label:'call an external API',code:"import requests\nrequests.get('https://api.example.com/rates')",
      ok:false,res:'ConnectionError: network is unreachable',
-     note:'<b>Working exactly as designed.</b> No network means generated code cannot exfiltrate your data or pull something unexpected in. If the analysis needs external data, <em>your</em> tool fetches it and passes it in — that fetch happens in the trusted runtime, where you reviewed the code.'},
+     note:'<b>Working exactly as designed.</b> No network means generated code cannot exfiltrate your data or pull something unexpected in. If the analysis needs external data, <em>your</em> tool fetches it and passes it in. That fetch happens in the trusted runtime, where you reviewed the code.'},
     {k:'pip',label:'install a package',code:"!pip install some-obscure-lib",
      ok:false,res:'Could not reach package index',
      note:'<b>Also by design.</b> No network means no installs, which is what makes the environment predictable: the same fixed package set today and in six months. If you need something outside the 125, the sandbox is not where that work belongs.'},
     {k:'chart',label:'produce a chart',code:"import matplotlib.pyplot as plt\ndf.groupby('cat')['revenue'].sum().plot.bar()\nplt.savefig('breakdown.png')",
      ok:true,needs:'load',res:'saved breakdown.png',
      note:'Files come back as a <span class="code">Chunk</span> with <span class="code">mime_type=&quot;image/png&quot;</span> and the filename in <span class="code">metadata.attributes[&quot;file_name&quot;]</span>. Route it to the artifact service and the user gets a real download, not an image described in words.',
-     fail:'NameError: name &lsquo;df&rsquo; is not defined', failnote:'Nothing to plot yet — load the data first.'},
+     fail:'NameError: name &lsquo;df&rsquo; is not defined', failnote:'Nothing to plot yet, load the data first.'},
     {k:'crash',label:'run something destructive',code:"import shutil\nshutil.rmtree('/')",
      ok:false,res:'the sandbox is now broken',
      note:'<b>And this is the whole point.</b> The blast radius is one disposable machine belonging to one session. Delete it, create another in under a second, and nothing of yours was ever in reach.'}
@@ -942,7 +942,7 @@ document.getElementById('sec-exec').innerHTML=`
       '<div class="kv"><b>machine</b><span>2 vCPU · 1.5 GB (default)</span></div>'+
       '<div class="kv"><b>TTL remaining</b><span>'+(ttl/24).toFixed(0)+' days</span></div>'+
       '<div class="kv"><b>calls made</b><span>'+Object.keys(done).length+'</span></div>'+
-      '<div class="simnote" style="margin-top:10px">Every successful call reset the TTL to the full 14 days. An agent someone uses each morning will keep its sandbox alive forever — the timer only ever collects the abandoned ones, so cleanup has to be yours.</div>';
+      '<div class="simnote" style="margin-top:10px">Every successful call reset the TTL to the full 14 days. An agent someone uses each morning will keep its sandbox alive forever, the timer only ever collects the abandoned ones, so cleanup has to be yours.</div>';
   }
   function run(k){
     const c=CELLS.find(x=>x.k===k);
@@ -962,20 +962,20 @@ document.getElementById('sec-exec').innerHTML=`
 document.getElementById('sec-skills').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">A skill is a folder of expertise the agent opens only when it needs to</h2>
-  <div class="plain-line"><b>In plain English:</b> you would not hand a new colleague every manual in the company on their first morning. You would give them an index, and let them pull down the one they need. A <b>skill</b> is one of those manuals: a markdown file describing a method &mdash; how we research a topic, how we write a post-incident review, what our house style is &mdash; plus any reference material and code it needs. The agent reads the index all the time and opens a manual only when the work calls for it.</div>
+  <div class="plain-line"><b>In plain English:</b> you would not hand a new colleague every manual in the company on their first morning. You would give them an index, and let them pull down the one they need. A <b>skill</b> is one of those manuals: a markdown file describing a method (how we research a topic, how we write a post-incident review, what our house style is) plus any reference material and code it needs. The agent reads the index all the time and opens a manual only when the work calls for it.</div>
   ${D('0 0 660 240','Progressive disclosure in skills: the description is always loaded, the body loads on match, and reference files load only when the body needs them.',
-   `${box(14,26,632,54,'var(--teal)')}${t(330,48,'Level 1 — the description  ·  always in context',SANS)}${tm(330,68,'one line per skill, a few dozen tokens. This is the index the model reads on every turn','var(--dim)')}
-    ${box(80,96,500,54,'var(--violet)')}${t(330,118,'Level 2 — SKILL.md  ·  loaded when the work matches',SANS)}${tm(330,138,'the method itself, a few hundred to a couple of thousand tokens','var(--dim)')}
-    ${box(100,166,460,54,'var(--amber)')}${t(330,188,'Level 3 — references  ·  loaded on demand',SANS)}${tm(330,208,'examples, checklists, templates — only if the method calls for them','var(--dim)')}
+   `${box(14,26,632,54,'var(--teal)')}${t(330,48,'Level 1: the description  ·  always in context',SANS)}${tm(330,68,'one line per skill, a few dozen tokens. This is the index the model reads on every turn','var(--dim)')}
+    ${box(80,96,500,54,'var(--violet)')}${t(330,118,'Level 2: SKILL.md  ·  loaded when the work matches',SANS)}${tm(330,138,'the method itself, a few hundred to a couple of thousand tokens','var(--dim)')}
+    ${box(100,166,460,54,'var(--amber)')}${t(330,188,'Level 3: references  ·  loaded on demand',SANS)}${tm(330,208,'examples, checklists, templates: only if the method calls for them','var(--dim)')}
     <path d="M330 82 V94" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>
     <path d="M330 152 V164" style="stroke:var(--wire)" stroke-width="1.5" marker-end="url(#ah)"/>`,
-   'This is why an agent can have forty skills without a forty-manual prompt. You pay for the index every turn and for one manual occasionally — instead of paying for everything, always.')}
+   'This is why an agent can have forty skills without a forty-manual prompt. You pay for the index every turn and for one manual occasionally, instead of paying for everything, always.')}
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — watch the context bill for forty manuals versus an index</h2>
-  <div class="plain-line"><b>Try this:</b> give the agent some skills, then ask it something. Compare what it costs to load them on demand against the obvious alternative &mdash; pasting all of it into the instruction and hoping the model sorts it out.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A reference shelf. You read the spines every time you walk past; you only take a book down when you actually need it. Photocopying all forty books and carrying them everywhere is the alternative.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>ask it <b>“Hello.”</b> and compare the two totals at the bottom of the chart.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>skill</b> a written method the agent can pick up when the work calls for it</span><span class="sp-w"><b>description</b> the one line that is always loaded — the spine of the book</span><span class="sp-w"><b>context</b> everything the model has to read before it can answer</span><span class="sp-w"><b>progressive disclosure</b> only opening what you actually need</span></span></div></div>
+  <h2 class="sec">Try it: watch the context bill for forty manuals versus an index</h2>
+  <div class="plain-line"><b>Try this:</b> give the agent some skills, then ask it something. Compare what it costs to load them on demand against the obvious alternative, pasting all of it into the instruction and hoping the model sorts it out.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A reference shelf. You read the spines every time you walk past; you only take a book down when you actually need it. Photocopying all forty books and carrying them everywhere is the alternative.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>ask it <b>“Hello.”</b> and compare the two totals at the bottom of the chart.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>skill</b> a written method the agent can pick up when the work calls for it</span><span class="sp-w"><b>description</b> the one line that is always loaded, the spine of the book</span><span class="sp-w"><b>context</b> everything the model has to read before it can answer</span><span class="sp-w"><b>progressive disclosure</b> only opening what you actually need</span></span></div></div>
   <div class="sim-layout">
     <div><div id="skBudget"></div></div>
     <div><div class="dim" style="font-size:11px;margin-bottom:6px">SKILLS INSTALLED</div>
@@ -989,19 +989,19 @@ document.getElementById('sec-skills').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">Three ways to define one, and who each is for</h2>
   <table class="osi"><thead><tr><th>Approach</th><th>What it looks like</th><th>Right when</th></tr></thead><tbody>
-  <tr><td><b>Inline</b></td><td><span class="code">models.Skill</span> with a <span class="code">models.Frontmatter</span>, handed to a <span class="code">SkillToolset</span> — all in Python</td><td>The skill is short and belongs to this agent. Fastest to write, versioned with your code</td></tr>
+  <tr><td><b>Inline</b></td><td><span class="code">models.Skill</span> with a <span class="code">models.Frontmatter</span>, handed to a <span class="code">SkillToolset</span>. All in Python</td><td>The skill is short and belongs to this agent. Fastest to write, versioned with your code</td></tr>
   <tr><td><b>File-based</b></td><td>A folder: <span class="code">skills/blog-writer/SKILL.md</span> plus a <span class="code">references/</span> directory, loaded with <span class="code">load_skill_from_dir</span></td><td>The content is long, or a non-engineer owns it. A subject-matter expert can edit markdown without touching Python</td></tr>
   <tr><td><b>Meta-skill</b></td><td>A <span class="code">skill-creator</span> skill that writes new SKILL.md files to spec</td><td>You want the team producing consistent skills without everyone learning the format. The agent extends itself, correctly</td></tr>
   </tbody></table>
-  <div class="plain-line" style="margin-top:12px"><b>The rules the format actually enforces</b> (the <span class="code">agentskills.io</span> spec): the name is kebab-case and at most 64 characters; the description is at most 1024 characters; SKILL.md stays under 500 lines &mdash; anything longer belongs in <span class="code">references/</span>; and <b>the folder name must match the name in the frontmatter</b>. That last one is the silent failure: mismatch them and the skill simply is not loaded. No error, no warning, and an agent that behaves as though you never wrote it.</div>
+  <div class="plain-line" style="margin-top:12px"><b>The rules the format actually enforces</b> (the <span class="code">agentskills.io</span> spec): the name is kebab-case and at most 64 characters; the description is at most 1024 characters; SKILL.md stays under 500 lines. Anything longer belongs in <span class="code">references/</span>; and <b>the folder name must match the name in the frontmatter</b>. That last one is the silent failure: mismatch them and the skill simply is not loaded. No error, no warning, and an agent that behaves as though you never wrote it.</div>
   <div class="plain-line"><b>Write the description for a stranger, not for yourself.</b> It is the only part that is always in context, so it is the only thing deciding whether the skill is ever opened. &ldquo;Writing helper&rdquo; will lose to a skill that says &ldquo;research a topic, identify keywords, check competitors, and draft SEO-optimised long-form content&rdquo;.</div>
 </div>
 
 <div class="card">
-  <h2 class="sec">The Skills Registry — write it once, use it everywhere</h2>
-  <div class="plain-line"><b>In plain English:</b> once a skill is good, other teams want it. The Skills Registry is a private, low-latency store for your organisation&rsquo;s skills &mdash; each one a self-contained package of instructions, reference material and code. You publish; other agents pull it into their skills folder and reference it.</div>
-  <pre class="code">${hl("# package the folder\nzip -r skill.zip seo_skills_agent/skills/content-research-writer/\nZIP_BASE64=$(base64 -i skill.zip | tr -d '\\n')\n\n# publish it — skillId becomes its identity in the registry\ncurl -X POST \\\n  -H \"Authorization: Bearer $(gcloud auth application-default print-access-token)\" \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"displayName\\\": \\\"Content research writer\\\",\n        \\\"description\\\": \\\"Research a topic, find keywords, check competitors, draft SEO content.\\\",\n        \\\"zippedFilesystem\\\": \\\"$ZIP_BASE64\\\"}\" \\\n  \"https://REGION-aiplatform.googleapis.com/v1beta1/projects/PROJECT/locations/REGION/skills?skillId=content-research-writer\"")}</pre>
-  <div class="plain-line" style="margin-top:12px"><b>Notice what is being uploaded:</b> a whole zipped filesystem, not a string. That is what makes a skill portable &mdash; the method, its examples and its helper scripts travel together, so the receiving agent gets the same behaviour you tested, not an approximation of it.</div>
+  <h2 class="sec">The Skills Registry: write it once, use it everywhere</h2>
+  <div class="plain-line"><b>In plain English:</b> once a skill is good, other teams want it. The Skills Registry is a private, low-latency store for your organisation&rsquo;s skills, each one a self-contained package of instructions, reference material and code. You publish; other agents pull it into their skills folder and reference it.</div>
+  <pre class="code">${hl("# package the folder\nzip -r skill.zip seo_skills_agent/skills/content-research-writer/\nZIP_BASE64=$(base64 -i skill.zip | tr -d '\\n')\n\n# publish it: skillId becomes its identity in the registry\ncurl -X POST \\\n  -H \"Authorization: Bearer $(gcloud auth application-default print-access-token)\" \\\n  -H \"Content-Type: application/json\" \\\n  -d \"{\\\"displayName\\\": \\\"Content research writer\\\",\n        \\\"description\\\": \\\"Research a topic, find keywords, check competitors, draft SEO content.\\\",\n        \\\"zippedFilesystem\\\": \\\"$ZIP_BASE64\\\"}\" \\\n  \"https://REGION-aiplatform.googleapis.com/v1beta1/projects/PROJECT/locations/REGION/skills?skillId=content-research-writer\"")}</pre>
+  <div class="plain-line" style="margin-top:12px"><b>Notice what is being uploaded:</b> a whole zipped filesystem, not a string. That is what makes a skill portable, the method, its examples and its helper scripts travel together, so the receiving agent gets the same behaviour you tested, not an approximation of it.</div>
   <div class="plain-line"><b>And notice the <span class="code">description</span> field again.</b> It is what every other team sees when browsing the registry, and what their agents use to decide whether to load it. The same sentence is doing discovery <em>and</em> runtime routing.</div>
 </div>`;
 
@@ -1040,7 +1040,7 @@ document.getElementById('sec-skills').innerHTML=`
     const bodyT=bodies.reduce((n,s)=>n+s.body,0), refT=refs.reduce((n,s)=>n+s.ref,0);
     const used=BASE+idx+bodyT+refT;
     const naive=BASE+active.reduce((n,s)=>n+s.body+s.ref,0);
-    const rows=[['base instruction',BASE,'var(--wire)'],['skill index — always loaded',idx,'var(--teal)'],
+    const rows=[['base instruction',BASE,'var(--wire)'],['skill index, always loaded',idx,'var(--teal)'],
                 ['SKILL.md bodies that matched',bodyT,'var(--violet)'],['reference files pulled in',refT,'var(--amber)']];
     const max=Math.max(naive,1);
     bud.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">CONTEXT USED FOR THIS ONE TURN</div>'+
@@ -1058,10 +1058,10 @@ document.getElementById('sec-skills').innerHTML=`
         (naive>used?' <span class="ok" style="padding:1px 7px;border-radius:99px;font-size:10.5px">'+Math.round((1-used/naive)*100)+'% less</span>':'')+'</div>';
 
     let html;
-    if(!active.length) html='<div class="note">No skills installed. The agent falls back on general ability — fine for chat, not for anything with a house method behind it.</div>';
-    else if(!bodies.length) html='<div class="ok"><b>Nothing was opened.</b> The model read the '+active.length+'-line index, decided none applied, and answered. That is the cheap path, and it is the common one — most turns match no skill at all.</div>';
+    if(!active.length) html='<div class="note">No skills installed. The agent falls back on general ability, fine for chat, not for anything with a house method behind it.</div>';
+    else if(!bodies.length) html='<div class="ok"><b>Nothing was opened.</b> The model read the '+active.length+'-line index, decided none applied, and answered. That is the cheap path, and it is the common one, most turns match no skill at all.</div>';
     else html='<div class="ok"><b>Opened: '+bodies.map(s=>s.name).join(', ')+'.</b> Only the matching methods were loaded'+(refT?', and the reference material they asked for':'')+'. The other skills cost you their one-line description and nothing more.</div>';
-    html+='<div class="simnote" style="margin-top:10px"><b>The point the numbers make:</b> the cost of an unused skill is its description, not its content. That is what lets an agent carry forty methods and still start each turn cheap — and it is why a bad description is expensive twice over: you pay for it every turn and it still never gets opened.</div>';
+    html+='<div class="simnote" style="margin-top:10px"><b>The point the numbers make:</b> the cost of an unused skill is its description, not its content. That is what lets an agent carry forty methods and still start each turn cheap, and it is why a bad description is expensive twice over: you pay for it every turn and it still never gets opened.</div>';
     out.innerHTML=html;
   }
   render();
@@ -1070,7 +1070,7 @@ document.getElementById('sec-skills').innerHTML=`
 document.getElementById('sec-deploy').innerHTML=`
 <div class="card" style="margin-bottom:16px">
   <h2 class="sec">From your laptop to something the company can use</h2>
-  <div class="plain-line"><b>In plain English:</b> <span class="code">adk web</span> runs on your machine, for you. Deployment moves the agent to <b>Agent Runtime</b> &mdash; a managed service that scales it, keeps its sessions, and traces every step, so you are not the one being paged when it gets popular. Then you register it with <b>Gemini Enterprise</b>, and it appears alongside the other agents your colleagues can already talk to.</div>
+  <div class="plain-line"><b>In plain English:</b> <span class="code">adk web</span> runs on your machine, for you. Deployment moves the agent to <b>Agent Runtime</b>, a managed service that scales it, keeps its sessions, and traces every step, so you are not the one being paged when it gets popular. Then you register it with <b>Gemini Enterprise</b>, and it appears alongside the other agents your colleagues can already talk to.</div>
   ${D('0 0 680 234','The deployment path from local development through Agent Runtime to registration in Gemini Enterprise.',
    `${box(14,26,196,72,'var(--wire)')}${t(112,50,'Local',SANS)}${tm(112,70,'adk web · adk run','var(--dim)')}${tm(112,88,'you are the only user','var(--dim)')}
     ${box(242,26,196,72,'var(--violet)')}${t(340,50,'Agent Runtime',SANS)}${tm(340,70,'a reasoningEngine resource','var(--violet)')}${tm(340,88,'scaling · sessions · tracing','var(--dim)')}
@@ -1087,9 +1087,9 @@ document.getElementById('sec-deploy').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it — deploy with four plausible mistakes in place</h2>
-  <div class="plain-line"><b>Try this:</b> each switch is a mistake people actually make, and each fails at a different point &mdash; one locally, one at deployment, one at start-up, and one that never fails at all and is the worst of the four.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Posting a letter with four possible mistakes. The wrong postcode is caught at the postbox. The wrong flat number is caught at the door. A perfectly addressed letter to someone who moved away is never caught by anyone.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick only the last option — the vague description — and notice that nothing fails.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>deploy</b> moving it from your laptop to somewhere the company can use it</span><span class="sp-w"><b>runtime</b> the managed service that runs your agent and handles the load</span><span class="sp-w"><b>requirements</b> the list of code libraries it needs to be given</span><span class="sp-w"><b>description</b> the sentence used to decide whether questions get sent to it at all</span><span class="sp-w"><b>ADK</b> the Agent Development Kit &mdash; the framework the agent is built with</span><span class="sp-w"><b>MCP</b> a standard way for a model to reach tools and documents</span></span></div></div>
+  <h2 class="sec">Try it: deploy with four plausible mistakes in place</h2>
+  <div class="plain-line"><b>Try this:</b> each switch is a mistake people actually make, and each fails at a different point, one locally, one at deployment, one at start-up, and one that never fails at all and is the worst of the four.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Posting a letter with four possible mistakes. The wrong postcode is caught at the postbox. The wrong flat number is caught at the door. A perfectly addressed letter to someone who moved away is never caught by anyone.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick only the last option (the vague description) and notice that nothing fails.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>deploy</b> moving it from your laptop to somewhere the company can use it</span><span class="sp-w"><b>runtime</b> the managed service that runs your agent and handles the load</span><span class="sp-w"><b>requirements</b> the list of code libraries it needs to be given</span><span class="sp-w"><b>description</b> the sentence used to decide whether questions get sent to it at all</span><span class="sp-w"><b>ADK</b> the Agent Development Kit. The framework the agent is built with</span><span class="sp-w"><b>MCP</b> a standard way for a model to reach tools and documents</span></span></div></div>
   <div class="sim-layout">
     <div><div id="depSteps"></div></div>
     <div><div class="toggles" id="depCtl"></div>
@@ -1105,20 +1105,20 @@ document.getElementById('sec-deploy').innerHTML=`
   <tr><td><span class="code">requirements</span></td><td>The Python packages the deployed agent needs</td><td>It builds fine and crashes on first request with an import error</td></tr>
   <tr><td><span class="code">extra_packages</span></td><td>Your own local modules that are not on PyPI</td><td>Your helper module is missing in the cloud, though everything worked locally</td></tr>
   <tr><td><span class="code">env_vars</span></td><td>Configuration and API keys for the deployed environment</td><td><span class="code">GOOGLE_GENAI_USE_VERTEXAI</span> unset means Vertex-only tools stop working in production only</td></tr>
-  <tr><td><b>staging bucket</b></td><td>Where the packaged agent is uploaded from</td><td>Deployment fails outright &mdash; the loud, easy failure</td></tr>
+  <tr><td><b>staging bucket</b></td><td>Where the packaged agent is uploaded from</td><td>Deployment fails outright, the loud, easy failure</td></tr>
   <tr><td><b>region</b></td><td>Where it runs</td><td>Mismatched regions between the agent, its datastore and its sandbox add latency, cost and a compliance conversation</td></tr>
   </tbody></table>
 </div>
 
 <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
-  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly &mdash; which is the point.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not — you recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the list below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
+  <h2 class="sec">Try it: drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly, which is the point.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not. You recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the list below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
   <div id="drillHost"></div>
 </div>
 
 <div class="card">
-  <h2 class="sec">The exam angle &mdash; what these facts look like as a question</h2>
+  <h2 class="sec">The exam angle: what these facts look like as a question</h2>
   <div class="exam-line"><b>&ldquo;An agent picks the wrong tool despite the right tool being available.&rdquo;</b> &rarr; The docstring. The model chooses from generated schemas, and a vague description makes two tools indistinguishable. Not a model problem, not a prompt problem.</div>
   <div class="exam-line"><b>&ldquo;Users report the agent reveals another user&rsquo;s preferences.&rdquo;</b> &rarr; Per-user data written to the <span class="code">app:</span> scope instead of <span class="code">user:</span>. The fix is a four-character prefix.</div>
   <div class="exam-line"><b>&ldquo;Three parallel agents run, but only one result appears downstream.&rdquo;</b> &rarr; They share an <span class="code">output_key</span>. Give each its own and add a merge step.</div>
@@ -1130,7 +1130,7 @@ document.getElementById('sec-deploy').innerHTML=`
   <div class="exam-line"><b>&ldquo;The agent works locally but deployment fails.&rdquo;</b> &rarr; Either the variable is not called <span class="code">root_agent</span>, or an MCP agent is being built inside an async factory instead of synchronously in <span class="code">agent.py</span>.</div>
   <div class="exam-line"><b>&ldquo;An agent is deployed and healthy but gets no traffic from Gemini Enterprise.&rdquo;</b> &rarr; Its description is too vague to route on. Nothing is broken; nothing is being sent.</div>
   <div class="exam-line"><b>&ldquo;A skill was added and the agent behaves as though it does not exist.&rdquo;</b> &rarr; The folder name does not match the name in the frontmatter, so it never loaded. There is no error for this.</div>
-  <div class="exam-line"><b>&ldquo;Answers about internal policy are fluent and subtly wrong.&rdquo;</b> &rarr; Semantic drift in unstructured retrieval &mdash; a nearby document answered a different question. Needs evaluation against known answers, not a smoke test.</div>
+  <div class="exam-line"><b>&ldquo;Answers about internal policy are fluent and subtly wrong.&rdquo;</b> &rarr; Semantic drift in unstructured retrieval, a nearby document answered a different question. Needs evaluation against known answers, not a smoke test.</div>
 </div>`;
 
 /* --- SIM: deployment gate --- */
@@ -1140,10 +1140,10 @@ document.getElementById('sec-deploy').innerHTML=`
   const BUGS=[
     {k:'name', at:0, label:'the agent variable is called <span class="code">my_agent</span>, not <span class="code">root_agent</span>',
      err:'no agent found in agent.py',
-     note:'Fails immediately, locally, on the first <span class="code">adk run</span>. The friendliest of the four — you find out in seconds and the message is accurate.'},
+     note:'Fails immediately, locally, on the first <span class="code">adk run</span>. The friendliest of the four. You find out in seconds and the message is accurate.'},
     {k:'mcp',  at:1, label:'the MCP agent is built inside an <span class="code">async def create_agent()</span>',
      err:'expected an Agent, found a coroutine',
-     note:'Runs perfectly locally, because your dev script awaits it. Deployment imports the module and looks for a ready agent object. <b>Define MCP agents synchronously in agent.py</b> — this is the one that costs an afternoon.'},
+     note:'Runs perfectly locally, because your dev script awaits it. Deployment imports the module and looks for a ready agent object. <b>Define MCP agents synchronously in agent.py</b>. This is the one that costs an afternoon.'},
     {k:'req',  at:2, label:'a package is missing from <span class="code">requirements</span>',
      err:'ModuleNotFoundError on the first request',
      note:'Deployment succeeds. The agent is green. It dies on the first real user, because the build step never had to import your code. Test the deployed endpoint, not just the deployment.'},
@@ -1151,8 +1151,8 @@ document.getElementById('sec-deploy').innerHTML=`
      err:'', note:''}
   ];
   const on={};
-  const STEPS=['adk run — does it start locally?','adk deploy agent_engine — package and upload',
-               'reasoningEngine created — first request served','registered with Gemini Enterprise',
+  const STEPS=['adk run, does it start locally?','adk deploy agent_engine, package and upload',
+               'reasoningEngine created, first request served','registered with Gemini Enterprise',
                'a colleague asks a question it should answer'];
   function render(){
     ctl.innerHTML=BUGS.map(b=>'<label style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;cursor:pointer;font-size:12px">'+
@@ -1169,12 +1169,12 @@ document.getElementById('sec-deploy').innerHTML=`
         '<b style="font-size:12px">'+(i+1)+'. '+s+'</b>'+
         (isStop?'<div class="err" style="margin-top:6px">'+bug.err+'</div>':
          dead?'<div class="dim" style="font-size:11px;margin-top:4px">never reached</div>':
-         routed?'<div class="err" style="margin-top:6px">routed to a different agent — yours was never considered</div>':
+         routed?'<div class="err" style="margin-top:6px">routed to a different agent, yours was never considered</div>':
          '<div class="ok" style="margin-top:6px;font-size:11px">passed</div>')+'</div>';
     }).join('');
     let html='';
     if(bug) html+='<div class="err" style="margin-bottom:10px"><b>Stopped at step '+(stop+1)+'.</b><br>'+bug.note+'</div>';
-    if(on.desc && stop>4) html+='<div class="err" style="margin-bottom:10px"><b>Nothing failed, and that is the problem.</b> Every check is green, the agent is healthy, the logs are clean — and it receives no traffic, because &ldquo;helps users&rdquo; does not distinguish it from every other agent in the catalogue. This failure has no error message and no alert. Somebody notices in a quarterly review.</div>';
+    if(on.desc && stop>4) html+='<div class="err" style="margin-bottom:10px"><b>Nothing failed, and that is the problem.</b> Every check is green, the agent is healthy, the logs are clean, and it receives no traffic, because &ldquo;helps users&rdquo; does not distinguish it from every other agent in the catalogue. This failure has no error message and no alert. Somebody notices in a quarterly review.</div>';
     if(!bug && !on.desc) html+='<div class="ok" style="margin-bottom:10px"><b>Deployed, registered, and receiving the questions it should.</b> Four green steps and a colleague who got the right answer.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>The ordering is the lesson:</b> the failures get quieter as you go. A naming mistake shouts at you in seconds; a packaging mistake waits for deployment; a requirements mistake waits for your first user; a weak description never says anything at all.</div>';
     out.innerHTML=html;
@@ -1203,11 +1203,11 @@ document.getElementById('sec-deploy').innerHTML=`
     {k:'onb',n:'Onboard a supplier: verify details, create records in three systems, notify finance',need:true,
      y:'Multi-step, cross-system, with a failure halfway through that has to be handled. Also the case for splitting it into several agents rather than one.'},
     {k:'extract',n:'Pull five fields out of an invoice into JSON',need:false,
-     y:'One call with a schema. Reliable, cheap, testable — and an agent would make it slower and less predictable at exactly the thing it is good at.'}
+     y:'One call with a schema. Reliable, cheap, testable, and an agent would make it slower and less predictable at exactly the thing it is good at.'}
   ];
   const pick={};
   function render(){
-    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">EIGHT JOBS — WHICH NEED AN AGENT?</div>'+
+    out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">EIGHT JOBS, WHICH NEED AN AGENT?</div>'+
       J.map(j=>'<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">'+
         '<span style="flex:1;font-size:12.5px">'+j.n+'</span>'+
         '<div class="segmented" style="flex:none">'+
@@ -1235,10 +1235,10 @@ document.getElementById('sec-deploy').innerHTML=`
   const st={root:true,instr:true,desc:true,tools:true,schema:false,okey:true};
   function render(){
     ctl.innerHTML=[['root','the variable is named <span class="code">root_agent</span>'],
-                   ['instr','a specific <span class="code">instruction</span> — the rules it follows'],
-                   ['desc','a specific <span class="code">description</span> — what it is good for'],
+                   ['instr','a specific <span class="code">instruction</span>, the rules it follows'],
+                   ['desc','a specific <span class="code">description</span>, what it is good for'],
                    ['tools','it has <span class="code">tools</span>'],
-                   ['schema','it has an <span class="code">output_schema</span> — forced JSON out'],
+                   ['schema','it has an <span class="code">output_schema</span>, forced JSON out'],
                    ['okey','it sets <span class="code">output_key</span> for the next agent']]
       .map(([k,l])=>'<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12px">'+
       '<input type="checkbox" data-k="'+k+'"'+(st[k]?' checked':'')+'><span>'+l+'</span></label>').join('');
@@ -1246,7 +1246,7 @@ document.getElementById('sec-deploy').innerHTML=`
     const code='root_agent = Agent(\n'+
       '    name="order_status_agent",\n'+
       '    model="gemini-2.5-flash",\n'+
-      '    instruction='+(st.instr?'"Look up order status. Always call get_order before\n                  answering. If the ID is not found, say so — never guess."':'"You are a helpful assistant."')+',\n'+
+      '    instruction='+(st.instr?'"Look up order status. Always call get_order before\n                  answering. If the ID is not found, say so, never guess."':'"You are a helpful assistant."')+',\n'+
       '    description='+(st.desc?'"Answers questions about the status and delivery\n                  date of an existing customer order."':'"An agent that helps users."')+',\n'+
       (st.tools?'    tools=[get_order, check_delivery],\n':'')+
       (st.schema?'    output_schema=OrderStatus,\n':'')+
@@ -1254,12 +1254,12 @@ document.getElementById('sec-deploy').innerHTML=`
       ')';
     const conflict = st.schema && st.tools;
     const CH=[
-      {ok:st.root, t:'the CLI can find it', bad:'<b>Nothing runs.</b> ADK looks inside agent.py for a variable named exactly <span class="code">root_agent</span>. Call it anything else and every command reports no agent found — the code is fine, the name is not.'},
+      {ok:st.root, t:'the CLI can find it', bad:'<b>Nothing runs.</b> ADK looks inside agent.py for a variable named exactly <span class="code">root_agent</span>. Call it anything else and every command reports no agent found. The code is fine, the name is not.'},
       {ok:!conflict, t:'the definition is valid', bad:'<b>Refused.</b> <span class="code">output_schema</span> cannot be combined with tools or delegation. Asking a model to both call tools and emit exactly one JSON shape is contradictory. Split it: one agent acts, a second formats.'},
-      {ok:st.instr, t:'it follows your rules', bad:'The instruction is a wish, not a contract. &ldquo;Be helpful&rdquo; contains no rule, so it will invent an order status rather than admit it cannot find one — and it will do it differently each time.'},
+      {ok:st.instr, t:'it follows your rules', bad:'The instruction is a wish, not a contract. &ldquo;Be helpful&rdquo; contains no rule, so it will invent an order status rather than admit it cannot find one, and it will do it differently each time.'},
       {ok:st.desc, t:'work gets routed to it', bad:'<b>The quiet one.</b> The description is read by <em>other agents and by the enterprise router</em>, not by this agent. &ldquo;An agent that helps users&rdquo; does not distinguish it from anything, so it is healthy, correct, and never sent a question.'},
-      {ok:st.tools||st.schema, t:'it can do something', bad:'No tools and no output shape. It can talk and nothing else — which may be what you want, and is worth having decided rather than defaulted into.'},
-      {ok:st.okey, t:'the next agent can read its answer', bad:'Without <span class="code">output_key</span> the reply is not saved into state, so a following agent in a pipeline finds nothing there. It does not error — it reads an empty value and writes something plausible.'}
+      {ok:st.tools||st.schema, t:'it can do something', bad:'No tools and no output shape. It can talk and nothing else, which may be what you want, and is worth having decided rather than defaulted into.'},
+      {ok:st.okey, t:'the next agent can read its answer', bad:'Without <span class="code">output_key</span> the reply is not saved into state, so a following agent in a pipeline finds nothing there. It does not error. It reads an empty value and writes something plausible.'}
     ];
     out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:6px">THE DEFINITION</div>'+
       '<pre class="code">'+hl(code)+'</pre>'+
@@ -1268,8 +1268,8 @@ document.getElementById('sec-deploy').innerHTML=`
     const broken=CH.filter(c=>!c.ok);
     note.innerHTML=(broken.length
       ? broken.map(c=>'<div class="lzbad" style="margin-bottom:9px">'+c.bad+'</div>').join('')
-      : '<div class="ok" style="margin-bottom:10px"><b>Every field is doing its job.</b> Note how little of that is about the model — five of the six checks are about naming, wording and wiring.</div>')+
-      '<div class="simnote" style="margin-top:8px"><b>The pair worth memorising:</b> <span class="code">instruction</span> is read by this agent&rsquo;s model, every turn — it is the job description. <span class="code">description</span> is read by other agents and by whatever routes work to it — it is the entry in the staff directory. They sound like the same field and they have different readers, and mixing them up produces an agent that either ignores your rules or is never asked anything.</div>';
+      : '<div class="ok" style="margin-bottom:10px"><b>Every field is doing its job.</b> Note how little of that is about the model, five of the six checks are about naming, wording and wiring.</div>')+
+      '<div class="simnote" style="margin-top:8px"><b>The pair worth memorising:</b> <span class="code">instruction</span> is read by this agent&rsquo;s model, every turn. It is the job description. <span class="code">description</span> is read by other agents and by whatever routes work to it. It is the entry in the staff directory. They sound like the same field and they have different readers, and mixing them up produces an agent that either ignores your rules or is never asked anything.</div>';
   }
   render();
 })();

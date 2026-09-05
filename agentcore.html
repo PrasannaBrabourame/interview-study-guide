@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgentCore lab — production-ready agents on AWS</title>
+<title>AgentCore lab, production-ready agents on AWS</title>
 <link rel="stylesheet" href="assets/lab.css">
 <style>
 
@@ -58,7 +58,7 @@
       <span class="tn tn-quiet" title="Find a section on this page"><b>&#8984;K</b> find</span>
     </nav>
     <div class="eyebrow">agentic systems · production lab</div>
-    <h1>Getting an agent you can trust <span class="thin">— Amazon Bedrock AgentCore, one concern at a time</span></h1>
+    <h1>Getting an agent you can trust: <span class="thin">Amazon Bedrock AgentCore, one concern at a time</span></h1>
     <p class="track" id="trackLine"></p>
     <p class="sub">Spinning up a demo agent is a weekend. Building one you would let near a customer is the hard part: it has to run somewhere isolated, prove who it is, reach your systems without holding your passwords, remember the last conversation, and let you see and prove what it did. Nine sections, each with the plain-English version, every configuration option and what it decides, and simulations you can break.</p>
   </header>
@@ -78,13 +78,13 @@
   <section class="pane on" id="pane-start">
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">The gap this exists to close</h2>
-      <div class="plain-line"><b>In plain English:</b> getting an AI agent to work once, on your laptop, is a weekend. Getting one you would let near a customer is the hard part — it has to run somewhere safe, prove who it is, reach your systems without holding your passwords, remember the last conversation, and let you see and prove what it did. AgentCore is AWS selling you those seven concerns as managed pieces, so you assemble rather than build.</div>
+      <div class="plain-line"><b>In plain English:</b> getting an AI agent to work once, on your laptop, is a weekend. Getting one you would let near a customer is the hard part. It has to run somewhere safe, prove who it is, reach your systems without holding your passwords, remember the last conversation, and let you see and prove what it did. AgentCore is AWS selling you those seven concerns as managed pieces, so you assemble rather than build.</div>
       <div id="acMap"></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Cross the chasm — add one concern at a time</h2>
+      <h2 class="sec">Cross the chasm: add one concern at a time</h2>
       <div class="plain-line"><b>Try this:</b> start with nothing and switch each piece on in order. Each one fixes a specific way the previous version was not production-ready. Turn one back off and the failure it prevented comes straight back.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A prototype car that drives beautifully round a car park. Turning it into something you can sell means brakes, seatbelts, a number plate and an MOT — none of which made it go any faster.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>start with everything off, then switch on the pieces one at a time and read what each was protecting you from.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prototype</b> something that works on one machine, for one person</span><span class="sp-w"><b>production</b> something a company can rely on, with everything that implies</span><span class="sp-w"><b>isolation</b> keeping one customer’s work away from another’s</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A prototype car that drives beautifully round a car park. Turning it into something you can sell means brakes, seatbelts, a number plate and an MOT, none of which made it go any faster.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>start with everything off, then switch on the pieces one at a time and read what each was protecting you from.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prototype</b> something that works on one machine, for one person</span><span class="sp-w"><b>production</b> something a company can rely on, with everything that implies</span><span class="sp-w"><b>isolation</b> keeping one customer’s work away from another’s</span></span></div></div>
       <div class="sim-layout">
         <div><div class="chasm" id="acStage"></div>
           <div class="term" id="acTerm" role="log" aria-live="polite" style="height:170px;margin-top:12px"></div></div>
@@ -99,7 +99,7 @@
   </section>
   <section class="pane" id="pane-runtime">
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Runtime — every configuration, and what each one decides</h2>
+      <h2 class="sec">Runtime: every configuration, and what each one decides</h2>
       <div class="plain-line"><b>In plain English:</b> Runtime is the serverless box the agent runs inside. You do not pick a server size. You pick a <b>protocol</b> (how callers talk to it), a <b>network posture</b> (what it can reach and who can reach it), a <b>filesystem</b> (what survives), and <b>session timers</b> (how long it may sit there). Those four choices are most of the design.</div>
       <div class="segmented" id="rtTabs"></div>
       <div class="sim-layout">
@@ -108,9 +108,9 @@
       </div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Session lifecycle — and what you are actually billed for</h2>
-      <div class="plain-line"><b>Try this:</b> drag the timers and watch when the box is deleted. The billing line is the part people get wrong: <b>CPU is charged only while the agent is actually working</b>, not while it waits for the model to answer — but memory is charged the whole time the session is alive.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A hotel room billed by the hour. Checking out takes it off the bill; leaving the key in the door does not, and nobody comes to tidy up until long after you have gone.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag the idle timer down and watch when the deletion actually happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>session</b> one customer’s working space</span><span class="sp-w"><b>idle timeout</b> how long it sits doing nothing before being cleared up</span><span class="sp-w"><b>billed</b> what you pay for — usually the time it existed, not the time it was used</span></span></div></div>
+      <h2 class="sec">Session lifecycle: and what you are actually billed for</h2>
+      <div class="plain-line"><b>Try this:</b> drag the timers and watch when the box is deleted. The billing line is the part people get wrong: <b>CPU is charged only while the agent is actually working</b>, not while it waits for the model to answer, but memory is charged the whole time the session is alive.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A hotel room billed by the hour. Checking out takes it off the bill; leaving the key in the door does not, and nobody comes to tidy up until long after you have gone.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag the idle timer down and watch when the deletion actually happens.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>session</b> one customer’s working space</span><span class="sp-w"><b>idle timeout</b> how long it sits doing nothing before being cleared up</span><span class="sp-w"><b>billed</b> what you pay for, usually the time it existed, not the time it was used</span></span></div></div>
       <div class="sim-layout">
         <div><div id="acLifeDiagram"></div></div>
         <div>
@@ -127,7 +127,7 @@
   </section>
   <section class="pane" id="pane-identity">
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Identity — two different doors, two different locks</h2>
+      <h2 class="sec">Identity: two different doors, two different locks</h2>
       <div class="sim-layout">
         <div><div class="jlist" id="acIdSteps"></div></div>
         <div class="card jstep" id="acIdDetail" style="margin:0"></div>
@@ -137,8 +137,8 @@
   </section>
   <section class="pane" id="pane-gateway">
     <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; count the integrations</h2>
-  <div class="plain-line"><b>Try this:</b> drag the number of agents and tools. The figure that matters is not how many boxes there are &mdash; it is how many <em>connections</em> somebody has to build, authenticate and maintain.</div>
+  <h2 class="sec">Try it: count the integrations</h2>
+  <div class="plain-line"><b>Try this:</b> drag the number of agents and tools. The figure that matters is not how many boxes there are. It is how many <em>connections</em> somebody has to build, authenticate and maintain.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Plugging appliances into sockets. Ten appliances and thirty sockets means three hundred possible cables if each one needs its own. One extension board means forty.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>drag <b>tools</b> up to 60 with the gateway unticked, and read the number.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>integration</b> one wired-up connection between an agent and a tool</span><span class="sp-w"><b>gateway</b> one door everything goes through, instead of many</span><span class="sp-w"><b>credential</b> the secret needed to use a tool</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
   <div class="sim-layout">
     <div><div id="acGwOut"></div></div>
@@ -154,7 +154,7 @@
 </div>
 
 <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Gateway — one door to every tool</h2>
+      <h2 class="sec">Gateway: one door to every tool</h2>
       <div id="acGateway"></div>
     </div>
     <div class="card" style="margin-bottom:16px">
@@ -162,9 +162,9 @@
       <div id="acRest"></div>
     </div>
     <div class="card">
-  <h2 class="sec">Try it &mdash; eight jobs, and the primitive each one actually needs</h2>
+  <h2 class="sec">Try it: eight jobs, and the primitive each one actually needs</h2>
   <div class="plain-line"><b>Try this:</b> eight things somebody will ask an agent to do. Pick the primitive you would reach for, then see what the job really needs. Three of these are commonly given to the wrong one, and each wrong answer fails in a way that looks like the model being stupid.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A toolbox where three of the tools look interchangeable. A screwdriver will turn a bolt, badly, once. The job still gets done, so nobody notices the wrong tool was used until the bolt is rounded off.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>read the latest figures off a supplier&rsquo;s website</b> &mdash; almost everyone picks the wrong one first.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>primitive</b> one of the managed building blocks the platform gives you</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>Browser</b> a real cloud browser the agent can click and read</span><span class="sp-w"><b>Code Interpreter</b> a sandbox that runs code the agent wrote</span><span class="sp-w"><b>Gateway</b> one front door that turns existing systems into tools</span><span class="sp-w"><b>Memory</b> what the agent still knows in a later conversation</span><span class="sp-w"><b>sandbox</b> an isolated space where code cannot reach anything else</span><span class="sp-w"><b>API</b> a defined way for one system to ask another for something</span></span></div></div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A toolbox where three of the tools look interchangeable. A screwdriver will turn a bolt, badly, once. The job still gets done, so nobody notices the wrong tool was used until the bolt is rounded off.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>read the latest figures off a supplier&rsquo;s website</b>, almost everyone picks the wrong one first.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>primitive</b> one of the managed building blocks the platform gives you</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>Browser</b> a real cloud browser the agent can click and read</span><span class="sp-w"><b>Code Interpreter</b> a sandbox that runs code the agent wrote</span><span class="sp-w"><b>Gateway</b> one front door that turns existing systems into tools</span><span class="sp-w"><b>Memory</b> what the agent still knows in a later conversation</span><span class="sp-w"><b>sandbox</b> an isolated space where code cannot reach anything else</span><span class="sp-w"><b>API</b> a defined way for one system to ask another for something</span></span></div></div>
   <div class="sim-layout">
     <div><div id="acPrimOut"></div></div>
     <div><div class="segmented" id="acPrimCtl" style="flex-direction:column;align-items:stretch"></div>
@@ -175,14 +175,14 @@
   </section>
   <section class="pane" id="pane-memory">
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">One conversation, four strategies — see what each keeps</h2>
+      <h2 class="sec">One conversation, four strategies: see what each keeps</h2>
       <div class="plain-line"><b>Try this:</b> the same three sentences go into every strategy. What comes out is completely different, which is the clearest way to understand why picking the wrong one leaves your agent unable to do the thing you wanted.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Four people taking notes in the same meeting. One writes everything, one writes a summary, one writes only decisions, one writes only what is relevant to them. Later, they disagree about what was said.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read what each strategy kept, then look at what all four of them threw away.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>memory</b> what the agent still knows in a later conversation</span><span class="sp-w"><b>summarise</b> compressing what happened into fewer words</span><span class="sp-w"><b>extraction</b> pulling out particular facts and keeping only those</span></span></div></div>
       <div class="segmented" id="memConvo"></div>
       <div id="memExtract"></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Memory — what the agent keeps, and where you put it</h2>
+      <h2 class="sec">Memory: what the agent keeps, and where you put it</h2>
       <div id="acMemory"></div>
       <div class="sim-layout" style="margin-top:14px">
         <div><div id="acNsOut" class="cidr-out"></div></div>
@@ -193,8 +193,8 @@
   <section class="pane" id="pane-quality">
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Watch one request become a trace</h2>
-      <div class="plain-line"><b>Try this:</b> send a request and watch the spans arrive in real time, exactly as they would in a trace waterfall. Then break something and see which span turns red — that is the whole value of observability in one picture. A non-deterministic system you cannot see is a system you can only apologise for.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A parcel tracking page. Each scan tells you where it is and how long it sat there — and the delay you are complaining about turns out to be one depot, not the whole journey.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send one request and watch which bar is widest.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>trace</b> the record of one whole request</span><span class="sp-w"><b>span</b> one step inside it, with its own start and end time</span><span class="sp-w"><b>latency</b> how long the user waits</span><span class="sp-w"><b>JWT</b> a signed token carrying who you are, which the receiver can verify</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
+      <div class="plain-line"><b>Try this:</b> send a request and watch the spans arrive in real time, exactly as they would in a trace waterfall. Then break something and see which span turns red. That is the whole value of observability in one picture. A non-deterministic system you cannot see is a system you can only apologise for.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A parcel tracking page. Each scan tells you where it is and how long it sat there, and the delay you are complaining about turns out to be one depot, not the whole journey.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>send one request and watch which bar is widest.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>trace</b> the record of one whole request</span><span class="sp-w"><b>span</b> one step inside it, with its own start and end time</span><span class="sp-w"><b>latency</b> how long the user waits</span><span class="sp-w"><b>JWT</b> a signed token carrying who you are, which the receiver can verify</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span></span></div></div>
       <div class="sim-layout">
         <div><div id="traceWall" style="min-height:250px"></div></div>
         <div><div class="toggles" id="traceOpts"></div>
@@ -206,7 +206,7 @@
     </div>
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">Would this change pass the gate?</h2>
-      <div class="plain-line"><b>Try this:</b> you have changed the prompt. Scores move. Decide whether it ships — then notice that an average can rise while the thing you care about falls.</div>
+      <div class="plain-line"><b>Try this:</b> you have changed the prompt. Scores move. Decide whether it ships, then notice that an average can rise while the thing you care about falls.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A blood test with several numbers on it. One improved, one got worse, and whether that is good news is not something a single number can tell you.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>accept a change where one score went up and another went down, then read the verdict.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>eval</b> a set of test cases used to score a change</span><span class="sp-w"><b>gate</b> the rule that decides whether a change is allowed to ship</span><span class="sp-w"><b>regression</b> something that used to work and now works less well</span><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>trajectory</b> the sequence of steps the agent actually took</span></span></div></div>
       <div class="sim-layout">
         <div><div id="gateOut"></div></div>
@@ -214,23 +214,23 @@
       </div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Observability and Evaluations — see it, then prove it</h2>
+      <h2 class="sec">Observability and Evaluations: see it, then prove it</h2>
       <div id="acEval"></div>
     </div>
   </section>
   <section class="pane" id="pane-multi">
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">What the anti-patterns actually cost, per request</h2>
-      <div class="plain-line"><b>Try this:</b> start with everything wrong, then fix them one at a time and watch the token count and latency fall. These are not style preferences — each fix is measurable.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A house with the heating on and every window open. Each open window seems minor. The bill is the sum of all of them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>fix the most expensive one first and watch the per-request figure fall.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>anti-pattern</b> a common way of building something that quietly costs you</span><span class="sp-w"><b>per request</b> the cost of one user asking one thing</span><span class="sp-w"><b>context</b> everything sent to the model each time — the main thing you pay for</span></span></div></div>
+      <div class="plain-line"><b>Try this:</b> start with everything wrong, then fix them one at a time and watch the token count and latency fall. These are not style preferences, each fix is measurable.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A house with the heating on and every window open. Each open window seems minor. The bill is the sum of all of them.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>fix the most expensive one first and watch the per-request figure fall.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>anti-pattern</b> a common way of building something that quietly costs you</span><span class="sp-w"><b>per request</b> the cost of one user asking one thing</span><span class="sp-w"><b>context</b> everything sent to the model each time. The main thing you pay for</span></span></div></div>
       <div class="sim-layout">
         <div><div id="mtOut"></div></div>
         <div><div class="toggles" id="mtOpts"></div><p class="simnote" id="mtNote"></p></div>
       </div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">Multi-agent — four patterns, and choosing between them</h2>
-      <div class="plain-line"><b>Try this:</b> pick what you care about most. The honest answer is often that you do not need multiple agents at all — but when you do, the priority you choose rules out as much as it rules in.</div>
+      <h2 class="sec">Multi-agent: four patterns, and choosing between them</h2>
+      <div class="plain-line"><b>Try this:</b> pick what you care about most. The honest answer is often that you do not need multiple agents at all, but when you do, the priority you choose rules out as much as it rules in.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Organising a team. One person doing everything, a manager handing out work, specialists in a line, or everyone in a group chat. Each is right for some jobs and a disaster for others.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>pick <b>lowest latency</b> and see which pattern wins, then pick <b>easiest to debug</b>.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>multi-agent</b> several agents working on one job between them</span><span class="sp-w"><b>supervisor</b> one agent handing work to others and collecting the results</span><span class="sp-w"><b>latency</b> how long the user waits</span><span class="sp-w"><b>hand-off</b> passing work from one agent to another, along with what it needs</span></span></div></div>
       <div class="segmented" id="acPatPri"></div>
       <div id="acPatterns"></div>
@@ -245,9 +245,9 @@
   </section>
   <section class="pane" id="pane-case">
     <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; run the loop until the pull request is green</h2>
-  <div class="plain-line"><b>Try this:</b> a change is pushed. Step the loop forward and watch it close &mdash; and notice where it stops on its own, because a loop with no stopping condition is not automation, it is a bill.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A dishwasher that reloads itself. Fine, until it decides the plates are not clean and starts again — and nothing tells it to stop.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next step</b> seven times, then untick the cap and keep going.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>pull request</b> a proposed code change somebody reviews before it lands</span><span class="sp-w"><b>pipeline</b> the automation that runs when code changes</span><span class="sp-w"><b>round</b> one full pass of test, report, fix, re-test</span></span></div></div>
+  <h2 class="sec">Try it: run the loop until the pull request is green</h2>
+  <div class="plain-line"><b>Try this:</b> a change is pushed. Step the loop forward and watch it close, and notice where it stops on its own, because a loop with no stopping condition is not automation, it is a bill.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A dishwasher that reloads itself. Fine, until it decides the plates are not clean and starts again, and nothing tells it to stop.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next step</b> seven times, then untick the cap and keep going.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>pull request</b> a proposed code change somebody reviews before it lands</span><span class="sp-w"><b>pipeline</b> the automation that runs when code changes</span><span class="sp-w"><b>round</b> one full pass of test, report, fix, re-test</span></span></div></div>
   <div class="sim-layout">
     <div><div id="acLoopOut"></div></div>
     <div>
@@ -261,7 +261,7 @@
 </div>
 
 <div class="card" style="margin-bottom:16px">
-      <h2 class="sec">A worked case — autonomous UI QA as a closed CI/CD loop</h2>
+      <h2 class="sec">A worked case: autonomous UI QA as a closed CI/CD loop</h2>
       <div id="acDevops"></div>
     </div>
   </section>
@@ -269,9 +269,9 @@
     <div class="card" style="margin-bottom:16px">
       <h2 class="sec">What a Solutions Architect exam asks about all this</h2>
       <div class="card" style="margin-bottom:16px">
-  <h2 class="sec">Try it &mdash; drill the scenarios instead of reading them</h2>
-  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly &mdash; which is the point.</div>
-  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not — you recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the table below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
+  <h2 class="sec">Try it: drill the scenarios instead of reading them</h2>
+  <div class="plain-line"><b>Try this:</b> the same scenarios as below, one at a time, with the answer hidden. The alternatives are real answers to <em>other</em> scenarios on this page, so none of them is obviously silly, which is the point.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Flashcards versus a revision guide. Reading the guide feels like learning and mostly is not. You recognise the answer when you see it, which is a different skill from producing it.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>press <b>next scenario</b> without reading the table below first. Recognising an answer and recalling one are not the same thing.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>scenario</b> a situation described the way an exam or an interviewer would put it</span><span class="sp-w"><b>distractor</b> a wrong option that is a real answer to something else</span></span></div></div>
   <div id="drillHost"></div>
 </div>
 
@@ -314,7 +314,7 @@ const hl=src=>escCode(src).replace(HLRX,(m,c,s,ws,k)=>
 /* ================= AGENTCORE ================= */
 document.getElementById('acMap').innerHTML=D('0 0 640 230',
  'The AgentCore platform in six columns: environment, harness, context, tools, optimisation and platform control.',
- `${tm(320,16,'compose only what you need — you pay for what you use','var(--dim)')}
+ `${tm(320,16,'compose only what you need: you pay for what you use','var(--dim)')}
   ${box(10,28,98,80,'var(--teal)')}${tm(59,50,'ENVIRONMENT','var(--teal)')}${tm(59,70,'Runtime','var(--text)')}${tm(59,86,'serverless,','var(--dim)')}${tm(59,99,'isolated','var(--dim)')}
   ${box(114,28,98,80,'var(--violet)')}${tm(163,50,'HARNESS','var(--violet)')}${tm(163,70,'managed loop','var(--text)')}${tm(163,86,'or any','var(--dim)')}${tm(163,99,'framework','var(--dim)')}
   ${box(218,28,98,80,'var(--blue)')}${tm(267,50,'CONTEXT','var(--blue)')}${tm(267,70,'Memory','var(--text)')}${tm(267,86,'Knowledge','var(--dim)')}${tm(267,99,'Base','var(--dim)')}
@@ -332,9 +332,9 @@ document.getElementById('acMap').innerHTML=D('0 0 640 230',
 const ACPARTS=[
  {id:'runtime', n:'Runtime', q:'Where does it run?',
   fixes:'It runs somewhere isolated. Each session gets its own microVM, so one user’s files and state can never be seen by another.',
-  without:'It runs on your laptop, or on a server you now own, patch and scale. With ordinary serverless, sessions can share a sandbox — so one conversation can read another’s leftovers.'},
+  without:'It runs on your laptop, or on a server you now own, patch and scale. With ordinary serverless, sessions can share a sandbox, so one conversation can read another’s leftovers.'},
  {id:'identity', n:'Identity', q:'Who is calling, and what may it reach?',
-  fixes:'Inbound auth checks the caller. Outbound auth lets the agent use your systems <b>without ever holding the password</b> — the secret stays in a vault the agent code never sees.',
+  fixes:'Inbound auth checks the caller. Outbound auth lets the agent use your systems <b>without ever holding the password</b>. The secret stays in a vault the agent code never sees.',
   without:'Either the agent is open to anyone who finds the URL, or your API keys are sitting in its prompt and environment, one log line away from leaking.'},
  {id:'gateway', n:'Gateway', q:'How does it reach tools?',
   fixes:'One endpoint fronts every API, Lambda and MCP server, with per-tool authorisation and a search that shows the model only the handful of tools it needs.',
@@ -354,10 +354,10 @@ const ACPARTS=[
 ];
 const acStage=document.getElementById('acStage'), acTerm=document.getElementById('acTerm'), acVerdict=document.getElementById('acVerdict');
 document.getElementById('acToggles').innerHTML=ACPARTS.map(p=>
-  `<label><input type="checkbox" id="ac-${p.id}"> <b style="color:var(--text)">${p.n}</b> — ${p.q}</label>`).join('');
+  `<label><input type="checkbox" id="ac-${p.id}"> <b style="color:var(--text)">${p.n}</b>: ${p.q}</label>`).join('');
 acStage.innerHTML=ACPARTS.map(p=>
   `<div class="cpart" id="acn-${p.id}"><b>${p.n}</b><small>${p.q}</small></div>`).join('')
-  + `<div class="cpart cagent"><b>Your agent</b><small>the part you actually wrote — everything above is a concern you would otherwise hand-build</small></div>`;
+  + `<div class="cpart cagent"><b>Your agent</b><small>the part you actually wrote. Everything above is a concern you would otherwise hand-build</small></div>`;
 const acOn=id=>document.getElementById('ac-'+id).checked;
 function acLog(c,m){const d=document.createElement('div');d.className=c;d.innerHTML=m;acTerm.appendChild(d);acTerm.scrollTop=acTerm.scrollHeight;}
 function acPaint(){
@@ -374,8 +374,8 @@ function acShip(){
   acTerm.innerHTML=''; acPaint();
   acLog('i','<b>&gt;</b> shipping the agent to real users');
   const missing=ACPARTS.filter(p=>!acOn(p.id));
-  ACPARTS.filter(p=>acOn(p.id)).forEach(p=>acLog('ok',`<b>${p.n}</b> — ${p.fixes}`));
-  missing.forEach(p=>acLog('no',`<b>no ${p.n}</b> — ${p.without}`));
+  ACPARTS.filter(p=>acOn(p.id)).forEach(p=>acLog('ok',`<b>${p.n}</b>, ${p.fixes}`));
+  missing.forEach(p=>acLog('no',`<b>no ${p.n}</b>, ${p.without}`));
   if(!missing.length) acLog('ok','<b>Nothing left unhandled.</b> This is what the platform is for: seven concerns, none of them your code.');
   else acLog('i',`${missing.length} concern${missing.length>1?'s':''} still unhandled. Every one of them is a way this fails in front of a customer rather than in a test.`);
 }
@@ -387,29 +387,29 @@ acPaint(); acLog('i','Switch concerns on, then ship it and read what each one bo
 
 /* ---- Runtime configuration explorer ---- */
 const RTPROTO={
- http:{n:'HTTP', port:8080, paths:['/invocations — POST, receives the request and runs your logic',
-        '/ping — GET, says whether the agent is alive and whether it is busy',
-        '/ws — POST, WebSocket for streaming'],
+ http:{n:'HTTP', port:8080, paths:['/invocations, POST, receives the request and runs your logic',
+        '/ping, GET, says whether the agent is alive and whether it is busy',
+        '/ws, POST, WebSocket for streaming'],
    use:'The default. A user or an application calls your agent and waits for an answer.'},
- mcp:{n:'MCP', port:8000, paths:['/mcp — POST, streamable HTTP'],
+ mcp:{n:'MCP', port:8000, paths:['/mcp, POST, streamable HTTP'],
    use:'You wrote an MCP server and want agents to use it as a tool. AgentCore proxies the JSON-RPC without parsing it, so your server runs unmodified.'},
- a2a:{n:'A2A', port:9000, paths:['/ — POST','/.well-known/agent-card.json — how other agents discover what this one does'],
+ a2a:{n:'A2A', port:9000, paths:['/, POST','/.well-known/agent-card.json, how other agents discover what this one does'],
    use:'Agent-to-agent. Another team’s agent, on another framework, calls yours.'},
- agui:{n:'AG-UI', port:8080, paths:['/invocations — POST','/ping — GET','/ws — POST'],
+ agui:{n:'AG-UI', port:8080, paths:['/invocations, POST','/ping, GET','/ws, POST'],
    use:'Agent-to-user, with the interface as a first-class citizen: token streaming, visible reasoning steps, tool calls shown live, human-in-the-loop pauses and inline generated components.'},
 };
 const RTNET={
  public:{n:'Public (default)', in:'OAuth or SigV4 on a public endpoint', out:'Straight to the internet',
    use:'SaaS agents and public assistants.', risk:'Anything reachable from the internet needs its authoriser configured properly, because the endpoint itself is discoverable.'},
  vpc:{n:'VPC-connected egress', in:'Still a public endpoint', out:'Into your VPC through an ENI, plus the internet',
-   use:'The agent must read a private database or an internal API.', risk:'Egress data transfer through your ENI is billed at normal EC2 rates — an easy line to forget.'},
- private:{n:'Fully private', in:'A VPC endpoint only — no public exposure', out:'Your VPC only',
+   use:'The agent must read a private database or an internal API.', risk:'Egress data transfer through your ENI is billed at normal EC2 rates, an easy line to forget.'},
+ private:{n:'Fully private', in:'A VPC endpoint only, no public exposure', out:'Your VPC only',
    use:'Regulated work: financial services, healthcare, anything with a residency rule.', risk:'If the agent needs a public API you must now provide the path yourself, through NAT or a proxy.'},
 };
 const RTFS={
  none:{n:'No persistence', what:'The filesystem dies with the session.', vpc:'not needed', use:'Stateless request-response agents. The simplest thing that works.'},
  managed:{n:'Managed session storage', what:'Per-session, isolated, survives stop and resume, expires after 14 idle days.', vpc:'not needed', use:'A long task that pauses and continues later without you running any storage.'},
- s3:{n:'S3 files', what:'Shared across sessions, synchronised both ways, close-to-open consistency.', vpc:'required', use:'Artifacts several runs need to read and write — reports, screenshots, datasets.'},
+ s3:{n:'S3 files', what:'Shared across sessions, synchronised both ways, close-to-open consistency.', vpc:'required', use:'Artifacts several runs need to read and write, reports, screenshots, datasets.'},
  efs:{n:'Amazon EFS', what:'Shared, full POSIX semantics, concurrent read and write.', vpc:'required', use:'Several agents genuinely working on the same files at the same time.'},
 };
 let rtP='http', rtN='public', rtF='none';
@@ -427,8 +427,8 @@ function rtPaint(){
 `# the contract your container must satisfy
 host      0.0.0.0
 port      ${p.port}
-platform  linux/arm64          # not x86 — a common first failure
-paths     ${p.paths.map(x=>x.split(' —')[0]).join('  ')}
+platform  linux/arm64          # not x86, a common first failure
+paths     ${p.paths.map(x=>x.split('')[0]).join('  ')}
 
 # how it is packaged
 zip via S3    up to 250MB compressed / 750MB uncompressed
@@ -436,7 +436,7 @@ container     up to 2GB in ECR
 containers    Docker, Podman or Finch all work`)}</code></pre></div>
    <table class="osi" style="margin-top:12px"><thead><tr><th>Setting</th><th>What you chose</th><th>What it decides</th></tr></thead><tbody>
    <tr><td><b>Protocol</b></td><td>${p.n} on port ${p.port}</td><td>${p.use}</td></tr>
-   ${p.paths.map(x=>`<tr><td><b>path</b></td><td>${x.split(' —')[0]}</td><td>${x.split(' —')[1]||''}</td></tr>`).join('')}
+   ${p.paths.map(x=>`<tr><td><b>path</b></td><td>${x.split('')[0]}</td><td>${x.split('')[1]||''}</td></tr>`).join('')}
    <tr><td><b>Ingress</b></td><td>${n.in}</td><td>Who is allowed to reach the agent at all</td></tr>
    <tr><td><b>Egress</b></td><td>${n.out}</td><td>What the agent can reach once it is running</td></tr>
    <tr><td><b>Filesystem</b></td><td>${f.n}</td><td>${f.what} VPC ${f.vpc}.</td></tr>
@@ -466,7 +466,7 @@ document.getElementById('acLifeDiagram').innerHTML=D('0 0 640 210',
   <path d="M479 86 V116" style="stroke:var(--red)" stroke-width="1.4" marker-end="url(#ah)"/>
   ${box(150,120,340,40,'var(--red)')}${t(320,140,'whichever timer fires first ends it',SANS)}${tm(320,155,'idle timeout · max lifetime · StopRuntimeSession','var(--red)')}
   ${tm(320,182,'termination itself can take up to 15 seconds, then the microVM is deleted','var(--dim)')}
-  ${tm(320,200,'the session ID stays valid — reusing it later gets a fresh, empty microVM','var(--dim)')}`,
+  ${tm(320,200,'the session ID stays valid: reusing it later gets a fresh, empty microVM','var(--dim)')}`,
  'The two timers do different jobs: the idle timer ends a conversation nobody came back to, the lifetime timer caps how long any one session may exist. Reaching either deletes the box, and the next call with that same session ID gets a clean one.');
 
 function acLife(){
@@ -482,29 +482,29 @@ function acLife(){
     <div class="r"><span>Ends regardless, at</span><b>${fmt(max)}</b></div>
     <div class="r"><span>Effective ceiling</span><b style="color:var(--teal)">${fmt(Math.min(idle,max))} of quiet, ${fmt(max)} in total</b></div>
     <div class="r"><span>Of that turn, CPU billed</span><b style="color:var(--green)">${cpuSecs}s (${cpuShare}%)</b></div>
-    <div class="r"><span>Waiting on the model</span><b style="color:var(--muted)">${wait}s — no CPU charge</b></div>
+    <div class="r"><span>Waiting on the model</span><b style="color:var(--muted)">${wait}s, no CPU charge</b></div>
     <div class="r"><span>Memory billed</span><b style="color:var(--amber)">all 60s, at peak allocated</b></div>
     <div class="r"><span>Minimum billed memory</span><b>128 MB</b></div>
-    ${idle>max?`<div class="r"><span style="color:var(--red)">Note</span><b style="color:var(--red)">idle above max lifetime does nothing — the shorter one wins</b></div>`:''}`;
+    ${idle>max?`<div class="r"><span style="color:var(--red)">Note</span><b style="color:var(--red)">idle above max lifetime does nothing, the shorter one wins</b></div>`:''}`;
 }
 ['acIdle','acMax','acWait'].forEach(k=>document.getElementById(k).addEventListener('input',acLife));
 acLife();
 
 /* ---- Identity ---- */
 const ACID=[
- {t:'1 · Inbound — who is knocking?', say:'Someone opens your app and it calls the agent. Before anything runs, the door checks their pass. That is a different question from anything the agent later does on their behalf.',
-  tech:'The caller presents a <b>JWT</b> from your identity provider — Cognito, Entra, Okta — or signs the request with <b>AWS credentials (SigV4)</b>. The authoriser validates it. If none is configured, Runtime assumes IAM.',
+ {t:'1 · Inbound, who is knocking?', say:'Someone opens your app and it calls the agent. Before anything runs, the door checks their pass. That is a different question from anything the agent later does on their behalf.',
+  tech:'The caller presents a <b>JWT</b> from your identity provider (Cognito, Entra, Okta) or signs the request with <b>AWS credentials (SigV4)</b>. The authoriser validates it. If none is configured, Runtime assumes IAM.',
   c:'# inbound: authenticate the caller\nauthorizer  JWT   # discoveryUrl + allowed audience/clients\n            or IAM  # SigV4, the default when nothing is set\n\n401  no token, or an invalid one\n403  a valid token that lacks the required scope'},
- {t:'2 · Identity capture — the badge is issued', say:'The platform writes down two things at once: which agent this is, and which person it is currently doing work for. One pass, two names on it.',
+ {t:'2 · Identity capture. The badge is issued', say:'The platform writes down two things at once: which agent this is, and which person it is currently doing work for. One pass, two names on it.',
   tech:'AgentCore Identity issues a <b>Workload Access Token</b>. It names the <b>agent identity</b> (I am calendar-agent) and the <b>end-user identity</b> (currently acting for alice@corp.com). That pairing is what makes per-user tokens and per-user auditing possible.',
-  c:'# the Workload Access Token, in words\nbearer:      agent  #A-1   (calendar-agent)\nacting for:  user   #U-77  (alice@corp.com)\n\n# short-lived, issued per session, never a stored secret'},
+  c:'# the Workload Access Token, in words\nbearer:      agent  #A-1   (calendar-agent)\nacting for:  user   #U-77  (alice@corp.com)\n\n# short-lived: issued per session, never a stored secret'},
  {t:'3 · The agent runs holding that badge', say:'Your code executes. It knows who it is working for without you having to pass a username around and hope nobody drops it.',
   tech:'Everything the agent does from here carries both identities, which is why the audit trail can answer <em>who authorised this</em> rather than only <em>which service did it</em>.',
-  c:'# your code, unchanged — the identity travels with the session\n@app.entrypoint\ndef main(payload):\n    ...   # WAT is in context, not in your parameters'},
- {t:'4 · Outbound — borrowing a key from the vault', say:'The agent now needs to call something real: a calendar, a ticket system, a database. It does not hold that password. It asks the vault, which does the negotiation and hands back a finished token.',
+  c:'# your code, unchanged, the identity travels with the session\n@app.entrypoint\ndef main(payload):\n    ...   # WAT is in context, not in your parameters'},
+ {t:'4 · Outbound, borrowing a key from the vault', say:'The agent now needs to call something real: a calendar, a ticket system, a database. It does not hold that password. It asks the vault, which does the negotiation and hands back a finished token.',
   tech:'The <b>token vault</b> is Secrets Manager plus KMS. <b>Credential providers</b> store how to authenticate to each service. <b>Broker logic</b> performs the OAuth exchange server-side and returns a ready token. The <code>client_secret</code> never leaves the vault, never reaches agent code, and never reaches the model.',
   c:'# what you would otherwise hand-build\n  a secure secret store kept out of the LLM\n  the full OAuth exchange and refresh, per provider\n  a public callback endpoint for auth codes\n  per-user token caching (Alice and Bob are different)\n  session binding for browser consent\n\n# what Identity gives you instead\n  token vault, server-side broker, generated callback URL,\n  per-user vault entries, sessionUri binding'},
- {t:'5 · The tool call actually happens', say:'With a borrowed, scoped, short-lived key, the agent does the thing — and the trail shows both the agent and the person it acted for.',
+ {t:'5 · The tool call actually happens', say:'With a borrowed, scoped, short-lived key, the agent does the thing, and the trail shows both the agent and the person it acted for.',
   tech:'Three shapes of outbound auth cover almost everything: <b>2LO</b> (machine-to-machine, the agent acts as itself), <b>3LO</b> (the agent acts on a user’s behalf, with the user’s consent), and <b>SigV4</b> (direct AWS calls signed with credentials).',
   c:'2LO / M2M   agent uses its own client credentials\n            e.g. an internal knowledge base, a weather API\n\n3LO         agent acts for the user, who consented\n            e.g. reading that user’s Google Calendar or Slack\n\nSigV4       signed AWS request, no token exchange\n            e.g. reading an S3 bucket, invoking a runtime'},
 ];
@@ -533,7 +533,7 @@ signature  header+payload signed with a private key;
 
 /* ---- Gateway ---- */
 document.getElementById('acGateway').innerHTML=`
-<div class="plain-line"><b>In plain English:</b> without a gateway, every agent is wired to every tool by hand — ten agents and thirty tools is three hundred integrations, each with its own authentication and its own way of failing. Gateway is one door. Agents speak one protocol to it, and it deals with whatever is on the other side.</div>
+<div class="plain-line"><b>In plain English:</b> without a gateway, every agent is wired to every tool by hand, ten agents and thirty tools is three hundred integrations, each with its own authentication and its own way of failing. Gateway is one door. Agents speak one protocol to it, and it deals with whatever is on the other side.</div>
 ${D('0 0 640 200','Agents on the left reach a single gateway, which fronts Lambda, OpenAPI services, MCP servers and knowledge bases.',
  `${box(10,26,124,30,'var(--violet)')}${tm(72,46,'Agent · LangGraph','var(--text)')}
   ${box(10,64,124,30,'var(--violet)')}${tm(72,84,'Agent · CrewAI','var(--text)')}
@@ -560,14 +560,14 @@ ${D('0 0 640 200','Agents on the left reach a single gateway, which fronts Lambd
 <table class="osi"><thead><tr><th></th><th>Without search</th><th>With search</th></tr></thead><tbody>
 <tr><td><b>Tools sent to the model</b></td><td>All 360</td><td>The top handful for this task</td></tr>
 <tr><td><b>Effect</b></td><td>Slower, dearer, and the model picks wrongly more often</td><td>Better accuracy, less context, lower cost</td></tr>
-<tr><td><b>How</b></td><td>—</td><td>Gateway indexes tools automatically; the search tool is <code>x-amz-bedrock-agentcore-search</code></td></tr>
+<tr><td><b>How</b></td><td>n/a</td><td>Gateway indexes tools automatically; the search tool is <code>x-amz-bedrock-agentcore-search</code></td></tr>
 </tbody></table>
-<h4>Interceptors — where the awkward requirements go</h4>
+<h4>Interceptors: where the awkward requirements go</h4>
 <table class="osi"><thead><tr><th>Use it for</th><th>Why here rather than in the agent</th></tr></thead><tbody>
 <tr><td><b>Fine-grained access control</b></td><td>An external customer and an internal admin can be given different tools from the same target</td></tr>
 <tr><td><b>Schema translation</b></td><td>The API's shape is not the shape you want the model to see</td></tr>
 <tr><td><b>Custom header propagation</b></td><td>Trace and tenant headers survive the hop without every agent remembering to add them</td></tr>
-<tr><td><b>Per-tool authorisation</b></td><td>Read is allowed, write is not — decided centrally rather than per agent</td></tr>
+<tr><td><b>Per-tool authorisation</b></td><td>Read is allowed, write is not, decided centrally rather than per agent</td></tr>
 <tr><td><b>Tenant isolation</b></td><td>One multi-tenant tool, many tenants, enforced outside the model's reach</td></tr>
 <tr><td><b>Data sanitisation</b></td><td>Strip what should never reach a prompt, before it reaches one</td></tr>
 </tbody></table>
@@ -576,16 +576,16 @@ ${D('0 0 640 200','Agents on the left reach a single gateway, which fronts Lambd
 /* ---- Memory ---- */
 document.getElementById('acMemory').innerHTML=`
 <div class="plain-line"><b>In plain English:</b> short-term memory is what you remember during a phone call. Long-term memory is what you still know about the person next month. They are stored differently, retrieved differently and secured differently, and asking for one when you meant the other is the usual mistake.</div>
-<div class="vs2"><div class="col"><b>SHORT-TERM (STM)</b>The raw conversation, stored as <b>events</b>. Immediate context, exactly as it happened. Retrieved by listing events, synchronously.</div>
+<div class="vs2"><div class="col"><b>SHORT-TERM (STM)</b>The raw conversation, stored as <b>events</b> Immediate context, exactly as it happened. Retrieved by listing events, synchronously.</div>
 <div class="col"><b>LONG-TERM (LTM)</b>Insights <em>extracted</em> from those events by a strategy, asynchronously, into a vector store. Retrieved by searching meaning, not by scrolling history.</div></div>
 <h4>What an event carries</h4>
 <table class="osi"><thead><tr><th>Field</th><th>What it is for</th></tr></thead><tbody>
 <tr><td><b>memoryId</b></td><td>Which memory resource this belongs to</td></tr>
-<tr><td><b>actorId</b></td><td>The entity — a user, an agent, or a combination. This is the field that decides isolation</td></tr>
+<tr><td><b>actorId</b></td><td>The entity, a user, an agent, or a combination. This is the field that decides isolation</td></tr>
 <tr><td><b>sessionId</b></td><td>Groups related events into one conversation</td></tr>
 <tr><td><b>payload</b></td><td>The content: conversational turns, or an arbitrary JSON blob</td></tr>
 <tr><td><b>timestamp</b></td><td>Chronological ordering</td></tr>
-<tr><td><b>branch</b></td><td>Alternate paths — an edited message, a what-if fork, concurrent streams</td></tr>
+<tr><td><b>branch</b></td><td>Alternate paths, an edited message, a what-if fork, concurrent streams</td></tr>
 <tr><td><b>metadata</b></td><td>Key-value context you attach for later filtering</td></tr>
 </tbody></table>
 <h4>The four built-in long-term strategies</h4>
@@ -595,13 +595,13 @@ document.getElementById('acMemory').innerHTML=`
 <tr><td><b>Summary</b></td><td>A condensed version of a session</td><td>&ldquo;Bought Bose open-ear, later found them $100 cheaper&rdquo;</td><td>Cutting token use while keeping the thread</td></tr>
 <tr><td><b>Episodic</b></td><td>Whole experiences, plus reflections on them</td><td>&ldquo;Always check connection pools first. Profile before guessing.&rdquo;</td><td>The agent learning <em>how</em> it solved something, so it does not rediscover it</td></tr>
 </tbody></table>
-<div class="plain-line" style="margin-top:10px"><b>Semantic against episodic, the distinction worth having ready:</b> semantic stores <em>what is true</em> and is fetched by similarity. Episodic stores <em>how the job got done</em> — the sequence of thought, action and observation — and is fetched per task. One personalises; the other stops the agent repeating a dead end it already walked down.</div>
+<div class="plain-line" style="margin-top:10px"><b>Semantic against episodic, the distinction worth having ready:</b> semantic stores <em>what is true</em> and is fetched by similarity. Episodic stores <em>how the job got done</em> (the sequence of thought, action and observation) and is fetched per task. One personalises; the other stops the agent repeating a dead end it already walked down.</div>
 <h4>Two more, when the built-ins are not enough</h4>
 <table class="osi"><thead><tr><th>Strategy</th><th>What it gives you</th><th>Cost of it</th></tr></thead><tbody>
 <tr><td><b>Override</b></td><td>Keep the managed pipeline, but supply your own extraction prompt and choose the model</td><td>You now own prompt quality for extraction</td></tr>
 <tr><td><b>Self-managed</b></td><td>Triggers fire (message, token or time based) to SNS with the payload in S3; your pipeline extracts and consolidates, then writes back through the batch APIs</td><td>You run and pay for the pipeline, and own deduplication and conflict resolution</td></tr>
 </tbody></table>
-<h4>Three security layers — this is the part an exam asks about</h4>
+<h4>Three security layers: this is the part an exam asks about</h4>
 <table class="osi"><thead><tr><th>Layer</th><th>Control</th><th>Stops</th></tr></thead><tbody>
 <tr><td><b>1 · STM scoping</b></td><td>memoryId + actorId + sessionId + branch</td><td>Cross-user and cross-session bleed at the event level</td></tr>
 <tr><td><b>2 · Namespaces</b></td><td>Hierarchical paths with templated variables</td><td>Controls what a retrieval query is even able to search</td></tr>
@@ -628,17 +628,17 @@ function nsPaint(){
     <div class="r"><span>Isolation</span><b style="color:${i<2?'var(--green)':'var(--red)'}">${i<2?'per user':'shared across users'}</b></div>
     <div class="r"><span>Typical use</span><b>${o[4]}</b></div>`;
   document.getElementById('acNsNote').innerHTML=`<b>What this means:</b> ${o[3]}<br><br>
-   <b>Then narrow further with metadata:</b> the namespace decides <em>who</em> a query may reach; metadata filtering decides <em>what, when and how</em> within it. Index the keys you will filter on, then pre-filter on structured attributes before the semantic search runs — &ldquo;high-priority billing issues from Q3&rdquo; rather than searching everything and hoping. Operators include equals, contains, before and after, and ranges.`;
+   <b>Then narrow further with metadata:</b> the namespace decides <em>who</em> a query may reach; metadata filtering decides <em>what, when and how</em> within it. Index the keys you will filter on, then pre-filter on structured attributes before the semantic search runs, &ldquo;high-priority billing issues from Q3&rdquo; rather than searching everything and hoping. Operators include equals, contains, before and after, and ranges.`;
 }
 document.getElementById('acNsOpts').addEventListener('change',nsPaint); nsPaint();
 
 /* ---- Observability + Evaluations ---- */
 document.getElementById('acEval').innerHTML=`
-<div class="plain-line"><b>In plain English:</b> two different questions. Observability answers <em>what did it actually do</em> — you cannot fix what you cannot see. Evaluation answers <em>was that any good, and is it getting better</em>. A non-deterministic system without both is one you can only apologise for.</div>
+<div class="plain-line"><b>In plain English:</b> two different questions. Observability answers <em>what did it actually do</em>. You cannot fix what you cannot see. Evaluation answers <em>was that any good, and is it getting better</em>. A non-deterministic system without both is one you can only apologise for.</div>
 <table class="osi"><thead><tr><th>Concept</th><th>What it means here</th></tr></thead><tbody>
 <tr><td><b>Session</b></td><td>The whole conversation</td></tr>
 <tr><td><b>Trace</b></td><td>One request through the agent, end to end</td></tr>
-<tr><td><b>Span / sub-span</b></td><td>One step inside it — a model call, a tool call, a retrieval</td></tr>
+<tr><td><b>Span / sub-span</b></td><td>One step inside it, a model call, a tool call, a retrieval</td></tr>
 <tr><td><b>How it arrives</b></td><td>The framework emits OpenTelemetry spans; ADOT collects and exports; CloudWatch stores; Evaluations reads and scores. OTEL-compatible means Strands, LangGraph and the rest all work</td></tr>
 </tbody></table>
 <h4>Evaluators, by what they can see</h4>
@@ -647,16 +647,16 @@ document.getElementById('acEval').innerHTML=`
 <tr><td><b>Trace</b></td><td>Correctness</td><td>LLM judge</td><td>expected_response</td></tr>
 <tr><td><b>Trace</b></td><td>Helpfulness, coherence, conciseness, faithfulness, response relevance, context relevance, instruction following, harmfulness, refusal, stereotyping</td><td>LLM judge</td><td>none</td></tr>
 <tr><td><b>Tool</b></td><td>Tool selection accuracy, parameter selection accuracy</td><td>LLM judge</td><td>none</td></tr>
-<tr><td><b>Tool</b></td><td>Trajectory match — exact order, in order, any order</td><td>Programmatic</td><td>expected_trajectory</td></tr>
-<tr><td><b>Any</b></td><td>Code-based, in a Lambda</td><td>Your own logic, no model needed</td><td>—</td></tr>
+<tr><td><b>Tool</b></td><td>Trajectory match, exact order, in order, any order</td><td>Programmatic</td><td>expected_trajectory</td></tr>
+<tr><td><b>Any</b></td><td>Code-based, in a Lambda</td><td>Your own logic, no model needed</td><td>n/a</td></tr>
 </tbody></table>
 <h4>Three ways to express what &ldquo;right&rdquo; means</h4>
 <div class="vs2" style="grid-template-columns:repeat(3,1fr)">
- <div class="col"><b>ASSERTIONS</b>Free-text facts the answer must satisfy — &ldquo;price is present&rdquo;, &ldquo;tone is empathetic&rdquo;. For compliance, tone and safety, where many wordings are acceptable.</div>
+ <div class="col"><b>ASSERTIONS</b>Free-text facts the answer must satisfy, &ldquo;price is present&rdquo;, &ldquo;tone is empathetic&rdquo;. For compliance, tone and safety, where many wordings are acceptable.</div>
  <div class="col"><b>EXPECTED_RESPONSE</b>What the final answer should say. For FAQ bots, maths and finance, and regression against a known-good answer.</div>
- <div class="col"><b>EXPECTED_TRAJECTORY</b>The ordered tools it must call. For multi-step workflows, and for security — proving it checked warranty <em>before</em> creating the RMA, not after.</div>
+ <div class="col"><b>EXPECTED_TRAJECTORY</b>The ordered tools it must call. For multi-step workflows, and for security, proving it checked warranty <em>before</em> creating the RMA, not after.</div>
 </div>
-<h4>Online or on-demand — you want both</h4>
+<h4>Online or on-demand: you want both</h4>
 <table class="osi"><thead><tr><th></th><th>Online</th><th>On-demand</th></tr></thead><tbody>
 <tr><td><b>Where</b></td><td>Production, sampling live traffic continuously</td><td>Development and CI/CD, on a dataset</td></tr>
 <tr><td><b>Catches</b></td><td>Silent failures, quality drift after a deploy</td><td>Regressions, before they ship</td></tr>
@@ -670,18 +670,18 @@ document.getElementById('acEval').innerHTML=`
 <tr><td><b>4 · Pre-production</b></td><td>Shadow-run against real traffic; catch distribution shift</td></tr>
 <tr><td><b>5 · Production</b></td><td>Continuous sampling, alert on drift, feed new cases back into the dataset</td></tr>
 </tbody></table>
-<div class="plain-line" style="margin-top:12px"><b>Why generic benchmarks will not do this for you:</b> leaderboard scores are static, single-shot question answering. They involve no actions, no side effects, no tool choice, no recovery from an error. A model at the top of a leaderboard can still fail badly at an interactive task, which is why your own dataset — built from your own traffic — is the only thing that measures your agent.</div>`;
+<div class="plain-line" style="margin-top:12px"><b>Why generic benchmarks will not do this for you:</b> leaderboard scores are static, single-shot question answering. They involve no actions, no side effects, no tool choice, no recovery from an error. A model at the top of a leaderboard can still fail badly at an interactive task, which is why your own dataset (built from your own traffic) is the only thing that measures your agent.</div>`;
 
 /* ---- the remaining services ---- */
 document.getElementById('acRest').innerHTML=`
 <table class="osi"><thead><tr><th>Capability</th><th>In plain English</th><th>What matters about it</th></tr></thead><tbody>
 <tr><td><b>Policy</b></td><td>A rulebook checked before a tool runs, not a request in the prompt</td><td>Authored in natural language or <b>Cedar</b>, evaluated in milliseconds, allow or deny, and every decision is observable. This is the difference between hoping the agent behaves and knowing it cannot misbehave</td></tr>
 <tr><td><b>Agent Registry</b></td><td>A catalogue of the agents and tools your organisation has</td><td>Registration, semantic and filter search, metadata sync, approval hooks. It is the answer to &ldquo;how many agents do we have and who owns them&rdquo;, which arrives sooner than teams expect</td></tr>
-<tr><td><b>Browser</b></td><td>A real cloud browser the agent drives — click, type, scroll, screenshot</td><td>Managed headless Chromium. The model emits an instruction, the tool translates it into a command, executes it and returns a screenshot. No browser infrastructure of your own</td></tr>
+<tr><td><b>Browser</b></td><td>A real cloud browser the agent drives, click, type, scroll, screenshot</td><td>Managed headless Chromium. The model emits an instruction, the tool translates it into a command, executes it and returns a screenshot. No browser infrastructure of your own</td></tr>
 <tr><td><b>Code Interpreter</b></td><td>A sandbox where the agent can run code and use a shell and filesystem</td><td>For analysis, cross-checking numbers and producing reports. The sandbox is the point: generated code runs somewhere it cannot hurt you</td></tr>
 <tr><td><b>Web search</b></td><td>Grounding answers in current information</td><td>A managed index with continuous refresh; queries stay inside AWS with no data egress</td></tr>
 <tr><td><b>Managed Knowledge Base</b></td><td>Your documents, made answerable</td><td>Six native connectors with ACL support, a service-managed vector store, always-on hybrid search, and it plugs into Gateway as a native target type. Self-managed gives you more control over the store and more to operate</td></tr>
-<tr><td><b>Payments</b></td><td>Letting an agent pay for something</td><td>Wallet with explicit user authorisation and <b>session-level spending limits enforced deterministically</b> — the limit is not advice to the model. Every transaction lands in the same traces</td></tr>
+<tr><td><b>Payments</b></td><td>Letting an agent pay for something</td><td>Wallet with explicit user authorisation and <b>session-level spending limits enforced deterministically</b>. The limit is not advice to the model. Every transaction lands in the same traces</td></tr>
 <tr><td><b>Runtime instances</b></td><td>Managed EC2 for agents, including GPUs, for up to 14 days</td><td>Hibernate and resume via EBS, co-located agents sharing a filesystem, running in your own account under your IAM and VPC. For long transformations, GPU work, or agents needing OS-level access</td></tr>
 </tbody></table>`;
 
@@ -709,7 +709,7 @@ const ACPRI=[
  ['Resilience on open-ended tasks','swarm','router'],
  ['Many nested sub-domains','hier','a flat single agent'],
  ['Speed on decomposable queries','parallel','a deep hierarchy'],
- ['Lowest cost per request','router','supervisor + parallel — they all run'],
+ ['Lowest cost per request','router','supervisor + parallel. They all run'],
 ];
 document.getElementById('acPatPri').innerHTML=ACPRI.map((p,i)=>
   `<button class="seg${i===0?' on':''}" data-i="${i}">${p[0]}</button>`).join('');
@@ -726,7 +726,7 @@ function acPatPaint(i){
    ${ACPAT.map(p=>`<tr${p.id===pri[1]?' style="background:var(--sel)"':''}><td><b>${p.n}</b></td><td>${p.shape}</td><td>${p.fits}</td><td>${p.watch}</td></tr>`).join('')}
    </tbody></table>
    <div class="plain-line" style="margin-top:12px"><b>Where ${best.n} is used:</b> ${best.uses}</div>
-   <div class="plain-line"><b>Before any of this:</b> a monolithic agent asked to do everything calls the wrong tools, passes wrong arguments, answers inconsistently, needs a frontier model, and grows a prompt nobody dares edit. Splitting it is what fixes that — but only split when the work genuinely divides. Multi-agent is a cost, paid per hop, and it buys precision only when there was precision to gain.</div>`;
+   <div class="plain-line"><b>Before any of this:</b> a monolithic agent asked to do everything calls the wrong tools, passes wrong arguments, answers inconsistently, needs a frontier model, and grows a prompt nobody dares edit. Splitting it is what fixes that, but only split when the work genuinely divides. Multi-agent is a cost, paid per hop, and it buys precision only when there was precision to gain.</div>`;
 }
 document.getElementById('acPatPri').addEventListener('click',e=>{const b=e.target.closest('[data-i]'); if(b) acPatPaint(Number(b.dataset.i));});
 acPatPaint(0);
@@ -737,23 +737,23 @@ const ACANTI=[
   why:'Prose is vague, omits details and costs far more tokens than the same content as JSON. Every hop is another chance to lose a field.',
   fix:'Natural language at the <b>user boundary only</b>. Structured JSON between agents.',
   c:'// router -> specialist\n{ "action": "order_inquiry",\n  "parameters": { "order_id": "ORD-12345" },\n  "user_context": "Customer asking where their order is" }\n\n// specialist -> router, one of four shapes\n{ "status": "success",  "action_performed": "order_inquiry",\n  "data": { "Order Details": { "Status": "101 - In Process" } },\n  "errors": [], "suggested_next_action": "order_repush" }\n{ "status": "error",       "errors": ["What went wrong"],\n  "suggested_next_action": "create_ticket" }\n{ "status": "needs_input", "missing_params": [\n    { "name": "order_id", "label": "Order ID", "format": "13 digits" } ] }\n{ "status": "async",       "task_id": "TASK-XXX" }'},
- {t:'2 · Everyone formats, nobody owns it', bad:'Specialists format for humans, ask follow-up questions and suggest next steps — but they are talking to the router, not to the user.',
+ {t:'2 · Everyone formats, nobody owns it', bad:'Specialists format for humans, ask follow-up questions and suggest next steps, but they are talking to the router, not to the user.',
   why:'Double formatting, inconsistent output and extra round trips. Change the wording and you change it in six places.',
   fix:'Specialists are <b>data services</b>. The router is the <b>presenter</b>. One layer owns formatting, one set of rules, one place to change it.',
   c:'// specialist returns data\n{ "data": { "Order ID": "ORD-12345", "Status": "101 - In Process" },\n  "suggested_next_action": "order_repush" }\n\n// the router turns that into the sentence the user reads\n"Your order ORD-12345 is still in process.\n Would you like me to repush it?"'},
  {t:'3 · The prompt bloat spiral', bad:'Specialist prompts reach 3-5k tokens, the router over 4.5k, and most of it is walls of DO NOT and NEVER.',
   why:'Every bug became a new prompt line and nobody ever removed one. Negative rules can prime the very behaviour they forbid.',
   fix:'Positive steering. Say what to do, not the nine things not to do. And read bloat as a <b>diagnostic</b>: if corrections keep piling up, either the prompt is confused and needs refactoring, or you have hit the model’s ceiling and need a better one.',
-  c:'# before — nine lines of "do not"\nDO NOT show task IDs for sync ops\nDO NOT add headers/status/tool used\nDO NOT show error blocks\n...\n\n# after — two lines of "do"\nSync results: return only the queried data fields\nErrors: one sentence stating what failed'},
- {t:'4 · The router knows too much', bad:'Parameter formats for each specialist, which tool to prefer in edge cases, async versus sync patterns, ticket-creation flows — all leaking into the router.',
+  c:'# before (nine lines of "do not"\nDO NOT show task IDs for sync ops\nDO NOT add headers/status/tool used\nDO NOT show error blocks\n...\n\n# after) two lines of "do"\nSync results: return only the queried data fields\nErrors: one sentence stating what failed'},
+ {t:'4 · The router knows too much', bad:'Parameter formats for each specialist, which tool to prefer in edge cases, async versus sync patterns, ticket-creation flows, all leaking into the router.',
   why:'The router grows a copy of every domain it dispatches to, and its prompt grows with it, on every single request.',
-  fix:'<b>Thin router, smart specialists.</b> The router classifies intent, dispatches, and presents the result. Domain nuance lives in the specialist. Then make the models asymmetric — small and fast for routing, capable for the specialist.',
+  fix:'<b>Thin router, smart specialists.</b> The router classifies intent, dispatches, and presents the result. Domain nuance lives in the specialist. Then make the models asymmetric, small and fast for routing, capable for the specialist.',
   c:'router      classify intent -> dispatch -> present\n            small, fast model (e.g. Haiku class)\n\nspecialist  domain logic, tool calls, structured output\n            larger, more capable model (e.g. Sonnet class)'},
  {t:'5 · The overloaded specialist', bad:'One agent holds 30+ tools, so every request loads every tool description even when one is needed.',
   why:'A simple lookup subsidises the entire toolbox, on every call, forever.',
   fix:'Three options: <b>split</b> into focused sub-agents that each load their own tools; <b>load tools dynamically</b> for the classified intent, or use gateway tool search; or <b>accept the cost</b> if the tools are few and concise.',
   c:'guideline\n  5-8 tools per agent   manageable\n  30+ tools             you are paying real cost every request'},
- {t:'6 · The double LLM tax', bad:'The user clicks a predefined UI button with the order ID right there — and the request still goes through a full classification round trip.',
+ {t:'6 · The double LLM tax', bad:'The user clicks a predefined UI button with the order ID right there, and the request still goes through a full classification round trip.',
   why:'Five to ten seconds and thousands of tokens spent classifying something already known.',
   fix:'<b>Bypass routing when the intent is known.</b> A predefined action with an ID goes straight to the specialist as a structured payload. Keep the router for freeform text, which is the only place it earns its cost.',
   c:'if (uiAction && knownIntent) {\n  callSpecialist({ action: uiAction, parameters: { id } });   // direct\n} else {\n  routeFreeformText(userMessage);                            // classify\n}'},
@@ -784,7 +784,7 @@ ${D('0 0 640 170','A pull request triggers CI, which runs a test agent, produces
   <path d="M466 74 H498" style="stroke:var(--wire)" stroke-width="1.3" marker-end="url(#ah)"/>
   ${box(502,54,128,40,'var(--green)')}${tm(566,72,'Bug-fix agent','var(--text)')}${tm(566,86,'pushes a patch','var(--dim)')}
   <path d="M566 96 V126 H174 V96" style="stroke:var(--red)" stroke-width="1.4" fill="none" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-  ${tm(370,140,'the push re-triggers the workflow — capped at 3 rounds, then a human is asked','var(--red)')}
+  ${tm(370,140,'the push re-triggers the workflow: capped at 3 rounds, then a human is asked','var(--red)')}
   ${tm(320,20,'two separate agents, one workflow','var(--dim)')}
   ${tm(320,36,'a tester that only finds · a fixer that only patches','var(--dim)')}`,
  'Two agents rather than one, because a tester that also patches will quietly fix what it should have reported. The loop is capped so it always terminates, and no diff merges without a human.')}
@@ -792,45 +792,45 @@ ${D('0 0 640 170','A pull request triggers CI, which runs a test agent, produces
 <table class="osi"><thead><tr><th>Decision</th><th>Reason</th></tr></thead><tbody>
 <tr><td><b>Two agents, not one</b></td><td>Separation of concerns. The tester only finds, the fixer only patches. Each gets its own prompt, its own domain knowledge and its own limits</td></tr>
 <tr><td><b>Credentials from Secrets Manager at runtime</b></td><td>Login details are never in code, in logs, or in the prompt. The role is scoped to read only</td></tr>
-<tr><td><b>Exploratory, not scripted</b></td><td>It discovers real problems — data that does not add up, rows that vanish — rather than replaying brittle scripts that only fail when the selector changes</td></tr>
+<tr><td><b>Exploratory, not scripted</b></td><td>It discovers real problems (data that does not add up, rows that vanish) rather than replaying brittle scripts that only fail when the selector changes</td></tr>
 <tr><td><b>Evidence to S3</b></td><td>Screenshots and a JSON report every run, linked from the PR comment. Auditable rather than a black box</td></tr>
 <tr><td><b>A bounded loop</b></td><td>A round counter caps retries at three, so it always terminates and escalates instead of grinding</td></tr>
 <tr><td><b>OIDC, no long-lived keys</b></td><td>The workflow assumes an AWS role. Nothing to leak from the repository</td></tr>
 <tr><td><b>A human gate</b></td><td>Bot commits pause CI until a person approves. Agents do the toil; humans keep the judgement</td></tr>
 </tbody></table>
 <h4>What it actually found, which is the point</h4>
-<div class="plain-line">The findings were the kind manual clicking misses: a view that silently dropped an untagged bucket holding about 95% of the spend, a governance page reporting zero spend while the cost page showed hundreds, a model showing a million tokens at zero cost from a missing pricing entry, and duplicate rows inflating a count. <b>Not one of those is a broken button.</b> They are data-integrity and cross-page consistency bugs — exactly what a human clicking through a checklist does not notice, and exactly what reaches production.</div>
+<div class="plain-line">The findings were the kind manual clicking misses: a view that silently dropped an untagged bucket holding about 95% of the spend, a governance page reporting zero spend while the cost page showed hundreds, a model showing a million tokens at zero cost from a missing pricing entry, and duplicate rows inflating a count. <b>Not one of those is a broken button.</b> They are data-integrity and cross-page consistency bugs, exactly what a human clicking through a checklist does not notice, and exactly what reaches production.</div>
 <h4>Two configuration facts that cost hours to learn</h4>
 <table class="osi"><thead><tr><th>Fact</th><th>Consequence</th></tr></thead><tbody>
 <tr><td><b>The allowed-tools list takes no wildcards</b></td><td>You cannot write <code>browser_*</code> and hope. Name each tool, or the agent silently has fewer tools than you think</td></tr>
-<tr><td><b>Memory needs a third IAM step</b></td><td>The data-plane grant is separate. Miss it and <em>every session fails</em> — with an error that does not point at IAM</td></tr>
+<tr><td><b>Memory needs a third IAM step</b></td><td>The data-plane grant is separate. Miss it and <em>every session fails</em>, with an error that does not point at IAM</td></tr>
 </tbody></table>`;
 
 /* ---- exam angle ---- */
 document.getElementById('acExam').innerHTML=`
-<div class="plain-line"><b>How this shows up:</b> agentic services are new, so questions tend not to ask what a feature is called. They put you in a situation and test whether you reach for the managed control or hand-build it — which is the same instinct the rest of the exam rewards.</div>
+<div class="plain-line"><b>How this shows up:</b> agentic services are new, so questions tend not to ask what a feature is called. They put you in a situation and test whether you reach for the managed control or hand-build it, which is the same instinct the rest of the exam rewards.</div>
 <table class="osi"><thead><tr><th>When the scenario says</th><th>The answer is usually</th><th>Because</th></tr></thead><tbody>
 <tr><td>Agent sessions must not be able to read each other’s files</td><td>AgentCore Runtime session isolation</td><td>Each session gets its own microVM. With ordinary serverless, sessions can share a sandbox</td></tr>
 <tr><td>The agent must reach a private database</td><td>VPC-connected egress</td><td>Public ingress is fine; it is the egress that needs the ENI into your VPC</td></tr>
-<tr><td>Nothing may traverse the internet, regulated industry</td><td>Fully private — VPC endpoint ingress, VPC-only egress</td><td>The pattern the exam wants whenever residency or regulation is mentioned</td></tr>
+<tr><td>Nothing may traverse the internet, regulated industry</td><td>Fully private, VPC endpoint ingress, VPC-only egress</td><td>The pattern the exam wants whenever residency or regulation is mentioned</td></tr>
 <tr><td>No long-lived credentials anywhere</td><td>OIDC federation into a role, and Identity’s token vault for outbound</td><td>Any option with a stored key in an environment variable is the distractor</td></tr>
 <tr><td>The agent must act on a user’s behalf against a third party</td><td>Three-legged OAuth via Identity</td><td>The user consents; the agent never holds the secret; tokens are cached per user</td></tr>
 <tr><td>Dozens of existing APIs, no time to write servers</td><td>Gateway with OpenAPI or Lambda targets</td><td>Gateway when the API exists; Runtime when you wrote the MCP server yourself</td></tr>
 <tr><td>Hundreds of tools, model picks badly</td><td>Gateway tool search</td><td>Sending 300+ tool descriptions per request costs accuracy as well as tokens</td></tr>
-<tr><td>Personalisation across sessions</td><td>Long-term memory, user-preferences strategy</td><td>Short-term memory dies with the session — it is the wrong layer for this</td></tr>
+<tr><td>Personalisation across sessions</td><td>Long-term memory, user-preferences strategy</td><td>Short-term memory dies with the session. It is the wrong layer for this</td></tr>
 <tr><td>Strict per-user isolation of memory</td><td>Namespaces plus IAM condition keys on actorId</td><td>Three layers: event scoping, namespace, then policy. The exam likes the third</td></tr>
 <tr><td>Prove the agent called checks in the right order</td><td>Trajectory evaluators with expected_trajectory</td><td>Programmatic, not a judge. Order matters for audit and security</td></tr>
 <tr><td>Catch regressions before deploying</td><td>On-demand evaluation as a CI/CD gate</td><td>Online evaluation is the production counterpart, not a substitute</td></tr>
 <tr><td>The agent must never take a forbidden action</td><td>Policy, evaluated before the tool call</td><td>A prompt instruction is advisory. Policy is enforced and observable</td></tr>
 <tr><td>Cost is unpredictable when idle</td><td>Scale-to-zero, and CPU billed only while working</td><td>Memory is billed for the session’s life; CPU is not billed while waiting on the model</td></tr>
-<tr><td>A run needs GPUs or many hours</td><td>Runtime instances — managed EC2, up to 14 days</td><td>The serverless runtime caps at 8 hours per session</td></tr>
+<tr><td>A run needs GPUs or many hours</td><td>Runtime instances, managed EC2, up to 14 days</td><td>The serverless runtime caps at 8 hours per session</td></tr>
 </tbody></table>
 <h4>The judgement the exam is really testing</h4>
 <table class="osi"><thead><tr><th>Principle</th><th>What it means in an answer</th></tr></thead><tbody>
-<tr><td><b>Use plain code where you can</b></td><td>Deterministic, faster, cheaper and it cannot hallucinate. Passing today’s date as an attribute beat giving the model a tool to fetch it — three model calls instead of four, and nine seconds instead of twelve</td></tr>
+<tr><td><b>Use plain code where you can</b></td><td>Deterministic, faster, cheaper and it cannot hallucinate. Passing today’s date as an attribute beat giving the model a tool to fetch it, three model calls instead of four, and nine seconds instead of twelve</td></tr>
 <tr><td><b>Enforce sequences, do not request them</b></td><td>Asking a model to always call the check before the action works until the run where it does not. An orchestrator guarantees it</td></tr>
 <tr><td><b>Do not aim for full autonomy by default</b></td><td>There is a gradient from simple assistant to autonomous worker. Higher is not better; it is more expensive and harder to trust</td></tr>
-<tr><td><b>Context is a budget, not a dumping ground</b></td><td>Attention is U-shaped, so the middle is under-read, quality degrades well before the model’s limit, and irrelevant context actively hurts — distraction, confusion and poisoning</td></tr>
+<tr><td><b>Context is a budget, not a dumping ground</b></td><td>Attention is U-shaped, so the middle is under-read, quality degrades well before the model’s limit, and irrelevant context actively hurts, distraction, confusion and poisoning</td></tr>
 <tr><td><b>Keep a human on anything irreversible</b></td><td>Reviewing plans, approving tool execution, acting as the fallback. Determinism is what enterprises are actually buying</td></tr>
 <tr><td><b>Instrument from the first day</b></td><td>Observability and evaluation are not a phase two. Retrofitting them onto a non-deterministic system already in production is far harder than starting with them</td></tr>
 </tbody></table>`;
@@ -886,12 +886,12 @@ function renderTrace(){
     <div class="r"><span>In tools</span><b style="color:var(--amber)">${tool} ms</b></div>
     <div class="r"><span>Spans</span><b>${spans.length}</b></div>
     <div class="r"><span>Failed spans</span><b style="color:${errs?'var(--red)':'var(--green)'}">${errs}</b></div>
-    <div class="r"><span>CPU billed</span><b style="color:var(--green)">only the non-model time — about ${total-model} ms</b></div>
+    <div class="r"><span>CPU billed</span><b style="color:var(--green)">only the non-model time, about ${total-model} ms</b></div>
     <div class="r"><span>What the trace tells you</span><b style="color:var(--teal)">${
       errs? 'exactly which span failed, and what ran after it'
       : trOn('toolSlow') ? 'the tool is the problem, not your agent'
       : !trOn('search') ? 'listing 360 tools costs more than the tool call itself'
-      : 'the model is the floor — everything else is noise'}</b></div>`;
+      : 'the model is the floor. Everything else is noise'}</b></div>`;
 }
 document.getElementById('traceOpts').addEventListener('change',renderTrace);
 document.getElementById('traceRun').onclick=renderTrace;
@@ -936,8 +936,8 @@ function gatePaint(){
      <b style="color:${fails.length?'var(--red)':'var(--green)'}">${fails.length?'BLOCKED':'SHIPS'}</b></div>
      ${fails.map(f=>`<div class="r"><span>Because</span><b style="color:var(--red)">${f}</b></div>`).join('')}</div>`;
   document.getElementById('gateNote').innerHTML= after>=before
-   ? `<b>Notice what just happened:</b> the average went <em>up</em>, so a gate watching only the average lets this through. But faithfulness fell nine points and the trajectory changed — the agent is now more helpful, more concise, and making things up while calling tools in a different order. <b>Averages hide exactly the regressions you care about most.</b>`
-   : `<b>The average fell,</b> which is the easy case. The harder one is when it rises while a critical metric drops — turn the critical check off and watch this ship.`;
+   ? `<b>Notice what just happened:</b> the average went <em>up</em>, so a gate watching only the average lets this through. But faithfulness fell nine points and the trajectory changed. The agent is now more helpful, more concise, and making things up while calling tools in a different order. <b>Averages hide exactly the regressions you care about most.</b>`
+   : `<b>The average fell,</b> which is the easy case. The harder one is when it rises while a critical metric drops, turn the critical check off and watch this ship.`;
 }
 document.getElementById('gateOpts').addEventListener('change',gatePaint); gatePaint();
 
@@ -953,7 +953,7 @@ document.getElementById('gateOpts').addEventListener('change',gatePaint); gatePa
   const JOBS=[
     {n:'Read the latest figures off a supplier&rsquo;s website', a:'browser', trap:'code',
      why:'There is no API. Somebody has to load the page, wait for it to render and read what is on it.',
-     trapWhy:'Code Interpreter can fetch the HTML, and will happily return a page that renders its numbers in JavaScript &mdash; so you get a confident answer built from an empty table.'},
+     trapWhy:'Code Interpreter can fetch the HTML, and will happily return a page that renders its numbers in JavaScript, so you get a confident answer built from an empty table.'},
     {n:'Cross-check that four totals in a report add up', a:'code', trap:null,
      why:'Arithmetic over data you already have. Deterministic, checkable, and exactly what a sandbox is for.',
      trapWhy:''},
@@ -971,7 +971,7 @@ document.getElementById('gateOpts').addEventListener('change',gatePaint); gatePa
      trapWhy:''},
     {n:'Run the model&rsquo;s own generated Python on a customer file', a:'code', trap:'browser',
      why:'Untrusted code has to run somewhere it cannot reach anything. That is the sandbox.',
-     trapWhy:'A browser is also isolated, but it is the wrong isolation &mdash; it renders pages, it does not execute your data pipeline.'},
+     trapWhy:'A browser is also isolated, but it is the wrong isolation. It renders pages, it does not execute your data pipeline.'},
     {n:'Stop asking the customer their account number every turn', a:'memory', trap:'gateway',
      why:'The value was established once and needs to be there next time. That is what memory is.',
      trapWhy:'Fetching it again from the source system every turn works, and quietly asks the customer to identify themselves repeatedly.'}
@@ -996,7 +996,7 @@ document.getElementById('gateOpts').addEventListener('change',gatePaint); gatePa
       return '<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:8px;border-left-color:'+col+'">'
         + '<div style="font-size:12.5px">'+(i+1)+'. '+j.n+'</div>'
         + (p ? '<div class="k" style="font-size:10.5px;margin-top:4px;color:'+col+'">you picked '+name(p)
-               +(ok?' &mdash; right':trap?' &mdash; the common wrong one':' &mdash; not this')+'</div>' : '')
+               +(ok?', right':trap?', the common wrong one':', not this')+'</div>' : '')
         + ((p||show) ? '<div class="k" style="font-size:10.5px;margin-top:3px;color:var(--teal)">needs '+name(j.a)+'</div>'
              + '<div style="font-size:12px;margin-top:5px;color:var(--muted)">'+j.why+'</div>'
              + (trap||(show&&j.trapWhy) ? '<div style="font-size:12px;margin-top:5px;color:var(--red)"><b>Why the other one fails:</b> '+j.trapWhy+'</div>' : '')
@@ -1022,7 +1022,7 @@ const MEMCONV=[
  {id:'shop', n:'A shopping conversation',
   turns:['I like Bose headphones, and my company gives me 25% off them.',
          'I prefer white, open-ear ones.',
-         'I bought the QuietComfort Ultra on 15 January for $349.99 — but they do not feel right.'],
+         'I bought the QuietComfort Ultra on 15 January for $349.99, but they do not feel right.'],
   out:{
    semantic:['User purchased Bose QuietComfort Ultra on 15 January 2026 for $349.99','User is within a 30-day return window until 15 February'],
    pref:['Likes Bose','Prefers white','Prefers open-ear','Has a 25% corporate discount'],
@@ -1031,14 +1031,14 @@ const MEMCONV=[
   why:'Preferences drive the recommendation; semantic facts decide whether a refund is even possible; the summary is what you carry into next week cheaply; the episode is how the agent gets better at this kind of conversation.'},
  {id:'debug', n:'A debugging session',
   turns:['The app is running out of memory with large datasets.',
-         'I profiled it — heap grows about 2GB an hour.',
+         'I profiled it, heap grows about 2GB an hour.',
          'Code review found unclosed database connections.'],
   out:{
    semantic:['Application has a memory leak','Root cause was connection pool exhaustion','Growth rate was approximately 2GB per hour'],
-   pref:['(nothing — this conversation says nothing about what the user likes)'],
+   pref:['(nothing. This conversation says nothing about what the user likes)'],
    summary:['Investigation found connection pool exhaustion as the root cause of gradual memory growth.'],
    episodic:['Step 1: check heap usage → profiled memory → observed 2GB/hr growth','Step 2: look for unclosed resources → code review → found unclosed DB connections','Reflection: always check connection pools first. Profile before guessing. Common pitfall: blaming application code when the leak is in an infrastructure dependency']},
-  why:'This is the case that shows why episodic exists. The facts alone do not stop the agent walking the same dead end next time — the ordered method does.'},
+  why:'This is the case that shows why episodic exists. The facts alone do not stop the agent walking the same dead end next time. The ordered method does.'},
 ];
 let memI=0;
 document.getElementById('memConvo').innerHTML=MEMCONV.map((c,i)=>
@@ -1051,10 +1051,10 @@ function memPaint(){
   document.getElementById('memExtract').innerHTML=
    `<div class="code"><pre><code>${hl(c.turns.map((t,i)=>`turn ${i+1}  ${t}`).join('\n'))}</code></pre></div>
     <div class="vs2" style="grid-template-columns:repeat(2,1fr);margin-top:14px">
-      ${col('SEMANTIC', c.out.semantic, 'var(--blue)', 'what is true — retrieved by similarity to a query')}
-      ${col('USER PREFERENCES', c.out.pref, 'var(--teal)', 'what this person likes — retrieved to personalise')}
-      ${col('SUMMARY', c.out.summary, 'var(--amber)', 'the session, compressed — retrieved to save tokens')}
-      ${col('EPISODIC', c.out.episodic, 'var(--violet)', 'how the job got done, plus the lesson — retrieved per task')}
+      ${col('SEMANTIC', c.out.semantic, 'var(--blue)', 'what is true, retrieved by similarity to a query')}
+      ${col('USER PREFERENCES', c.out.pref, 'var(--teal)', 'what this person likes, retrieved to personalise')}
+      ${col('SUMMARY', c.out.summary, 'var(--amber)', 'the session, compressed, retrieved to save tokens')}
+      ${col('EPISODIC', c.out.episodic, 'var(--violet)', 'how the job got done, plus the lesson, retrieved per task')}
     </div>
     <div class="plain-line" style="margin-top:12px"><b>Why it matters here:</b> ${c.why}</div>`;
 }
@@ -1087,14 +1087,14 @@ function mtPaint(){
       <div class="r"><span>Latency per request</span><b style="color:${ms<5000?'var(--green)':ms<9000?'var(--amber)':'var(--red)'}">${(ms/1000).toFixed(1)} s</b></div>
       <div class="r"><span>Against the unfixed baseline</span><b style="color:var(--green)">${Math.round((1-tok/BASE_TOK)*100)}% fewer tokens · ${Math.round((1-ms/BASE_MS)*100)}% faster</b></div>
       <div class="r"><span>At 50,000 requests a day</span><b>about ${Math.round(costNow).toLocaleString()} a day, down from ${Math.round(costBase).toLocaleString()}</b></div>
-      <div class="r"><span>Fixes applied</span><b>${on.length?on.join(', '):'none — this is the version that grew by accident'}</b></div>
+      <div class="r"><span>Fixes applied</span><b>${on.length?on.join(', '):'none. This is the version that grew by accident'}</b></div>
     </div>
     <div class="plain-line" style="margin-top:12px">${
       on.length===MTFIX.length
-      ? '<b>All six.</b> Same functionality, a fraction of the cost and a third of the wait. Nothing here required a better model — only deciding where each responsibility lives.'
+      ? '<b>All six.</b> Same functionality, a fraction of the cost and a third of the wait. Nothing here required a better model, only deciding where each responsibility lives.'
       : on.length===0
       ? '<b>This is the default state,</b> and it is nobody’s fault in particular. Every bug added a prompt line, every specialist started formatting to be helpful, and the router learned each domain so it could route better. Systems degrade by default.'
-      : `<b>${on.length} of 6 applied.</b> Keep going — the two with the largest effect are usually the thin router and bypassing known intents, because they remove whole model calls rather than trimming tokens.`}</div>`;
+      : `<b>${on.length} of 6 applied.</b> Keep going, the two with the largest effect are usually the thin router and bypassing known intents, because they remove whole model calls rather than trimming tokens.`}</div>`;
   document.getElementById('mtNote').innerHTML='<b>Numbers are illustrative,</b> chosen to show relative effect rather than to predict your bill. The shape is what transfers: fixes that <em>remove a model call</em> (thin router, bypass) beat fixes that shrink a prompt, and prompt bloat is the one that grows again on its own unless someone prunes it.';
 }
 document.getElementById('mtOpts').addEventListener('change',mtPaint); mtPaint();
@@ -1124,10 +1124,10 @@ document.getElementById('mtOpts').addEventListener('change',mtPaint); mtPaint();
         (direct>viaGw?'<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--line2);margin-top:6px"><span class="dim">difference</span><b style="color:var(--amber)">'+(direct-viaGw).toLocaleString()+' fewer</b></div>':'')+
       '</div>';
     let html='';
-    if(!gw&&direct>60) html='<div class="lzbad" style="margin-bottom:10px"><b>'+direct.toLocaleString()+' integrations.</b> Each one is its own authentication, its own error handling and its own way of breaking. Nobody designed this — it grew one reasonable afternoon at a time, and now no single person knows what the estate talks to.</div>';
+    if(!gw&&direct>60) html='<div class="lzbad" style="margin-bottom:10px"><b>'+direct.toLocaleString()+' integrations.</b> Each one is its own authentication, its own error handling and its own way of breaking. Nobody designed this. It grew one reasonable afternoon at a time, and now no single person knows what the estate talks to.</div>';
     else if(!gw) html='<div class="lzwarn" style="margin-bottom:10px"><b>Small enough to hand-wire, for now.</b> Note the shape though: the count is agents <em>times</em> tools, so it does not grow gently. Two more agents and five more tools is not seven more integrations.</div>';
     else html='<div class="ok" style="margin-bottom:10px"><b>'+viaGw.toLocaleString()+' instead of '+direct.toLocaleString()+'.</b> Each agent speaks one protocol to one place, and each tool is registered once. The count becomes agents <em>plus</em> tools, which is the whole argument.</div>';
-    html+='<div class="simnote" style="margin-top:8px"><b>The number is not really the point.</b> With one door there is one place to see what every agent reaches, one place to revoke it, and one place where the credential lives — so the agent never holds the downstream secret. Hand-wiring gives you none of that, at any scale.</div>';
+    html+='<div class="simnote" style="margin-top:8px"><b>The number is not really the point.</b> With one door there is one place to see what every agent reaches, one place to revoke it, and one place where the credential lives, so the agent never holds the downstream secret. Hand-wiring gives you none of that, at any scale.</div>';
     note.innerHTML=html;
   }
   [A,T].forEach(x=>x.oninput=render); U.onchange=render; render();
@@ -1140,18 +1140,18 @@ document.getElementById('mtOpts').addEventListener('change',mtPaint); mtPaint();
   if(!out) return;
   const STEPS=[
     ['A change is pushed','A pull request touching the front end. Nobody has looked at it yet.','var(--blue)'],
-    ['The pipeline assumes a role','Short-lived credentials from the identity provider — no long-lived key sitting in the repository.','var(--violet)'],
+    ['The pipeline assumes a role','Short-lived credentials from the identity provider, no long-lived key sitting in the repository.','var(--violet)'],
     ['The test agent explores the app','It logs in and drives a real browser across five pages, taking screenshots as it goes.','var(--teal)'],
     ['Findings are posted to the pull request','Four issues, with evidence attached. A human can read them without running anything.','var(--amber)'],
     ['The fix agent patches','It works out the root cause and pushes a minimal change to the same branch.','var(--green)'],
-    ['The push re-triggers everything','Which is the loop closing — and the reason a stopping condition is not optional.','var(--red)']
+    ['The push re-triggers everything','Which is the loop closing, and the reason a stopping condition is not optional.','var(--red)']
   ];
   let i=0, round=1;
   function render(){
     const capped=cap.checked;
     const stuck = round>3 && capped;
     next.disabled = stuck; next.style.opacity = stuck?0.5:1;
-    next.textContent = stuck ? 'stopped — a human is asked' : 'next step ▸';
+    next.textContent = stuck ? 'stopped. A human is asked' : 'next step ▸';
     out.innerHTML='<div class="dim" style="font-size:11px;margin-bottom:8px">ROUND '+round+(capped?' OF 3':'')+'</div>'+
       STEPS.slice(0,i).map(([n,d,c],k)=>'<div class="lzhop" style="display:block;border-left-color:'+c+';padding:10px 12px">'+
         '<div style="display:flex;gap:9px"><span class="n2">'+(k+1)+'</span><span><b>'+n+'</b><small>'+d+'</small></span></div></div>').join('')+
@@ -1164,7 +1164,7 @@ document.getElementById('mtOpts').addEventListener('change',mtPaint); mtPaint();
         '<div style="font-size:12.5px">Nothing is stopping this. Each round is a full browser run and a model working through a codebase, and it is three in the morning.</div></div>':'');
     let html='';
     if(round>3&&capped) html='<div class="ok" style="margin-bottom:10px"><b>The cap is the design.</b> An agent that can push a commit that re-triggers itself has built a loop, and a loop needs a way out that does not depend on the agent noticing it is stuck. Three rounds, then a person.</div>';
-    else if(round>4&&!capped) html='<div class="lzbad" style="margin-bottom:10px"><b>This is the failure people do not anticipate.</b> Nothing is broken — every component is doing its job correctly. The agent fixes, the push triggers, the tests run, the agent fixes. It is a working system with no terminating condition.</div>';
+    else if(round>4&&!capped) html='<div class="lzbad" style="margin-bottom:10px"><b>This is the failure people do not anticipate.</b> Nothing is broken, every component is doing its job correctly. The agent fixes, the push triggers, the tests run, the agent fixes. It is a working system with no terminating condition.</div>';
     else if(i>=STEPS.length) html='<div class="note" style="margin-bottom:10px"><b>Round '+round+' complete, and the tests still fail.</b> Press again to watch it go round.</div>';
     else html='<div class="simnote">Six steps to a round. Watch what happens at the last one.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>The other control worth noticing</b> is at step 4: findings go to the pull request as evidence a person reads, and every patch is reviewed before merge. The agents do the repetitive part; the judgement stays with a human, and that is a deliberate boundary rather than a limitation.</div>';

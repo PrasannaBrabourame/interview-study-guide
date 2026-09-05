@@ -33,7 +33,7 @@ function init(topics) {
   if (dsubEl) dsubEl.textContent = dsubEl.textContent.replace(/^\d+/, topics.length);
 
   /* ============ categories: semantic colour families ============
-     One hue per domain family rather than a unique hue per category —
+     One hue per domain family rather than a unique hue per category, 
      41 hues are not distinguishable, 9 families are, and the colour
      then carries meaning. Tiles stay alphabetical; only colour groups. */
   const FAMILIES = [
@@ -61,7 +61,7 @@ function init(topics) {
      undifferentiated pile of 267 topics, so finishing the Cloud lab and
      wanting the cloud reading meant hand-picking fourteen tiles out of
      forty-three. Categories listed here are the ones the lab genuinely
-     teaches — a lab that only brushes a subject is deliberately left out,
+     teaches, a lab that only brushes a subject is deliberately left out,
      because a link that returns half the site is the problem, not the fix. */
   const LABS = {
     cloud: { name: "Cloud lab", hue: 212, cats: ["Cloud Architecture", "GCP", "Kubernetes", "Security", "Observability", "Infrastructure as Code", "DevOps", "Deployment", "FinOps", "Performance", "Event-Driven Architecture", "Production Readiness", "Production Operations", "Data & Databases"] },
@@ -92,7 +92,7 @@ function init(topics) {
   const diffBadge = t => { const d = diffOf(t); return `<span class="dbadge d-${DSLUG[d]}">${d}</span>` };
 
   /* ============ search index ============ */
-  const norm = s => s.toLowerCase().replace(/[–—·]/g, " ");
+  const norm = s => s.toLowerCase().replace(/[–, ·]/g, " ");
   const searchIndex = new Map(topics.map(t => [t.id,
     norm([t.title, t.category, t.question, ...t.technical, t.layman, ...t.usecases, t.code, ...t.followups, ...t.redflags, t.memory].join(" "))
   ]));
@@ -291,7 +291,7 @@ function init(topics) {
     }
     hm.innerHTML = html;
     const streak = calcStreak();
-    $("#streaktext").textContent = streak ? `🔥 ${streak}-day streak — keep it alive` : "Study a topic to start a streak";
+    $("#streaktext").textContent = streak ? `🔥 ${streak}-day streak, keep it alive` : "Study a topic to start a streak";
   }
 
   /* ============ card interactions ============ */
@@ -384,7 +384,7 @@ function init(topics) {
   document.body.appendChild(pal);
   const pinput = pal.querySelector("input"), plist = pal.querySelector(".plist");
   let psel = 0, pmatches = [];
-  const palNorm = s => s.toLowerCase().replace(/[–—·-]/g, " ");
+  const palNorm = s => s.toLowerCase().replace(/[–, ·-]/g, " ");
   function palScore(qWords, t) {
     const title = palNorm(t.title), cat = palNorm(t.category), all = title + " " + cat;
     if (!qWords.every(w => all.includes(w))) return -1;
