@@ -155,6 +155,12 @@ generated from one table in `assets/lab.js`, so adding a lab is one edit.
 
 ## Labs and topics are linked
 
+Each lab card opens with one plain line saying what the lab lets you do, before
+the description of what is inside it. That line exists because the descriptions
+assume the thing the lab teaches: "a docstring decides whether a tool is ever
+chosen" is a good sentence about the ADK lab and no help at all to somebody
+deciding whether to open it.
+
 Each hands-on lab card carries a **related-topics** strip showing how many of
 the 267 topics that lab actually covers, 50 for the Cloud lab, 35 for
 Evaluation, 33 for the diagram lab. Clicking it opens the browse view filtered
