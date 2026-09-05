@@ -453,6 +453,17 @@ document.getElementById('sec-network').innerHTML=`
   <h2 class="sec">Public or private tool &mdash; the honest comparison</h2>
   <div class="vs2"><div class="col"><b>PUBLIC INGRESS</b>The tool keeps its public address and is protected by authentication.<br><br><b>Fine when</b> the tool is genuinely meant to be public, or you are prototyping.<br><br><b>The risk:</b> it is reachable by anyone who finds the address, so its authentication is the only thing standing between the world and your data. One misconfiguration and there is no second line.</div>
   <div class="col"><b>PRIVATE INGRESS</b>The public URL is switched off. Only internal and load-balanced traffic can reach it, over the path above.<br><br><b>The point:</b> an attacker who steals a credential still cannot use it, because there is no address to send it to.<br><br><b>The cost:</b> six pieces of infrastructure instead of none, and a DNS zone that has to be right.</div></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; put one tool on the internet, or don&rsquo;t</h2>
+  <div class="plain-line"><b>Try this:</b> the same internal tool, reached four different ways. Every option works. They differ in who can attempt to reach it, what a stolen credential is worth, and how much of your week it costs &mdash; and the cheapest one to build is the most expensive one to be wrong about.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A back office that needs deliveries. You can put a door on the high street with a lock, a door on the high street with a guard, a service entrance down a private alley, or no door at all and hand things through the building next door. All four get the parcels in. Only one of them can be tried by a passer-by.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>public with a key</b>, then jump to <b>private link</b> and compare the reachable-by row.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>tool</b> an ordinary function the model can choose to call</span><span class="sp-w"><b>egress</b> traffic going out &mdash; the agent reaching a tool or another system</span><span class="sp-w"><b>private link</b> a route between two networks that never touches the internet</span><span class="sp-w"><b>blast radius</b> the most damage something can do if it goes wrong</span><span class="sp-w"><b>attack surface</b> everything an outsider is able to try</span><span class="sp-w"><b>allow list</b> a list of the only addresses permitted</span><span class="sp-w"><b>credential</b> the secret that proves the caller may act as someone</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gvExposeOut"></div></div>
+    <div><div class="segmented" id="gvExposeCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gvExposeNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
 </div>`;
 
 /* --- SIM: private egress path --- */
@@ -498,6 +509,73 @@ document.getElementById('sec-network').innerHTML=`
     if(stop===-1&&on.priv) html='<div class="ok" style="margin-bottom:10px"><b>Six hops, none of them on the public internet, and no public address exists to bypass them.</b> That is the whole design: the traffic is private <em>and</em> there is no alternative route.</div>';
     html+='<div class="simnote" style="margin-top:8px"><b>Notice how the failures differ in kindness.</b> A missing attachment stops everything immediately. A missing DNS zone changes nothing you can see and quietly routes your traffic across the internet. A live public URL breaks nothing at all and undoes the entire exercise. The more dangerous the mistake, the quieter it is.</div>';
     note.innerHTML=html;
+  }
+  render();
+})();
+
+/* --- SIM: public or private tool, the honest comparison --- */
+(function(){
+  const ctl=document.getElementById('gvExposeCtl'), out=document.getElementById('gvExposeOut'),
+        note=document.getElementById('gvExposeNote');
+  if(!ctl) return;
+  const OPT=[
+    {k:'open', n:'public, key only', sub:'a URL and a shared secret',
+     reach:'anyone on the internet', reachN:3,
+     stolen:'full access, from anywhere, until you notice', stolenN:3,
+     effort:'an afternoon', effortN:0,
+     col:'var(--red)',
+     what:'The tool has a public address. The only thing between the internet and your claims system is whether the caller knows the key.',
+     honest:'This is genuinely fine for a read-only tool over public data. It is not fine for anything that writes, and the distinction is the whole decision.'},
+    {k:'waf', n:'public, with a gateway in front', sub:'auth, rate limits, allow list',
+     reach:'anyone, but filtered', reachN:2,
+     stolen:'access from allowed addresses only, and rate limited', stolenN:2,
+     effort:'a week, plus ongoing rules', effortN:1,
+     col:'var(--amber)',
+     what:'Still a public address, but nothing reaches the tool without passing identity checks, an allow list and a rate limit first.',
+     honest:'The pragmatic middle. Its weakness is that it is a configuration, and configurations drift &mdash; an allow list nobody reviews becomes an allow list with a contractor from 2023 on it.'},
+    {k:'link', n:'private link', sub:'no internet path at all',
+     reach:'only your own network', reachN:0,
+     stolen:'worthless without a foothold inside first', stolenN:0,
+     effort:'two weeks and a network team', effortN:2,
+     col:'var(--green)',
+     what:'There is no route from the internet to this tool. Traffic goes over the provider&rsquo;s backbone between two private networks.',
+     honest:'The strongest option and the slowest to arrange. It also makes the tool invisible to anyone outside, including your own developers debugging from a laptop.'},
+    {k:'broker', n:'through the agent gateway only', sub:'the tool is never addressed directly',
+     reach:'only the gateway', reachN:1,
+     stolen:'the gateway still checks identity, policy and content', stolenN:1,
+     effort:'a few days if the gateway exists', effortN:1,
+     col:'var(--teal)',
+     what:'The tool sits behind the same gateway every other tool goes through. Nothing calls it directly, so there is one place that logs and one place that decides.',
+     honest:'Best value where the gateway already exists. If it does not, you are building a gateway, and that is a much larger piece of work than this one tool justifies.'}
+  ];
+  let cur=0;
+  const SCALE=['var(--green)','var(--teal)','var(--amber)','var(--red)'];
+  function render(){
+    ctl.innerHTML=OPT.map((o,i)=>'<button class="seg'+(i===cur?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
+      +'<b>'+o.n+'</b><br><span style="font-size:11px;color:var(--dim)">'+o.sub+'</span></button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;render();});
+    const o=OPT[cur];
+    const row=(label,text,n,invert)=>{
+      const c=SCALE[invert?3-n:n];
+      return '<div style="margin-bottom:10px">'
+        + '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">'
+        + '<span>'+label+'</span><span class="k" style="color:'+c+';font-size:11px">'+text+'</span></div>'
+        + '<div style="height:8px;background:var(--panel2);border-radius:99px;overflow:hidden">'
+        + '<div style="height:100%;width:'+((n+1)/4*100)+'%;background:'+c+';border-radius:99px"></div></div></div>';
+    };
+    out.innerHTML =
+      '<div class="lzhop" style="display:block;padding:11px 13px;margin-bottom:12px;border-left-color:'+o.col+'">'
+      + '<b>'+o.n+'</b><div style="margin-top:5px;font-size:12.5px">'+o.what+'</div></div>'
+      + row('who can attempt to reach it', o.reach, o.reachN)
+      + row('what a stolen credential buys', o.stolen, o.stolenN)
+      + row('what it costs you to build', o.effort, o.effortN)
+      + '<div class="simnote" style="margin-top:6px">The third bar is the one that decides most real arguments, and it is the only one that is paid once.</div>';
+    note.innerHTML =
+      '<div class="'+(o.reachN>=2?'lzwarn':'ok')+'"><b>The honest version.</b> '+o.honest+'</div>'
+      + '<div class="simnote" style="margin-top:10px"><b>Ask the question that actually separates them.</b> Not &ldquo;is this secure?&rdquo; &mdash; all four have a lock. Ask <em>who is able to try</em>. A public address can be attempted by everyone on earth, continuously, forever. A private one can be attempted by whoever is already inside. That difference does not depend on your key being good.</div>'
+      + (o.k==='open'
+        ? '<div class="simnote" style="margin-top:10px"><b>The failure that follows.</b> The key ends up in a repository, a log line or a prompt. It is not revoked, because nothing broke. The first sign is traffic you cannot account for, in a tool nobody was watching because it was only meant to be internal.</div>'
+        : '<div class="simnote" style="margin-top:10px"><b>What still has to be true.</b> Reducing who can reach it does not decide what it may do. An agent inside the perimeter with a tool that can issue refunds is a smaller problem than a public one, and it is still a problem &mdash; the permission on the tool is a separate decision from the route to it.</div>');
   }
   render();
 })();

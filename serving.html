@@ -302,6 +302,17 @@ document.getElementById('sec-svsched').innerHTML=`
   <div class="plain-line"><b>When it runs out, there are two ways to make room</b>, and the choice has real consequences. <b>Recompute</b>: drop the request&rsquo;s cache entirely and redo its prefill when it resumes &mdash; cheap in memory, and it pays the prefill cost twice. <b>Swap</b>: copy the cache out to host memory and back &mdash; no recomputation, but it crosses the slowest link on the machine. Neither is free, and both land on one unlucky user.</div>
 </div>
 
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; you are request 40, behind thirty-nine long prompts</h2>
+  <div class="plain-line"><b>Try this:</b> forty requests arrive at once. Thirty-nine are long documents; yours is a one-line question. Change how the queue is ordered and watch what happens to your wait &mdash; and to everybody else&rsquo;s.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A supermarket with one till. Strict queueing is fairest and puts the person buying milk behind six full trolleys. A basket-only lane is faster for them and slower for everyone in the trolley queue. Nobody has ever found an ordering that makes both groups happy.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>read <b>first come, first served</b>, then switch to <b>shortest first</b> and look at the last row.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>prefill</b> processing the whole prompt in one parallel pass</span><span class="sp-w"><b>decode</b> generating the answer one token at a time</span><span class="sp-w"><b>queueing delay</b> time spent waiting before any work starts</span><span class="sp-w"><b>head-of-line blocking</b> a short job stuck behind a long one</span><span class="sp-w"><b>starvation</b> a request that keeps being overtaken and never runs</span><span class="sp-w"><b>TTFT</b> time to first token &mdash; how long before anything appears</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="svQueueOut"></div></div>
+    <div><div class="segmented" id="svQueueCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="svQueueNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
 <div class="card">
   <h2 class="sec">Try it &mdash; run the queue under pressure</h2>
   <div class="plain-line"><b>Try this:</b> turn the arrival rate up until the engine cannot keep everyone resident, then choose what it should do about it. Watch where the pain goes &mdash; it never disappears, it only moves.</div>
@@ -386,6 +397,79 @@ document.getElementById('sec-svsched').innerHTML=`
       : '<div class="simnote"><b>Compare the three at the same arrival rate.</b> Queueing keeps per-token latency perfect and makes new users wait a very long time. Preemption gets more people started and makes everybody&rsquo;s stream lumpier. The total pain is roughly conserved; you are choosing who receives it.</div>'+
         '<div class="note" style="margin-top:10px"><b>Which is right depends on what you promised.</b> A chat product usually protects the stream, because a stuttering answer reads as broken. A batch pipeline usually prefers throughput and does not care about lumpiness. Deciding this deliberately is most of what a serving SLO is for.</div>'+
         (policy!=='queue'?'<div class="note" style="margin-top:10px"><b>And watch for starvation.</b> If eviction always takes the newest request, a long request can be repeatedly evicted and never finish. Real schedulers add priority or ageing precisely to stop that, and it is the kind of bug that only appears under sustained load.</div>':'');
+  }
+  render();
+})();
+
+/* --- SIM: request 40, behind thirty-nine long prompts --- */
+(function(){
+  const ctl=document.getElementById('svQueueCtl'), out=document.getElementById('svQueueOut'),
+        note=document.getElementById('svQueueNote');
+  if(!ctl) return;
+  /* 39 long prompts at 8k tokens, one short at 40. Prefill runs at a flat
+     rate; the numbers are deliberately round so the arithmetic is checkable. */
+  const LONG=39, LONGTOK=8000, SHORTTOK=40, RATE=20000;   /* prefill tokens per second */
+  const tPrefill=n=>n/RATE*1000;                          /* ms */
+  const MODES=[
+    {k:'fcfs', n:'first come, first served', d:'the order they arrived'},
+    {k:'short',n:'shortest first',           d:'smallest prompt goes next'},
+    {k:'chunk',n:'chunked prefill',          d:'long prompts split, everyone interleaves'}
+  ];
+  let m=0;
+  function render(){
+    ctl.innerHTML=MODES.map((x,i)=>'<button class="seg'+(i===m?' on':'')+'" data-i="'+i+'" style="text-align:left;font-size:12px">'
+      +'<b>'+x.n+'</b><br><span style="font-size:11px;color:var(--dim)">'+x.d+'</span></button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{m=+b.dataset.i;render();});
+    const mode=MODES[m].k;
+    const longEach=tPrefill(LONGTOK), shortEach=tPrefill(SHORTTOK);
+    let yourWait, longMedian, worstLong;
+    if(mode==='fcfs'){
+      yourWait = LONG*longEach + shortEach;
+      longMedian = (LONG/2)*longEach; worstLong = LONG*longEach;
+    } else if(mode==='short'){
+      yourWait = shortEach;
+      longMedian = shortEach + (LONG/2)*longEach; worstLong = shortEach + LONG*longEach;
+    } else {
+      /* chunks of 512: your 40 tokens get a slot after roughly one round */
+      const CH=512, rounds=Math.ceil(LONGTOK/CH);
+      yourWait = LONG*tPrefill(CH) + shortEach;
+      longMedian = (rounds/2)*LONG*tPrefill(CH); worstLong = rounds*LONG*tPrefill(CH);
+    }
+    const ms=v=>v>=1000?(v/1000).toFixed(1)+' s':Math.round(v)+' ms';
+    const col=v=>v>4000?'var(--red)':v>800?'var(--amber)':'var(--green)';
+    const bar=(v,max,c)=>'<div style="height:9px;background:var(--panel2);border-radius:99px;overflow:hidden">'
+      +'<div style="height:100%;width:'+Math.min(100,v/max*100)+'%;background:'+c+';border-radius:99px"></div></div>';
+    const max=Math.max(yourWait,worstLong);
+    const row=(label,v,sub)=>'<div style="margin-bottom:11px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>'+label+'</span>'
+      +'<span class="k" style="color:'+col(v)+'">'+ms(v)+'</span></div>'+bar(v,max,col(v))
+      +'<div class="k" style="font-size:10.5px;color:var(--dim);margin-top:3px">'+sub+'</div></div>';
+    out.innerHTML =
+      '<div class="simnote" style="margin-bottom:10px">Forty requests arrive together. Thirty-nine are '
+      +LONGTOK.toLocaleString('en-GB')+'-token documents; yours is '+SHORTTOK+' tokens. Bars are time to first token.</div>'
+      + row('<b>your one-line question</b>', yourWait, 'the whole reason you are looking at this')
+      + row('a typical long prompt', longMedian, 'the median of the other thirty-nine')
+      + row('the unluckiest long prompt', worstLong, 'somebody is always last')
+      + '<div class="lzhop" style="display:block;padding:11px 13px;border-left-color:'+col(yourWait)+'">'
+      + '<b>Your wait: '+ms(yourWait)+'</b><div style="margin-top:5px;font-size:12.5px">'
+      + (mode==='fcfs'
+        ? 'Your 40 tokens take <span class="k">2 ms</span> of actual work. You wait '+ms(yourWait)
+          +' for it. Every millisecond of that is queueing, not computing.'
+        : mode==='short'
+        ? 'You are served almost immediately, because your prompt is smallest. Look at what it did to the unluckiest long prompt.'
+        : 'Long prompts are cut into chunks, so you get a turn after one round rather than after thirty-nine whole documents.')
+      + '</div></div>';
+    note.innerHTML =
+      (mode==='fcfs'
+        ? '<div class="lzbad"><b>Head-of-line blocking, in one number.</b> Your request needs 2 ms of work and waits '+ms(yourWait)
+          +'. This is the default in a naive server, and it is why a chat box feels broken while a batch job is running.</div>'
+          + '<div class="simnote" style="margin-top:10px">Nothing is overloaded here. Throughput is excellent. The average is fine. It is entirely a scheduling decision, and no amount of extra hardware fixes it.</div>'
+        : mode==='short'
+        ? '<div class="lzwarn"><b>You fixed your latency by giving somebody else yours.</b> Shortest-first is optimal for average wait and dangerous in production: while short requests keep arriving, a long one can be overtaken indefinitely. That is starvation, and it shows up as one customer whose large document never completes.</div>'
+          + '<div class="simnote" style="margin-top:10px">If you do use it, you need an ageing rule &mdash; a request that has waited too long stops being overtakeable. Without that, this is a policy that works beautifully in a benchmark and produces a support ticket in production.</div>'
+        : '<div class="ok"><b>Chunked prefill is the compromise that is actually shipped.</b> A long prompt is processed a slice at a time, so every request gets a turn early. Your wait drops enormously and the long prompts finish slightly later &mdash; no one is starved and no one is blocked.</div>'
+          + '<div class="simnote" style="margin-top:10px">The cost is real but small: more scheduling decisions, and slightly worse peak throughput because the long prompts no longer get the machine to themselves. Almost every production server takes that trade.</div>')
+      + '<div class="simnote" style="margin-top:10px"><b>The measurement trap underneath all three.</b> Average time to first token is roughly the same in the first two. The thing that changed is <em>who</em> waits, and an average is exactly the statistic that hides it.</div>';
   }
   render();
 })();

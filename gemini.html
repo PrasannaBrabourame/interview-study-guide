@@ -499,6 +499,17 @@ document.getElementById('sec-wif').innerHTML=`
 </div>
 
 <div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; answer four questions and stop arguing about the protocol</h2>
+  <div class="plain-line"><b>Try this:</b> this decision is usually made by taste and defended for weeks. Four facts about your estate settle it. Answer them and watch how quickly the choice stops being a matter of opinion &mdash; then read what you have just signed up to maintain.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Choosing between a door with a keypad and a door with a physical key. The keypad reissues its own codes; the key has to be recut before it wears out, by somebody who remembers to book it in. Both doors work. Only one of them fails on a date nobody has in their diary.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>answer <b>mobile access</b> first &mdash; on its own it usually ends the discussion.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>OIDC</b> a modern sign-in protocol built on top of ordinary web requests</span><span class="sp-w"><b>SAML</b> an older sign-in protocol that exchanges signed XML documents</span><span class="sp-w"><b>identity provider</b> the system that already knows who your staff are</span><span class="sp-w"><b>discovery endpoint</b> a public address where a provider publishes its current keys</span><span class="sp-w"><b>certificate</b> the file that proves a signed document is genuine, and that expires</span><span class="sp-w"><b>key rotation</b> replacing those keys before they expire</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gmProtoOut"></div></div>
+    <div><div class="segmented" id="gmProtoCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gmProtoNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
   <h2 class="sec">Try it &mdash; map attributes and write a principal that works</h2>
   <div class="plain-line"><b>Try this:</b> mapping is where a provider&rsquo;s claims become something Google can write policy about. It has three ways to go wrong that all look like &ldquo;the permission does not apply&rdquo; &mdash; and the syntax errors are unforgiving in a way that is genuinely hard to spot by eye.</div>
   <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>Translating a foreign address into your own postal format. Get the direction of the translation backwards, or use their word for “county” in your own system, and the letter goes nowhere — with no bounce message.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>choose the <b>provider’s own name</b> option and read why the policy matches nobody.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>claim</b> a fact the sign-in system asserts about a person, like their email</span><span class="sp-w"><b>attribute</b> what Google calls that fact once you have mapped it across</span><span class="sp-w"><b>principal</b> one named person in a permission rule</span><span class="sp-w"><b>principalSet</b> a group of people who share an attribute value</span><span class="sp-w"><b>IAM</b> the permissions system &mdash; who and what may do which things</span></span></div></div>
@@ -627,6 +638,75 @@ document.getElementById('sec-wif').innerHTML=`
   }
   render();
 })();
+/* --- SIM: OIDC or SAML, decided by four facts --- */
+(function(){
+  const ctl=document.getElementById('gmProtoCtl'), out=document.getElementById('gmProtoOut'),
+        note=document.getElementById('gmProtoNote');
+  if(!ctl) return;
+  const Q=[
+    {k:'mobile', q:'Do people need to reach this from a mobile application?',
+     yes:'oidc', hard:true,
+     yesWhy:'SAML does not support mobile applications here. This alone decides it.',
+     noWhy:'Browser only, so both protocols remain on the table.'},
+    {k:'disco',  q:'Can the provider publish a discovery endpoint reachable from Google?',
+     yes:'oidc', hard:false,
+     yesWhy:'Keys can be fetched and refreshed automatically &mdash; nobody has to remember anything.',
+     noWhy:'An on-premises provider behind a strict firewall usually cannot. That points at SAML.'},
+    {k:'legacy', q:'Is the provider an older on-premises system that hands you an XML file?',
+     yes:'saml', hard:false,
+     yesWhy:'Classic ADFS-shaped estate. SAML is what it speaks.',
+     noWhy:'A modern provider, so the easier option is available.'},
+    {k:'diary',  q:'Is there a named owner who will rotate a certificate before it expires?',
+     yes:'saml', hard:false,
+     yesWhy:'Then SAML&rsquo;s manual rotation is a real, staffed process rather than a hope.',
+     noWhy:'Then SAML has a built-in outage on a date nobody has written down.'}
+  ];
+  const A={};  /* undefined = unanswered */
+  function render(){
+    ctl.innerHTML=Q.map(q=>'<div style="margin-bottom:9px"><div style="font-size:12px;margin-bottom:4px">'+q.q+'</div>'
+      +'<div style="display:flex;gap:6px">'
+      +['yes','no'].map(v=>'<button class="seg'+(A[q.k]===v?' on':'')+'" data-k="'+q.k+'" data-v="'+v+'" style="flex:1;font-size:12px">'+v+'</button>').join('')
+      +'</div></div>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{
+      A[b.dataset.k] = A[b.dataset.k]===b.dataset.v ? undefined : b.dataset.v; render();});
+    let oidc=0, saml=0, forced=null;
+    const lines=[];
+    Q.forEach(q=>{
+      const a=A[q.k]; if(!a) return;
+      const favours = a==='yes' ? q.yes : (q.yes==='oidc'?'saml':'oidc');
+      const why = a==='yes' ? q.yesWhy : q.noWhy;
+      if(q.hard && a==='yes') forced=q.yes;
+      if(favours==='oidc') oidc++; else saml++;
+      lines.push({q:q.q, a, favours, why, hard:q.hard&&a==='yes'});
+    });
+    const answered=lines.length;
+    const winner = forced || (oidc===saml ? null : (oidc>saml?'oidc':'saml'));
+    const NAME={oidc:'OIDC', saml:'SAML 2.0'};
+    out.innerHTML =
+      (answered===0
+        ? '<div class="simnote">Answer the questions on the right. Each one moves the decision, and the first one can end it outright.</div>'
+        : lines.map(l=>'<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:8px;border-left-color:'
+            +(l.hard?'var(--red)':l.favours==='oidc'?'var(--teal)':'var(--violet)')+'">'
+            + '<div style="font-size:12.5px">'+l.q+' <b class="k">'+l.a+'</b></div>'
+            + '<div class="k" style="font-size:10.5px;margin-top:4px;color:'+(l.favours==='oidc'?'var(--teal)':'var(--violet)')+'">'
+            + (l.hard?'DECIDES IT &mdash; ':'points at ')+NAME[l.favours]+'</div>'
+            + '<div style="font-size:12px;margin-top:5px;color:var(--muted)">'+l.why+'</div></div>').join(''))
+      + (winner
+        ? '<div class="ok" style="margin-top:4px"><b>Use '+NAME[winner]+'.</b> '
+          + (forced ? 'Not on balance &mdash; the mobile answer removed the choice.' : 'On the balance of what you answered.')+'</div>'
+        : answered ? '<div class="lzwarn" style="margin-top:4px"><b>Genuinely balanced so far.</b> Answer the remaining questions; the certificate-owner one is the tie-breaker that matters in year two.</div>' : '');
+    note.innerHTML = !winner
+      ? '<div class="simnote"><b>The row people skip.</b> Both protocols authenticate people correctly. They differ in what happens eighteen months later, when a certificate expires and nobody is on duty for it.</div>'
+      : winner==='oidc'
+      ? '<div class="ok"><b>What you have signed up to maintain: almost nothing.</b> Google periodically re-reads the provider&rsquo;s discovery endpoint and picks up new keys on its own. Rotation is not a task anybody owns, because it is not a task.</div>'
+        + '<div class="simnote" style="margin-top:10px"><b>The condition attached.</b> That endpoint has to stay reachable. If a firewall change quietly blocks it, sign-in keeps working until the keys rotate and then fails for everyone at once, with nothing in your change log that day.</div>'
+      : '<div class="lzwarn"><b>What you have signed up to maintain: a diary entry.</b> Somebody has to download a new certificate from the provider and upload it to Google before the old one expires. Nothing warns you. Nothing degrades first. It works, and then at midnight nobody can sign in.</div>'
+        + '<div class="simnote" style="margin-top:10px"><b>Make it real before you leave the room.</b> Put the expiry date in a calendar with two owners, alert on it thirty days out, and write down where the metadata file comes from. Every SAML outage is this task, unowned.</div>'
+        + '<div class="simnote" style="margin-top:10px">This is a legitimate choice &mdash; a strict on-premises estate may not be able to offer anything else. It is only a bad choice when it is made by default and the rotation is nobody&rsquo;s job.</div>';
+  }
+  render();
+})();
+
 /* ================= 5 · NETWORKING ================= */
 document.getElementById('sec-network').innerHTML=`
 <div class="card" style="margin-bottom:16px">

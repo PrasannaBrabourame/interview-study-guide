@@ -105,8 +105,8 @@ assets/app.js     Dashboard + browse views, rendering, search/filter, quiz
 data/topics.json  The 267 topics as plain JSON (incl. per-topic difficulty)
 ```
 
-Every simulation in the labs carries a plain-English on-ramp above its
-controls: an everyday analogy for the mechanism, one concrete first action,
+There are 199 simulations across the thirteen labs. Every one carries a
+plain-English on-ramp above its controls: an everyday analogy for the mechanism, one concrete first action,
 and a short glossary of only the jargon that appears on that screen. The
 glossary is per-simulation rather than per-page, because someone lost in
 the middle of an interaction does not scroll away to look a word up.

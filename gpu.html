@@ -470,6 +470,17 @@ document.getElementById('sec-roof').innerHTML=`
   <div class="code"><pre><code>${hl('attainable FLOP/s = min( peak FLOP/s ,  arithmetic intensity x memory bandwidth )\n\n# the ridge point — where the two terms are equal:\n#   ridge = peak FLOP/s / bandwidth = 312e12 / 2.0e12 = 156 FLOP per byte')}</code></pre></div>
 </div>
 
+<div class="card" style="margin-bottom:16px">
+  <h2 class="sec">Try it &mdash; the card is 8% busy and nobody knows why</h2>
+  <div class="plain-line"><b>Try this:</b> four symptoms you can read off a profiler. Tick the ones you are seeing and the diagnosis narrows. Three of these look identical from a dashboard &mdash; &ldquo;the GPU is idle&rdquo; &mdash; and have completely different fixes.</div>
+  <div class="simplain"><div class="sp-row"><span class="sp-k">in real life</span><span>A chef standing still in a busy kitchen. They could be waiting for ingredients, waiting for a plate, doing a job so small it is not worth starting, or waiting for someone to tell them what the order is. Same photograph, four different problems, and only one of them is fixed by hiring a faster chef.</span></div><div class="sp-row"><span class="sp-k">start by</span><span>tick <b>high memory traffic</b> on its own, then add <b>low arithmetic per byte</b> and watch the diagnosis sharpen.</span></div><div class="sp-row"><span class="sp-k">words here</span><span class="sp-words"><span class="sp-w"><b>occupancy</b> how much work an SM is holding at once</span><span class="sp-w"><b>SM</b> streaming multiprocessor &mdash; one of the GPU&rsquo;s independent engines</span><span class="sp-w"><b>kernel</b> one function launched onto the GPU</span><span class="sp-w"><b>launch overhead</b> the fixed cost of starting a kernel at all</span><span class="sp-w"><b>arithmetic intensity</b> operations done per byte fetched</span><span class="sp-w"><b>memory bound</b> waiting on memory rather than on arithmetic</span><span class="sp-w"><b>host</b> the CPU side, which decides what the GPU is asked to do</span></span></div></div>
+  <div class="sim-layout">
+    <div><div id="gpIdleOut"></div></div>
+    <div><div class="segmented" id="gpIdleCtl" style="flex-direction:column;align-items:stretch"></div>
+      <div id="gpIdleNote" class="cidr-out" style="margin-top:12px"></div></div>
+  </div>
+</div>
+
 <div class="card">
   <h2 class="sec">Try it &mdash; put a real operation on the roofline</h2>
   <div class="plain-line"><b>Try this:</b> six operations you actually run. Each one shows the bytes it moves, the arithmetic it does, and where that lands. Watch how far to the left almost everything sits &mdash; and then look at what happens when the batch size changes.</div>
@@ -546,6 +557,72 @@ document.getElementById('sec-roof').innerHTML=`
         ? '<div class="simnote" style="margin-top:10px"><b>What is worth doing when you are here:</b> move fewer bytes (a smaller dtype, quantisation), or get more work out of each byte (batching, tiling, fusion). What is <em>not</em> worth doing: anything that makes the arithmetic faster. The arithmetic is already waiting.</div>'
         : '<div class="simnote" style="margin-top:10px"><b>Here, and only here, the usual instincts apply.</b> Better arithmetic, tensor cores and lower precision all pay off, because the data is arriving fast enough to use them.</div>')+
       '<div class="note" style="margin-top:10px"><b>Compare the two matrix-vector entries.</b> Same operation, same weights, same hardware &mdash; batch 1 sits at 1 FLOP/byte and batch 32 at 29. Nothing about the arithmetic changed. That gap is why serving engines go to such lengths to keep a batch full, and it is the clearest example of a roofline argument driving a real design.</div>';
+  }
+  render();
+})();
+
+/* --- SIM: the card is idle and nobody knows why --- */
+(function(){
+  const ctl=document.getElementById('gpIdleCtl'), out=document.getElementById('gpIdleOut'),
+        note=document.getElementById('gpIdleNote');
+  if(!ctl) return;
+  const SYM=[
+    {k:'mem',  n:'memory traffic near the bandwidth limit'},
+    {k:'ai',   n:'very few operations per byte fetched'},
+    {k:'small',n:'thousands of tiny kernel launches'},
+    {k:'host', n:'the CPU is busy while the GPU waits'}
+  ];
+  const CAUSES=[
+    {k:'bound', n:'Memory bound', need:['mem','ai'], col:'var(--amber)',
+     what:'The card is working. It is just spending its time fetching numbers rather than doing arithmetic on them, so the arithmetic units sit idle between loads.',
+     fix:'Fuse the chain so intermediates never leave the chip, or tile so each byte is reused. Adding a faster card barely helps &mdash; you are not short of arithmetic.',
+     tell:'Arithmetic intensity below the roofline ridge point. The number to look at is operations per byte, not utilisation.'},
+    {k:'launch', n:'Launch-bound', need:['small','host'], col:'var(--red)',
+     what:'Each kernel is so small that starting it costs more than running it. The GPU finishes instantly and waits for the next instruction.',
+     fix:'CUDA graphs, or batch the work into fewer, larger kernels. This is the classic small-batch decode problem.',
+     tell:'GPU busy time far below wall-clock time, and gaps between kernels on the timeline.'},
+    {k:'starve', n:'Starved by the host', need:['host'], col:'var(--violet)',
+     what:'The CPU cannot prepare work fast enough &mdash; tokenising, copying, or Python itself is the bottleneck. The card is genuinely doing nothing.',
+     fix:'Move preparation off the critical path, overlap copies with compute, or do the work on more CPU threads.',
+     tell:'The CPU is pinned while the GPU timeline has long empty stretches.'},
+    {k:'occ', n:'Low occupancy', need:[], col:'var(--teal)',
+     what:'Each SM is holding far less work than it could, usually because each thread asked for too many registers or too much shared memory.',
+     fix:'Reduce per-thread resources, or use a different tile size, so more blocks fit on each SM at once.',
+     tell:'Occupancy well under half, with no memory or launch symptom to explain it.'}
+  ];
+  const on={mem:false,ai:false,small:false,host:false};
+  function render(){
+    ctl.innerHTML=SYM.map(x=>'<button class="seg'+(on[x.k]?' on':'')+'" data-k="'+x.k+'" style="text-align:left;font-size:12px">'
+      +(on[x.k]?'&#9679; ':'&#9675; ')+x.n+'</button>').join('');
+    ctl.querySelectorAll('.seg').forEach(b=>b.onclick=()=>{on[b.dataset.k]=!on[b.dataset.k];render();});
+    const ticked=SYM.filter(x=>on[x.k]).length;
+    const scored=CAUSES.map(c=>{
+      const hit=c.need.filter(k=>on[k]).length;
+      const wrong=SYM.filter(x=>on[x.k]&&c.need.indexOf(x.k)<0).length;
+      return {c, s: c.need.length ? hit - wrong*0.5 : (ticked===0?0.5:-1)};
+    }).sort((a,b)=>b.s-a.s);
+    const best=scored[0], clear = ticked>0 && best.s>0 && best.s>scored[1].s;
+    out.innerHTML =
+      '<div class="simnote" style="margin-bottom:9px">Four causes. Every one of them shows up on a dashboard as &ldquo;the GPU is not busy&rdquo;.</div>'
+      + scored.map(x=>{
+          const lead = clear && x===best;
+          return '<div class="lzhop" style="display:block;padding:10px 12px;margin-bottom:8px;border-left-color:'
+            +(lead?x.c.col:'var(--wire)')+';opacity:'+(ticked===0?1:(lead?1:.5))+'">'
+            + '<div style="font-size:12.5px"><b style="color:'+(lead?x.c.col:'var(--muted)')+'">'+x.c.n+'</b>'
+            + (lead?' <span class="k" style="font-size:10.5px;color:'+x.c.col+'">&larr; fits what you ticked</span>':'')+'</div>'
+            + (lead||ticked===0 ? '<div style="font-size:12px;margin-top:5px;color:var(--muted)">'+x.c.what+'</div>'
+               + '<div style="font-size:12px;margin-top:5px"><b>Fix:</b> '+x.c.fix+'</div>'
+               + '<div class="k" style="font-size:10.5px;margin-top:5px;color:var(--dim)">tell: '+x.c.tell+'</div>' : '')
+            + '</div>';
+        }).join('');
+    note.innerHTML = ticked===0
+      ? '<div class="ok"><b>Tick what the profiler is actually telling you.</b> Utilisation on its own cannot distinguish these four, which is why &ldquo;the GPU is at 8%&rdquo; is not a diagnosis.</div>'
+        + '<div class="simnote" style="margin-top:10px">Three of the four are not about the GPU at all. Two are about how you are asking, and one is about the CPU beside it.</div>'
+      : clear
+      ? '<div class="ok"><b>'+best.c.n+'.</b> '+best.c.what+'</div>'
+        + '<div class="simnote" style="margin-top:10px"><b>Why this matters more than it sounds.</b> The instinct on a slow model is to buy a bigger card. Only one of these four causes gets better on a bigger card, and it is the one you are least likely to have.</div>'
+        + (on.mem&&on.ai ? '<div class="simnote" style="margin-top:10px">You are on the sloped part of the roofline. The ceiling you are hitting is bandwidth, and the fix is to fetch less, not to compute faster.</div>' : '')
+      : '<div class="lzwarn"><b>These symptoms do not separate the causes yet.</b> Two or more fit equally well. Add or remove a symptom &mdash; in particular, whether the CPU is busy while the card waits, because that single observation splits the four in half.</div>';
   }
   render();
 })();
