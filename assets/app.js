@@ -63,7 +63,16 @@ function init(topics) {
      forty-three. Categories listed here are the ones the lab genuinely
      teaches, a lab that only brushes a subject is deliberately left out,
      because a link that returns half the site is the problem, not the fix. */
-  const LABS = {
+  /* "My interview is this week" starts the same drill the hero button does,
+   rather than being a second implementation of it. */
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('#startDrill');
+  if (!b) return;
+  const flash = document.getElementById('flash');
+  if (flash) flash.click();
+});
+
+const LABS = {
     cloud: { name: "Cloud lab", hue: 212, cats: ["Cloud Architecture", "GCP", "Kubernetes", "Security", "Observability", "Infrastructure as Code", "DevOps", "Deployment", "FinOps", "Performance", "Event-Driven Architecture", "Production Readiness", "Production Operations", "Data & Databases"] },
     agentcore: { name: "AgentCore lab", hue: 320, cats: ["AI Agents", "Agentic AI", "Agent Frameworks & Runtimes", "Model Context Protocol", "Observability", "Production Readiness"] },
     agentbuild: { name: "Agents building agents", hue: 320, cats: ["AI Agents", "Agentic AI", "Agentic AI Scenarios", "Agent Frameworks & Runtimes", "AI & GenAI"] },

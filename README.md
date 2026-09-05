@@ -130,6 +130,18 @@ it means genuinely different things (an LLM token and an access token, a
 GPU block and a cache block) the definitions stay different, and a wording
 that names something on its own screen keeps that clause.
 
+## The landing page
+
+The page opens by saying what this actually is, because it used to describe only
+half of it: the hero named the 267 topics and never mentioned the labs, the
+simulations, or that this is a thing you operate rather than read.
+
+Two blocks sit above the tracks. **How this guide works** states the two halves
+and the link between them, because a reader met fifteen lab cards and a category
+grid with nothing explaining how they relate. **Where to start** turns the one
+piece of orientation that existed, previously the last sentence of a paragraph
+below the cards, into four entry points chosen by goal rather than by track.
+
 ## Reading the theme
 
 The visual design is trying to get out of the way. Three rules hold it

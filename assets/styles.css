@@ -309,6 +309,43 @@ h1,h2.dtitle,.dwelcome h1,.btitle h2{font-family:var(--display);font-weight:500;
   background:var(--accentsoft);color:var(--accent);font-size:18px}
 .lab b{display:block;font-family:var(--display);font-size:19px;font-weight:500;letter-spacing:-.012em;margin-bottom:7px}
 .lab small{display:block;color:var(--muted);font-size:13px;line-height:1.6}
+
+/* ---- orientation ----
+   The hero used to describe a flashcard site: it named the 267 topics and never
+   mentioned the labs, the simulations, or that this is a thing you operate. A
+   first-time visitor met fifteen cards with no idea what a lab was, and the only
+   "start here" guidance was the last sentence of a paragraph below them. These
+   two blocks sit above the tracks and answer both questions before anything asks
+   the reader to choose. */
+.dhow, .dstart{margin:26px 0 8px}
+.dtsub{font-family:var(--mono); font-size:12px; font-weight:400; color:var(--muted);
+  letter-spacing:0; margin-left:9px}
+.howgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:12px}
+.howcell{background:var(--panel); border:1px solid var(--line); border-radius:11px;
+  padding:15px 17px 14px; display:flex; flex-direction:column}
+.howcell .hown{font-family:var(--display); font-size:27px; line-height:1; color:var(--accent);
+  font-weight:500; margin-bottom:4px}
+.howcell b{font-size:14.5px; margin-bottom:7px}
+.howcell .howd{font-size:13px; line-height:1.62; color:var(--muted)}
+.howcell .howt{margin-top:10px; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em;
+  color:var(--dim); border-top:1px solid var(--line); padding-top:8px}
+
+.startgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:12px}
+.startcard{display:flex; flex-direction:column; text-align:left; gap:6px;
+  background:var(--panel); border:1px solid var(--line2); border-left:3px solid var(--accent);
+  border-radius:10px; padding:14px 15px; text-decoration:none; color:var(--text);
+  font-family:inherit; font-size:inherit; cursor:pointer; transition:border-color .15s, background .15s}
+.startcard:hover{background:var(--panel2); border-color:var(--accent)}
+.startcard:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.startcard b{font-size:13.5px; line-height:1.4}
+.startcard span{font-size:12.5px; line-height:1.58; color:var(--muted)}
+.startcard em{font-style:normal; color:var(--accent)}
+@media (max-width:1000px){
+  .howgrid{grid-template-columns:1fr}
+  .startgrid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:620px){ .startgrid{grid-template-columns:1fr} }
+
 /* The one line that says what the lab lets you do. Every card used to open
    with three or four sentences about the inside of the lab, which assumes the
    thing the lab teaches, so a reader choosing between fifteen of them had to
