@@ -310,14 +310,13 @@ h1,h2.dtitle,.dwelcome h1,.btitle h2{font-family:var(--display);font-weight:500;
 .lab b{display:block;font-family:var(--display);font-size:19px;font-weight:500;letter-spacing:-.012em;margin-bottom:7px}
 .lab small{display:block;color:var(--muted);font-size:13px;line-height:1.6}
 
-/* The one line that says what the lab lets you do. Every card used to open
-   with three or four sentences about the inside of the lab, which assumes the
-   thing the lab teaches, so a reader choosing between fifteen of them had to
-   decode all four before they could pick. This goes first and the prose that
-   was there becomes the supporting detail it actually is. */
+/* The one line that says what the lab lets you do, and now the only prose on
+   the card. Each one used to carry three or four sentences about the inside of
+   the lab as well, which assumed the thing the lab teaches and made the page
+   twice as tall as the number of decisions on it warranted. The detail lives in
+   the lab; the card only has to be scannable alongside fourteen others. */
 .lab .lgist{display:block;font-style:normal;color:var(--text);font-size:14px;
-  line-height:1.55;margin-bottom:8px;font-weight:450}
-.lab small{margin-top:0}
+  line-height:1.55;margin-bottom:12px;font-weight:450}
 .lab .lmeta{display:block;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--faint);
   letter-spacing:.04em}
 .lab .lbrands{display:flex;align-items:center;gap:14px;margin-bottom:13px;min-height:26px}

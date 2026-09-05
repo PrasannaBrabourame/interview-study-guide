@@ -158,11 +158,12 @@ generated from one table in `assets/lab.js`, so adding a lab is one edit.
 
 ## Labs and topics are linked
 
-Each lab card opens with one plain line saying what the lab lets you do, before
-the description of what is inside it. That line exists because the descriptions
-assume the thing the lab teaches: "a docstring decides whether a tool is ever
-chosen" is a good sentence about the ADK lab and no help at all to somebody
-deciding whether to open it.
+Each lab card carries one plain line saying what the lab lets you do, and that
+is the only prose on it. The cards used to carry a four-sentence description as
+well, which assumed the thing the lab teaches: "a docstring decides whether a
+tool is ever chosen" is a good sentence about the ADK lab and no help at all to
+somebody deciding whether to open it. The detail lives in the lab; the card only
+has to be scannable alongside fourteen others.
 
 Each hands-on lab card carries a **related-topics** strip showing how many of
 the 267 topics that lab actually covers, 50 for the Cloud lab, 35 for
