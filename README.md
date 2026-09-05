@@ -118,6 +118,13 @@ simulations' answers and are read by someone who has already passed those
 screens; glossing the whole page's vocabulary there buries the entries
 that matter.
 
+Per-simulation does not mean per-simulation wording. Where a term means the
+same thing on two screens it is worded the same way on both, so that someone
+reading three labs is not asked to re-learn "blast radius" each time. Where
+it means genuinely different things — an LLM token and an access token, a
+GPU block and a cache block — the definitions stay different, and a wording
+that names something on its own screen keeps that clause.
+
 ## Labs and topics are linked
 
 Each hands-on lab card carries a **related-topics** strip showing how many of
